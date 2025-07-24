@@ -10,21 +10,13 @@ import Foundation
 
 class AppUnlockState {
     static let shared = AppUnlockState()
-    private var unlockedApps = Set<String>()
+    private var unlockedApps = Set<String>()         // những bundleID đã xác thực thành công
 
-    func isUnlocked(_ bundleID: String) -> Bool {
-        return unlockedApps.contains(bundleID)
+    func isUnlocked(bundleID: String) -> Bool {
+        unlockedApps.contains(bundleID)
     }
 
-    func markUnlocked(_ bundleID: String) {
+    func markUnlocked(bundleID: String) {
         unlockedApps.insert(bundleID)
-    }
-
-    func clear(_ bundleID: String) {
-        unlockedApps.remove(bundleID)
-    }
-
-    func clearAll() {
-        unlockedApps.removeAll()
     }
 }

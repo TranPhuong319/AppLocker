@@ -1,3 +1,11 @@
+//
+//  SettingsWindowController.swift
+//  AppLocker
+//
+//  Created by Doe Phương on 24/07/2025.
+//
+
+
 import AppKit
 import SwiftUI
 

@@ -1,36 +1,49 @@
-//
-//  AppLockerController.swift
-//  AppLocker
-//
-//  Created by Doe Phương on 24/07/2025.
-//
-
-
 import Foundation
 import AppKit
 
 class AppLockerController {
     static let shared = AppLockerController()
-    private var timer: Timer?
+    private var observer: Any?
 
     func startMonitoring() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            self.checkRunningApps()
+        // Lắng nghe ngay khi 1 app mới launch
+        observer = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didLaunchApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            self?.handleLaunch(notification: note)
         }
     }
 
-    func checkRunningApps() {
+    private func handleLaunch(notification: Notification) {
+        guard
+            let userInfo = notification.userInfo,
+            let app = userInfo[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+            let bundleID = app.bundleIdentifier
+        else { return }
+
         let manager = LockedAppsManager()
-        let running = NSWorkspace.shared.runningApplications
-
-        for app in running {
-            guard let bundleID = app.bundleIdentifier else { continue }
-
-            if manager.isLocked(bundleID) {
-                if !AuthenticationManager.authenticate() {
+        // Nếu app này nằm trong danh sách khóa
+        if manager.isLocked(bundleID) {
+            // Nếu trước đó chưa unlock
+            if !AppUnlockState.shared.isUnlocked(bundleID: bundleID) {
+                // Yêu cầu xác thực
+                if AuthenticationManager.authenticate() {
+                    // mark đã unlock
+                    AppUnlockState.shared.markUnlocked(bundleID: bundleID)
+                } else {
+                    // kill ngay lập tức
                     app.forceTerminate()
+                    print("🛑 Đã chặn và kill \(bundleID)")
                 }
             }
+        }
+    }
+
+    func stopMonitoring() {
+        if let obs = observer {
+            NSWorkspace.shared.notificationCenter.removeObserver(obs)
         }
     }
 }

@@ -13,7 +13,7 @@ class AuthenticationManager {
     static func authenticate() -> Bool {
         let context = LAContext()
         var error: NSError?
-        let reason = "Xác thực để mở ứng dụng bị khóa"
+        let reason = "muốn thực hiện thay đổi"
 
         if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
             var result = false
