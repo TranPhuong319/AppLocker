@@ -14,6 +14,7 @@ struct AppLockerApp: App {
     var body: some Scene {
         Settings {
             ContentView()
+            .accentColor(Color("AccentColor")) // hoặc .blue nếu muốn chỉ định
         }
     }
 }

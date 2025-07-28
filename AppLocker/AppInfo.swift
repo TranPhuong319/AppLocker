@@ -9,8 +9,9 @@
 import AppKit
 
 struct AppInfo: Identifiable, Hashable {
-    let id = UUID()
+    var id: String { bundleID }  // Dùng bundleID làm id ổn định
     let name: String
     let bundleID: String
     let icon: NSImage?
 }
+

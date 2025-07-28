@@ -6,13 +6,6 @@
 //
 
 
-//
-//  PermissionManager.swift
-//  AppLocker
-//
-//  Created by Doe Phương on 25/07/2025.
-//
-
 import Foundation
 import Security
 import AppKit
@@ -30,7 +23,7 @@ class PermissionManager {
             return nil
         }
 
-        let rights = AuthorizationRights(count: 0, items: nil)
+        var rights = AuthorizationRights(count: 0, items: nil)
 
         let copyStatus = AuthorizationCopyRights(ref, &rights, nil, authFlags, nil)
         guard copyStatus == errAuthorizationSuccess else {

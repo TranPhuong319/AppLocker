@@ -9,12 +9,12 @@
 import AppKit
 import SwiftUI
 
-class SettingsWindowController {
-    static var shared: NSWindow?
+class SettingsWindowController: NSObject, NSWindowDelegate {
+    static var shared: NSPanel?
 
     static func show() {
-        if let window = shared {
-            window.makeKeyAndOrderFront(nil)
+        if let panel = shared {
+            panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
@@ -22,19 +22,41 @@ class SettingsWindowController {
         let contentView = ContentView()
         let hosting = NSHostingView(rootView: contentView)
 
-        let window = NSPanel(
+        let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 420, height: 460),
-            styleMask: [.titled, .closable, .utilityWindow],
+            styleMask: [.titled, .closable, .nonactivatingPanel],
             backing: .buffered, defer: false
         )
 
-        window.title = "AppLocker Settings"
-        window.isReleasedWhenClosed = false
-        window.contentView = hosting
-        window.center()
+        panel.title = "AppLocker Settings"
+        panel.isFloatingPanel = true
+        panel.hidesOnDeactivate = true
+        panel.level = .floating
+        panel.isReleasedWhenClosed = false
+        panel.becomesKeyOnlyIfNeeded = true
+        panel.contentView = hosting
+        panel.center()
 
-        shared = window
-        window.makeKeyAndOrderFront(nil)
+        // Set delegate to detect losing focus
+        let controller = SettingsWindowController()
+        panel.delegate = controller
+
+        shared = panel
+        panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func windowDidResignKey(_ notification: Notification) {
+        // Kiểm tra nếu còn bất kỳ cửa sổ nào thuộc app đang là keyWindow thì không đóng
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            let hasKeyWindowInApp = NSApp.windows.contains(where: { $0.isKeyWindow })
+
+            if !hasKeyWindowInApp {
+                if let panel = SettingsWindowController.shared {
+                    panel.close()
+                    SettingsWindowController.shared = nil
+                }
+            }
+        }
     }
 }
