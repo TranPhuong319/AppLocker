@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.tranphuong.AppLockerHelper</string>
+	<string>com.TranPhuong319.AppLockerHelper</string>
 	<key>MachServices</key>
 	<dict>
 		<key>com.TranPhuong319.AppLockerHelper</key>

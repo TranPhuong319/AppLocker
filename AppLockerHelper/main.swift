@@ -2,10 +2,14 @@
 //  main.swift
 //  AppLockerHelper
 //
-//  Created by Doe Phương on 05/08/2025.
+//  Created by Doe Phương on 04/08/2025.
 //
 
 import Foundation
 
-print("Hello, World!")
+let listener = NSXPCListener(machServiceName: "com.TranPhuong319.AppLockerHelper")
+let delegate = AppLockerHelper()
+listener.delegate = delegate
+listener.resume()
+RunLoop.main.run()
 

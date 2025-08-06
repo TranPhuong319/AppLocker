@@ -11,8 +11,10 @@
 import AppKit
 import Foundation
 
-class LockedAppsManager: ObservableObject {
-    @Published var lockedApps: [String] = []
+class LockManager: ObservableObject {
+    @Published var lockedApps: [String: LockedAppInfo] = [:]
+    @Published var allApps: [InstalledApp] = []
+    
 
     private var configFile: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -38,396 +40,230 @@ class LockedAppsManager: ObservableObject {
             alert.runModal()
         }
     }
+    
+    func getInstalledApps() -> [InstalledApp] {
+            let paths = ["/Applications"]
+            var apps: [InstalledApp] = []
+
+            for path in paths {
+                let url = URL(fileURLWithPath: path)
+                guard let contents = try? FileManager.default.contentsOfDirectory(
+                    at: url,
+                    includingPropertiesForKeys: nil
+                ) else { continue }
+
+                for appURL in contents where appURL.pathExtension == "app" {
+                    // Nếu đây là app Launcher ngụy trang thì phải tìm đúng app thực
+                    let resourceURL = appURL.appendingPathComponent("Contents/Resources")
+                    if let realApp = try? FileManager.default.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil).first(where: { $0.pathExtension == "app" }),
+                       let bundle = Bundle(url: realApp),
+                       let bundleID = bundle.bundleIdentifier {
+                        
+                        let name = lockedApps[bundleID]?.name ?? realApp.deletingPathExtension().lastPathComponent
+                        let icon = NSWorkspace.shared.icon(forFile: realApp.path)
+                        icon.size = NSSize(width: 32, height: 32)
+                        
+                        apps.append(InstalledApp(name: name, bundleID: bundleID, icon: icon, path: appURL.path))
+                    }
+                    // Nếu là app thường
+                    else if let bundle = Bundle(url: appURL), let bundleID = bundle.bundleIdentifier {
+                        let name = appURL.deletingPathExtension().lastPathComponent
+                        let icon = NSWorkspace.shared.icon(forFile: appURL.path)
+                        icon.size = NSSize(width: 32, height: 32)
+                        apps.append(InstalledApp(name: name, bundleID: bundleID, icon: icon, path: appURL.path))
+                    }
+                }
+            }
+
+            return apps
+        }
 
     init() {
-        load()
+        load() // Load lockedApps trước
+        self.allApps = getInstalledApps()
     }
 
     func load() {
         if !FileManager.default.fileExists(atPath: configFile.path) {
-            lockedApps = []
+            lockedApps = [:]
             save()
             return
         }
         do {
             let data = try Data(contentsOf: configFile)
-            lockedApps = try PropertyListDecoder().decode([String].self, from: data)
+            lockedApps = try PropertyListDecoder().decode([String: LockedAppInfo].self, from: data)
         } catch {
             showAlert(title: "Lỗi", message: "Không thể load file cấu hình")
-            lockedApps = []
+            lockedApps = [:]
         }
     }
-
+    
     func save() {
+        let uid = getuid()
+        let gid = getgid()
         DispatchQueue.global(qos: .utility).async { [self] in
             let dirURL = configFile.deletingLastPathComponent()
             do {
                 try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
+                
                 if FileManager.default.fileExists(atPath: configFile.path) {
-                    _ = shell("chflags nouchg '\(configFile.path)'")
+                    let readfile: [[String: Any]] = [
+                        ["command": "chflags", "args": ["nouchg", configFile.path]],
+                        ["command": "chown", "args": ["\(uid):\(gid)", configFile.path]],
+                    ]
+                    if sendToHelperBatch(readfile){
+                        print("Thành công mở khoá")
+                    } else {
+                        print("Mở khoá không thành công")
+                    }
                 }
+
                 let encoder = PropertyListEncoder()
-                encoder.outputFormat = .xml // dùng XML plist
+                encoder.outputFormat = .xml
                 let data = try encoder.encode(lockedApps)
                 try data.write(to: configFile)
                 
-                // Chuyển sở hữu về root:wheel (yêu cầu chạy dưới quyền root)
-                _ = shell("chown root:wheel '\(configFile.path)'")
-                _ = shell("chflags uchg '\(configFile.path)'")
+                let savefile: [[String: Any]] = [
+                    ["command": "chown", "args": ["root:wheel", configFile.path]],
+                    ["command": "chflags", "args": ["uchg", configFile.path]],
+                ]
+                if sendToHelperBatch(savefile){
+                    print("✅ Thành công khoá file")
+                } else {
+                    print("❌ Khoá file không thành công")
+                }
             } catch {
-                showAlert(title: "Lỗi", message: "Không thể luu được cấu hình")
+                showAlert(title: "Lỗi", message: "Không thể lưu được cấu hình")
             }
         }
     }
 
     func toggleLock(for bundleIDs: [String]) {
-        var allTasks: [String] = []
-        var updatedLockedApps = lockedApps
-
         for bundleID in bundleIDs {
-            guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
-                print("⚠️ Không tìm thấy app: \(bundleID)")
-                continue
+            let appURL: URL
+            if let info = lockedApps[bundleID] {
+                // App đã bị khoá → dựng lại đường dẫn theo Name đã lưu
+                let disguisedAppPath = "/Applications/\(info.name).app"
+                appURL = URL(fileURLWithPath: disguisedAppPath)
+            } else {
+                // App chưa bị khoá → lấy theo bundle ID
+                guard let foundURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
+                    print("⚠️ Không tìm thấy app: \(bundleID)")
+                    continue
+                }
+                appURL = foundURL
             }
 
-            let macOSDir = appURL.appendingPathComponent("Contents/MacOS")
-            let execName: String
+            let uid = getuid()
+            let gid = getgid()
 
-            do {
-                let contents = try FileManager.default.contentsOfDirectory(atPath: macOSDir.path)
-                if contents.count == 1 {
-                    execName = contents[0]
-                } else {
-                    let infoPlist = appURL.appendingPathComponent("Contents/Info.plist")
-                    let data = try Data(contentsOf: infoPlist)
-                    if let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
-                       let exec = plist["CFBundleExecutable"] as? String {
-                        execName = exec
-                    } else {
-                        print("⚠️ Không thể đọc CFBundleExecutable từ Info.plist cho \(bundleID)")
-                        continue
+            if let lockedInfo = lockedApps[bundleID] {
+                // 🔓 Unlock - đọc từ config
+                let disguisedAppName = lockedInfo.name
+                let execFile = lockedInfo.execFile
+
+                let disguisedAppPath = "/Applications/\(disguisedAppName).app"
+                let realAppPath = "\(disguisedAppPath)/Contents/Resources/\(disguisedAppName).app"
+                let execPath = "\(realAppPath)/Contents/MacOS/\(execFile)"
+
+                let cmds: [[String: Any]] = [
+                    ["command": "chflags", "args": ["nouchg", execPath]],
+                    ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
+                    ["command": "mv", "args": [disguisedAppPath, "/Applications/Launcher.app"]],
+                    ["command": "mv", "args": ["/Applications/Launcher.app/Contents/Resources/\(disguisedAppName).app", disguisedAppPath]],
+                    ["command": "rm", "args": ["-rf", "/Applications/Launcher.app"]],
+                    ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
+                    ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
+                ]
+
+                if sendToHelperBatch(cmds) {
+                    lockedApps.removeValue(forKey: bundleID)
+                    save()
+                }
+
+            } else {
+                // 🔒 Lock - đọc từ Info.plist gốc
+                guard let infoPlist = try? NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist"), error: ()) as? [String: Any],
+                      let execName = infoPlist["CFBundleExecutable"] as? String,
+                      let iconName = infoPlist["CFBundleIconFile"] as? String,
+                      let appName = infoPlist["CFBundleName"] as? String else {
+                    print("⚠️ Không thể đọc Info.plist cho \(bundleID)")
+                    continue
+                }
+                
+                let bundle = "com.TranPhuong319.Launcher - \(appName)"
+
+                let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
+                let disguisedAppPath = "/Applications/\(appName).app"
+                let launcherResources = "/Applications/Launcher.app/Contents/Resources"
+
+                let cmds: [[String: Any]] = [
+                    ["command": "cp", "args": ["-Rf", launcherURL.path, "/Applications/"]],
+                    ["command": "cp", "args": [appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "\(launcherResources)/AppIcon.icns"]],
+                    ["command": "mv", "args": [appURL.path, launcherResources]],
+                    ["command": "chmod", "args": ["000", "\(launcherResources)/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "chown", "args": ["\(uid):\(gid)", "\(launcherResources)/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "chflags", "args": ["hidden", "\(launcherResources)/\(appName).app"]],
+                    ["command": "mv", "args": ["/Applications/Launcher.app", disguisedAppPath]],
+                    ["command": "chflags", "args": ["uchg", "\(disguisedAppPath)/Contents/Resources/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier \(bundle)", "\(disguisedAppPath)/Contents/Info.plist"]],
+                    ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]],
+                ]
+
+                if sendToHelperBatch(cmds) {
+                    lockedApps[bundleID] = LockedAppInfo(name: appName, execFile: execName)
+                    save()
+                }
+            }
+        }
+    }
+    
+    func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
+        let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLockerHelper", options: .privileged)
+        conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
+        conn.resume()
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Bool = false
+        for cmd in commandList {
+            if let args = cmd["args"] as? [String] {
+                for path in args {
+                    if path.hasPrefix("/") && !FileManager.default.fileExists(atPath: path) {
+                        print("⚠️ File không tồn tại: \(path)")
                     }
                 }
-            } catch {
-                print("⚠️ Lỗi khi truy cập MacOS dir hoặc Info.plist: \(error)")
-                continue
-            }
-
-            let origExe = macOSDir.appendingPathComponent(execName)
-            let realExe = macOSDir.appendingPathComponent("\(execName).real")
-            let currentMarker = currentBundleFile.path
-
-            guard let stubURL = Bundle.main.url(forResource: "Launcher", withExtension: nil) else {
-                print("⚠️ Không tìm thấy Launcher trong bundle")
-                continue
-            }
-
-            let escapedBundleID = bundleID.replacingOccurrences(of: "'", with: "'\\''")
-
-            if lockedApps.contains(bundleID) {
-                // 🔓 Unlock
-                allTasks.append(contentsOf: [
-                    "[ -f '\(realExe.path)' ] || exit 1",
-                    "rm -f '\(origExe.path)'",
-                    "mv '\(realExe.path)' '\(origExe.path)'",
-                    "chmod +x '\(origExe.path)'",
-                    "rm -f '\(currentMarker)'",
-                ])
-                updatedLockedApps.removeAll { $0 == bundleID }
-                print("🔓 Sẽ mở khóa \(bundleID)")
-            } else {
-                // 🔒 Lock
-                allTasks.append(contentsOf: [
-                    "echo '\(escapedBundleID)' > '\(currentMarker)'",
-                    "mv '\(origExe.path)' '\(realExe.path)'",
-                    "cp '\(stubURL.path)' '\(origExe.path)'",
-                    "chmod +x '\(origExe.path)'",
-                ])
-                updatedLockedApps.append(bundleID)
-                print("🔒 Sẽ khóa \(bundleID)")
             }
         }
 
-        // ✅ Chạy toàn bộ task 1 lần duy nhất
-        if !allTasks.isEmpty {
-            if executeAdminTasks(allTasks) {
-                DispatchQueue.main.async {
-                    self.lockedApps = updatedLockedApps
-                    self.save()
-                    self.showAlert(title: "Thành công", message: "Đã xử lý \(bundleIDs.count) ứng dụng", style: .informational)
-                }
-            } else {
-                print("⚠️ Không có ứng dụng nào được xử lý hoặc có lỗi xảy ra.")
+        let proxy = conn.remoteObjectProxyWithErrorHandler { error in
+            print("❌ XPC error: \(error)")
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Lỗi"
+                alert.informativeText = "Lỗi đã xảy ra khi thực thi lệnh. Chi tiết: \(error)"
+                alert.alertStyle = .critical
+                alert.addButton(withTitle: "OK")
+                alert.runModal()
             }
+            result = false
+            semaphore.signal()
+        } as? AppLockerHelperProtocol
+
+        proxy?.sendBatch(commandList) { success, message in
+            print(success ? "✅ Thành công:" : "❌ Thất bại:", message)
+            result = success
+            semaphore.signal()
         }
+
+        // Đợi phản hồi từ helper
+        semaphore.wait()
+        conn.invalidate()
+        return result
     }
+
 
     func isLocked(_ bundleID: String) -> Bool {
-        lockedApps.contains(bundleID)
-    }
-
-    @discardableResult
-    private func executeAdminTasks(_ tasks: [String]) -> Bool {
-        let script = tasks.joined(separator: " && ")
-        let fullScript = "do shell script \"\(script)\" with administrator privileges"
-
-        // ✅ Bọc các lệnh UI trong main thread
-        DispatchQueue.main.async {
-            NSApp.activate(ignoringOtherApps: true)
-            SettingsWindowController.shared?.makeKeyAndOrderFront(nil)
-        }
-
-        var error: NSDictionary?
-        if let appleScript = NSAppleScript(source: fullScript) {
-            let result = appleScript.executeAndReturnError(&error)
-
-            if let error = error {
-                DispatchQueue.main.async {
-                    let alert = NSAlert()
-                    alert.messageText = "Lỗi yêu cầu quyền admin"
-                    alert.informativeText = "Mật khẩu admin không đúng hoặc đã bị hủy. Chi tiết: \(error)"
-                    alert.alertStyle = .critical
-                    alert.addButton(withTitle: "OK")
-                    alert.runModal()
-                }
-                print("❌ AppleScript error: \(error)")
-                return false
-            }
-
-            print("✅ AppleScript executed: \(result.stringValue ?? "(no output)")")
-            return true
-        }
-
-        DispatchQueue.main.async {
-            let alert = NSAlert()
-            alert.messageText = "Lỗi thực thi AppleScript"
-            alert.informativeText = "Không thể khởi tạo AppleScript."
-            alert.alertStyle = .critical
-            alert.addButton(withTitle: "OK")
-            alert.runModal()
-        }
-        return false
-    }
-
-    @discardableResult
-    func shell(_ command: String) -> String {
-        let task = Process()
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        task.standardError = pipe
-        task.arguments = ["-c", command]
-        task.launchPath = "/bin/zsh"
-        try? task.run()
-        task.waitUntilExit()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        return String(data: data, encoding: .utf8) ?? ""
+        lockedApps[bundleID] != nil
     }
 }
 
-// import Foundation
-// import AppKit
-// import QuartzCore
-// import LocalAuthentication
-// import SwiftUI
-//
-// class LockManager: ObservableObject {
-//    private var pendingTasks: [String] = []
-//    @Published var lockedApps: [String] = []
-//    private var currentlyAuthenticating: Set<String> = []
-//    private var timer: Timer?
-//
-//    private var configFile: URL {
-//        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-//        let appFolder = appSupport.appendingPathComponent("AppLocker", isDirectory: true)
-//        if !FileManager.default.fileExists(atPath: appFolder.path) {
-//            try? FileManager.default.createDirectory(at: appFolder, withIntermediateDirectories: true)
-//        }
-//        return appFolder.appendingPathComponent("config.plist")
-//    }
-//
-//    private var currentBundleFile: URL {
-//        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-//        return appSupport.appendingPathComponent("AppLocker/.current_bundle")
-//    }
-//
-//    init() {
-//        load()
-//    }
-//
-//    func loadConfig() {
-//        let path = configFile.path
-//        do {
-//            let data = try Data(contentsOf: URL(fileURLWithPath: path))
-//            let decoder = PropertyListDecoder()
-//            let apps = try decoder.decode([String].self, from: data)
-//            DispatchQueue.main.async {
-//                self.lockedApps = apps
-//            }
-//        } catch {
-//            print("❌ Không thể load cấu hình: \(error)")
-//        }
-//    }
-//
-//
-//    func load() {
-//        if let data = try? Data(contentsOf: configFile),
-//           let apps = try? PropertyListDecoder().decode([String].self, from: data) {
-//            lockedApps = apps
-//        }
-//    }
-//
-//    func toggleLock(for bundleID: String) {
-//        guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
-//            print("⚠️ Không tìm thấy app: \(bundleID)")
-//            return
-//        }
-//
-//        let macOSDir = appURL.appendingPathComponent("Contents/MacOS")
-//        let execName: String
-//
-//        do {
-//            let contents = try FileManager.default.contentsOfDirectory(atPath: macOSDir.path)
-//            if contents.count == 1 {
-//                execName = contents[0]
-//            } else {
-//                let infoPlist = appURL.appendingPathComponent("Contents/Info.plist")
-//                let data = try Data(contentsOf: infoPlist)
-//                if let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
-//                   let exec = plist["CFBundleExecutable"] as? String {
-//                    execName = exec
-//                } else {
-//                    print("⚠️ Không thể đọc CFBundleExecutable từ Info.plist")
-//                    return
-//                }
-//            }
-//        } catch {
-//            print("⚠️ Lỗi khi truy cập MacOS dir hoặc Info.plist: \(error)")
-//            return
-//        }
-//
-//        let origExe = macOSDir.appendingPathComponent(execName)
-//        let realExe = macOSDir.appendingPathComponent("\(execName).real")
-//
-//        guard let stubURL = Bundle.main.url(forResource: "Launcher", withExtension: nil) else {
-//            print("⚠️ Không tìm thấy Launcher trong bundle")
-//            return
-//        }
-//
-//        if lockedApps.contains(bundleID) {
-//            let tasks = [
-//                "[ -f '\(realExe.path)' ] || exit 1",
-//                "rm -f '\(origExe.path)'",
-//                "mv '\(realExe.path)' '\(origExe.path)'",
-//                "chmod +x '\(origExe.path)'",
-//                "rm -f '\(currentBundleFile.path)'"
-//            ]
-//            pendingTasks.append(contentsOf: tasks)
-//            lockedApps.removeAll { $0 == bundleID }
-//        } else {
-//            let escapedBundleID = bundleID.replacingOccurrences(of: "'", with: "'\\''")
-//            let _ = try? escapedBundleID.write(to: URL(fileURLWithPath: "/tmp/current_bundle"), atomically: true, encoding: .utf8)
-//
-//            let tasks = [
-//                "echo \(escapedBundleID) > '\(currentBundleFile.path)'",
-//                "mv '\(origExe.path)' '\(realExe.path)'",
-//                "cp '\(stubURL.path)' '\(origExe.path)'",
-//                "chmod +x '\(origExe.path)'"
-//            ]
-//            pendingTasks.append(contentsOf: tasks)
-//        }
-//    }
-//
-//    func applyPendingChanges(for bundleID: String) {
-//        do {
-//            let encoder = PropertyListEncoder()
-//            encoder.outputFormat = .xml
-//            let data = try encoder.encode(self.lockedApps)
-//
-//            let configPath = self.configFile.path
-//            let tempPath = NSTemporaryDirectory() + "applocker_config_temp.plist"
-//            try data.write(to: URL(fileURLWithPath: tempPath))
-//
-//            let configTasks = [
-//                "chflags nouchg '\(configPath)'",
-//                "/bin/cp '\(tempPath)' '\(configPath)'",
-//                "chflags uchg '\(configPath)'"
-//            ]
-//            pendingTasks.append(contentsOf: configTasks)
-//
-//            let success = executeAdminTasks(pendingTasks)
-//            DispatchQueue.main.async {
-//                let alert = NSAlert()
-//                alert.alertStyle = .informational
-//                alert.messageText = success ? "Thành công" : "Thất bại"
-//                alert.informativeText = success
-//                    ? "Thành công thực hiện tác vụ."
-//                    : "Không thể áp dụng thay đổi. Vui lòng thử lại."
-//
-//                alert.runModal()
-//            }
-//
-//            if success {
-//                print("✅ Đã áp dụng thay đổi và lưu cấu hình")
-//                self.load()
-//                loadConfig()
-//                lockedApps.append(bundleID)
-//            } else {
-//                print("❌ Không thể áp dụng thay đổi")
-//            }
-//
-//        } catch {
-//            DispatchQueue.main.async {
-//                let alert = NSAlert()
-//                alert.alertStyle = .critical
-//                alert.messageText = "Lỗi"
-//                alert.informativeText = "Lỗi khi luu cấu hình: \(error.localizedDescription)"
-//                alert.runModal()
-//            }
-//            print("❌ Lỗi khi chuẩn bị lưu cấu hình: \(error)")
-//        }
-//
-//        pendingTasks.removeAll()
-//    }
-//
-//
-//    func isLocked(_ bundleID: String) -> Bool {
-//        lockedApps.contains(bundleID)
-//    }
-//
-//    @discardableResult
-//    private func executeAdminTasks(_ tasks: [String]) -> Bool {
-//        let script = tasks.joined(separator: " && ")
-//        let fullScript = "do shell script \"\(script)\" with administrator privileges"
-//
-//        var error: NSDictionary?
-//        if let appleScript = NSAppleScript(source: fullScript) {
-//            let result = appleScript.executeAndReturnError(&error)
-//            if let error = error {
-//                DispatchQueue.main.async {
-//                    let alert = NSAlert()
-//                    alert.messageText = "Lỗi yêu cầu quyền admin"
-//                    alert.informativeText = "Mật khẩu admin không đúng hoặc đã bị hủy. Chi tiết: \(error)"
-//                    alert.alertStyle = .critical
-//                    alert.addButton(withTitle: "OK")
-//                    alert.runModal()
-//                }
-//                print("❌ AppleScript error: \(error)")
-//                return false
-//            }
-//
-//            print("✅ AppleScript executed: \(result.stringValue ?? "(no output)")")
-//            return true
-//        }
-//
-//        DispatchQueue.main.async {
-//            let alert = NSAlert()
-//            alert.messageText = "Lỗi thực thi AppleScript"
-//            alert.informativeText = "Không thể khởi tạo AppleScript."
-//            alert.alertStyle = .critical
-//            alert.addButton(withTitle: "OK")
-//            alert.runModal()
-//        }
-//        return false
-//    }
-// }
-//

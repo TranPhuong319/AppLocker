@@ -29,9 +29,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E0C65AB62E3207E400C5B005"
-               BuildableName = "Launcher"
+               BlueprintIdentifier = "E07075952E38BA97001C7950"
+               BuildableName = "Launcher.app"
                BlueprintName = "Launcher"
+               ReferencedContainer = "container:AppLocker.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E0D4C0642E419DAD003C40E3"
+               BuildableName = "AppLockerHelper"
+               BlueprintName = "AppLockerHelper"
                ReferencedContainer = "container:AppLocker.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

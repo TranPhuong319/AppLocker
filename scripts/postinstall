@@ -1,7 +1,17 @@
-//
-//  Untitled.swift
-//  AppLocker
-//
-//  Created by Doe Phương on 05/08/2025.
-//
+#!/bin/bash
 
+echo "🔧 Chạy postinstall script..."
+
+# Đảm bảo helper có quyền thực thi và chủ sở hữu là root:wheel
+chmod 755 /Library/PrivilegedHelperTools/AppLockerHelper
+chown root:wheel /Library/PrivilegedHelperTools/AppLockerHelper
+
+chown root:wheel /Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist
+chmod 644 /Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist
+
+
+# Load LaunchDaemon nếu có plist
+launchctl bootstrap system /Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist
+
+echo "✅ Cài đặt thành công AppLockerHelper"
+exit 0

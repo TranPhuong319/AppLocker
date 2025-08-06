@@ -9,12 +9,13 @@
 import AppKit
 import LocalAuthentication
 import Security
+import ServiceManagement
+import Foundation
 
-
-class AppDelegate: NSObject, NSApplicationDelegate {
-    
+class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
     var statusItem: NSStatusItem?
     var xpcListener: NSXPCListener?
+    var connection: NSXPCConnection?
     
     func isRunningAsAdmin() -> Bool {
         return getuid() == 0
@@ -25,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         UserDefaults.standard.synchronize()
 
         // Ẩn khỏi Dock và Force Quit
-        NSApp.setActivationPolicy(.accessory)
+//        NSApp.setActivationPolicy(.accessory)
         if let mainMenu = NSApp.mainMenu,
            let appMenu = mainMenu.items.first?.submenu {
 
@@ -53,36 +54,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openSettings() {
-        let context = LAContext()
-        var error: NSError?
-
-        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "xác thực để mở Cài đặt") { success, error in
-                DispatchQueue.main.async {
-                    if success {
-                        SettingsWindowController.show()
-                    } else {
-                        NSSound.beep()
-                        print("Xác thực thất bại: \(error?.localizedDescription ?? "Unknown error")")
-                    }
-                }
-            }
-        } else {
-            AuthenticationManager.authenticate(reason: "xác thực để mở Cài đặt") { success, errorMessage in
+        AuthenticationManager.authenticate(reason: "xác thực để mở Cài đặt") { success, errorMessage in
+            DispatchQueue.main.async {
                 if success {
                     SettingsWindowController.show()
-                } else {
-                    NSSound.beep()
-                    let alert = NSAlert()
-                    alert.messageText = "Xác thực thất bại"
-                    alert.informativeText = errorMessage ?? "Lỗi không xác định"
-                    alert.alertStyle = .warning
-                    alert.runModal()
                 }
+//                } else {
+//                    NSSound.beep()
+//                    let alert = NSAlert()
+//                    alert.messageText = "Xác thực thất bại"
+//                    alert.informativeText = errorMessage ?? "Lỗi không xác định"
+//                    alert.alertStyle = .warning
+//                    alert.runModal()
+//                }
             }
         }
     }
-
 
     @objc func quitApp() {
         AuthenticationManager.authenticate(reason: "thoát ứng dụng") { success, errorMessage in
