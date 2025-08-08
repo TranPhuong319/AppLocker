@@ -9,53 +9,52 @@
 import AppKit
 import SwiftUI
 
-class SettingsWindowController: NSObject, NSWindowDelegate {
-    static var shared: NSPanel?
+class SettingsWindowController: NSWindowController, NSWindowDelegate {
+    static var shared: SettingsWindowController?
 
     static func show() {
-        if let panel = shared {
-            panel.makeKeyAndOrderFront(nil)
+        if let controller = shared {
+            controller.showWindow(nil)
+            controller.window?.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
 
         let contentView = ContentView()
-        let hosting = NSHostingView(rootView: contentView)
+        let hostingView = NSHostingView(rootView: contentView)
 
-        let panel = NSPanel(
+        let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 420, height: 460),
-            styleMask: [.titled, .closable, .nonactivatingPanel],
+            styleMask: [.titled, .closable],
             backing: .buffered, defer: false
         )
 
-        panel.title = "AppLocker Settings"
-        panel.isFloatingPanel = true
-        panel.hidesOnDeactivate = true
-        panel.level = .floating
-        panel.isReleasedWhenClosed = false
-        panel.becomesKeyOnlyIfNeeded = true
-        panel.contentView = hosting
-        panel.center()
+        window.title = "AppLocker Settings"
+        window.contentView = hostingView
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.level = .floating
+        window.delegate = nil // tạm thời nil
 
-        // Set delegate to detect losing focus
-        let controller = SettingsWindowController()
-        panel.delegate = controller
+        let controller = SettingsWindowController(window: window)
+        window.delegate = controller
+        shared = controller
 
-        shared = panel
-        panel.makeKeyAndOrderFront(nil)
+        controller.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    func windowDidResignKey(_ notification: Notification) {
-        // Kiểm tra nếu còn bất kỳ cửa sổ nào thuộc app đang là keyWindow thì không đóng
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            let hasKeyWindowInApp = NSApp.windows.contains(where: { $0.isKeyWindow })
+    func windowWillClose(_ notification: Notification) {
+        // Xoá tham chiếu khi đóng
+        SettingsWindowController.shared = nil
+    }
 
-            if !hasKeyWindowInApp {
-                if let panel = SettingsWindowController.shared {
-                    panel.close()
-                    SettingsWindowController.shared = nil
-                }
+    func windowDidResignKey(_ notification: Notification) {
+        // Tự đóng nếu mất focus hoàn toàn
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            let stillHasKeyWindow = NSApp.windows.contains(where: { $0.isKeyWindow })
+            if !stillHasKeyWindow {
+                self.close()
             }
         }
     }

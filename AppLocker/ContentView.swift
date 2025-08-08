@@ -32,6 +32,7 @@ struct ContentView: View {
     @State private var pendingLocks: Set<String> = []
     @State private var deleteQueue: Set<String> = []
     @State private var isLocking = false
+    @State private var lastUnlockableApps: [InstalledApp] = []
     let launcherIcon = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
     
 //
@@ -60,7 +61,10 @@ struct ContentView: View {
     private var unlockableApps: [InstalledApp] {
         manager.allApps
             .filter { app in
+                // Lọc: Không bị khoá & nằm trong đúng /Applications
                 !manager.lockedApps.keys.contains(app.bundleID)
+                && app.path.hasPrefix("/Applications/")
+                && !app.path.contains("/Contents/")
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
@@ -71,7 +75,13 @@ struct ContentView: View {
                 Text("Ứng dụng đã khoá")
                     .font(.headline)
                 Spacer()
-                Button { showingAddApp = true } label: {
+                Button {
+                    let currentApps = unlockableApps
+                    if currentApps != lastUnlockableApps {
+                        lastUnlockableApps = currentApps
+                    }
+                    showingAddApp = true
+                } label: {
                     Image(systemName: "plus")
                 }
                 .help("Thêm ứng dụng để khoá")
@@ -110,7 +120,8 @@ struct ContentView: View {
                             // ✅ Dấu tick nếu đã chọn
                             if selectedToLock.contains(app.bundleID) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(Color(NSColor.controlAccentColor)) // lấy màu accent theo hệ thống chính xác hơn
+
                             }
                             Button(action: {
                                 deleteQueue.insert(app.bundleID)
@@ -270,6 +281,7 @@ struct ContentView: View {
                             showingDeleteQueue = false
                         }
                     }
+                    .tint(.accentColor)
                     .accentColor(.accentColor)
                     .keyboardShortcut(.defaultAction)
                 }
@@ -316,42 +328,6 @@ struct ContentView: View {
 
         return false
     }
-
-//    func getInstalledApps() -> [InstalledApp] {
-//        var apps: [InstalledApp] = []
-//
-//        for (bundleID, lockedInfo) in manager.lockedApps {
-//            let disguisedAppPath = "/Applications/\(lockedInfo.name).app"
-//            let resourcesPath = "\(disguisedAppPath)/Contents/Resources"
-//
-//            // Tìm app trong Resources (app bị khoá thật được move vào đây)
-//            guard
-//                let contents = try? FileManager.default.contentsOfDirectory(atPath: resourcesPath),
-//                let realAppName = contents.first(where: { $0.hasSuffix(".app") })
-//            else {
-//                print("⚠️ Không tìm thấy app thật trong Resources của \(lockedInfo.name).app")
-//                continue
-//            }
-//
-//            let realAppPath = "\(resourcesPath)/\(realAppName)"
-//            let realAppURL = URL(fileURLWithPath: realAppPath)
-//
-//            // Lấy icon từ app thật
-//            let icon = NSWorkspace.shared.icon(forFile: disguisedAppPath)
-//            icon.size = NSSize(width: 32, height: 32)
-//
-//            let app = InstalledApp(
-//                name: lockedInfo.name,
-//                bundleID: bundleID,
-//                icon: icon,
-//                path: disguisedAppPath
-//            )
-//
-//            apps.append(app)
-//        }
-//
-//        return apps
-//    }
 }
 
 #Preview {

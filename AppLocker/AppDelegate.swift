@@ -12,6 +12,7 @@ import Security
 import ServiceManagement
 import Foundation
 
+
 class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
     var statusItem: NSStatusItem?
     var xpcListener: NSXPCListener?
@@ -59,14 +60,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
                 if success {
                     SettingsWindowController.show()
                 }
-//                } else {
-//                    NSSound.beep()
-//                    let alert = NSAlert()
-//                    alert.messageText = "Xác thực thất bại"
-//                    alert.informativeText = errorMessage ?? "Lỗi không xác định"
-//                    alert.alertStyle = .warning
-//                    alert.runModal()
-//                }
             }
         }
     }
@@ -75,12 +68,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
         AuthenticationManager.authenticate(reason: "thoát ứng dụng") { success, errorMessage in
             if success {
                 NSApp.terminate(nil)
-//            } else {
-//                let alert = NSAlert()
-//                alert.messageText = "Xác thực thất bại"
-//                alert.informativeText = errorMessage ?? "Lỗi không xác định"
-//                alert.alertStyle = .warning
-//                alert.runModal()
             }
         }
     }

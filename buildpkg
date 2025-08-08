@@ -1,0 +1,21 @@
+#!/bin/bash
+
+cd /Volumes/Xcode\ Project/AppLocker/Launcher
+
+echo Starting Packaging...
+echo 
+pkgbuild \
+  --root AppLocker_Pkg/root \
+  --identifier com.TranPhuong319.AppLocker \
+  --version 1.0.1 \
+  --scripts AppLocker_Pkg/scripts \
+  --install-location / \
+  Product/AppLocker.pkg
+
+echo Signing Pkg...
+productsign \
+  --sign "TranPhuong319" \
+  AppLocker.pkg \
+  AppLocker_signed.pkg
+
+

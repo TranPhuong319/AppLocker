@@ -12,9 +12,6 @@ struct AppLockerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        Settings {
-            ContentView()
-            .accentColor(.accentColor)
-        }
+        Settings {}
     }
 }

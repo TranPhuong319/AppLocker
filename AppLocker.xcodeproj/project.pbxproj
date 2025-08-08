@@ -53,20 +53,6 @@
 			);
 			target = E07075952E38BA97001C7950 /* Launcher */;
 		};
-		E0D4C0522E4190EB003C40E3 /* Exceptions for "LaunchDaemonPlist" folder in "AppLocker" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				com.TranPhuong319.AppLockerHelper.plist,
-			);
-			target = E0EF51A92E31558900161CAB /* AppLocker */;
-		};
-		E0D4C05B2E41994A003C40E3 /* Exceptions for "scripts" folder in "AppLocker" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				postinstall,
-			);
-			target = E0EF51A92E31558900161CAB /* AppLocker */;
-		};
 		E0D4C0702E419DF7003C40E3 /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -93,28 +79,12 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		E021AF512E4115EB003D2400 /* LaunchDaemonPlist */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0D4C0522E4190EB003C40E3 /* Exceptions for "LaunchDaemonPlist" folder in "AppLocker" target */,
-			);
-			path = LaunchDaemonPlist;
-			sourceTree = "<group>";
-		};
 		E07075972E38BA97001C7950 /* Launcher */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				E07075A42E38BC59001C7950 /* Exceptions for "Launcher" folder in "Launcher" target */,
 			);
 			path = Launcher;
-			sourceTree = "<group>";
-		};
-		E0D4C0572E41991B003C40E3 /* scripts */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0D4C05B2E41994A003C40E3 /* Exceptions for "scripts" folder in "AppLocker" target */,
-			);
-			path = scripts;
 			sourceTree = "<group>";
 		};
 		E0D4C0662E419DAD003C40E3 /* AppLockerHelper */ = {
@@ -156,8 +126,6 @@
 				E0EF51AC2E31558900161CAB /* AppLocker */,
 				E07075972E38BA97001C7950 /* Launcher */,
 				E021AF4E2E41159E003D2400 /* Shared */,
-				E021AF512E4115EB003D2400 /* LaunchDaemonPlist */,
-				E0D4C0572E41991B003C40E3 /* scripts */,
 				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
 				E0EF51AB2E31558900161CAB /* Products */,
 			);
@@ -228,7 +196,6 @@
 				E0EF51A62E31558900161CAB /* Sources */,
 				E0EF51A82E31558900161CAB /* Resources */,
 				E021AF4C2E4110AA003D2400 /* CopyFiles */,
-				E0D4C0562E41953C003C40E3 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -236,8 +203,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E021AF4E2E41159E003D2400 /* Shared */,
-				E021AF512E4115EB003D2400 /* LaunchDaemonPlist */,
-				E0D4C0572E41991B003C40E3 /* scripts */,
 				E0EF51AC2E31558900161CAB /* AppLocker */,
 			);
 			name = AppLocker;
@@ -305,30 +270,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		E0D4C0562E41953C003C40E3 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"",
-			);
-			inputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/AppLocker.app",
-				"$(BUILT_PRODUCTS_DIR)/AppLockerHelper",
-				"$(PROJECT_DIR)/LaunchDaemonPlist/com.TranPhuong319.AppLockerHelper.plist",
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "PKGROOT=\"$CONFIGURATION_BUILD_DIR/pkgroot\"\nSCRIPTDIR=\"$CONFIGURATION_BUILD_DIR/scripts\"\nOUT_PKG=\"$HOME/Desktop/AppLockerInstaller.pkg\"  \n\necho \"🏗️ Đóng gói AppLockerInstaller.pkg...\"\n\n# Tạo thư mục staging\nmkdir \"$PKGROOT\"\nmkdir -p \"$PKGROOT/Applications\"\nmkdir -p \"$PKGROOT/Library/PrivilegedHelperTools\"\nmkdir -p \"$PKGROOT/Library/LaunchDaemons\"\n\n# Copy app và helper\ncp -R \"$CONFIGURATION_BUILD_DIR/AppLocker.app\" \"$PKGROOT/Applications/\"\ncp \"$CONFIGURATION_BUILD_DIR/AppLockerHelper\" \"$PKGROOT/Library/PrivilegedHelperTools/\"\ncp \"$PROJECT_DIR/com.TranPhuong319.AppLockerHelper.plist\" \"$PKGROOT/Library/LaunchDaemons/\"\n\n# Copy postinstall script\nmkdir -p \"$SCRIPTDIR\"\ncp \"$PROJECT_DIR/scripts/postinstall\" \"$SCRIPTDIR/\"\nchmod +x \"$SCRIPTDIR/postinstall\"\n\n# Đóng gói\npkgbuild \\\n  --root \"$PKGROOT\" \\\n  --identifier \"com.TranPhuong319.AppLockerInstaller\" \\\n  --version \"1.0\" \\\n  --scripts \"$SCRIPTDIR\" \\\n  --install-location \"/\" \\\n  \"$CONFIGURATION_BUILD_DIR/AppLockerInstaller.pkg\"\n\necho \"✅ Đã tạo file: $CONFIGURATION_BUILD_DIR/AppLockerInstaller.pkg\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		E07075922E38BA97001C7950 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -373,13 +314,12 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -408,13 +348,12 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -595,8 +534,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_CFBundleDisplayName = AppLocker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSBackgroundOnly = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -604,7 +545,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -631,8 +572,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_CFBundleDisplayName = AppLocker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSBackgroundOnly = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -640,7 +583,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

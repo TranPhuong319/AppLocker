@@ -50,6 +50,9 @@ class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol
         case "PlistBuddy":
             process.executableURL = URL(fileURLWithPath: "/usr/libexec/PlistBuddy")
             process.arguments = args
+        case "touch":
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/touch")
+            process.arguments = args
 
         default:
             reply(false, "❌ Command không được hỗ trợ: \(command)")

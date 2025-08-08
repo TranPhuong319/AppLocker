@@ -57,7 +57,7 @@ class Launcher {
                 }
 
                 // 2. Xác thực
-                AuthenticationManager.authenticate(reason: "Xác thực để mở ứng dụng đã bị khoá") { success, errorMessage in
+                AuthenticationManager.authenticate(reason: "xác thực để mở ứng dụng đã bị khoá") { success, errorMessage in
                     DispatchQueue.main.async {
                         if success {
                             print("✅ Xác thực thành công, đang mở ứng dụng...")
