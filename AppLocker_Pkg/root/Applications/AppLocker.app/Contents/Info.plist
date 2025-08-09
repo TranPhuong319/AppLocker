@@ -48,6 +48,8 @@
 	<string>16F6</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
+	<key>LSBackgroundOnly</key>
+	<true/>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.5</string>
 	<key>LSUIElement</key>

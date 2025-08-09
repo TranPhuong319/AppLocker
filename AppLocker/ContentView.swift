@@ -9,20 +9,21 @@ import AppKit
 import SwiftUI
 
 struct InstalledApp: Identifiable, Hashable {
-    let id: String
+    let id: String         // <-- path, không còn là bundleID
     let name: String
     let bundleID: String
     let icon: NSImage?
     let path: String
 
     init(name: String, bundleID: String, icon: NSImage?, path: String) {
-        id = bundleID
+        self.id = path     // ✅ dùng path tuyệt đối
         self.name = name
         self.bundleID = bundleID
         self.icon = icon
         self.path = path
     }
 }
+
 
 struct ContentView: View {
     @StateObject private var manager = LockManager()
@@ -40,9 +41,9 @@ struct ContentView: View {
 
     private var lockedAppObjects: [InstalledApp] {
         manager.allApps
-            .filter { manager.lockedApps.keys.contains($0.bundleID) }
+            .filter { manager.lockedApps.keys.contains($0.path) }
             .map { app in
-                if let info = manager.lockedApps[app.bundleID] {
+                if let info = manager.lockedApps[app.path] {
                     let iconPath = "/Applications/\(info.name).app/Contents/Resources/AppIcon.icns"
                     let icon = NSImage(contentsOfFile: iconPath)
                     return InstalledApp(
@@ -62,7 +63,7 @@ struct ContentView: View {
         manager.allApps
             .filter { app in
                 // Lọc: Không bị khoá & nằm trong đúng /Applications
-                !manager.lockedApps.keys.contains(app.bundleID)
+                !manager.lockedApps.keys.contains(app.path)
                 && app.path.hasPrefix("/Applications/")
                 && !app.path.contains("/Contents/")
             }
@@ -118,25 +119,23 @@ struct ContentView: View {
                             Spacer()
 
                             // ✅ Dấu tick nếu đã chọn
-                            if selectedToLock.contains(app.bundleID) {
+                            if selectedToLock.contains(app.path) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(Color(NSColor.controlAccentColor)) // lấy màu accent theo hệ thống chính xác hơn
-
                             }
                             Button(action: {
-                                deleteQueue.insert(app.bundleID)
+                                deleteQueue.insert(app.path)
                             }) {
                                 Image(systemName: "minus.circle")
                                     .foregroundColor(.red)
                             }
                             .buttonStyle(BorderlessButtonStyle())
-                            .disabled(deleteQueue.contains(app.bundleID)) // không thêm lại nếu đã có
+                            .disabled(deleteQueue.contains(app.path)) // không thêm lại nếu đã có
                         }
-                        .opacity(deleteQueue.contains(app.bundleID) ? 0.5 : 1.0)
+                        .opacity(deleteQueue.contains(app.path) ? 0.5 : 1.0)
                         .contentShape(Rectangle())
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
-                                deleteQueue.insert(app.bundleID)
+                                deleteQueue.insert(app.path)
                             } label: {
                                 Label("Xoá", systemImage: "trash")
                             }
@@ -183,26 +182,25 @@ struct ContentView: View {
                             }
                             Text(app.name)
                             Spacer()
-                            if pendingLocks.contains(app.bundleID) {
+                            if pendingLocks.contains(app.path) {
                                 Text("Đang khoá...")
                                     .italic()
                                     .foregroundColor(.gray)
-                            } else if selectedToLock.contains(app.bundleID) {
+                            } else if selectedToLock.contains(app.path) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.accentColor)
                             }
                         }
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            guard !pendingLocks.contains(app.bundleID) else { return }
-                            if selectedToLock.contains(app.bundleID) {
-                                selectedToLock.remove(app.bundleID)
+                            guard !pendingLocks.contains(app.path) else { return }
+                            if selectedToLock.contains(app.path) {
+                                selectedToLock.remove(app.path)
                             } else {
-                                selectedToLock.insert(app.bundleID)
+                                selectedToLock.insert(app.path)
                             }
                         }
-                        .opacity(selectedToLock.contains(app.bundleID) ? 0.5 : 1.0)
-//                        .animation(.easeInOut(duration: 0.2), value: selectedToLock)
+                        .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                     }
                 }
                 .navigationTitle("Chọn ứng dụng để khoá")
@@ -238,7 +236,7 @@ struct ContentView: View {
                     .padding()
 
                 List {
-                    ForEach(lockedAppObjects.filter { deleteQueue.contains($0.bundleID) }, id: \.id) { app in
+                    ForEach(lockedAppObjects.filter { deleteQueue.contains($0.path) }, id: \.id) { app in
                         HStack(spacing: 12) {
                             if let icon = app.icon {
                                 Image(nsImage: icon)
@@ -249,7 +247,7 @@ struct ContentView: View {
                             Text(app.name)
                             Spacer()
                             Button {
-                                deleteQueue.remove(app.bundleID)
+                                deleteQueue.remove(app.path)
                                 // Đóng sheet nếu hàng chờ rỗng
                                 if deleteQueue.isEmpty {
                                     showingDeleteQueue = false
@@ -281,7 +279,6 @@ struct ContentView: View {
                             showingDeleteQueue = false
                         }
                     }
-                    .tint(.accentColor)
                     .accentColor(.accentColor)
                     .keyboardShortcut(.defaultAction)
                 }
@@ -321,7 +318,7 @@ struct ContentView: View {
                 continue
             }
 
-            if manager.lockedApps.keys.contains(bundleID) {
+            if manager.lockedApps.keys.contains(subApp.path) {
                 return true
             }
         }

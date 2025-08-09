@@ -108,6 +108,15 @@ class LockManager: ObservableObject {
             showAlert(title: "Lỗi", message: "Không thể load file cấu hình")
             lockedApps = [:]
         }
+        for (key, value) in lockedApps {
+            if !key.hasPrefix("/") {
+                // Nếu là bundleID → tìm app theo bundleID để lấy path
+                if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: key) {
+                    lockedApps[appURL.path] = value
+                    lockedApps.removeValue(forKey: key)
+                }
+            }
+        }
     }
     
     func save() {
@@ -150,27 +159,16 @@ class LockManager: ObservableObject {
         }
     }
 
-    func toggleLock(for bundleIDs: [String]) {
-        for bundleID in bundleIDs {
-            let appURL: URL
-            if let info = lockedApps[bundleID] {
-                // App đã bị khoá → dựng lại đường dẫn theo Name đã lưu
-                let disguisedAppPath = "/Applications/\(info.name).app"
-                appURL = URL(fileURLWithPath: disguisedAppPath)
-            } else {
-                // App chưa bị khoá → lấy theo bundle ID
-                guard let foundURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
-                    print("⚠️ Không tìm thấy app: \(bundleID)")
-                    continue
-                }
-                appURL = foundURL
-            }
+    func toggleLock(for paths: [String]) {
+        for path in paths {
+            let appURL = URL(fileURLWithPath: path)
+            let appName = appURL.deletingPathExtension().lastPathComponent
 
             let uid = getuid()
             let gid = getgid()
 
-            if let lockedInfo = lockedApps[bundleID] {
-                // 🔓 Unlock - đọc từ config
+            if let lockedInfo = lockedApps[path] {
+                // 🔓 Unlock
                 let disguisedAppName = lockedInfo.name
                 let execFile = lockedInfo.execFile
 
@@ -184,40 +182,35 @@ class LockManager: ObservableObject {
                     ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
                     ["command": "mv", "args": [disguisedAppPath, "/Applications/Launcher.app"]],
                     ["command": "mv", "args": ["/Applications/Launcher.app/Contents/Resources/\(disguisedAppName).app", disguisedAppPath]],
-                    
                     ["command": "rm", "args": ["-rf", "/Applications/Launcher.app"]],
                     ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
                     ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
-                    ["command": "touch", "args": ["/Applications/\(disguisedAppName).app"]],
-//                    ["command": "chflags", "args": ["nouchg", markerPathunlock]],
-//                    ["command": "chown", "args": ["\(uid);\(gid)", markerPathunlock]],                ]
+                    ["command": "touch", "args": [disguisedAppPath]],
                 ]
+
                 if sendToHelperBatch(cmds) {
-                    lockedApps.removeValue(forKey: bundleID)
+                    lockedApps.removeValue(forKey: path)
                     save()
                 }
 
             } else {
-                // 🔒 Lock - đọc từ Info.plist gốc
+                // 🔒 Lock
                 guard let infoPlist = try? NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist"), error: ()) as? [String: Any],
                       let execName = infoPlist["CFBundleExecutable"] as? String,
                       var iconName = infoPlist["CFBundleIconFile"] as? String,
-                      let appName = infoPlist["CFBundleName"] as? String else {
-                    print("⚠️ Không thể đọc Info.plist cho \(bundleID)")
+                      let bundleID = infoPlist["CFBundleIdentifier"] as? String else {
+                    print("⚠️ Không thể đọc Info.plist cho \(path)")
                     continue
                 }
-                
-                // Xoá phần đuôi .icns nếu có
+
                 if iconName.hasSuffix(".icns") {
                     iconName = String(iconName.dropLast(5))
                 }
-                
-                let bundle = "com.TranPhuong319.Launcher - \(appName)"
 
                 let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
                 let disguisedAppPath = "/Applications/\(appName).app"
                 let launcherResources = "/Applications/Launcher.app/Contents/Resources"
-                let markerPath = "/Applications/\(appName).app/Contents/Resources/.locked_\(appName).app"
+                let markerPath = "\(disguisedAppPath)/Contents/Resources/.locked_\(appName).app"
 
                 let cmds: [[String: Any]] = [
                     ["command": "cp", "args": ["-Rf", launcherURL.path, "/Applications/"]],
@@ -228,16 +221,20 @@ class LockManager: ObservableObject {
                     ["command": "chflags", "args": ["hidden", "\(launcherResources)/\(appName).app"]],
                     ["command": "mv", "args": ["/Applications/Launcher.app", disguisedAppPath]],
                     ["command": "chflags", "args": ["uchg", "\(disguisedAppPath)/Contents/Resources/\(appName).app/Contents/MacOS/\(execName)"]],
-                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier \(bundle)", "\(disguisedAppPath)/Contents/Info.plist"]],
+                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.Launcher - \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]],
-                    ["command": "touch", "args": ["/Applications/\(appName).app"]],
+                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
+                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
+                    ["command": "mv", "args": ["\(disguisedAppPath)/Contents/MacOS/Launcher", "\(disguisedAppPath)/Contents/MacOS/\(appName)"]],
+                    ["command": "touch", "args": [disguisedAppPath]],
                     ["command": "touch", "args": [markerPath]],
                     ["command": "chown", "args": ["root:wheel", markerPath]],
                     ["command": "chflags", "args": ["uchg", markerPath]],
+                    
                 ]
 
                 if sendToHelperBatch(cmds) {
-                    lockedApps[bundleID] = LockedAppInfo(name: appName, execFile: execName)
+                    lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
                     save()
                 }
             }
@@ -288,8 +285,8 @@ class LockManager: ObservableObject {
     }
 
 
-    func isLocked(_ bundleID: String) -> Bool {
-        lockedApps[bundleID] != nil
+    func isLocked(path: String) -> Bool {
+        return lockedApps[path] != nil
     }
 }
 

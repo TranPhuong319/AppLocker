@@ -12,11 +12,16 @@ import AppKit
 struct LockedAppInfo: Codable {
     let name: String
     let execFile: String
+
+    enum CodingKeys: String, CodingKey {
+        case name = "Name"
+        case execFile = "ExecFile"
+    }
 }
 
 class Launcher {
     static let shared = Launcher()
-
+    
     func run() {
         guard let resourcesURL = Bundle.main.resourceURL else {
             print("❌ Không thể truy cập resourceURL")
@@ -30,13 +35,21 @@ class Launcher {
                 .filter { $0.pathExtension == "app" }
 
             for appURL in appURLs {
-                guard let bundle = Bundle(url: appURL),
-                      let bundleID = bundle.bundleIdentifier,
-                      let lockedInfo = lockedApps[bundleID] else {
+                let appName = appURL.deletingPathExtension().lastPathComponent
+
+                // 🔍 Nếu app tên ".locked_TenApp", ta lấy "TenApp"
+                guard appName.hasPrefix(".locked_") else { continue }
+                let realAppName = appName.replacingOccurrences(of: ".locked_", with: "")
+                let disguisedAppPath = "/Applications/\(realAppName).app"
+
+                guard let lockedInfo = lockedApps[disguisedAppPath] else {
+                    print("⚠️ Không tìm thấy info cho: \(disguisedAppPath)")
                     continue
                 }
 
-                let execPath = appURL
+
+                let realAppURL = appURL.deletingLastPathComponent().appendingPathComponent("\(lockedInfo.name).app")
+                let execPath = realAppURL
                     .appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)")
                     .path
 
@@ -49,6 +62,11 @@ class Launcher {
                     ["command": "chflags", "args": ["nouchg", execPath]],
                     ["command": "chmod", "args": ["a=rx", execPath]],
                     ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
+                ]
+                let lockCmds: [[String: Any]] = [
+                    ["command": "chmod", "args": ["000", execPath]],
+                    ["command": "chown", "args": ["root:wheel", execPath]],
+                    ["command": "chflags", "args": ["uchg", execPath]],
                 ]
 
                 guard sendToHelperBatch(unlockCmds) else {
@@ -63,7 +81,7 @@ class Launcher {
                             print("✅ Xác thực thành công, đang mở ứng dụng...")
 
                             let config = NSWorkspace.OpenConfiguration()
-                            NSWorkspace.shared.openApplication(at: appURL, configuration: config) { runningApp, err in
+                            NSWorkspace.shared.openApplication(at: realAppURL, configuration: config) { runningApp, err in
                                 if let err = err {
                                     print("❌ Không thể mở app: \(err)")
                                     exit(1)
@@ -81,12 +99,6 @@ class Launcher {
 
                                     print("📦 App đã thoát. Đang khoá lại file...")
 
-                                    let lockCmds: [[String: Any]] = [
-                                        ["command": "chmod", "args": ["000", execPath]],
-                                        ["command": "chown", "args": ["root:wheel", execPath]],
-                                        ["command": "chflags", "args": ["uchg", execPath]],
-                                    ]
-
                                     if self.sendToHelperBatch(lockCmds) {
                                         print("✅ Đã khoá lại file exec")
                                         exit(0)
@@ -99,6 +111,9 @@ class Launcher {
 
                         } else {
                             print("❌ Xác thực thất bại:", errorMessage ?? "Không rõ lỗi")
+                            if self.sendToHelperBatch(lockCmds) {
+                                print("✅ Đã khoá lại file exec")
+                            }
                             exit(1)
                         }
                     }
@@ -145,21 +160,24 @@ class Launcher {
         let configURL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/AppLocker/config.plist")
 
-        guard FileManager.default.fileExists(atPath: configURL.path),
-              let data = try? Data(contentsOf: configURL),
-              let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
-              let dict = plist as? [String: [String: String]] else {
-            print("❌ Không thể đọc config.plist hoặc sai định dạng")
+        guard FileManager.default.fileExists(atPath: configURL.path) else {
+            print("❌ File config không tồn tại")
             return [:]
         }
 
-        var result: [String: LockedAppInfo] = [:]
-        for (bundleID, info) in dict {
-            if let name = info["Name"], let exec = info["ExecFile"] {
-                result[bundleID] = LockedAppInfo(name: name, execFile: exec)
+        do {
+            let data = try Data(contentsOf: configURL)
+            print("📦 Raw data size:", data.count)
+            
+            if let plistStr = String(data: data, encoding: .utf8) {
+                print("📜 Nội dung config.plist:\n\(plistStr)")
             }
-        }
 
-        return result
+            let decoded = try PropertyListDecoder().decode([String: LockedAppInfo].self, from: data)
+            return decoded
+        } catch {
+            print("❌ Không thể đọc hoặc decode config.plist: \(error.localizedDescription)")
+            return [:]
+        }
     }
 }
