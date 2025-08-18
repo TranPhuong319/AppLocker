@@ -1,0 +1,232 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add application to lock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm ứng dụng để khoá"
+          }
+        }
+      }
+    },
+    "Application is waiting to be deleted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đang chờ xoá"
+          }
+        }
+      }
+    },
+    "authenticate to open the application list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để mở danh sách Ứng dụng"
+          }
+        }
+      }
+    },
+    "Bảo mật" : {
+
+    },
+    "Cài đặt chung" : {
+
+    },
+    "Cập nhật" : {
+
+    },
+    "Close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đóng"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá"
+          }
+        }
+      }
+    },
+    "Delete all from the waiting list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá tất cả khỏi hàng chờ"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lỗi"
+          }
+        }
+      }
+    },
+    "Giao diện" : {
+
+    },
+    "Hệ thống" : {
+
+    },
+    "Khởi động cùng macOS" : {
+
+    },
+    "Kiểm tra ngay" : {
+
+    },
+    "Lần kiểm tra cuối:" : {
+
+    },
+    "Lock (%d)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá (%d)"
+          }
+        }
+      }
+    },
+    "Locked application" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đã khoá"
+          }
+        }
+      }
+    },
+    "Locking..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang khoá..."
+          }
+        }
+      }
+    },
+    "Manage the application list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản lý danh sách Ứng dụng"
+          }
+        }
+      }
+    },
+    "quit application" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "thoát ứng dụng"
+          }
+        }
+      }
+    },
+    "Quit AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoát AppLocker"
+          }
+        }
+      }
+    },
+    "Sáng" : {
+
+    },
+    "Select the application to lock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn ứng dụng để khoá"
+          }
+        }
+      }
+    },
+    "There is no locked application." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không có ứng dụng nào bị khoá."
+          }
+        }
+      }
+    },
+    "Tối" : {
+
+    },
+    "Tự động khoá sau %lld giây" : {
+
+    },
+    "Tự động kiểm tra cập nhật" : {
+
+    },
+    "Unlock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khoá"
+          }
+        }
+      }
+    },
+    "Waiting for %d task(s)..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang chờ %d tác vụ..."
+          }
+        }
+      }
+    },
+    "Yêu cầu mật khẩu khi mở app" : {
+
+    }
+  },
+  "version" : "1.1"
+}

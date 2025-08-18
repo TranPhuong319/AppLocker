@@ -12,10 +12,4 @@ pkgbuild \
   --install-location / \
   Product/AppLocker.pkg
 
-echo Signing Pkg...
-productsign \
-  --sign "TranPhuong319" \
-  AppLocker.pkg \
-  AppLocker_signed.pkg
-
 

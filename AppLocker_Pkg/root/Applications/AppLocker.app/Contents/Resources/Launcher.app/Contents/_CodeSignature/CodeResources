@@ -6,12 +6,48 @@
 	<dict>
 		<key>Resources/AppIcon.icns</key>
 		<data>
-		Owvpu0O+1YbEXOGHp8ilH3cMB9o=
+		HEHYPdQqxMF3QknGDLd+/ecUZbg=
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		iBpNyaVmC3lwPm+GF2bCDnhicmw=
+		0zcuobMM2qMe8Xn+kAK/OKb3/E4=
 		</data>
+		<key>Resources/en.lproj/InfoPlist.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			KH+F2sm/uM98Oo22E0BkFANBwXg=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/en.lproj/Localizable.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			gFGOH5sCFqgFtC+xfAkJ69rwVRs=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/vi.lproj/InfoPlist.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			PYFZ+Rr+BiJ53IVdZrmq4n3V9wo=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/vi.lproj/Localizable.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			9pAQXkR6JvqUioWVE7Qgiwv1DD0=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
 	</dict>
 	<key>files2</key>
 	<dict>
@@ -19,15 +55,51 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			7y7AmTZbO7tuEyvQG8a5mqDFhv7kRlldupIP2x7IPyY=
+			qEtilFduxD6Hi7bpg8Ri55EruboPL7GOq2AyLCxSHTA=
 			</data>
 		</dict>
 		<key>Resources/Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Xp4GThfCgRfitmMuAeS7S0hdP2vRDTsCBzEtRUYFcoQ=
+			LUXl+XFqcIMMzj4tOMKSb57wir48FrSi5zD6V0tzCFM=
 			</data>
+		</dict>
+		<key>Resources/en.lproj/InfoPlist.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			CVsPU650AXawLHYINskUn/UZqPJN33RDpO/Fe0llkIg=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/en.lproj/Localizable.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			TfaVQ0N1M62JRmgr/DR116rnOqLNk1RAXTXcmU32/vo=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/vi.lproj/InfoPlist.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			u99ME/WQokSWf3U1vWc97iln7aoPs7yat/lORlmwf/0=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/vi.lproj/Localizable.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			rPOkaHTHSuKqpYSYn5vsvinYgqrNTNE4o2pe4+8slhk=
+			</data>
+			<key>optional</key>
+			<true/>
 		</dict>
 	</dict>
 	<key>rules</key>
