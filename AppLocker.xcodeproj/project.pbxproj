@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		E0871C7D2E47906300B9C17F /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E09FBC9E2E4C52B60005422E /* Locatizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09FBC9C2E4C52B60005422E /* Locatizable.swift */; };
+		E09FBC9F2E4C52B60005422E /* Locatizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09FBC9C2E4C52B60005422E /* Locatizable.swift */; };
+		E09FBCA02E4C52B60005422E /* Locatizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09FBC9C2E4C52B60005422E /* Locatizable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +37,7 @@
 
 /* Begin PBXFileReference section */
 		E07075962E38BA97001C7950 /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E09FBC9C2E4C52B60005422E /* Locatizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Locatizable.swift; sourceTree = "<group>"; };
 		E0D4C0652E419DAD003C40E3 /* AppLockerHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AppLockerHelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -43,13 +47,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AppLockerHelperProtocol.swift,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E07075A42E38BC59001C7950 /* Exceptions for "Launcher" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Launch.cpp,
 			);
 			target = E07075952E38BA97001C7950 /* Launcher */;
 		};
@@ -81,9 +78,6 @@
 		};
 		E07075972E38BA97001C7950 /* Launcher */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E07075A42E38BC59001C7950 /* Exceptions for "Launcher" folder in "Launcher" target */,
-			);
 			path = Launcher;
 			sourceTree = "<group>";
 		};
@@ -110,6 +104,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E0B99D442E4F43030049AF66 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0D4C0622E419DAD003C40E3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -120,6 +121,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E09FBC9D2E4C52B60005422E /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				E09FBC9C2E4C52B60005422E /* Locatizable.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
 		E0EF51A12E31558800161CAB = {
 			isa = PBXGroup;
 			children = (
@@ -127,6 +136,7 @@
 				E07075972E38BA97001C7950 /* Launcher */,
 				E021AF4E2E41159E003D2400 /* Shared */,
 				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
+				E09FBC9D2E4C52B60005422E /* Extension */,
 				E0EF51AB2E31558900161CAB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -196,6 +206,7 @@
 				E0EF51A62E31558900161CAB /* Sources */,
 				E0EF51A82E31558900161CAB /* Resources */,
 				E021AF4C2E4110AA003D2400 /* CopyFiles */,
+				E0B99D442E4F43030049AF66 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -234,10 +245,12 @@
 				};
 			};
 			buildConfigurationList = E0EF51A52E31558800161CAB /* Build configuration list for PBXProject "AppLocker" */;
-			developmentRegion = vi;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				vi,
+				en,
+				Base,
 			);
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;
@@ -275,6 +288,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E09FBC9F2E4C52B60005422E /* Locatizable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,6 +296,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E09FBC9E2E4C52B60005422E /* Locatizable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +304,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E09FBCA02E4C52B60005422E /* Locatizable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,6 +389,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 749P55DL5L;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLockerHelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -389,6 +406,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 749P55DL5L;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLockerHelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -402,6 +420,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -450,6 +469,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Apple Inc. All rights reserved.\n";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -466,6 +486,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -508,6 +529,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Apple Inc. All rights reserved.\n";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -525,6 +547,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = AppLocker/AppLocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -539,6 +562,7 @@
 				INFOPLIST_KEY_LSBackgroundOnly = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -550,6 +574,8 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				REGISTER_APP_GROUPS = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -563,6 +589,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = AppLocker/AppLocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -577,6 +604,7 @@
 				INFOPLIST_KEY_LSBackgroundOnly = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -588,6 +616,8 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				REGISTER_APP_GROUPS = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};

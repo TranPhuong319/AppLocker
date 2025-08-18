@@ -1,0 +1,44 @@
+/*
+  Localizable.strings
+  AppLocker
+
+  Copyright © 2025 TranPhuong319. All rights reserved.
+*/
+
+// MARK: AppDelegate.swift
+"Application_list_management" = "Manage the application list";
+"Escape_Applocker" = "Quit AppLocker";
+"Authentication_to_open_the_application_list" = "authenticate to open the application list";
+"Application_escape" = "quit application";
+
+// MARK: AuthenticationManager.swift
+"The_authentication_fails_for_unknown_reasons" = "Authentication failed for unknown reasons";
+"It_is_impossible_to_perform_on_this_device" = "This action cannot be performed on this device";
+
+// MARK: ContentView.swift
+"The_application_is_locked" = "Locked application";
+"Add_application_to_lock" = "Add application to lock";
+"No_application_is_locked." = "There is no locked application.";
+"Delete" = "Delete";
+"Waiting_for_%d_task_..." = "Waiting for %d task(s)...";
+"Locking..." = "Locking...";
+"Select_the_application_to_lock" = "Select the application to lock";
+"Lock_(%d)" = "Lock (%d)";
+"Close" = "Close";
+"Application_is_waiting_to_delete" = "Application is waiting to be deleted";
+"Delete_all_from_the_waiting_line" = "Delete all from the waiting list";
+"Unlock" = "Unlock";
+
+// MARK: LockManager.swift
+"Error" = "Error";
+"Cannot_load_configuration_file" = "Cannot load the configuration file";
+"Success_unlocked" = "Unlocked successfully";
+"Unsuccessful_unlocking" = "Unlock unsuccessful";
+"✅_Success_of_file_lock" = "✅ File lock successful";
+"❌_Lock_the_file_unsuccessful" = "❌ File lock unsuccessful";
+"Unable_to_save_configuration" = "Unable to save configuration";
+"⚠️_Cannot_read_info.plist_for_%@" = "⚠️ Cannot read info.plist for %@";
+"⚠️_File_does_not_exist_%@" = "⚠️ File does not exist: %@";
+"Error_happened_When_executing_orders_Details_%d" = "Error occurred when executing the command. Details: %d";
+"✅_Success" = "✅ Success: ";
+"❌_Failure" = "❌ Failure: ";

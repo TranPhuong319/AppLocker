@@ -24,7 +24,7 @@ class Launcher {
     
     func run() {
         guard let resourcesURL = Bundle.main.resourceURL else {
-            print("❌ Không thể truy cập resourceURL")
+            print("❌ Cannot access resourceurl".localized)
             exit(1)
         }
 
@@ -43,7 +43,7 @@ class Launcher {
                 let disguisedAppPath = "/Applications/\(realAppName).app"
 
                 guard let lockedInfo = lockedApps[disguisedAppPath] else {
-                    print("⚠️ Không tìm thấy info cho: \(disguisedAppPath)")
+                    print("⚠️ Can't find info for: %@".localized(with: disguisedAppPath))
                     continue
                 }
 
@@ -53,7 +53,7 @@ class Launcher {
                     .appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)")
                     .path
 
-                print("🔓 App cần mở khóa: \(lockedInfo.name), exec: \(lockedInfo.execFile)")
+                print("🔓 App to unlock: %@, Exec: %@".localized(with: lockedInfo.name, lockedInfo.execFile))
                 let uid = getuid()
                 let gid = getgid()
 
@@ -70,25 +70,25 @@ class Launcher {
                 ]
 
                 guard sendToHelperBatch(unlockCmds) else {
-                    print("❌ Không thể mở khóa file exec")
+                    print( "❌ Cannot unlock the Exec file".localized)
                     exit(1)
                 }
 
                 // 2. Xác thực
-                AuthenticationManager.authenticate(reason: "xác thực để mở ứng dụng đã bị khoá") { success, errorMessage in
+                AuthenticationManager.authenticate(reason:  "Authentication to open".localized) { success, errorMessage in
                     DispatchQueue.main.async {
                         if success {
-                            print("✅ Xác thực thành công, đang mở ứng dụng...")
+                            print("✅ Successful authentication, opening application ...".localized)
 
                             let config = NSWorkspace.OpenConfiguration()
                             NSWorkspace.shared.openApplication(at: realAppURL, configuration: config) { runningApp, err in
                                 if let err = err {
-                                    print("❌ Không thể mở app: \(err)")
+                                    print("❌ Can't open the app: %@".localized(with: err as CVarArg))
                                     exit(1)
                                 }
 
                                 guard let runningApp = runningApp else {
-                                    print("❌ Không lấy được tiến trình ứng dụng")
+                                    print( "❌ Can't get the application process".localized)
                                     exit(1)
                                 }
 
@@ -97,13 +97,13 @@ class Launcher {
                                         sleep(1)
                                     }
 
-                                    print("📦 App đã thoát. Đang khoá lại file...")
+                                    print("📦 App escaped. Locking the file ...".localized)
 
                                     if self.sendToHelperBatch(lockCmds) {
-                                        print("✅ Đã khoá lại file exec")
+                                        print("✅ Lock the Exec file")
                                         exit(0)
                                     } else {
-                                        print("❌ Không thể khoá lại file")
+                                        print("❌ Can't lock the file".localized)
                                         exit(1)
                                     }
                                 }
