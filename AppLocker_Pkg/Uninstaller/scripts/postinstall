@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "🔧 Chạy postuninstall script..."
+
+launchctl bootout  system /Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist
+killall AppLocker 
+rm -rf /Library/PrivilegedHelperTools/AppLockerHelper
+rm -rf /Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist
+rm -rf /Applications/AppLocker.app
+echo "✅ Gỡ cài đặt thành công AppLockerHelper"
+exit 0

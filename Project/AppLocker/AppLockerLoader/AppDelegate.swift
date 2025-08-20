@@ -23,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Logfile.core.info("Loading Application")
+        Logfile.core.debug("Loading Application")
         // Setup menu bar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem?.button?.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
@@ -40,6 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
             DispatchQueue.main.async {
                 if success {
                     AppListWindowController.show()
+                    Logfile.core.debug("Opened AppList")
                 } else {
                     Logfile.core.error("Error when opening list app: \(errorMessage as NSObject?, privacy: .public)")
                 }
@@ -51,6 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
         AuthenticationManager.authenticate(reason: "quit application".localized) { success, errorMessage in
             if success {
                 NSApp.terminate(nil)
+                Logfile.core.debug("Application quited")
             } else {
                 Logfile.core.error("Error when escaping: \(errorMessage as NSObject?, privacy: .public)")
             }

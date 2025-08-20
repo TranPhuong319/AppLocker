@@ -222,10 +222,11 @@ class LockManager: ObservableObject {
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "mv", "args": ["\(disguisedAppPath)/Contents/MacOS/Launcher", "\(disguisedAppPath)/Contents/MacOS/\(appName)"]],
-                    ["command": "touch", "args": [disguisedAppPath]],
                     ["command": "touch", "args": [markerPath]],
                     ["command": "chown", "args": ["root:wheel", markerPath]],
                     ["command": "chflags", "args": ["uchg", markerPath]],
+                    ["command": "touch", "args": [disguisedAppPath]],
+                    ["command": "touch", "args": [disguisedAppPath]],
                 ]
 
                 // Nếu có icon thì thêm lệnh liên quan đến icon

@@ -1,0 +1,7 @@
+-----------------------------------------------
+File: AppLockerInstaller.pkg
+SHA256:
+d12ec19058940ffcdfae89809f768d6fb8e825fa93d827c6fdf18e243bcc3ec5  Product/AppLockerInstaller.pkg
+MD5:
+MD5 (Product/AppLockerInstaller.pkg) = 15db15a4c0008204876e6f8b43ea9b80
+-----------------------------------------------

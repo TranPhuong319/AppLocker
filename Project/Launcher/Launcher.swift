@@ -5,9 +5,8 @@
 //  Created by Doe Phương on 24/07/2025.
 //
 
-
-import Foundation
 import AppKit
+import Foundation
 
 struct LockedAppInfo: Codable {
     let name: String
@@ -23,7 +22,7 @@ class Launcher {
     static let shared = Launcher()
     // ✅ lưu file nhận được từ AppDelegate
     var pendingOpenFileURLs: [URL] = []
-    
+
     func run() {
         Logfile.launcher.info("🚀 Launcher started")
         Logfile.launcher.info("📝 CommandLine args: \(CommandLine.arguments, privacy: .public)")
@@ -202,7 +201,7 @@ class Launcher {
             }
         }
     }
-    
+
     private func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
         let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLockerHelper", options: .privileged)
         conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
@@ -232,7 +231,7 @@ class Launcher {
         return result
     }
 
-    private func loadLockedAppInfos() -> [String: LockedAppInfo] {
+    func loadLockedAppInfos() -> [String: LockedAppInfo] {
         let configURL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/AppLocker/config.plist")
 
@@ -244,7 +243,7 @@ class Launcher {
         do {
             let data = try Data(contentsOf: configURL)
             Logfile.launcher.info("📦 Raw data size: \(data.count)")
-            
+
             if let plistStr = String(data: data, encoding: .utf8) {
                 Logfile.launcher.info("📜 Nội dung config.plist:\n\(plistStr)")
             }

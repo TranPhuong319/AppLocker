@@ -34,7 +34,6 @@ struct ContentView: View {
     @State private var deleteQueue: Set<String> = []
     @State private var isLocking = false
     @State private var lastUnlockableApps: [InstalledApp] = []
-    let launcherIcon = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
     @State private var showingMenu = false
     @StateObject private var viewModel = ContentViewModel()
     @State private var isDisabled = false

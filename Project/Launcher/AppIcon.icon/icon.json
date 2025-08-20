@@ -2,8 +2,8 @@
   "color-space-for-untagged-svg-colors" : "display-p3",
   "fill" : {
     "linear-gradient" : [
-      "display-p3:0.88728,0.88728,0.88728,1.00000",
-      "srgb:0.98586,0.98586,0.98586,1.00000"
+      "srgb:0.98586,0.98586,0.98586,1.00000",
+      "display-p3:0.88728,0.88728,0.88728,1.00000"
     ]
   },
   "groups" : [
@@ -41,8 +41,8 @@
           ],
           "glass" : true,
           "hidden" : false,
-          "image-name" : "location.svg",
-          "name" : "location",
+          "image-name" : "lock.app.dashed.svg",
+          "name" : "lock.app.dashed",
           "position-specializations" : [
             {
               "idiom" : "square",
