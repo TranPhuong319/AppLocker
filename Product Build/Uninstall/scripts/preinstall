@@ -1,0 +1,37 @@
+#!/bin/zsh --no-rcs
+
+# ------------------------------------------------------
+# AppLocker Preinstall Script
+# ------------------------------------------------------
+
+echo "🔧 Bắt đầu chạy preinstall script..."
+
+# Kiểm tra quyền root
+if [ "$EUID" -ne 0 ]; then
+    echo "❌ Script cần chạy với quyền root. Hãy dùng sudo."
+    exit 1
+fi
+
+# Đặt biến cho dễ chỉnh sửa
+APP_PATH="/Applications/AppLocker.app"
+HELPER_PLIST="/Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist"
+HELPER_TOOL="/Library/PrivilegedHelperTools/AppLockerHelper"
+
+# 1️⃣ Xoá app cũ nếu còn tồn tại
+if [ -d "$APP_PATH" ]; then
+    echo "⚠️ AppLocker cũ đã tồn tại, xoá trước..."
+    rm -rf "$APP_PATH"
+fi
+
+# 2️⃣ Dừng helper daemon nếu đang chạy và xoá file liên quan
+if [ -f "$HELPER_PLIST" ]; then
+    echo "⚠️ Helper daemon đang chạy, dừng trước..."
+    launchctl bootout system "$HELPER_PLIST"
+
+    echo "🗑️ Xoá helper tool và plist..."
+    rm -f "$HELPER_PLIST"
+    rm -rf "$HELPER_TOOL"
+fi
+/usr/sbin/pkgutil --forget com.TranPhuong319.pkg.AppLocker
+echo "✅ Preinstall xong, môi trường đã sạch và sẵn sàng cài mới."
+exit 0

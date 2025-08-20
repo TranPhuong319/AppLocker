@@ -8,6 +8,7 @@
   },
   "groups" : [
     {
+      "blur-material" : 0.5,
       "layers" : [
         {
           "fill-specializations" : [
@@ -45,13 +46,14 @@
           "name" : "icon_512x512@2x"
         }
       ],
+      "lighting" : "individual",
       "shadow" : {
-        "kind" : "neutral",
+        "kind" : "layer-color",
         "opacity" : 0.5
       },
       "translucency" : {
         "enabled" : true,
-        "value" : 0.5
+        "value" : 0.3
       }
     }
   ],
