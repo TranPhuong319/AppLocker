@@ -34,15 +34,7 @@
             }
           ],
           "hidden" : false,
-          "image-name-specializations" : [
-            {
-              "value" : "icon_512x512@2x.png"
-            },
-            {
-              "idiom" : "macOS",
-              "value" : "icon_512x512@2x.svg"
-            }
-          ],
+          "image-name" : "icon_512x512@2x.svg",
           "name" : "icon_512x512@2x"
         }
       ],
