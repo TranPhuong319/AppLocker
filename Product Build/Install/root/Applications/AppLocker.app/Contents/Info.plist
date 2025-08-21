@@ -23,7 +23,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2.0</string>
+	<string>1.3.0</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
@@ -48,8 +48,6 @@
 	<string>17A5295f</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
-	<key>LSBackgroundOnly</key>
-	<true/>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.5</string>
 	<key>LSUIElement</key>

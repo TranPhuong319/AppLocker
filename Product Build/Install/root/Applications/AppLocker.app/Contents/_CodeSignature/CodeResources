@@ -10,15 +10,15 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		kjlhxAzO174zEeL9JKtV4x8eZwM=
+		rv21af1mrTc3mbP/xcxvTqjLSJk=
 		</data>
 		<key>Resources/Launcher.app/Contents/Info.plist</key>
 		<data>
-		z4mFYwJ7i47QP4luBKX58qDnqEA=
+		pce5V6CPnSoezwXWbXRbv5lDP2U=
 		</data>
 		<key>Resources/Launcher.app/Contents/MacOS/Launcher</key>
 		<data>
-		vr4kHSWITDtxMSUKuu832i9Pacs=
+		JukUnV7eNcM5i5WPyX4yekF5KN8=
 		</data>
 		<key>Resources/Launcher.app/Contents/PkgInfo</key>
 		<data>
@@ -26,11 +26,11 @@
 		</data>
 		<key>Resources/Launcher.app/Contents/Resources/AppIcon.icns</key>
 		<data>
-		EFkLVxr0YHucqv1xnAJ6DiYuMRo=
+		Mc7/rna2vg8X+B3ZXdzQ4Oy97DU=
 		</data>
 		<key>Resources/Launcher.app/Contents/Resources/Assets.car</key>
 		<data>
-		0YrD/UsSp5EO0nTdr2yr7Fg1xLo=
+		+tmXXWt1u1azQHcYByaxK07DGk0=
 		</data>
 		<key>Resources/Launcher.app/Contents/Resources/en.lproj/InfoPlist.strings</key>
 		<dict>
@@ -45,7 +45,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			gFGOH5sCFqgFtC+xfAkJ69rwVRs=
+			EPWMHVg6wKy4BD3RWW7bSIXhm9E=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -63,14 +63,14 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			9pAQXkR6JvqUioWVE7Qgiwv1DD0=
+			vQGZLkBPgGfXN+q5RKLMxE/J1CI=
 			</data>
 			<key>optional</key>
 			<true/>
 		</dict>
 		<key>Resources/Launcher.app/Contents/_CodeSignature/CodeResources</key>
 		<data>
-		VeSC+E4kr3Ayoi5+IFzaN3rwv90=
+		MzJre0rPMmApLtW8mV6MrL+Gu7Q=
 		</data>
 		<key>Resources/en.lproj/InfoPlist.strings</key>
 		<dict>
@@ -122,21 +122,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			n9Z2aifkNxS76sSCKZEmotviGYcgeBUz6HUZkghfrAI=
+			18F9YlwAD6Ecbm4sQ7jmkbIWQ99O3W2aJtbf/XIVpHI=
 			</data>
 		</dict>
 		<key>Resources/Launcher.app/Contents/Info.plist</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			uZmnGpJwY0zOGrorOdvYubFeyaRcZEn0oqs8gX5L5wo=
+			nqkwxyRsZude9Sh4O1vWkJW5qH/jFlsUFGMsOwgCBac=
 			</data>
 		</dict>
 		<key>Resources/Launcher.app/Contents/MacOS/Launcher</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ut1b2cLlcUFzngwZ44SDLaLIqnZcN7YVPRy+3uSDlos=
+			T5eTG+yp2MtJDYt/Vqc4LElFeDl5pvKU45x7BHwLL9c=
 			</data>
 		</dict>
 		<key>Resources/Launcher.app/Contents/PkgInfo</key>
@@ -150,14 +150,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			PQjpWegIRvXNJr56KRKj5nGvUeAqZ1EWKGA7wJsoOHA=
+			qLQ0hSIgKQlQsY6UkvPFlUmYP7s+dEmyvgNbpNKC2vY=
 			</data>
 		</dict>
 		<key>Resources/Launcher.app/Contents/Resources/Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			TvZSuzwNhAKmrIIhtVyhPh/Hgfddsq1u8RimTbOmN7o=
+			jdve3GcLFd6PGnULw0bIP9zdOjI+dN3Xl2rI2gkcLbo=
 			</data>
 		</dict>
 		<key>Resources/Launcher.app/Contents/Resources/en.lproj/InfoPlist.strings</key>
@@ -173,7 +173,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			TfaVQ0N1M62JRmgr/DR116rnOqLNk1RAXTXcmU32/vo=
+			qo25mx7rOPJUMcxT28EwlcewOpKrK0sknLmoB9tQpu8=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -191,7 +191,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			rPOkaHTHSuKqpYSYn5vsvinYgqrNTNE4o2pe4+8slhk=
+			J1em0+rOuqMLjQ1FsMpZj7etz1/UO7zfrjeOWU3Cg+U=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -200,7 +200,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			khndiithguXXRwdPwTyFEGtxcQAaxknOuPtK/TsKZIQ=
+			K+iLLBh9LcFGYZRuLeHW1pIWa8q2a6Y9hwHhzny2HKs=
 			</data>
 		</dict>
 		<key>Resources/en.lproj/InfoPlist.strings</key>

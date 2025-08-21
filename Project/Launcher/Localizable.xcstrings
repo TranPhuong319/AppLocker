@@ -1,13 +1,13 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "authentication to open the application" : {
+    "authentication to open" : {
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "xác thực để mở Ứng dụng"
+            "value" : "xác thực để mở"
           }
         }
       }

@@ -25,6 +25,10 @@ class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol
         process.standardError = errorPipe
 
         switch command {
+        case "mkdir":
+            process.executableURL = URL(fileURLWithPath: "/bin/mkdir")
+            process.arguments = args
+            
         case "cp":
             process.executableURL = URL(fileURLWithPath: "/bin/cp")
             process.arguments = args
@@ -56,7 +60,7 @@ class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol
             process.arguments = args
 
         default:
-            reply(false, "❌ Command không được hỗ trợ: \(command)")
+            reply(false, "❌ Command is not supported: \(command)")
             return
         }
 
@@ -70,10 +74,10 @@ class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol
             if process.terminationStatus == 0 {
                 reply(true, output.isEmpty ? "✅ \(command) OK" : output)
             } else {
-                reply(false, error.isEmpty ? "❌ \(command) thất bại" : error)
+                reply(false, error.isEmpty ? "❌ \(command) failure" : error)
             }
         } catch {
-            reply(false, "❌ Không thể chạy lệnh \(command): \(error.localizedDescription)")
+            reply(false, "❌ Can't run commands \(command): \(error.localizedDescription)")
         }
     }
 
@@ -84,7 +88,7 @@ class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol
         for cmd in commands {
             guard let command = cmd["command"] as? String,
                   let args = cmd["args"] as? [String] else {
-                messages.append("❌ Lệnh không hợp lệ: \(cmd)")
+                messages.append("❌ Invalid command: \(cmd)")
                 allSuccess = false
                 continue
             }

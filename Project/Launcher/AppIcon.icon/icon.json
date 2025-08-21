@@ -13,6 +13,9 @@
         {
           "blend-mode-specializations" : [
             {
+              "value" : "overlay"
+            },
+            {
               "appearance" : "tinted",
               "value" : "normal"
             }
@@ -20,7 +23,10 @@
           "fill-specializations" : [
             {
               "value" : {
-                "automatic-gradient" : "extended-gray:0.00000,1.00000"
+                "linear-gradient" : [
+                  "display-p3:0.20000,0.20000,0.20000,1.00000",
+                  "extended-gray:0.00000,1.00000"
+                ]
               }
             },
             {
@@ -35,7 +41,10 @@
             {
               "appearance" : "tinted",
               "value" : {
-                "automatic-gradient" : "extended-gray:1.00000,1.00000"
+                "linear-gradient" : [
+                  "extended-gray:1.00000,1.00000",
+                  "display-p3:0.90000,0.90000,0.90000,1.00000"
+                ]
               }
             }
           ],

@@ -12,6 +12,9 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+killall AppLocker
+killall Launcher
+
 # Đặt biến cho dễ chỉnh sửa
 APP_PATH="/Applications/AppLocker.app"
 HELPER_PLIST="/Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist"
@@ -29,9 +32,10 @@ if [ -f "$HELPER_PLIST" ]; then
     launchctl bootout system "$HELPER_PLIST"
 
     echo "🗑️ Xoá helper tool và plist..."
-    rm -f "$HELPER_PLIST"
+    rm -rf "$HELPER_PLIST"
     rm -rf "$HELPER_TOOL"
 fi
 /usr/sbin/pkgutil --forget com.TranPhuong319.pkg.AppLocker
+/usr/sbin/pkgutil --forget com.TranPhuong319.pkg.AppLocker-Uninstall
 echo "✅ Preinstall xong, môi trường đã sạch và sẵn sàng cài mới."
 exit 0

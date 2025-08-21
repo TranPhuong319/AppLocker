@@ -26,15 +26,17 @@ class Launcher {
     func run() {
         Logfile.launcher.info("🚀 Launcher started")
         Logfile.launcher.info("📝 CommandLine args: \(CommandLine.arguments, privacy: .public)")
-        guard let resourcesURL = Bundle.main.resourceURL else {
-            Logfile.launcher.error("❌ Cannot access resourceurl")
+        let applicationsURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Applications")
+
+        guard FileManager.default.fileExists(atPath: applicationsURL.path) else {
+            Logfile.launcher.error("❌ Folder not found: \(applicationsURL.path, privacy: .public)")
             exit(1)
         }
 
         let lockedApps = loadLockedAppInfos()
 
         do {
-            let appURLs = try FileManager.default.contentsOfDirectory(at: resourcesURL, includingPropertiesForKeys: nil)
+            let appURLs = try FileManager.default.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
                 .filter { $0.pathExtension == "app" }
 
             for appURL in appURLs {
@@ -78,7 +80,7 @@ class Launcher {
                 }
 
                 // 2. Xác thực
-                AuthenticationManager.authenticate(reason: "authentication to open the application".localized) { success, errorMessage in
+                AuthenticationManager.authenticate(reason: "authentication to open".localized) { success, errorMessage in
                     DispatchQueue.main.async {
                         if success {
                             Logfile.launcher.info("✅ Successful authentication, opening application...")
@@ -218,9 +220,9 @@ class Launcher {
 
         proxy?.sendBatch(commandList) { success, message in
             if success {
-                Logfile.launcher.info("✅ Thành công: \(message, privacy: .public)")
+                Logfile.launcher.info("✅ Success: \(message, privacy: .public)")
             } else {
-                Logfile.launcher.error("❌ Thất bại: \(message, privacy: .public)")
+                Logfile.launcher.error("❌ Failure: \(message, privacy: .public)")
             }
             result = success
             semaphore.signal()
@@ -236,7 +238,7 @@ class Launcher {
             .appendingPathComponent("Library/Application Support/AppLocker/config.plist")
 
         guard FileManager.default.fileExists(atPath: configURL.path) else {
-            Logfile.launcher.error("❌ File config không tồn tại")
+            Logfile.launcher.error("❌ File Config does not exist")
             return [:]
         }
 
@@ -245,13 +247,13 @@ class Launcher {
             Logfile.launcher.info("📦 Raw data size: \(data.count)")
 
             if let plistStr = String(data: data, encoding: .utf8) {
-                Logfile.launcher.info("📜 Nội dung config.plist:\n\(plistStr)")
+                Logfile.launcher.info("📜 Config.plist content:\n\(plistStr)")
             }
 
             let decoded = try PropertyListDecoder().decode([String: LockedAppInfo].self, from: data)
             return decoded
         } catch {
-            Logfile.launcher.error("❌ Không thể đọc hoặc decode config.plist: \(error.localizedDescription)")
+            Logfile.launcher.error("❌ Cannot read or decode config.plist: \(error.localizedDescription)")
             return [:]
         }
     }

@@ -50,7 +50,7 @@ class LockManager: ObservableObject {
             ) else { continue }
 
             for appURL in contents where appURL.pathExtension == "app" {
-                let resourceURL = appURL.appendingPathComponent("Contents/Resources")
+                let resourceURL = appURL.appendingPathComponent("Contents/Applications")
 
                 // ✅ Kiểm tra có file `.locked_<AppName>.app` không
                 if let resourceContents = try? FileManager.default.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil),
@@ -170,15 +170,17 @@ class LockManager: ObservableObject {
                 let execFile = lockedInfo.execFile
 
                 let disguisedAppPath = "/Applications/\(disguisedAppName).app"
-                let realAppPath = "\(disguisedAppPath)/Contents/Resources/\(disguisedAppName).app"
+                let realAppPath = "\(disguisedAppPath)/Contents/Applications/\(disguisedAppName).app"
                 let execPath = "\(realAppPath)/Contents/MacOS/\(execFile)"
+
 //                let markerPathunlock = "\(disguisedAppPath)/Contents/Resources/.locked_\(disguisedAppName).app"
 
                 let cmds: [[String: Any]] = [
                     ["command": "chflags", "args": ["nouchg", execPath]],
                     ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
                     ["command": "mv", "args": [disguisedAppPath, "/Applications/Launcher.app"]],
-                    ["command": "mv", "args": ["/Applications/Launcher.app/Contents/Resources/\(disguisedAppName).app", disguisedAppPath]],
+                    ["command": "mv", "args": ["/Applications/Launcher.app/Contents/Applications/\(disguisedAppName).app", disguisedAppPath]],
+                    ["command": "touch", "args": [disguisedAppPath]],
                     ["command": "rm", "args": ["-rf", "/Applications/Launcher.app"]],
                     ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
                     ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
@@ -207,17 +209,18 @@ class LockManager: ObservableObject {
 
                 let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
                 let disguisedAppPath = "/Applications/\(appName).app"
-                let launcherResources = "/Applications/Launcher.app/Contents/Resources"
-                let markerPath = "\(disguisedAppPath)/Contents/Resources/.locked_\(appName).app"
+                let launcherApplications = "/Applications/Launcher.app/Contents/Applications"
+                let markerPath = "\(disguisedAppPath)/Contents/Applications/.locked_\(appName).app"
 
                 var cmds: [[String: Any]] = [
                     ["command": "cp", "args": ["-Rf", launcherURL.path, "/Applications/"]],
-                    ["command": "mv", "args": [appURL.path, launcherResources]],
-                    ["command": "chmod", "args": ["000", "\(launcherResources)/\(appName).app/Contents/MacOS/\(execName)"]],
-                    ["command": "chown", "args": ["root:wheel", "\(launcherResources)/\(appName).app/Contents/MacOS/\(execName)"]],
-                    ["command": "chflags", "args": ["hidden", "\(launcherResources)/\(appName).app"]],
+                    ["command": "mkdir", "args": ["-p", launcherApplications]],
+                    ["command": "mv", "args": [appURL.path, launcherApplications]],
+                    ["command": "chmod", "args": ["000", "\(launcherApplications)/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "chown", "args": ["root:wheel", "\(launcherApplications)/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "chflags", "args": ["hidden", "\(launcherApplications)/\(appName).app"]],
                     ["command": "mv", "args": ["/Applications/Launcher.app", disguisedAppPath]],
-                    ["command": "chflags", "args": ["uchg", "\(disguisedAppPath)/Contents/Resources/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "chflags", "args": ["uchg", "\(disguisedAppPath)/Contents/Applications/\(appName).app/Contents/MacOS/\(execName)"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.Launcher - \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
@@ -226,12 +229,11 @@ class LockManager: ObservableObject {
                     ["command": "chown", "args": ["root:wheel", markerPath]],
                     ["command": "chflags", "args": ["uchg", markerPath]],
                     ["command": "touch", "args": [disguisedAppPath]],
-                    ["command": "touch", "args": [disguisedAppPath]],
                 ]
 
                 // Nếu có icon thì thêm lệnh liên quan đến icon
                 if let iconName = iconName {
-                    cmds.insert(["command": "cp", "args": [appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "\(launcherResources)/AppIcon.icns"]], at: 1)
+                    cmds.insert(["command": "cp", "args": [appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "/Applications/Launcher.app/Contents/Resources/AppIcon.icns"]], at: 1)
                     cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]])
                 } else {
                     // Nếu không có icon, chỉ xóa CFBundleIconFile trong launcher Info.plist nếu có
@@ -239,7 +241,7 @@ class LockManager: ObservableObject {
                     cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]])
                     cmds.append(["command": "rm", "args": ["-rf", "\(disguisedAppPath)/Contents/Resources/AppIcon.icns"]])
                 }
-
+                cmds.append(["command": "touch", "args": [disguisedAppPath]])
                 if sendToHelperBatch(cmds) {
                     lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
                     save()

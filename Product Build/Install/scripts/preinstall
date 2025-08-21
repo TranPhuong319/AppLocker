@@ -15,8 +15,10 @@ fi
 # Đặt biến cho dễ chỉnh sửa
 APP_PATH="/Applications/AppLocker.app"
 HELPER_PLIST="/Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist"
-HELPER_TOOL="/Library/PrivilegedHelperTools/AppLockerHelper"
+HELPER_TOOL="/Library/PrivilegedHelperTools/AppLockerHelper"s
 
+killall AppLocker
+killall Launcher
 # 1️⃣ Xoá app cũ nếu còn tồn tại
 if [ -d "$APP_PATH" ]; then
     echo "⚠️ AppLocker cũ đã tồn tại, xoá trước..."
@@ -29,7 +31,7 @@ if [ -f "$HELPER_PLIST" ]; then
     launchctl bootout system "$HELPER_PLIST"
 
     echo "🗑️ Xoá helper tool và plist..."
-    rm -f "$HELPER_PLIST"
+    rm -rf "$HELPER_PLIST"
     rm -rf "$HELPER_TOOL"
 fi
 

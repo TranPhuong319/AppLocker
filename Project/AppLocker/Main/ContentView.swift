@@ -37,6 +37,7 @@ struct ContentView: View {
     @State private var showingMenu = false
     @StateObject private var viewModel = ContentViewModel()
     @State private var isDisabled = false
+    
 
     private var lockedAppObjects: [InstalledApp] {
         manager.allApps

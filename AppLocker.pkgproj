@@ -9,7 +9,7 @@
 			<array>
 				<dict>
 					<key>APPLICATION_ID</key>
-					<string>AppLocker.app</string>
+					<string>AppLocker</string>
 					<key>STATE</key>
 					<true/>
 				</dict>
@@ -29,7 +29,7 @@
 							<array>
 								<dict>
 									<key>BUNDLE_CAN_DOWNGRADE</key>
-									<false/>
+									<true/>
 									<key>BUNDLE_POSTINSTALL_PATH</key>
 									<dict>
 										<key>PATH_TYPE</key>
@@ -38,16 +38,16 @@
 									<key>BUNDLE_PREINSTALL_PATH</key>
 									<dict>
 										<key>PATH_TYPE</key>
-										<integer>0</integer>
+										<integer>1</integer>
 									</dict>
 									<key>CHILDREN</key>
 									<array/>
 									<key>GID</key>
 									<integer>0</integer>
 									<key>PATH</key>
-									<string>/Volumes/Xcode Project/AppLocker/Launcher/Product Build/Install/root/Applications/AppLocker.app</string>
+									<string>Product Build/Install/root/Applications/AppLocker.app</string>
 									<key>PATH_TYPE</key>
-									<integer>0</integer>
+									<integer>1</integer>
 									<key>PERMISSIONS</key>
 									<integer>493</integer>
 									<key>TYPE</key>
@@ -572,7 +572,7 @@
 			<array>
 				<dict>
 					<key>APPLICATION_ID</key>
-					<string>AppLocker.app</string>
+					<string>AppLocker</string>
 					<key>STATE</key>
 					<true/>
 				</dict>
@@ -1718,10 +1718,24 @@
 								</array>
 								<key>OPTIONS</key>
 								<dict>
+									<key>DEPENDENCY</key>
+									<dict>
+										<key>ENABLED_MODE</key>
+										<integer>0</integer>
+										<key>SELECTED_DEPENDENCY</key>
+										<dict>
+											<key>COMPARATOR</key>
+											<integer>1</integer>
+											<key>OBJECT</key>
+											<integer>0</integer>
+											<key>UUID</key>
+											<string>3A4B3DE3-A0D8-4ABC-BBC2-D01D2C3FE150</string>
+										</dict>
+									</dict>
 									<key>HIDDEN</key>
 									<false/>
 									<key>STATE</key>
-									<integer>1</integer>
+									<integer>3</integer>
 								</dict>
 								<key>PACKAGE_UUID</key>
 								<string>7901D014-E8A3-4B5B-B013-F98290DC99F0</string>
@@ -1772,7 +1786,7 @@
 											<key>COMPARATOR</key>
 											<integer>1</integer>
 											<key>OBJECT</key>
-											<integer>1</integer>
+											<integer>0</integer>
 											<key>UUID</key>
 											<string>73049AAB-6BAD-4A3C-B44C-75EE81FA450D</string>
 										</dict>
@@ -1988,11 +2002,11 @@
 		<key>PROJECT_SETTINGS</key>
 		<dict>
 			<key>BUILD_FORMAT</key>
-			<integer>1</integer>
+			<integer>0</integer>
 			<key>BUILD_PATH</key>
 			<dict>
 				<key>PATH</key>
-				<string>Product Build</string>
+				<string>Product</string>
 				<key>PATH_TYPE</key>
 				<integer>1</integer>
 			</dict>

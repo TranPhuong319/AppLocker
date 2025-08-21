@@ -1,7 +1,7 @@
 -----------------------------------------------
 File: AppLocker.pkg
 SHA256:
-5121418dc4693a5192b51d6c8fcbdc7fec11daffd065acd52592b5e9831b767b  Product/AppLocker.pkg
+4fe71bf71d59c24ae359da544b2996b17c74c9ac1ae6f72cb970d1a545318179  Product/AppLocker.pkg
 MD5:
-MD5 (Product/AppLocker.pkg) = 9217b2431ae7487b56086831115addce
+MD5 (Product/AppLocker.pkg) = 312254dad2dec043069b64f679f54bc4
 -----------------------------------------------

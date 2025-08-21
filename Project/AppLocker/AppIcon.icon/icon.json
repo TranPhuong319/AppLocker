@@ -11,6 +11,7 @@
       "blur-material" : 0.5,
       "layers" : [
         {
+          "blend-mode" : "overlay",
           "fill-specializations" : [
             {
               "value" : {
@@ -29,7 +30,7 @@
             {
               "appearance" : "tinted",
               "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
+                "automatic-gradient" : "extended-gray:1.00000,1.00000"
               }
             }
           ],
