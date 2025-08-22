@@ -1939,6 +1939,17 @@
 							<integer>1</integer>
 						</dict>
 					</dict>
+					<dict>
+						<key>LANGUAGE</key>
+						<string>Vietnamese</string>
+						<key>VALUE</key>
+						<dict>
+							<key>PATH</key>
+							<string>Product Build/Resources/LICENSE-vi.txt</string>
+							<key>PATH_TYPE</key>
+							<integer>1</integer>
+						</dict>
+					</dict>
 				</array>
 				<key>MODE</key>
 				<integer>0</integer>

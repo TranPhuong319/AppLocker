@@ -11,7 +11,6 @@ import Foundation
 class LockManager: ObservableObject {
     @Published var lockedApps: [String: LockedAppInfo] = [:]
     @Published var allApps: [InstalledApp] = []
-    
 
     private var configFile: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -39,49 +38,103 @@ class LockManager: ObservableObject {
     }
     
     func getInstalledApps() -> [InstalledApp] {
-        let paths = ["/Applications"]
+        let appsDir = "/Applications"
         var apps: [InstalledApp] = []
 
-        for path in paths {
-            let url = URL(fileURLWithPath: path)
-            guard let contents = try? FileManager.default.contentsOfDirectory(
-                at: url,
-                includingPropertiesForKeys: nil
-            ) else { continue }
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: URL(fileURLWithPath: appsDir),
+            includingPropertiesForKeys: nil
+        ) else { return apps }
 
-            for appURL in contents where appURL.pathExtension == "app" {
-                let resourceURL = appURL.appendingPathComponent("Contents/Resources")
+        // Gom các app theo tên gốc (Telegram, Zoom, v.v.)
+        var grouped: [String: [URL]] = [:]
+        for appURL in contents where appURL.pathExtension == "app" {
+            let baseName = appURL.deletingPathExtension()
+                .lastPathComponent
+                .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+            grouped[baseName, default: []].append(appURL)
+        }
 
-                // ✅ Kiểm tra có file `.locked_<AppName>.app` không
-                if let resourceContents = try? FileManager.default.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil),
-                   let lockedAppFile = resourceContents.first(where: { $0.lastPathComponent.hasPrefix(".locked_") && $0.pathExtension == "app" }) {
+        for (baseName, urls) in grouped {
+            let hiddenApp = urls.first(where: { $0.lastPathComponent.hasPrefix(".") }) // .Telegram.app
+            let launcherApp = urls.first(where: { !$0.lastPathComponent.hasPrefix(".") }) // Telegram.app
 
-                    // Lấy đường dẫn tới app gốc bị khoá thật
-                    let realAppName = lockedAppFile.lastPathComponent.replacingOccurrences(of: ".locked_", with: "")
-                    let realAppPath = resourceURL.appendingPathComponent(realAppName)
-                    
-                    if let bundle = Bundle(url: realAppPath),
+            var skipGroup = false
+            if let hidden = hiddenApp, let launcher = launcherApp {
+                // Kiểm tra marker trong Resources của launcher (launcher/Contents/Resources/<AppName>.app)
+                let marker = launcher.appendingPathComponent("Contents/Resources/\(baseName).app")
+                if FileManager.default.fileExists(atPath: marker.path) {
+                    // Nếu có marker → đây là cặp "bị khóa"
+                    skipGroup = true
+                }
+            }
+
+            if skipGroup {
+                // THAY VÌ tiếp tục bỏ qua cả 2, ta thêm 1 entry đại diện (launcher) vào allApps
+                // để `lockedAppObjects` có thể tìm thấy app bị khóa và hiển thị.
+                if let launcher = launcherApp {
+                    // Ưu tiên lấy thông tin (bundleID / icon) từ bản thật (hidden) nếu có,
+                    // còn không thì lấy từ launcher.
+                    var displayBundleURL = launcher
+                    if let hidden = hiddenApp {
+                        // hidden là .Telegram.app — kiểm tra xem có thể load bundle từ hidden không
+                        if FileManager.default.fileExists(atPath: hidden.path),
+                           Bundle(url: hidden) != nil {
+                            displayBundleURL = hidden
+                        }
+                    }
+
+                    if let bundle = Bundle(url: displayBundleURL),
                        let bundleID = bundle.bundleIdentifier {
-                        
-                        let name = lockedApps[bundleID]?.name ?? realAppName.replacingOccurrences(of: ".app", with: "")
-                        let icon = NSWorkspace.shared.icon(forFile: realAppPath.path)
-                        icon.size = NSSize(width: 16, height: 16)
-                        
-                        apps.append(InstalledApp(name: name, bundleID: bundleID, icon: icon, path: appURL.path))
-                        continue // skip thêm lần nữa nếu đã nhận diện qua .locked_
+                        let name = launcher.deletingPathExtension().lastPathComponent
+                        // Nếu dùng hidden để lấy icon, icon sẽ là icon của app thật
+                        let icon = NSWorkspace.shared.icon(forFile: displayBundleURL.path)
+                        icon.size = NSSize(width: 32, height: 32)
+
+                        apps.append(InstalledApp(
+                            name: name,
+                            bundleID: bundleID,
+                            icon: icon,
+                            path: launcher.path // path phải là launcher path (đại diện)
+                        ))
+                    } else {
+                        // Fallback: nếu không lấy được bundle từ hidden/launcher thì vẫn thêm launcher
+                        let name = launcher.deletingPathExtension().lastPathComponent
+                        let icon = NSWorkspace.shared.icon(forFile: launcher.path)
+                        icon.size = NSSize(width: 32, height: 32)
+                        apps.append(InstalledApp(name: name, bundleID: "", icon: icon, path: launcher.path))
                     }
                 }
+                // Đã xử lý group, tiếp tục vòng for tiếp theo
+                continue
+            }
 
-                // ✅ Nếu là app thường
+            // Nếu không bị skip thì thêm từng app bình thường
+            for appURL in urls {
                 if let bundle = Bundle(url: appURL),
                    let bundleID = bundle.bundleIdentifier {
                     let name = appURL.deletingPathExtension().lastPathComponent
                     let icon = NSWorkspace.shared.icon(forFile: appURL.path)
                     icon.size = NSSize(width: 32, height: 32)
-                    apps.append(InstalledApp(name: name, bundleID: bundleID, icon: icon, path: appURL.path))
+                    apps.append(InstalledApp(
+                        name: name,
+                        bundleID: bundleID,
+                        icon: icon,
+                        path: appURL.path
+                    ))
                 }
             }
         }
+
+        // Debug
+        #if DEBUG
+        print("🔒 Locked Apps: \(lockedApps.keys)")
+        print("📂 All Apps: \(allApps.map { $0.name })")
+        print("getInstalledApps() -> \(apps.count) apps")
+        for a in apps {
+            print(" • \(a.name) | bundleID=\(a.bundleID) | path=\(a.path)")
+        }
+        #endif
 
         return apps
     }
@@ -280,8 +333,17 @@ class LockManager: ObservableObject {
         conn.invalidate()
         return result
     }
-
-
+    
+    func reloadAllApps() {
+        DispatchQueue.global(qos: .background).async {
+            let apps = self.getInstalledApps()
+            DispatchQueue.main.async {
+                self.allApps = apps
+                
+            }
+        }
+    }
+    
     func isLocked(path: String) -> Bool {
         return lockedApps[path] != nil
     }

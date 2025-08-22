@@ -37,7 +37,6 @@ struct ContentView: View {
     @State private var showingMenu = false
 //    @StateObject private var viewModel = ContentViewModel()
     @State private var isDisabled = false
-    
 
     private var lockedAppObjects: [InstalledApp] {
         manager.allApps
@@ -184,39 +183,39 @@ struct ContentView: View {
         .frame(maxWidth: 600, maxHeight: 400)
         .sheet(isPresented: $showingAddApp) {
             NavigationStack {
-                    List {
-                        ForEach(unlockableApps, id: \.id) { app in
-                            HStack(spacing: 12) {
-                                if let icon = app.icon {
-                                    Image(nsImage: icon)
-                                        .resizable()
-                                        .frame(width: 32, height: 32)
-                                        .cornerRadius(4)
-                                }
-                                Text(app.name)
-                                Spacer()
-                                if pendingLocks.contains(app.path) {
-                                    Text("Locking...".localized)
-                                        .italic()
-                                        .foregroundColor(.gray)
-                                } else if selectedToLock.contains(app.path) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                }
+                List {
+                    ForEach(unlockableApps, id: \.id) { app in
+                        HStack(spacing: 12) {
+                            if let icon = app.icon {
+                                Image(nsImage: icon)
+                                    .resizable()
+                                    .frame(width: 32, height: 32)
+                                    .cornerRadius(4)
                             }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                guard !pendingLocks.contains(app.path) else { return }
-                                if selectedToLock.contains(app.path) {
-                                    selectedToLock.remove(app.path)
-                                } else {
-                                    selectedToLock.insert(app.path)
-                                }
+                            Text(app.name)
+                            Spacer()
+                            if pendingLocks.contains(app.path) {
+                                Text("Locking...".localized)
+                                    .italic()
+                                    .foregroundColor(.gray)
+                            } else if selectedToLock.contains(app.path) {
+                                Image(systemName: "checkmark.circle.fill")
                             }
-                            .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
-                            .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                         }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            guard !pendingLocks.contains(app.path) else { return }
+                            if selectedToLock.contains(app.path) {
+                                selectedToLock.remove(app.path)
+                            } else {
+                                selectedToLock.insert(app.path)
+                            }
+                        }
+                        .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                     }
-                    .navigationTitle("Select the application to lock".localized)
+                }
+                .navigationTitle("Select the application to lock".localized)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: lockSelected) {
@@ -242,6 +241,11 @@ struct ContentView: View {
                 }
             }
             .frame(minWidth: 500, minHeight: 600)
+            // 👇 Thêm cái này
+            .onAppear {
+                manager.reloadAllApps()
+                Logfile.core.info("List apps loaded")
+            }
         }
         .sheet(isPresented: $showingDeleteQueue) {
             VStack(alignment: .leading) {

@@ -43,7 +43,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E021AF4F2E4115AC003D2400 /* Exceptions for "Shared" folder in "Launcher" target */ = {
+		E06DF46C2E58AE0B00AE89FC /* Exceptions for "Shared" folder in "Launcher" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AppLockerHelperProtocol.swift,
@@ -51,35 +51,28 @@
 			);
 			target = E07075952E38BA97001C7950 /* Launcher */;
 		};
-		E05FF9052E5189460013CC3A /* Exceptions for "Extensions" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Locatizable.swift,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E05FF9062E5189460013CC3A /* Exceptions for "Extensions" folder in "AppLockerHelper" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Locatizable.swift,
-			);
-			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
-		};
-		E0A492F52E5303CE004F5509 /* Exceptions for "Launcher" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E0D4C0702E419DF7003C40E3 /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
+		E06DF46D2E58AE0B00AE89FC /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AppLockerHelperProtocol.swift,
 			);
 			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
 		};
-		E0D4C0742E431040003C40E3 /* Exceptions for "AppLocker" folder in "Launcher" target */ = {
+		E06DF4712E58AE4D00AE89FC /* Exceptions for "Extensions" folder in "Launcher" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Locatizable.swift,
+			);
+			target = E07075952E38BA97001C7950 /* Launcher */;
+		};
+		E06DF4722E58AE4D00AE89FC /* Exceptions for "Extensions" folder in "AppLockerHelper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Locatizable.swift,
+			);
+			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
+		};
+		E06DF4742E58AE7700AE89FC /* Exceptions for "AppLocker" folder in "Launcher" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Authentication/AuthenticationManager.swift,
@@ -92,8 +85,8 @@
 		E021AF4E2E41159E003D2400 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E021AF4F2E4115AC003D2400 /* Exceptions for "Shared" folder in "Launcher" target */,
-				E0D4C0702E419DF7003C40E3 /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
+				E06DF46C2E58AE0B00AE89FC /* Exceptions for "Shared" folder in "Launcher" target */,
+				E06DF46D2E58AE0B00AE89FC /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -101,17 +94,14 @@
 		E05FF9042E51893C0013CC3A /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E05FF9052E5189460013CC3A /* Exceptions for "Extensions" folder in "Launcher" target */,
-				E05FF9062E5189460013CC3A /* Exceptions for "Extensions" folder in "AppLockerHelper" target */,
+				E06DF4712E58AE4D00AE89FC /* Exceptions for "Extensions" folder in "Launcher" target */,
+				E06DF4722E58AE4D00AE89FC /* Exceptions for "Extensions" folder in "AppLockerHelper" target */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
 		};
 		E07075972E38BA97001C7950 /* Launcher */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0A492F52E5303CE004F5509 /* Exceptions for "Launcher" folder in "Launcher" target */,
-			);
 			path = Launcher;
 			sourceTree = "<group>";
 		};
@@ -123,7 +113,7 @@
 		E0EF51AC2E31558900161CAB /* AppLocker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E0D4C0742E431040003C40E3 /* Exceptions for "AppLocker" folder in "Launcher" target */,
+				E06DF4742E58AE7700AE89FC /* Exceptions for "AppLocker" folder in "Launcher" target */,
 			);
 			path = AppLocker;
 			sourceTree = "<group>";
