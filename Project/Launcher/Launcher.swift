@@ -60,6 +60,7 @@ class Launcher {
 
                 // 1. Mở quyền file
                 let unlockCmds: [[String: Any]] = [
+                    ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
                     ["command": "chflags", "args": ["nouchg", execPath]],
                     ["command": "chmod", "args": ["a=rx", execPath]],
                     ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
@@ -68,6 +69,7 @@ class Launcher {
                     ["command": "chmod", "args": ["000", execPath]],
                     ["command": "chown", "args": ["root:wheel", execPath]],
                     ["command": "chflags", "args": ["uchg", execPath]],
+                    ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]],
                 ]
 
                 guard sendToHelperBatch(unlockCmds) else {

@@ -174,6 +174,7 @@ class LockManager: ObservableObject {
                 let execPath = "\(hiddenApp)/Contents/MacOS/\(execFile)"
 
                 let cmds: [[String: Any]] = [
+                    ["command": "chflags", "args": ["nouchg", hiddenApp]],
                     ["command": "chflags", "args": ["nouchg", execPath]],
                     ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
                     ["command": "rm", "args": ["-rf", disguisedAppPath]],
@@ -227,6 +228,7 @@ class LockManager: ObservableObject {
                     ["command": "chown", "args": ["root:wheel", markerPath]],
                     ["command": "chflags", "args": ["uchg", markerPath]],
                     ["command": "touch", "args": [disguisedAppPath]],
+                    
                 ]
 
                 // Nếu có icon thì thêm lệnh liên quan đến icon
@@ -239,6 +241,7 @@ class LockManager: ObservableObject {
                     cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]])
                     cmds.append(["command": "rm", "args": ["-rf", "\(disguisedAppPath)/Contents/Resources/AppIcon.icns"]])
                 }
+                cmds.append(["command": "chflags", "args": ["uchg", hiddenApp]])
                 cmds.append(["command": "touch", "args": [disguisedAppPath]])
                 if sendToHelperBatch(cmds) {
                     lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
