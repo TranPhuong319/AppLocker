@@ -50,7 +50,7 @@ class LockManager: ObservableObject {
             ) else { continue }
 
             for appURL in contents where appURL.pathExtension == "app" {
-                let resourceURL = appURL.appendingPathComponent("Contents/Applications")
+                let resourceURL = appURL.appendingPathComponent("Contents/Resources")
 
                 // ✅ Kiểm tra có file `.locked_<AppName>.app` không
                 if let resourceContents = try? FileManager.default.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil),
@@ -170,18 +170,15 @@ class LockManager: ObservableObject {
                 let execFile = lockedInfo.execFile
 
                 let disguisedAppPath = "/Applications/\(disguisedAppName).app"
-                let realAppPath = "\(disguisedAppPath)/Contents/Applications/\(disguisedAppName).app"
-                let execPath = "\(realAppPath)/Contents/MacOS/\(execFile)"
-
-//                let markerPathunlock = "\(disguisedAppPath)/Contents/Resources/.locked_\(disguisedAppName).app"
+                let hiddenApp = "/Applications/.\(disguisedAppName).app"
+                let execPath = "\(hiddenApp)/Contents/MacOS/\(execFile)"
 
                 let cmds: [[String: Any]] = [
                     ["command": "chflags", "args": ["nouchg", execPath]],
                     ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
-                    ["command": "mv", "args": [disguisedAppPath, "/Applications/Launcher.app"]],
-                    ["command": "mv", "args": ["/Applications/Launcher.app/Contents/Applications/\(disguisedAppName).app", disguisedAppPath]],
+                    ["command": "rm", "args": ["-rf", disguisedAppPath]],
+                    ["command": "mv", "args": [hiddenApp, disguisedAppPath]],
                     ["command": "touch", "args": [disguisedAppPath]],
-                    ["command": "rm", "args": ["-rf", "/Applications/Launcher.app"]],
                     ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
                     ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
                     ["command": "touch", "args": [disguisedAppPath]],
@@ -209,18 +206,19 @@ class LockManager: ObservableObject {
 
                 let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
                 let disguisedAppPath = "/Applications/\(appName).app"
-                let launcherApplications = "/Applications/Launcher.app/Contents/Applications"
-                let markerPath = "\(disguisedAppPath)/Contents/Applications/.locked_\(appName).app"
+                let hiddenApp = "/Applications/.\(appName).app"
+                let launcherResources = "/Applications/Launcher.app/Contents/Resources/Locked"
+                let markerPath = "\(disguisedAppPath)/Contents/Resources/   \(appName).app"
 
                 var cmds: [[String: Any]] = [
                     ["command": "cp", "args": ["-Rf", launcherURL.path, "/Applications/"]],
-                    ["command": "mkdir", "args": ["-p", launcherApplications]],
-                    ["command": "mv", "args": [appURL.path, launcherApplications]],
-                    ["command": "chmod", "args": ["000", "\(launcherApplications)/\(appName).app/Contents/MacOS/\(execName)"]],
-                    ["command": "chown", "args": ["root:wheel", "\(launcherApplications)/\(appName).app/Contents/MacOS/\(execName)"]],
-                    ["command": "chflags", "args": ["hidden", "\(launcherApplications)/\(appName).app"]],
+                    ["command": "mkdir", "args": ["-p", launcherResources]],
+                    ["command": "mv", "args": [appURL.path, hiddenApp]],
+                    ["command": "chmod", "args": ["000", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
+                    ["command": "chown", "args": ["root:wheel", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
+                    ["command": "chflags", "args": ["hidden", hiddenApp]],
                     ["command": "mv", "args": ["/Applications/Launcher.app", disguisedAppPath]],
-                    ["command": "chflags", "args": ["uchg", "\(disguisedAppPath)/Contents/Applications/\(appName).app/Contents/MacOS/\(execName)"]],
+                    ["command": "chflags", "args": ["uchg", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.Launcher - \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],

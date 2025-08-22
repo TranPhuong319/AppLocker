@@ -26,39 +26,35 @@ class Launcher {
     func run() {
         Logfile.launcher.info("🚀 Launcher started")
         Logfile.launcher.info("📝 CommandLine args: \(CommandLine.arguments, privacy: .public)")
-        let applicationsURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Applications")
+        let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
 
-        guard FileManager.default.fileExists(atPath: applicationsURL.path) else {
-            Logfile.launcher.error("❌ Folder not found: \(applicationsURL.path, privacy: .public)")
+        guard FileManager.default.fileExists(atPath: resourcesURL.path) else {
+            Logfile.launcher.error("❌ Folder not found: \(resourcesURL.path, privacy: .public)")
             exit(1)
         }
 
         let lockedApps = loadLockedAppInfos()
 
         do {
-            let appURLs = try FileManager.default.contentsOfDirectory(at: applicationsURL, includingPropertiesForKeys: nil)
+            let appURLs = try FileManager.default.contentsOfDirectory(at: resourcesURL, includingPropertiesForKeys: nil)
                 .filter { $0.pathExtension == "app" }
 
             for appURL in appURLs {
                 let appName = appURL.deletingPathExtension().lastPathComponent
 
                 // 🔍 Nếu app tên ".locked_TenApp", ta lấy "TenApp"
-                guard appName.hasPrefix(".locked_") else { continue }
-                let realAppName = appName.replacingOccurrences(of: ".locked_", with: "")
-                let disguisedAppPath = "/Applications/\(realAppName).app"
+//                guard appName.hasPrefix(".locked_") else { continue }
+                let LauncherPath = "/Applications/\(appName).app"
+                let hiddenAppRealURL  = URL(fileURLWithPath:"/Applications/.\(appName).app")
 
-                guard let lockedInfo = lockedApps[disguisedAppPath] else {
-                    Logfile.launcher.warning("⚠️ Can't find info for: \(disguisedAppPath)")
+                guard let lockedInfo = lockedApps[LauncherPath] else {
+                    Logfile.launcher.warning("⚠️ Can't find info for: \(LauncherPath)")
                     continue
                 }
 
+                let execPath = hiddenAppRealURL.appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)").path
 
-                let realAppURL = appURL.deletingLastPathComponent().appendingPathComponent("\(lockedInfo.name).app")
-                let execPath = realAppURL
-                    .appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)")
-                    .path
-
-                Logfile.launcher.info("🔓 App to unlock: \(lockedInfo.name), Exec: \(lockedInfo.name)")
+                Logfile.launcher.info("🔓 App to unlock: \(lockedInfo.name), Exec: \(lockedInfo.execFile)")
                 let uid = getuid()
                 let gid = getgid()
 
@@ -138,18 +134,18 @@ class Launcher {
                                 // ✅ Nếu delegate đã nhận được file(s)
                                 Logfile.launcher.info("📂 Open with pending files: \(Launcher.shared.pendingOpenFileURLs.map(\.path))")
                                 NSWorkspace.shared.open(Launcher.shared.pendingOpenFileURLs,
-                                                        withApplicationAt: realAppURL,
+                                                        withApplicationAt: hiddenAppRealURL,
                                                         configuration: config,
                                                         completionHandler: openHandler)
                             } else if let fileURLToOpen = fileURLToOpen {
                                 // ✅ Nếu chỉ có 1 file/URL từ args
                                 NSWorkspace.shared.open([fileURLToOpen],
-                                                        withApplicationAt: realAppURL,
+                                                        withApplicationAt: hiddenAppRealURL,
                                                         configuration: config,
                                                         completionHandler: openHandler)
                             } else {
                                 // ✅ Không có file → chỉ mở app
-                                NSWorkspace.shared.openApplication(at: realAppURL,
+                                NSWorkspace.shared.openApplication(at: hiddenAppRealURL,
                                                                    configuration: config,
                                                                    completionHandler: openHandler)
                             }

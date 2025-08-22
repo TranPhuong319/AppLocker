@@ -35,7 +35,7 @@ struct ContentView: View {
     @State private var isLocking = false
     @State private var lastUnlockableApps: [InstalledApp] = []
     @State private var showingMenu = false
-    @StateObject private var viewModel = ContentViewModel()
+//    @StateObject private var viewModel = ContentViewModel()
     @State private var isDisabled = false
     
 
@@ -342,18 +342,18 @@ struct ContentView: View {
     }
 }
 
-class ContentViewModel: ObservableObject {
-    var settingsWC: SettingsWindowController?
-
-    func openSettingsWindow() {
-        if settingsWC == nil {
-            settingsWC = SettingsWindowController()
-            settingsWC?.window?.identifier = NSUserInterfaceItemIdentifier("SettingsWindow")
-        }
-        settingsWC?.showWindow(nil)
-        NSApp.activate(ignoringOtherApps: true)
-    }
-}
+//class ContentViewModel: ObservableObject {
+//    var settingsWC: SettingsWindowController?
+//
+//    func openSettingsWindow() {
+//        if settingsWC == nil {
+//            settingsWC = SettingsWindowController()
+//            settingsWC?.window?.identifier = NSUserInterfaceItemIdentifier("SettingsWindow")
+//        }
+//        settingsWC?.showWindow(nil)
+//        NSApp.activate(ignoringOtherApps: true)
+//    }
+//}
 
 
 #Preview {

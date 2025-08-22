@@ -26,8 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let appName = appURL.deletingPathExtension().lastPathComponent.replacingOccurrences(of: ".locked_", with: "")
             let disguisedAppPath = "/Applications/\(appName).app"
 
-            if let lockedInfo = lockedApps[disguisedAppPath] {
-                let realAppURL = appURL.deletingLastPathComponent().appendingPathComponent("\(lockedInfo.name).app")
+            if lockedApps[disguisedAppPath] != nil {
+                let realAppURL = URL(fileURLWithPath:"/Applications/.\(appName).app")
 
                 // Check app thật đang chạy chưa
                 let bundleID = Bundle(url: realAppURL)?.bundleIdentifier
