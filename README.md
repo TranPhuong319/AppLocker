@@ -1,7 +1,7 @@
 # 🔐 AppLocker – macOS Application Locker  
 
 🌐 Available languages:  
-- [🇻🇳 Tiếng Việt](Resources/README_vi.md)  
-- [🇬🇧 English](Resources/README_en.md)  
+- [🇻🇳 Tiếng Việt](Resources/README-vi.md)  
+- [🇬🇧 English](Resources/README-en.md)  
 
 ---
