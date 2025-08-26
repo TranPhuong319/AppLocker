@@ -64,7 +64,7 @@ jobs:
         def write_stats(file_path):
             with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-            if data["version"] != "1.0":
+            if data["version"] != "1.1":
                 raise ValueError(f"Unsupported version: {data['version']}")
             strings = data["strings"]
             localizations = defaultdict(int)
