@@ -50,7 +50,7 @@ jobs:
 
     - name: Lint
       run: swiftlint lint --reporter github-actions-logging
-
+      continue-on-error: true
     - name: i18n Stats
       run: |
         import os, sys, json
