@@ -59,6 +59,13 @@
 			);
 			target = E07075952E38BA97001C7950 /* Launcher */;
 		};
+		E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E0EF51A92E31558900161CAB /* AppLocker */;
+		};
 		E04B8E9E2E5D847600BE7903 /* Exceptions for "Shared" folder in "Launcher" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -141,6 +148,7 @@
 		E0EF51AC2E31558900161CAB /* AppLocker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */,
 				E04B8EA22E5D848D00BE7903 /* Exceptions for "AppLocker" folder in "Launcher" target */,
 			);
 			path = AppLocker;
