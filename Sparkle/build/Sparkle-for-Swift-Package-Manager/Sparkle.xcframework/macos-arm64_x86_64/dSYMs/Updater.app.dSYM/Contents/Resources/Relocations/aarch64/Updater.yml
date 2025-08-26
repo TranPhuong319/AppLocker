@@ -1,0 +1,272 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/doephuong/Library/Developer/Xcode/DerivedData/Sparkle-gbefjbxedyajirbakeipvkzirtqv/Build/Products/Release/Updater.app/Contents/MacOS/Updater'
+relocations:
+  - { offset: 0x27, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState initWithMajorUpgrade:criticalUpdate:informationalUpdate:minimumOperatingSystemVersionIsOK:maximumOperatingSystemVersionIsOK:]', symObjAddr: 0x0, symBinAddr: 0x1000075D0, symSize: 0x7C }
+  - { offset: 0x1E9, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState initWithMajorUpgrade:criticalUpdate:informationalUpdate:minimumOperatingSystemVersionIsOK:maximumOperatingSystemVersionIsOK:]', symObjAddr: 0x0, symBinAddr: 0x1000075D0, symSize: 0x7C }
+  - { offset: 0x246, size: 0x8, addend: 0x0, symName: '+[SPUAppcastItemState supportsSecureCoding]', symObjAddr: 0x7C, symBinAddr: 0x100000F78, symSize: 0x8 }
+  - { offset: 0x276, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState encodeWithCoder:]', symObjAddr: 0x84, symBinAddr: 0x100000F80, symSize: 0x98 }
+  - { offset: 0x2B5, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState initWithCoder:]', symObjAddr: 0x11C, symBinAddr: 0x10000764C, symSize: 0xB0 }
+  - { offset: 0x384, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_1, symObjAddr: 0x238, symBinAddr: 0x100001020, symSize: 0x8 }
+  - { offset: 0x39B, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState majorUpgrade]', symObjAddr: 0x1CC, symBinAddr: 0x1000076FC, symSize: 0x14 }
+  - { offset: 0x3CC, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_0, symObjAddr: 0x230, symBinAddr: 0x100001018, symSize: 0x8 }
+  - { offset: 0x3E3, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState criticalUpdate]', symObjAddr: 0x1E0, symBinAddr: 0x100007710, symSize: 0x14 }
+  - { offset: 0x414, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState informationalUpdate]', symObjAddr: 0x1F4, symBinAddr: 0x100007724, symSize: 0x14 }
+  - { offset: 0x445, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState minimumOperatingSystemVersionIsOK]', symObjAddr: 0x208, symBinAddr: 0x100007738, symSize: 0x14 }
+  - { offset: 0x476, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemState maximumOperatingSystemVersionIsOK]', symObjAddr: 0x21C, symBinAddr: 0x10000774C, symSize: 0x14 }
+  - { offset: 0x4F6, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver initWithHostVersion:applicationVersionComparator:standardVersionComparator:]', symObjAddr: 0x0, symBinAddr: 0x100001028, symSize: 0xD0 }
+  - { offset: 0x5E0, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver initWithHostVersion:applicationVersionComparator:standardVersionComparator:]', symObjAddr: 0x0, symBinAddr: 0x100001028, symSize: 0xD0 }
+  - { offset: 0x641, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver isMinimumOperatingSystemVersionOK:]', symObjAddr: 0xD0, symBinAddr: 0x1000010F8, symSize: 0x98 }
+  - { offset: 0x693, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver isMaximumOperatingSystemVersionOK:]', symObjAddr: 0x168, symBinAddr: 0x100001190, symSize: 0x98 }
+  - { offset: 0x6E5, size: 0x8, addend: 0x0, symName: '+[SPUAppcastItemStateResolver isMinimumAutoupdateVersionOK:hostVersion:versionComparator:]', symObjAddr: 0x200, symBinAddr: 0x100001228, symSize: 0x94 }
+  - { offset: 0x742, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver isMinimumAutoupdateVersionOK:]', symObjAddr: 0x294, symBinAddr: 0x1000012BC, symSize: 0x4C }
+  - { offset: 0x785, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver isCriticalUpdateWithCriticalUpdateDictionary:]', symObjAddr: 0x2E0, symBinAddr: 0x100001308, symSize: 0x94 }
+  - { offset: 0x7D7, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver isInformationalUpdateWithInformationalUpdateVersions:]', symObjAddr: 0x374, symBinAddr: 0x10000139C, symSize: 0x1D0 }
+  - { offset: 0x842, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver resolveStateWithInformationalUpdateVersions:minimumOperatingSystemVersion:maximumOperatingSystemVersion:minimumAutoupdateVersion:criticalUpdateDictionary:]', symObjAddr: 0x544, symBinAddr: 0x10000156C, symSize: 0x108 }
+  - { offset: 0x908, size: 0x8, addend: 0x0, symName: '-[SPUAppcastItemStateResolver .cxx_destruct]', symObjAddr: 0x64C, symBinAddr: 0x100001674, symSize: 0x3C }
+  - { offset: 0xA3B, size: 0x8, addend: 0x0, symName: _SPUArchiveRootObjectSecurely, symObjAddr: 0x0, symBinAddr: 0x1000016B0, symSize: 0x78 }
+  - { offset: 0xAD2, size: 0x8, addend: 0x0, symName: _SPUArchiveRootObjectSecurely, symObjAddr: 0x0, symBinAddr: 0x1000016B0, symSize: 0x78 }
+  - { offset: 0xB4A, size: 0x8, addend: 0x0, symName: _SPUUnarchiveRootObjectSecurely, symObjAddr: 0x78, symBinAddr: 0x100001728, symSize: 0x78 }
+  - { offset: 0xD26, size: 0x8, addend: 0x0, symName: '+[SUAppcastItem supportsSecureCoding]', symObjAddr: 0x0, symBinAddr: 0x1000017A0, symSize: 0x8 }
+  - { offset: 0xD91, size: 0x8, addend: 0x0, symName: '+[SUAppcastItem emptyAppcastItem]', symObjAddr: 0xCB4, symBinAddr: 0x100002454, symSize: 0x30 }
+  - { offset: 0xDBC, size: 0x8, addend: 0x0, symName: _emptyAppcastItem.emptyAppcastItem, symObjAddr: 0xDB00, symBinAddr: 0x100017448, symSize: 0x0 }
+  - { offset: 0xDD2, size: 0x8, addend: 0x0, symName: _emptyAppcastItem.onceToken, symObjAddr: 0xDB08, symBinAddr: 0x100017450, symSize: 0x0 }
+  - { offset: 0x16EB, size: 0x8, addend: 0x0, symName: '+[SUAppcastItem supportsSecureCoding]', symObjAddr: 0x0, symBinAddr: 0x1000017A0, symSize: 0x8 }
+  - { offset: 0x171B, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem initWithCoder:]', symObjAddr: 0x8, symBinAddr: 0x1000017A8, symSize: 0x868 }
+  - { offset: 0x17A8, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem encodeWithCoder:]', symObjAddr: 0x870, symBinAddr: 0x100002010, symSize: 0x27C }
+  - { offset: 0x17E7, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem isDeltaUpdate]', symObjAddr: 0xAEC, symBinAddr: 0x10000228C, symSize: 0x68 }
+  - { offset: 0x182B, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem isCriticalUpdate]', symObjAddr: 0xB54, symBinAddr: 0x1000022F4, symSize: 0x18 }
+  - { offset: 0x1860, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem isMajorUpgrade]', symObjAddr: 0xB6C, symBinAddr: 0x10000230C, symSize: 0x10 }
+  - { offset: 0x1895, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem minimumOperatingSystemVersionIsOK]', symObjAddr: 0xB7C, symBinAddr: 0x10000231C, symSize: 0x14 }
+  - { offset: 0x18CA, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem maximumOperatingSystemVersionIsOK]', symObjAddr: 0xB90, symBinAddr: 0x100002330, symSize: 0x14 }
+  - { offset: 0x18FF, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem isMacOsUpdate]', symObjAddr: 0xBA4, symBinAddr: 0x100002344, symSize: 0x20 }
+  - { offset: 0x1934, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem date]', symObjAddr: 0xBC4, symBinAddr: 0x100002364, symSize: 0xBC }
+  - { offset: 0x1989, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem isInformationOnlyUpdate]', symObjAddr: 0xC80, symBinAddr: 0x100002420, symSize: 0x34 }
+  - { offset: 0x1A4E, size: 0x8, addend: 0x0, symName: '+[SUAppcastItem emptyAppcastItem].cold.1', symObjAddr: 0x25C0, symBinAddr: 0x100007760, symSize: 0x14 }
+  - { offset: 0x1A69, size: 0x8, addend: 0x0, symName: '+[SUAppcastItem emptyAppcastItem].cold.1', symObjAddr: 0x25C0, symBinAddr: 0x100007760, symSize: 0x14 }
+  - { offset: 0x1A7B, size: 0x8, addend: 0x0, symName: '___33+[SUAppcastItem emptyAppcastItem]_block_invoke', symObjAddr: 0xCE4, symBinAddr: 0x100002484, symSize: 0x30 }
+  - { offset: 0x1AA2, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem initWithDictionary:relativeToURL:stateResolver:failureReason:]', symObjAddr: 0xD34, symBinAddr: 0x1000024B4, symSize: 0xC }
+  - { offset: 0x1B11, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem initWithDictionary:]', symObjAddr: 0xD40, symBinAddr: 0x1000024C0, symSize: 0x14 }
+  - { offset: 0x1B52, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem initWithDictionary:failureReason:]', symObjAddr: 0xD54, symBinAddr: 0x1000024D4, symSize: 0x14 }
+  - { offset: 0x1BA5, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem initWithDictionary:relativeToURL:failureReason:]', symObjAddr: 0xD68, symBinAddr: 0x1000024E8, symSize: 0x10 }
+  - { offset: 0x1C3F, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem initWithDictionary:relativeToURL:stateResolver:resolvedState:failureReason:]', symObjAddr: 0xD78, symBinAddr: 0x1000024F8, symSize: 0x1644 }
+  - { offset: 0x2162, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem dateString]', symObjAddr: 0x23BC, symBinAddr: 0x100003B3C, symSize: 0x8 }
+  - { offset: 0x2196, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem deltaUpdates]', symObjAddr: 0x23C4, symBinAddr: 0x100003B44, symSize: 0x8 }
+  - { offset: 0x21CA, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem displayVersionString]', symObjAddr: 0x23CC, symBinAddr: 0x100003B4C, symSize: 0x8 }
+  - { offset: 0x21FE, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem signatures]', symObjAddr: 0x23D4, symBinAddr: 0x100003B54, symSize: 0x8 }
+  - { offset: 0x2232, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem fileURL]', symObjAddr: 0x23DC, symBinAddr: 0x100003B5C, symSize: 0x8 }
+  - { offset: 0x2266, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem contentLength]', symObjAddr: 0x23E4, symBinAddr: 0x100003B64, symSize: 0x8 }
+  - { offset: 0x229A, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem infoURL]', symObjAddr: 0x23EC, symBinAddr: 0x100003B6C, symSize: 0x8 }
+  - { offset: 0x22CE, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem itemDescription]', symObjAddr: 0x23F4, symBinAddr: 0x100003B74, symSize: 0x8 }
+  - { offset: 0x2302, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem itemDescriptionFormat]', symObjAddr: 0x23FC, symBinAddr: 0x100003B7C, symSize: 0x8 }
+  - { offset: 0x2336, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem maximumSystemVersion]', symObjAddr: 0x2404, symBinAddr: 0x100003B84, symSize: 0x8 }
+  - { offset: 0x236A, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem minimumSystemVersion]', symObjAddr: 0x240C, symBinAddr: 0x100003B8C, symSize: 0x8 }
+  - { offset: 0x239E, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem releaseNotesURL]', symObjAddr: 0x2414, symBinAddr: 0x100003B94, symSize: 0x8 }
+  - { offset: 0x23D2, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem fullReleaseNotesURL]', symObjAddr: 0x241C, symBinAddr: 0x100003B9C, symSize: 0x8 }
+  - { offset: 0x2406, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem title]', symObjAddr: 0x2424, symBinAddr: 0x100003BA4, symSize: 0x8 }
+  - { offset: 0x243A, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem versionString]', symObjAddr: 0x242C, symBinAddr: 0x100003BAC, symSize: 0x8 }
+  - { offset: 0x246E, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem osString]', symObjAddr: 0x2434, symBinAddr: 0x100003BB4, symSize: 0x8 }
+  - { offset: 0x24A2, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem propertiesDictionary]', symObjAddr: 0x243C, symBinAddr: 0x100003BBC, symSize: 0x8 }
+  - { offset: 0x24D6, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem installationType]', symObjAddr: 0x2444, symBinAddr: 0x100003BC4, symSize: 0x8 }
+  - { offset: 0x250A, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem minimumAutoupdateVersion]', symObjAddr: 0x244C, symBinAddr: 0x100003BCC, symSize: 0x8 }
+  - { offset: 0x253E, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem ignoreSkippedUpgradesBelowVersion]', symObjAddr: 0x2454, symBinAddr: 0x100003BD4, symSize: 0x8 }
+  - { offset: 0x2572, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem phasedRolloutInterval]', symObjAddr: 0x245C, symBinAddr: 0x100003BDC, symSize: 0x8 }
+  - { offset: 0x25A6, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem channel]', symObjAddr: 0x2464, symBinAddr: 0x100003BE4, symSize: 0x8 }
+  - { offset: 0x25DA, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem deltaFromSparkleExecutableSize]', symObjAddr: 0x246C, symBinAddr: 0x100003BEC, symSize: 0x8 }
+  - { offset: 0x260E, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem deltaFromSparkleLocales]', symObjAddr: 0x2474, symBinAddr: 0x100003BF4, symSize: 0x8 }
+  - { offset: 0x2642, size: 0x8, addend: 0x0, symName: '-[SUAppcastItem .cxx_destruct]', symObjAddr: 0x247C, symBinAddr: 0x100003BFC, symSize: 0x144 }
+  - { offset: 0x2CA5, size: 0x8, addend: 0x0, symName: '-[SPUInstallationInfo initWithAppcastItem:canSilentlyInstall:systemDomain:]', symObjAddr: 0x0, symBinAddr: 0x100003D40, symSize: 0x90 }
+  - { offset: 0x3373, size: 0x8, addend: 0x0, symName: '-[SPUInstallationInfo initWithAppcastItem:canSilentlyInstall:systemDomain:]', symObjAddr: 0x0, symBinAddr: 0x100003D40, symSize: 0x90 }
+  - { offset: 0x33D4, size: 0x8, addend: 0x0, symName: '-[SPUInstallationInfo initWithCoder:]', symObjAddr: 0xA8, symBinAddr: 0x100003DD0, symSize: 0xCC }
+  - { offset: 0x3444, size: 0x8, addend: 0x0, symName: '-[SPUInstallationInfo encodeWithCoder:]', symObjAddr: 0x174, symBinAddr: 0x100003E9C, symSize: 0x70 }
+  - { offset: 0x3483, size: 0x8, addend: 0x0, symName: '+[SPUInstallationInfo supportsSecureCoding]', symObjAddr: 0x1E4, symBinAddr: 0x100003F0C, symSize: 0x8 }
+  - { offset: 0x34B3, size: 0x8, addend: 0x0, symName: '-[SPUInstallationInfo setSystemDomain:]', symObjAddr: 0x228, symBinAddr: 0x100007774, symSize: 0xC }
+  - { offset: 0x34E4, size: 0x8, addend: 0x0, symName: '-[SPUInstallationInfo .cxx_destruct]', symObjAddr: 0x234, symBinAddr: 0x100003F14, symSize: 0xC }
+  - { offset: 0x791F, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController initWithApplication:arguments:delegate:]', symObjAddr: 0x0, symBinAddr: 0x100003F20, symSize: 0x3FC }
+  - { offset: 0x7A51, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController cleanupAndExitWithStatus:error:]', symObjAddr: 0x3FC, symBinAddr: 0x10000431C, symSize: 0x17C }
+  - { offset: 0x7B96, size: 0x8, addend: 0x0, symName: '___73-[InstallerProgressAppController initWithApplication:arguments:delegate:]_block_invoke', symObjAddr: 0x578, symBinAddr: 0x100004498, symSize: 0x78 }
+  - { offset: 0x7C0A, size: 0x8, addend: 0x0, symName: '___73-[InstallerProgressAppController initWithApplication:arguments:delegate:]_block_invoke_2', symObjAddr: 0x5F0, symBinAddr: 0x100004510, symSize: 0x34 }
+  - { offset: 0x7C5F, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32w, symObjAddr: 0x624, symBinAddr: 0x100004544, symSize: 0xC }
+  - { offset: 0x7C85, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32w, symObjAddr: 0x630, symBinAddr: 0x100004550, symSize: 0x8 }
+  - { offset: 0x7CA2, size: 0x8, addend: 0x0, symName: '___73-[InstallerProgressAppController initWithApplication:arguments:delegate:]_block_invoke.29', symObjAddr: 0x638, symBinAddr: 0x100004558, symSize: 0x78 }
+  - { offset: 0x7CEE, size: 0x8, addend: 0x0, symName: '___73-[InstallerProgressAppController initWithApplication:arguments:delegate:]_block_invoke_2.30', symObjAddr: 0x6B0, symBinAddr: 0x1000045D0, symSize: 0x11C }
+  - { offset: 0x7D5E, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController run]', symObjAddr: 0x7CC, symBinAddr: 0x100007780, symSize: 0x10 }
+  - { offset: 0x7D75, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController run]', symObjAddr: 0x7CC, symBinAddr: 0x100007780, symSize: 0x10 }
+  - { offset: 0x7D9B, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController startConnection]', symObjAddr: 0x7DC, symBinAddr: 0x100007790, symSize: 0xD8 }
+  - { offset: 0x7E2C, size: 0x8, addend: 0x0, symName: '___49-[InstallerProgressAppController startConnection]_block_invoke', symObjAddr: 0x8B4, symBinAddr: 0x1000046EC, symSize: 0x5C }
+  - { offset: 0x7E7C, size: 0x8, addend: 0x0, symName: '___49-[InstallerProgressAppController startConnection]_block_invoke_2', symObjAddr: 0x910, symBinAddr: 0x100004748, symSize: 0x10 }
+  - { offset: 0x7EB8, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s, symObjAddr: 0x920, symBinAddr: 0x100004758, symSize: 0x8 }
+  - { offset: 0x7EDC, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s, symObjAddr: 0x928, symBinAddr: 0x100004760, symSize: 0x8 }
+  - { offset: 0x7EF9, size: 0x8, addend: 0x0, symName: '___49-[InstallerProgressAppController startConnection]_block_invoke.35', symObjAddr: 0x930, symBinAddr: 0x100004768, symSize: 0x40 }
+  - { offset: 0x7F4B, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController applicationDidFinishLaunching:]', symObjAddr: 0x970, symBinAddr: 0x100007868, symSize: 0x4 }
+  - { offset: 0x7F60, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController applicationDidFinishLaunching:]', symObjAddr: 0x970, symBinAddr: 0x100007868, symSize: 0x4 }
+  - { offset: 0x7F9C, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController applicationDidFinishLaunching:]', symObjAddr: 0x970, symBinAddr: 0x100007868, symSize: 0x4 }
+  - { offset: 0x7FAE, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController runningApplicationsWithBundle:]', symObjAddr: 0x974, symBinAddr: 0x10000786C, symSize: 0x428 }
+  - { offset: 0x81F8, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_3, symObjAddr: 0x1C48, symBinAddr: 0x1000054C4, symSize: 0x8 }
+  - { offset: 0x820F, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_0, symObjAddr: 0x1C28, symBinAddr: 0x1000054A4, symSize: 0x8 }
+  - { offset: 0x8226, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_2, symObjAddr: 0x1C40, symBinAddr: 0x1000054BC, symSize: 0x8 }
+  - { offset: 0x823D, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_5, symObjAddr: 0x1C58, symBinAddr: 0x1000054D4, symSize: 0x8 }
+  - { offset: 0x8254, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_4, symObjAddr: 0x1C50, symBinAddr: 0x1000054CC, symSize: 0x8 }
+  - { offset: 0x826B, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_6, symObjAddr: 0x1C60, symBinAddr: 0x1000054DC, symSize: 0x8 }
+  - { offset: 0x8282, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController registerApplicationBundlePath:reply:]', symObjAddr: 0xD9C, symBinAddr: 0x1000047A8, symSize: 0xBC }
+  - { offset: 0x82E7, size: 0x8, addend: 0x0, symName: '___70-[InstallerProgressAppController registerApplicationBundlePath:reply:]_block_invoke', symObjAddr: 0xE58, symBinAddr: 0x100004864, symSize: 0x178 }
+  - { offset: 0x83B0, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40s48b, symObjAddr: 0xFD0, symBinAddr: 0x1000049DC, symSize: 0x3C }
+  - { offset: 0x83C6, size: 0x8, addend: 0x0, symName: '___70-[InstallerProgressAppController registerApplicationBundlePath:reply:]_block_invoke.cold.1', symObjAddr: 0x1AA8, symBinAddr: 0x100007C94, symSize: 0xD0 }
+  - { offset: 0x841C, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40s48b, symObjAddr: 0xFD0, symBinAddr: 0x1000049DC, symSize: 0x3C }
+  - { offset: 0x8442, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s48s, symObjAddr: 0x100C, symBinAddr: 0x100004A18, symSize: 0x30 }
+  - { offset: 0x845F, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController observeValueForKeyPath:ofObject:change:context:]', symObjAddr: 0x103C, symBinAddr: 0x100004A48, symSize: 0x120 }
+  - { offset: 0x850A, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController listenForTerminationWithCompletion:]', symObjAddr: 0x115C, symBinAddr: 0x100004B68, symSize: 0x84 }
+  - { offset: 0x855F, size: 0x8, addend: 0x0, symName: '___69-[InstallerProgressAppController listenForTerminationWithCompletion:]_block_invoke', symObjAddr: 0x11E0, symBinAddr: 0x100004BEC, symSize: 0xCC }
+  - { offset: 0x85D9, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40b, symObjAddr: 0x12AC, symBinAddr: 0x100004CB8, symSize: 0x34 }
+  - { offset: 0x85FF, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s, symObjAddr: 0x12E0, symBinAddr: 0x100004CEC, symSize: 0x28 }
+  - { offset: 0x861C, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController registerInstallationInfoData:]', symObjAddr: 0x1308, symBinAddr: 0x100004D14, symSize: 0x84 }
+  - { offset: 0x8671, size: 0x8, addend: 0x0, symName: '___63-[InstallerProgressAppController registerInstallationInfoData:]_block_invoke', symObjAddr: 0x138C, symBinAddr: 0x100004D98, symSize: 0xEC }
+  - { offset: 0x8738, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40s, symObjAddr: 0x1478, symBinAddr: 0x100004E84, symSize: 0x28 }
+  - { offset: 0x875E, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController sendTerminationSignal]', symObjAddr: 0x14A0, symBinAddr: 0x100004EAC, symSize: 0x58 }
+  - { offset: 0x87A3, size: 0x8, addend: 0x0, symName: '___55-[InstallerProgressAppController sendTerminationSignal]_block_invoke', symObjAddr: 0x14F8, symBinAddr: 0x100004F04, symSize: 0x68 }
+  - { offset: 0x87FD, size: 0x8, addend: 0x0, symName: '___55-[InstallerProgressAppController sendTerminationSignal]_block_invoke.cold.1', symObjAddr: 0x1B78, symBinAddr: 0x100007D64, symSize: 0xB0 }
+  - { offset: 0x882B, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController relaunchApplication]', symObjAddr: 0x1560, symBinAddr: 0x100004F6C, symSize: 0x58 }
+  - { offset: 0x8870, size: 0x8, addend: 0x0, symName: '___53-[InstallerProgressAppController relaunchApplication]_block_invoke', symObjAddr: 0x15B8, symBinAddr: 0x100004FC4, symSize: 0x258 }
+  - { offset: 0x8912, size: 0x8, addend: 0x0, symName: '___53-[InstallerProgressAppController relaunchApplication]_block_invoke_2', symObjAddr: 0x1810, symBinAddr: 0x10000521C, symSize: 0x18 }
+  - { offset: 0x8928, size: 0x8, addend: 0x0, symName: '___53-[InstallerProgressAppController relaunchApplication]_block_invoke_2', symObjAddr: 0x1810, symBinAddr: 0x10000521C, symSize: 0x18 }
+  - { offset: 0x896A, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController showProgress]', symObjAddr: 0x1828, symBinAddr: 0x100005234, symSize: 0x58 }
+  - { offset: 0x897F, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController showProgress]', symObjAddr: 0x1828, symBinAddr: 0x100005234, symSize: 0x58 }
+  - { offset: 0x89C4, size: 0x8, addend: 0x0, symName: '___46-[InstallerProgressAppController showProgress]_block_invoke', symObjAddr: 0x1880, symBinAddr: 0x10000528C, symSize: 0xD4 }
+  - { offset: 0x8AA1, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController stopProgress]', symObjAddr: 0x1954, symBinAddr: 0x100005360, symSize: 0x58 }
+  - { offset: 0x8AE6, size: 0x8, addend: 0x0, symName: '___46-[InstallerProgressAppController stopProgress]_block_invoke', symObjAddr: 0x19AC, symBinAddr: 0x1000053B8, symSize: 0x60 }
+  - { offset: 0x8B25, size: 0x8, addend: 0x0, symName: '-[InstallerProgressAppController .cxx_destruct]', symObjAddr: 0x1A0C, symBinAddr: 0x100005418, symSize: 0x8C }
+  - { offset: 0x8B55, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_1, symObjAddr: 0x1C30, symBinAddr: 0x1000054AC, symSize: 0x10 }
+  - { offset: 0x92A7, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x1000054E4, symSize: 0x17C }
+  - { offset: 0x92C7, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x1000054E4, symSize: 0x17C }
+  - { offset: 0x94DA, size: 0x8, addend: 0x0, symName: ___main_block_invoke, symObjAddr: 0x17C, symBinAddr: 0x100005660, symSize: 0x10 }
+  - { offset: 0x9620, size: 0x8, addend: 0x0, symName: '-[ShowInstallerProgress loadLocalizationStringsFromHost:]', symObjAddr: 0x0, symBinAddr: 0x100005670, symSize: 0x2B8 }
+  - { offset: 0xD257, size: 0x8, addend: 0x0, symName: '-[ShowInstallerProgress loadLocalizationStringsFromHost:]', symObjAddr: 0x0, symBinAddr: 0x100005670, symSize: 0x2B8 }
+  - { offset: 0xD372, size: 0x8, addend: 0x0, symName: '-[ShowInstallerProgress installerProgressShouldDisplayWithHost:]', symObjAddr: 0x2B8, symBinAddr: 0x100005928, symSize: 0xB0 }
+  - { offset: 0xD3B1, size: 0x8, addend: 0x0, symName: '-[ShowInstallerProgress installerProgressShouldStop]', symObjAddr: 0x368, symBinAddr: 0x1000059D8, symSize: 0x2C }
+  - { offset: 0xD3E1, size: 0x8, addend: 0x0, symName: '-[ShowInstallerProgress .cxx_destruct]', symObjAddr: 0x394, symBinAddr: 0x100005A04, symSize: 0x48 }
+  - { offset: 0xD4F9, size: 0x8, addend: 0x0, symName: _SULogError, symObjAddr: 0x0, symBinAddr: 0x100005A4C, symSize: 0x9C }
+  - { offset: 0xD532, size: 0x8, addend: 0x0, symName: _SULogError, symObjAddr: 0x0, symBinAddr: 0x100005A4C, symSize: 0x9C }
+  - { offset: 0xD570, size: 0x8, addend: 0x0, symName: _SULogErrors, symObjAddr: 0x9C, symBinAddr: 0x100005AE8, symSize: 0x264 }
+  - { offset: 0xD817, size: 0x8, addend: 0x0, symName: _SPUServiceNameWithTag, symObjAddr: 0xB0, symBinAddr: 0x100005D4C, symSize: 0x6C }
+  - { offset: 0xD89A, size: 0x8, addend: 0x0, symName: _SPUStatusInfoServiceNameForBundleIdentifier, symObjAddr: 0x11C, symBinAddr: 0x100005DB8, symSize: 0x10 }
+  - { offset: 0xD8D9, size: 0x8, addend: 0x0, symName: _SPUProgressAgentServiceNameForBundleIdentifier, symObjAddr: 0x12C, symBinAddr: 0x100005DC8, symSize: 0x10 }
+  - { offset: 0xD9AA, size: 0x8, addend: 0x0, symName: '-[SUTouchBarButtonGroup initByReferencingButtons:]', symObjAddr: 0x0, symBinAddr: 0x100007E14, symSize: 0x3F8 }
+  - { offset: 0x11619, size: 0x8, addend: 0x0, symName: '-[SUTouchBarButtonGroup initByReferencingButtons:]', symObjAddr: 0x0, symBinAddr: 0x100007E14, symSize: 0x3F8 }
+  - { offset: 0x11830, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_5, symObjAddr: 0x460, symBinAddr: 0x100005E2C, symSize: 0x8 }
+  - { offset: 0x11847, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_4, symObjAddr: 0x458, symBinAddr: 0x100005E24, symSize: 0x8 }
+  - { offset: 0x11868, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_6, symObjAddr: 0x468, symBinAddr: 0x100005E34, symSize: 0x10 }
+  - { offset: 0x1187F, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_8, symObjAddr: 0x480, symBinAddr: 0x100005E44, symSize: 0xC }
+  - { offset: 0x11896, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_0, symObjAddr: 0x420, symBinAddr: 0x100005DEC, symSize: 0x10 }
+  - { offset: 0x118AD, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_1, symObjAddr: 0x430, symBinAddr: 0x100005DFC, symSize: 0x10 }
+  - { offset: 0x118C4, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_3, symObjAddr: 0x450, symBinAddr: 0x100005E1C, symSize: 0x8 }
+  - { offset: 0x118DB, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_2, symObjAddr: 0x440, symBinAddr: 0x100005E0C, symSize: 0x10 }
+  - { offset: 0x118F2, size: 0x8, addend: 0x0, symName: '-[SUTouchBarButtonGroup buttons]', symObjAddr: 0x3F8, symBinAddr: 0x10000820C, symSize: 0x14 }
+  - { offset: 0x11918, size: 0x8, addend: 0x0, symName: '-[SUTouchBarButtonGroup .cxx_destruct]', symObjAddr: 0x40C, symBinAddr: 0x100005DD8, symSize: 0x14 }
+  - { offset: 0x11B86, size: 0x8, addend: 0x0, symName: '-[SUSignatures initWithEd:dsa:]', symObjAddr: 0x0, symBinAddr: 0x100008220, symSize: 0xF8 }
+  - { offset: 0x11F12, size: 0x8, addend: 0x0, symName: '-[SUSignatures initWithEd:dsa:]', symObjAddr: 0x0, symBinAddr: 0x100008220, symSize: 0xF8 }
+  - { offset: 0x11FD5, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_2, symObjAddr: 0x5A0, symBinAddr: 0x100006170, symSize: 0xC }
+  - { offset: 0x11FEC, size: 0x8, addend: 0x0, symName: _decode, symObjAddr: 0xF8, symBinAddr: 0x100005E50, symSize: 0xC8 }
+  - { offset: 0x12060, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_0, symObjAddr: 0x580, symBinAddr: 0x100006150, symSize: 0x10 }
+  - { offset: 0x12077, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_1, symObjAddr: 0x590, symBinAddr: 0x100006160, symSize: 0x10 }
+  - { offset: 0x120F4, size: 0x8, addend: 0x0, symName: '-[SUSignatures initWithCoder:]', symObjAddr: 0x1D8, symBinAddr: 0x100005F18, symSize: 0x164 }
+  - { offset: 0x121E3, size: 0x8, addend: 0x0, symName: '-[SUSignatures encodeWithCoder:]', symObjAddr: 0x33C, symBinAddr: 0x10000607C, symSize: 0xB4 }
+  - { offset: 0x1225C, size: 0x8, addend: 0x0, symName: '+[SUSignatures supportsSecureCoding]', symObjAddr: 0x3F0, symBinAddr: 0x100006130, symSize: 0x8 }
+  - { offset: 0x1228C, size: 0x8, addend: 0x0, symName: '-[SUSignatures .cxx_destruct]', symObjAddr: 0x41C, symBinAddr: 0x100006138, symSize: 0xC }
+  - { offset: 0x122C1, size: 0x8, addend: 0x0, symName: '-[SUPublicKeys .cxx_destruct]', symObjAddr: 0x574, symBinAddr: 0x100006144, symSize: 0xC }
+  - { offset: 0x1232B, size: 0x8, addend: 0x0, symName: '-[StatusInfo initWithHostBundleIdentifier:]', symObjAddr: 0x0, symBinAddr: 0x100008318, symSize: 0xE4 }
+  - { offset: 0x1255B, size: 0x8, addend: 0x0, symName: '-[StatusInfo initWithHostBundleIdentifier:]', symObjAddr: 0x0, symBinAddr: 0x100008318, symSize: 0xE4 }
+  - { offset: 0x125B5, size: 0x8, addend: 0x0, symName: '-[StatusInfo startListener]', symObjAddr: 0xE4, symBinAddr: 0x1000083FC, symSize: 0x10 }
+  - { offset: 0x125DB, size: 0x8, addend: 0x0, symName: '-[StatusInfo invalidate]', symObjAddr: 0xF4, symBinAddr: 0x10000840C, symSize: 0x34 }
+  - { offset: 0x12601, size: 0x8, addend: 0x0, symName: '-[StatusInfo listener:shouldAcceptNewConnection:]', symObjAddr: 0x128, symBinAddr: 0x10000617C, symSize: 0x8C }
+  - { offset: 0x1264F, size: 0x8, addend: 0x0, symName: '-[StatusInfo setInstallationInfoData:]', symObjAddr: 0x1B4, symBinAddr: 0x100008440, symSize: 0x14C }
+  - { offset: 0x126C1, size: 0x8, addend: 0x0, symName: '-[StatusInfo probeStatusInfoWithReply:]', symObjAddr: 0x300, symBinAddr: 0x100006208, symSize: 0x84 }
+  - { offset: 0x127A9, size: 0x8, addend: 0x0, symName: '___39-[StatusInfo probeStatusInfoWithReply:]_block_invoke', symObjAddr: 0x384, symBinAddr: 0x10000628C, symSize: 0x118 }
+  - { offset: 0x128A3, size: 0x8, addend: 0x0, symName: '___39-[StatusInfo probeStatusInfoWithReply:]_block_invoke_2', symObjAddr: 0x49C, symBinAddr: 0x1000063A4, symSize: 0x5C }
+  - { offset: 0x1291E, size: 0x8, addend: 0x0, symName: '-[StatusInfo probeStatusConnectivityWithReply:]', symObjAddr: 0x57C, symBinAddr: 0x100006400, symSize: 0xC }
+  - { offset: 0x1296D, size: 0x8, addend: 0x0, symName: '-[StatusInfo installationInfoData]', symObjAddr: 0x588, symBinAddr: 0x10000858C, symSize: 0xC }
+  - { offset: 0x12993, size: 0x8, addend: 0x0, symName: '-[StatusInfo .cxx_destruct]', symObjAddr: 0x594, symBinAddr: 0x10000640C, symSize: 0x3C }
+  - { offset: 0x12F48, size: 0x8, addend: 0x0, symName: '+[SUApplicationInfo bestIconForHost:]', symObjAddr: 0x4C, symBinAddr: 0x100006448, symSize: 0x110 }
+  - { offset: 0x13E9E, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeValueMacOS, symObjAddr: 0xFC0, symBinAddr: 0x1000101C0, symSize: 0x0 }
+  - { offset: 0x13EB4, size: 0x8, addend: 0x0, symName: _SURelaunchHostBundleKey, symObjAddr: 0xFF8, symBinAddr: 0x1000101C8, symSize: 0x0 }
+  - { offset: 0x13ECA, size: 0x8, addend: 0x0, symName: _SUDefaultsDomainKey, symObjAddr: 0x10C8, symBinAddr: 0x1000101D0, symSize: 0x0 }
+  - { offset: 0x13EE0, size: 0x8, addend: 0x0, symName: _SUSparkleErrorDomain, symObjAddr: 0x10D0, symBinAddr: 0x1000101D8, symSize: 0x0 }
+  - { offset: 0x13EF6, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeDeltaFrom, symObjAddr: 0x1110, symBinAddr: 0x1000101E0, symSize: 0x0 }
+  - { offset: 0x13F0C, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeDeltaFromSparkleExecutableSize, symObjAddr: 0x1118, symBinAddr: 0x1000101E8, symSize: 0x0 }
+  - { offset: 0x13F22, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeDeltaFromSparkleLocales, symObjAddr: 0x1120, symBinAddr: 0x1000101F0, symSize: 0x0 }
+  - { offset: 0x13F38, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeDSASignature, symObjAddr: 0x1128, symBinAddr: 0x1000101F8, symSize: 0x0 }
+  - { offset: 0x13F4E, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeEDSignature, symObjAddr: 0x1130, symBinAddr: 0x100010200, symSize: 0x0 }
+  - { offset: 0x13F64, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeShortVersionString, symObjAddr: 0x1138, symBinAddr: 0x100010208, symSize: 0x0 }
+  - { offset: 0x13F7A, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeVersion, symObjAddr: 0x1140, symBinAddr: 0x100010210, symSize: 0x0 }
+  - { offset: 0x13F90, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeOsType, symObjAddr: 0x1148, symBinAddr: 0x100010218, symSize: 0x0 }
+  - { offset: 0x13FA6, size: 0x8, addend: 0x0, symName: _SUAppcastAttributeInstallationType, symObjAddr: 0x1150, symBinAddr: 0x100010220, symSize: 0x0 }
+  - { offset: 0x13FBC, size: 0x8, addend: 0x0, symName: _SUAppcastElementVersion, symObjAddr: 0x1160, symBinAddr: 0x100010228, symSize: 0x0 }
+  - { offset: 0x13FD2, size: 0x8, addend: 0x0, symName: _SUAppcastElementCriticalUpdate, symObjAddr: 0x1170, symBinAddr: 0x100010230, symSize: 0x0 }
+  - { offset: 0x13FE8, size: 0x8, addend: 0x0, symName: _SUAppcastElementDeltas, symObjAddr: 0x1178, symBinAddr: 0x100010238, symSize: 0x0 }
+  - { offset: 0x13FFE, size: 0x8, addend: 0x0, symName: _SUAppcastElementMinimumAutoupdateVersion, symObjAddr: 0x1180, symBinAddr: 0x100010240, symSize: 0x0 }
+  - { offset: 0x14014, size: 0x8, addend: 0x0, symName: _SUAppcastElementMinimumSystemVersion, symObjAddr: 0x1188, symBinAddr: 0x100010248, symSize: 0x0 }
+  - { offset: 0x1402A, size: 0x8, addend: 0x0, symName: _SUAppcastElementMaximumSystemVersion, symObjAddr: 0x1190, symBinAddr: 0x100010250, symSize: 0x0 }
+  - { offset: 0x14040, size: 0x8, addend: 0x0, symName: _SUAppcastElementReleaseNotesLink, symObjAddr: 0x1198, symBinAddr: 0x100010258, symSize: 0x0 }
+  - { offset: 0x14056, size: 0x8, addend: 0x0, symName: _SUAppcastElementFullReleaseNotesLink, symObjAddr: 0x11A0, symBinAddr: 0x100010260, symSize: 0x0 }
+  - { offset: 0x1406C, size: 0x8, addend: 0x0, symName: _SUAppcastElementTags, symObjAddr: 0x11A8, symBinAddr: 0x100010268, symSize: 0x0 }
+  - { offset: 0x14082, size: 0x8, addend: 0x0, symName: _SUAppcastElementPhasedRolloutInterval, symObjAddr: 0x11B0, symBinAddr: 0x100010270, symSize: 0x0 }
+  - { offset: 0x14098, size: 0x8, addend: 0x0, symName: _SUAppcastElementInformationalUpdate, symObjAddr: 0x11B8, symBinAddr: 0x100010278, symSize: 0x0 }
+  - { offset: 0x140AE, size: 0x8, addend: 0x0, symName: _SUAppcastElementChannel, symObjAddr: 0x11C0, symBinAddr: 0x100010280, symSize: 0x0 }
+  - { offset: 0x140C4, size: 0x8, addend: 0x0, symName: _SUAppcastElementIgnoreSkippedUpgradesBelowVersion, symObjAddr: 0x11D0, symBinAddr: 0x100010288, symSize: 0x0 }
+  - { offset: 0x140DA, size: 0x8, addend: 0x0, symName: _SURSSAttributeURL, symObjAddr: 0x11D8, symBinAddr: 0x100010290, symSize: 0x0 }
+  - { offset: 0x140F0, size: 0x8, addend: 0x0, symName: _SURSSAttributeLength, symObjAddr: 0x11E0, symBinAddr: 0x100010298, symSize: 0x0 }
+  - { offset: 0x14106, size: 0x8, addend: 0x0, symName: _SURSSElementDescription, symObjAddr: 0x11E8, symBinAddr: 0x1000102A0, symSize: 0x0 }
+  - { offset: 0x1411C, size: 0x8, addend: 0x0, symName: _SURSSElementEnclosure, symObjAddr: 0x11F0, symBinAddr: 0x1000102A8, symSize: 0x0 }
+  - { offset: 0x14132, size: 0x8, addend: 0x0, symName: _SURSSElementLink, symObjAddr: 0x11F8, symBinAddr: 0x1000102B0, symSize: 0x0 }
+  - { offset: 0x14148, size: 0x8, addend: 0x0, symName: _SURSSElementPubDate, symObjAddr: 0x1200, symBinAddr: 0x1000102B8, symSize: 0x0 }
+  - { offset: 0x1415E, size: 0x8, addend: 0x0, symName: _SURSSElementTitle, symObjAddr: 0x1208, symBinAddr: 0x1000102C0, symSize: 0x0 }
+  - { offset: 0x1418E, size: 0x8, addend: 0x0, symName: '-[SUFileManager init]', symObjAddr: 0x0, symBinAddr: 0x100006558, symSize: 0x68 }
+  - { offset: 0x149A2, size: 0x8, addend: 0x0, symName: '-[SUFileManager init]', symObjAddr: 0x0, symBinAddr: 0x100006558, symSize: 0x68 }
+  - { offset: 0x149DB, size: 0x8, addend: 0x0, symName: '-[SUFileManager .cxx_destruct]', symObjAddr: 0x27FC, symBinAddr: 0x1000065C0, symSize: 0xC }
+  - { offset: 0x14A3B, size: 0x8, addend: 0x0, symName: '-[SUHost initWithBundle:]', symObjAddr: 0x0, symBinAddr: 0x100008598, symSize: 0x1C4 }
+  - { offset: 0x14A81, size: 0x8, addend: 0x0, symName: _SUHostObservableContext, symObjAddr: 0x1468, symBinAddr: 0x1000173D8, symSize: 0x0 }
+  - { offset: 0x15509, size: 0x8, addend: 0x0, symName: '-[SUHost initWithBundle:]', symObjAddr: 0x0, symBinAddr: 0x100008598, symSize: 0x1C4 }
+  - { offset: 0x155E5, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_4, symObjAddr: 0xF5C, symBinAddr: 0x1000068A4, symSize: 0x8 }
+  - { offset: 0x15606, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_13, symObjAddr: 0xFC0, symBinAddr: 0x1000068B4, symSize: 0x8 }
+  - { offset: 0x15627, size: 0x8, addend: 0x0, symName: '-[SUHost objectForInfoDictionaryKey:]', symObjAddr: 0x1C4, symBinAddr: 0x10000875C, symSize: 0x90 }
+  - { offset: 0x156D6, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_11, symObjAddr: 0xFAC, symBinAddr: 0x1000068AC, symSize: 0x8 }
+  - { offset: 0x1572C, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_3, symObjAddr: 0xF50, symBinAddr: 0x100006898, symSize: 0xC }
+  - { offset: 0x15743, size: 0x8, addend: 0x0, symName: '-[SUHost dealloc]', symObjAddr: 0x254, symBinAddr: 0x1000065CC, symSize: 0x118 }
+  - { offset: 0x15790, size: 0x8, addend: 0x0, symName: '-[SUHost observeValueForKeyPath:ofObject:change:context:]', symObjAddr: 0x4E0, symBinAddr: 0x1000066E4, symSize: 0xE4 }
+  - { offset: 0x1580F, size: 0x8, addend: 0x0, symName: '-[SUHost description]', symObjAddr: 0x5C4, symBinAddr: 0x1000067C8, symSize: 0x7C }
+  - { offset: 0x15858, size: 0x8, addend: 0x0, symName: '-[SUHost bundlePath]', symObjAddr: 0x640, symBinAddr: 0x1000087EC, symSize: 0x24 }
+  - { offset: 0x15893, size: 0x8, addend: 0x0, symName: '-[SUHost name]', symObjAddr: 0x664, symBinAddr: 0x100008810, symSize: 0x144 }
+  - { offset: 0x15981, size: 0x8, addend: 0x0, symName: '-[SUHost boolForInfoDictionaryKey:]', symObjAddr: 0xC98, symBinAddr: 0x100008954, symSize: 0x3C }
+  - { offset: 0x159D1, size: 0x8, addend: 0x0, symName: '-[SUHost bundle]', symObjAddr: 0xED8, symBinAddr: 0x100008990, symSize: 0xC }
+  - { offset: 0x159F7, size: 0x8, addend: 0x0, symName: '-[SUHost .cxx_destruct]', symObjAddr: 0xEE4, symBinAddr: 0x100006844, symSize: 0x54 }
+  - { offset: 0x15A5C, size: 0x8, addend: 0x0, symName: _SULog, symObjAddr: 0x0, symBinAddr: 0x1000068BC, symSize: 0x134 }
+  - { offset: 0x15A69, size: 0x8, addend: 0x0, symName: _SULog, symObjAddr: 0x0, symBinAddr: 0x1000068BC, symSize: 0x134 }
+  - { offset: 0x15A8B, size: 0x8, addend: 0x0, symName: _SULog.onceToken, symObjAddr: 0x1C68, symBinAddr: 0x100017458, symSize: 0x0 }
+  - { offset: 0x15AA1, size: 0x8, addend: 0x0, symName: _SULog.logger, symObjAddr: 0x1C70, symBinAddr: 0x100017460, symSize: 0x0 }
+  - { offset: 0x15E36, size: 0x8, addend: 0x0, symName: _SULog.cold.2, symObjAddr: 0x17C, symBinAddr: 0x1000089B0, symSize: 0x74 }
+  - { offset: 0x15E90, size: 0x8, addend: 0x0, symName: _SULog.cold.1, symObjAddr: 0x168, symBinAddr: 0x10000899C, symSize: 0x14 }
+  - { offset: 0x15EAC, size: 0x8, addend: 0x0, symName: _SULog.cold.1, symObjAddr: 0x168, symBinAddr: 0x10000899C, symSize: 0x14 }
+  - { offset: 0x15EBD, size: 0x8, addend: 0x0, symName: ___SULog_block_invoke, symObjAddr: 0x134, symBinAddr: 0x1000069F0, symSize: 0x34 }
+  - { offset: 0x16027, size: 0x8, addend: 0x0, symName: '+[SUOperatingSystem systemVersionString]', symObjAddr: 0x0, symBinAddr: 0x100006A24, symSize: 0x8C }
+  - { offset: 0x16066, size: 0x8, addend: 0x0, symName: '+[SUOperatingSystem systemVersionString]', symObjAddr: 0x0, symBinAddr: 0x100006A24, symSize: 0x8C }
+  - { offset: 0x1A5E2, size: 0x8, addend: 0x0, symName: '-[SUStatusController initWithHost:windowTitle:centerPointValue:minimizable:closable:]', symObjAddr: 0x0, symBinAddr: 0x100008A24, symSize: 0x12C }
+  - { offset: 0x1A662, size: 0x8, addend: 0x0, symName: '-[SUStatusController description]', symObjAddr: 0x12C, symBinAddr: 0x100006AB0, symSize: 0x84 }
+  - { offset: 0x1A696, size: 0x8, addend: 0x0, symName: '-[SUStatusController windowDidLoad]', symObjAddr: 0x1B0, symBinAddr: 0x100006B34, symSize: 0x174 }
+  - { offset: 0x1A701, size: 0x8, addend: 0x0, symName: '-[SUStatusController applicationIcon]', symObjAddr: 0x324, symBinAddr: 0x100006CA8, symSize: 0x1C }
+  - { offset: 0x1A735, size: 0x8, addend: 0x0, symName: '-[SUStatusController beginActionWithTitle:maxProgressValue:statusText:]', symObjAddr: 0x340, symBinAddr: 0x100008B50, symSize: 0x70 }
+  - { offset: 0x1A7AD, size: 0x8, addend: 0x0, symName: '-[SUStatusController setButtonTitle:target:action:isDefault:accessibilityIdentifier:]', symObjAddr: 0x3B0, symBinAddr: 0x100008BC0, symSize: 0x214 }
+  - { offset: 0x1A90C, size: 0x8, addend: 0x0, symName: _OUTLINED_FUNCTION_0, symObjAddr: 0xA40, symBinAddr: 0x1000070FC, symSize: 0xC }
+  - { offset: 0x1A923, size: 0x8, addend: 0x0, symName: '-[SUStatusController progressBarShouldAnimate]', symObjAddr: 0x5E0, symBinAddr: 0x100006CC4, symSize: 0x8 }
+  - { offset: 0x1A953, size: 0x8, addend: 0x0, symName: '-[SUStatusController setMaxProgressValue:]', symObjAddr: 0x600, symBinAddr: 0x100006CCC, symSize: 0x70 }
+  - { offset: 0x1A992, size: 0x8, addend: 0x0, symName: '-[SUStatusController makeTouchBar]', symObjAddr: 0x670, symBinAddr: 0x100006D3C, symSize: 0xC8 }
+  - { offset: 0x1A9D5, size: 0x8, addend: 0x0, symName: '-[SUStatusController touchBar:makeItemForIdentifier:]', symObjAddr: 0x738, symBinAddr: 0x100006E04, symSize: 0x194 }
+  - { offset: 0x1AA4F, size: 0x8, addend: 0x0, symName: '-[SUStatusController title]', symObjAddr: 0x8CC, symBinAddr: 0x100006F98, symSize: 0x10 }
+  - { offset: 0x1AA83, size: 0x8, addend: 0x0, symName: '-[SUStatusController setTitle:]', symObjAddr: 0x8DC, symBinAddr: 0x100006FA8, symSize: 0xC }
+  - { offset: 0x1AABF, size: 0x8, addend: 0x0, symName: '-[SUStatusController buttonTitle]', symObjAddr: 0x8E8, symBinAddr: 0x100006FB4, symSize: 0x10 }
+  - { offset: 0x1AAF3, size: 0x8, addend: 0x0, symName: '-[SUStatusController setButtonTitle:]', symObjAddr: 0x8F8, symBinAddr: 0x100006FC4, symSize: 0xC }
+  - { offset: 0x1AB2F, size: 0x8, addend: 0x0, symName: '-[SUStatusController progressValue]', symObjAddr: 0x904, symBinAddr: 0x100006FD0, symSize: 0x10 }
+  - { offset: 0x1AB61, size: 0x8, addend: 0x0, symName: '-[SUStatusController setProgressValue:]', symObjAddr: 0x914, symBinAddr: 0x100006FE0, symSize: 0x10 }
+  - { offset: 0x1AB9C, size: 0x8, addend: 0x0, symName: '-[SUStatusController maxProgressValue]', symObjAddr: 0x924, symBinAddr: 0x100006FF0, symSize: 0x10 }
+  - { offset: 0x1ABCE, size: 0x8, addend: 0x0, symName: '-[SUStatusController statusText]', symObjAddr: 0x934, symBinAddr: 0x100007000, symSize: 0x10 }
+  - { offset: 0x1AC02, size: 0x8, addend: 0x0, symName: '-[SUStatusController setStatusText:]', symObjAddr: 0x944, symBinAddr: 0x100007010, symSize: 0xC }
+  - { offset: 0x1AC3E, size: 0x8, addend: 0x0, symName: '-[SUStatusController .cxx_destruct]', symObjAddr: 0x950, symBinAddr: 0x10000701C, symSize: 0xE0 }
+...
