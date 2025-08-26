@@ -49,7 +49,7 @@ jobs:
       shell: zsh {0}
 
     - name: Lint
-      run: swiftlint lint --reporter github-actions-logging
+      run: swiftlint lint --reporter github-actions-logging --exclude Sparkle
 
     - name: i18n Stats
       run: |
