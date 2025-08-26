@@ -44,11 +44,11 @@ class Launcher {
 
                 // 🔍 Nếu app tên ".locked_TenApp", ta lấy "TenApp"
 //                guard appName.hasPrefix(".locked_") else { continue }
-                let LauncherPath = "/Applications/\(appName).app"
+                let launcherPath = "/Applications/\(appName).app"
                 let hiddenAppRealURL  = URL(fileURLWithPath:"/Applications/.\(appName).app")
 
-                guard let lockedInfo = lockedApps[LauncherPath] else {
-                    Logfile.launcher.warning("⚠️ Can't find info for: \(LauncherPath)")
+                guard let lockedInfo = lockedApps[launcherPath] else {
+                    Logfile.launcher.warning("⚠️ Can't find info for: \(launcherPath)")
                     continue
                 }
 

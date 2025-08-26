@@ -17,6 +17,3 @@ struct LockedAppInfo: Codable {
         case execFile = "ExecFile"
     }
 }
-
-
-

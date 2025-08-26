@@ -83,21 +83,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
         }
     }
     
-    @objc func OpenSettings(){
+    @objc func openSettings(){
         Logfile.core.info("Settings Clicked")
         SettingsWindowController.shared.show()
     }
     
-    @objc func Uninstall(){
+    @objc func uninstall(){
         Logfile.core.info("Uninstall Clicked")
     }
     
-    @objc func CheckUpdate(){
+    @objc func checkUpdate(){
         Logfile.core.info("CheckUpdate Clicked")
         // Gọi check update thủ công
         AppUpdater.shared.checkForUpdates()
     }
-    @objc func LaunchAtLogin(_ sender: NSMenuItem) {
+    @objc func launchAtLogin(_ sender: NSMenuItem) {
         Task {
             let loginItem = SMAppService.mainApp
 
@@ -119,7 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
         }
     }
 
-    @objc func About(){
+    @objc func about(){
         Logfile.core.info("About Clicked")
         NSApp.orderFrontStandardAboutPanel(nil)
     }
@@ -132,14 +132,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
             // Menu khi giữ Option
             menu.addItem(NSMenuItem(
                 title: "Settings".localized,
-                action: #selector(OpenSettings),
+                action: #selector(openSettings),
                 keyEquivalent: ""
             ))
             menu.addItem(NSMenuItem.separator())
             // 👉 Launch At Login có tick
             let launchItem = NSMenuItem(
                 title: "Launch At Login".localized,
-                action: #selector(LaunchAtLogin),
+                action: #selector(launchAtLogin),
                 keyEquivalent: ""
             )
             launchItem.target = self
@@ -149,19 +149,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
             menu.addItem(launchItem)
             menu.addItem(NSMenuItem(
                 title: "Check for Updates...".localized,
-                action: #selector(CheckUpdate),
+                action: #selector(checkUpdate),
                 keyEquivalent: ""
             ))
             menu.addItem(NSMenuItem(
                 title: "About AppLocker".localized,
-                action: #selector(About),
+                action: #selector(about),
                 keyEquivalent: ""
             ))
             #if DEBUG
                 menu.addItem(NSMenuItem.separator())
                 menu.addItem(NSMenuItem(
                     title: "Uninstall AppLocker".localized,
-                    action: #selector(Uninstall),
+                    action: #selector(uninstall),
                     keyEquivalent: ""
                 ))
             #endif
