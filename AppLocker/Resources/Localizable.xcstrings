@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "About AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giới thiệu về AppLocker"
+          }
+        }
+      }
+    },
     "Add application to lock" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30,6 +41,61 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "xác thực để mở danh sách Ứng dụng"
+          }
+        }
+      }
+    },
+    "Automatically check for updates." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động kiểm tra cập nhật."
+          }
+        }
+      }
+    },
+    "Automatically download new updates." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động tải về bản cập nhật."
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huỷ bỏ"
+          }
+        }
+      }
+    },
+    "Check for Updates..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra cập nhật..."
+          }
+        }
+      }
+    },
+    "Checking for updates…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang kiểm tra cập nhật…"
           }
         }
       }
@@ -74,6 +140,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lỗi"
+          }
+        }
+      }
+    },
+    "Launch At Login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khi đăng nhập"
           }
         }
       }
@@ -155,6 +232,17 @@
         }
       }
     },
+    "Settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài đặt"
+          }
+        }
+      }
+    },
     "There is no locked application." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -162,6 +250,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Không có ứng dụng nào bị khoá."
+          }
+        }
+      }
+    },
+    "Uninstall AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ cài đặt AppLocker"
           }
         }
       }
@@ -177,6 +276,17 @@
         }
       }
     },
+    "Updating AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật AppLocker"
+          }
+        }
+      }
+    },
     "Waiting for %d task(s)..." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -187,7 +297,7 @@
           }
         }
       }
-    },
+    }
   },
   "version" : "1.1"
 }

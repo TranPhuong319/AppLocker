@@ -19,11 +19,16 @@ enum HelperToolAction {
     case uninstall // Uninstall the helper tool
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
+enum LoginAction {
+    case none      // Only check status
+    case install   // Install the helper tool
+    case uninstall // Uninstall the helper tool
+}
+
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListenerDelegate {
     var statusItem: NSStatusItem?
     var xpcListener: NSXPCListener?
     var connection: NSXPCConnection?
-    
     let helperToolIdentifier = "com.TranPhuong319.AppLockerHelper"
     
     func isRunningAsAdmin() -> Bool {
@@ -38,22 +43,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
         }
         
         // Setup menu bar
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem?.button?.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
+        statusItem = NSStatusBar.system.statusItem(
+            withLength: NSStatusItem.squareLength
+        )
+        statusItem?.button?.image = NSImage(
+            systemSymbolName: "lock.fill",
+            accessibilityDescription: "AppLocker"
+        )
 
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Manage the application list".localized, action: #selector(openSettings), keyEquivalent: "s"))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit AppLocker".localized, action: #selector(quitApp), keyEquivalent: "q"))
+        // Tạo menu rỗng và set delegate
+        let menu = NSMenu() 
+        menu.delegate = self
         statusItem?.menu = menu
+        _ = AppUpdater.shared
     }
 
-    @objc func openSettings() {
+    @objc func openListApp() {
         AuthenticationManager.authenticate(reason: "authenticate to open the application list".localized) { success, errorMessage in
             DispatchQueue.main.async {
                 if success {
                     AppListWindowController.show()
                     Logfile.core.debug("Opened AppList")
+                    AppUpdater.shared.gentleReminder()
                 } else {
                     Logfile.core.error("Error when opening list app: \(errorMessage as NSObject?, privacy: .public)")
                 }
@@ -64,10 +75,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
     @objc func quitApp() {
         AuthenticationManager.authenticate(reason: "quit application".localized) { success, errorMessage in
             if success {
-                Task{
-                    await self.manageHelperTool(action: .uninstall)
-                }
-                Logfile.core.info("Uninstall Successfully")
                 Logfile.core.debug("Quit Application")
                 NSApp.terminate(nil)
             } else {
@@ -75,6 +82,105 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSXPCListenerDelegate {
             }
         }
     }
+    
+    @objc func OpenSettings(){
+        Logfile.core.info("Settings Clicked")
+        SettingsWindowController.shared.show()
+    }
+    
+    @objc func Uninstall(){
+        Logfile.core.info("Uninstall Clicked")
+    }
+    
+    @objc func CheckUpdate(){
+        Logfile.core.info("CheckUpdate Clicked")
+        // Gọi check update thủ công
+        AppUpdater.shared.checkForUpdates()
+    }
+    @objc func LaunchAtLogin(_ sender: NSMenuItem) {
+        Task {
+            let loginItem = SMAppService.mainApp
+
+            if sender.state == .on {
+                do {
+                    try await loginItem.unregister()
+                    sender.state = .off
+                } catch {
+                    Logfile.core.error("❌ Unregister failed: \(error, privacy: .public)")
+                }
+            } else {
+                do {
+                    try loginItem.register()
+                    sender.state = .on
+                } catch {
+                    Logfile.core.error("❌ Register failed: \(error, privacy: .public)")
+                }
+            }
+        }
+    }
+
+    @objc func About(){
+        Logfile.core.info("About Clicked")
+        NSApp.orderFrontStandardAboutPanel(nil)
+    }
+
+    // Hàm này chạy mỗi khi user click mở menu
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+
+        if NSEvent.modifierFlags.contains(.option) {
+            // Menu khi giữ Option
+            menu.addItem(NSMenuItem(
+                title: "Settings".localized,
+                action: #selector(OpenSettings),
+                keyEquivalent: ""
+            ))
+            menu.addItem(NSMenuItem.separator())
+            // 👉 Launch At Login có tick
+            let launchItem = NSMenuItem(
+                title: "Launch At Login".localized,
+                action: #selector(LaunchAtLogin),
+                keyEquivalent: ""
+            )
+            launchItem.target = self
+
+            let status = SMAppService.mainApp.status
+            launchItem.state = (status == .enabled) ? .on : .off
+            menu.addItem(launchItem)
+            menu.addItem(NSMenuItem(
+                title: "Check for Updates...".localized,
+                action: #selector(CheckUpdate),
+                keyEquivalent: ""
+            ))
+            menu.addItem(NSMenuItem(
+                title: "About AppLocker".localized,
+                action: #selector(About),
+                keyEquivalent: ""
+            ))
+            #if DEBUG
+                menu.addItem(NSMenuItem.separator())
+                menu.addItem(NSMenuItem(
+                    title: "Uninstall AppLocker".localized,
+                    action: #selector(Uninstall),
+                    keyEquivalent: ""
+                ))
+            #endif
+        } else {
+            // Menu bình thường
+            menu.addItem(NSMenuItem(
+                title: "Manage the application list".localized,
+                action: #selector(openListApp),
+                keyEquivalent: "s"
+            ))
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(NSMenuItem(
+                title: "Quit AppLocker".localized,
+                action: #selector(quitApp),
+                keyEquivalent: "q"
+            ))
+        }
+    }
+
     func manageHelperTool(action: HelperToolAction = .none) async {
         let plistName = "\(helperToolIdentifier).plist"
         let service = SMAppService.daemon(plistName: plistName)
