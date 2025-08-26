@@ -92,16 +92,20 @@ jobs:
       if: github.event_name != 'workflow_dispatch'
       run: |
         set -o pipefail && xcodebuild \
+          ARCHS="arm64 x86_64" \
+          ONLY_ACTIVE_ARCH=NO \
           -scheme AppLocker \
           -configuration Debug \
           -derivedDataPath build \
           -disableAutomaticPackageResolution \
           CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO \
           | xcbeautify --renderer terminal
-    
+
     - name: Release Build (Universal)
       run: |
         set -o pipefail && xcodebuild \
+          ARCHS="arm64 x86_64" \
+          ONLY_ACTIVE_ARCH=NO \
           -scheme AppLocker \
           -configuration Release \
           -derivedDataPath build \
