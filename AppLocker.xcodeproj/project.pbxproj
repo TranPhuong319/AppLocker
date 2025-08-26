@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E04FC7992E5DBE570016518D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E06B45C92E5A9C6C00323A53 /* AppLockerHelper in CopyFiles */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* AppLockerHelper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0871C7D2E47906300B9C17F /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0DC1DD92E5DBADF002B454C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,14 +51,67 @@
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E04B8E9E2E5D847600BE7903 /* Exceptions for "Shared" folder in "Launcher" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized: InfoPlist.strings",
+				AppLockerHelperProtocol.swift,
+				Log.swift,
+			);
+			target = E07075952E38BA97001C7950 /* Launcher */;
+		};
+		E04B8EA22E5D848D00BE7903 /* Exceptions for "AppLocker" folder in "Launcher" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Authentication/AuthenticationManager.swift,
+			);
+			target = E07075952E38BA97001C7950 /* Launcher */;
+		};
+		E04B8EA42E5D849F00BE7903 /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppLockerHelperProtocol.swift,
+			);
+			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
+		};
+		E04B8EA62E5D84C900BE7903 /* Exceptions for "Extensions" folder in "Launcher" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Locatizable.swift,
+			);
+			target = E07075952E38BA97001C7950 /* Launcher */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		E04B8E922E5D833700BE7903 /* Exceptions for "AppLockerHelper" folder in "Copy Files" phase from "AppLocker" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				com.TranPhuong319.AppLockerHelper.plist = (CodeSignOnCopy, );
+			};
+			buildPhase = E058BA142E5A03FC0002D0D2 /* CopyFiles */;
+			membershipExceptions = (
+				com.TranPhuong319.AppLockerHelper.plist,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E021AF4E2E41159E003D2400 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E04B8E9E2E5D847600BE7903 /* Exceptions for "Shared" folder in "Launcher" target */,
+				E04B8EA42E5D849F00BE7903 /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
+			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
 		E05FF9042E51893C0013CC3A /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E04B8EA62E5D84C900BE7903 /* Exceptions for "Extensions" folder in "Launcher" target */,
+			);
 			path = Extensions;
 			sourceTree = "<group>";
 		};
@@ -67,17 +122,32 @@
 		};
 		E0D4C0662E419DAD003C40E3 /* AppLockerHelper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E04B8E922E5D833700BE7903 /* Exceptions for "AppLockerHelper" folder in "Copy Files" phase from "AppLocker" target */,
+			);
 			path = AppLockerHelper;
 			sourceTree = "<group>";
 		};
 		E0EF51AC2E31558900161CAB /* AppLocker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E04B8EA22E5D848D00BE7903 /* Exceptions for "AppLocker" folder in "Launcher" target */,
+			);
 			path = AppLocker;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E04B8EA72E5D852900BE7903 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E0DC1DD92E5DBADF002B454C /* Sparkle in Frameworks */,
+				E04FC7992E5DBE570016518D /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E07075932E38BA97001C7950 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -95,6 +165,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E04B8EA82E5D853100BE7903 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		E0EF51A12E31558800161CAB = {
 			isa = PBXGroup;
 			children = (
@@ -103,6 +180,7 @@
 				E021AF4E2E41159E003D2400 /* Shared */,
 				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
 				E05FF9042E51893C0013CC3A /* Extensions */,
+				E04B8EA82E5D853100BE7903 /* Frameworks */,
 				E0EF51AB2E31558900161CAB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -173,6 +251,7 @@
 				E021AF4C2E4110AA003D2400 /* CopyFiles */,
 				E058BA142E5A03FC0002D0D2 /* CopyFiles */,
 				E06B45C82E5A9C5400323A53 /* CopyFiles */,
+				E04B8EA72E5D852900BE7903 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -185,6 +264,8 @@
 			);
 			name = AppLocker;
 			packageProductDependencies = (
+				E0DC1DD82E5DBADF002B454C /* Sparkle */,
+				E04FC7982E5DBE570016518D /* Sparkle */,
 			);
 			productName = AppLocker;
 			productReference = E0EF51AA2E31558900161CAB /* AppLocker.app */;
@@ -221,6 +302,9 @@
 			);
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E04FC7972E5DBE570016518D /* XCLocalSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0EF51AB2E31558900161CAB /* Products */;
 			projectDirPath = "";
@@ -286,7 +370,6 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = 749P55DL5L;
 				ENABLE_APP_SANDBOX = NO;
@@ -302,7 +385,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -325,7 +408,6 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = 749P55DL5L;
 				ENABLE_APP_SANDBOX = NO;
@@ -341,7 +423,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -522,13 +604,12 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = 749P55DL5L;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = AppLocker/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AppLocker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -539,7 +620,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -562,13 +643,12 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = 749P55DL5L;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = AppLocker/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AppLocker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -579,7 +659,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -631,6 +711,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		E04FC7972E5DBE570016518D /* XCLocalSwiftPackageReference "Sparkle" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Sparkle;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E04FC7982E5DBE570016518D /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Sparkle;
+		};
+		E0DC1DD82E5DBADF002B454C /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E0EF51A22E31558800161CAB /* Project object */;
 }
