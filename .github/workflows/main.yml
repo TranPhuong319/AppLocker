@@ -169,11 +169,7 @@ jobs:
         
     - name: Prepare Sparkle Key
       run: |
-        {
-          echo "-----BEGIN PRIVATE KEY-----"
-          echo "${SPARKLE_KEY}"
-          echo "-----END PRIVATE KEY-----"
-        } | tr -d '\r' > sparkle_key.pem
+        echo "${SPARKLE_KEY}" | tr -d '\r' > sparkle_key.pem
         chmod 600 sparkle_key.pem
       env:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
