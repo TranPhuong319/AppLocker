@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E04FC7992E5DBE570016518D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E06B45C92E5A9C6C00323A53 /* AppLockerHelper in CopyFiles */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* AppLockerHelper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0871C7D2E47906300B9C17F /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		E0DC1DD92E5DBADF002B454C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
+		E0E2B31D2E5ECE2C007EF285 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0E2B31C2E5ECE2C007EF285 /* Sparkle */; };
+		E0E2B3202E5ECE7E007EF285 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0E2B31F2E5ECE7E007EF285 /* Sparkle */; };
+		E0E2B3232E5ECE9D007EF285 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0E2B3222E5ECE9D007EF285 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -161,8 +162,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E0DC1DD92E5DBADF002B454C /* Sparkle in Frameworks */,
-				E04FC7992E5DBE570016518D /* Sparkle in Frameworks */,
+				E0E2B3232E5ECE9D007EF285 /* Sparkle in Frameworks */,
+				E0E2B31D2E5ECE2C007EF285 /* Sparkle in Frameworks */,
+				E0E2B3202E5ECE7E007EF285 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +286,9 @@
 			packageProductDependencies = (
 				E0DC1DD82E5DBADF002B454C /* Sparkle */,
 				E04FC7982E5DBE570016518D /* Sparkle */,
+				E0E2B31C2E5ECE2C007EF285 /* Sparkle */,
+				E0E2B31F2E5ECE7E007EF285 /* Sparkle */,
+				E0E2B3222E5ECE9D007EF285 /* Sparkle */,
 			);
 			productName = AppLocker;
 			productReference = E0EF51AA2E31558900161CAB /* AppLocker.app */;
@@ -321,7 +326,7 @@
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E04FC7972E5DBE570016518D /* XCLocalSwiftPackageReference "Sparkle" */,
+				E0E2B3212E5ECE9D007EF285 /* XCLocalSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0EF51AB2E31558900161CAB /* Products */;
@@ -741,7 +746,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E04FC7972E5DBE570016518D /* XCLocalSwiftPackageReference "Sparkle" */ = {
+		E0E2B3212E5ECE9D007EF285 /* XCLocalSwiftPackageReference "Sparkle" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Sparkle;
 		};
@@ -753,6 +758,18 @@
 			productName = Sparkle;
 		};
 		E0DC1DD82E5DBADF002B454C /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Sparkle;
+		};
+		E0E2B31C2E5ECE2C007EF285 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Sparkle;
+		};
+		E0E2B31F2E5ECE7E007EF285 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Sparkle;
+		};
+		E0E2B3222E5ECE9D007EF285 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Sparkle;
 		};
