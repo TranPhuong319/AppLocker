@@ -1,8 +1,0 @@
-Target dependency graph (4 targets)
-Target 'AppLocker' in project 'AppLocker'
-➜ Implicit dependency on target 'Launcher' in project 'AppLocker' via file 'Launcher.app' in build phase 'Copy Files'
-➜ Implicit dependency on target 'AppLockerHelper' in project 'AppLocker' via file 'AppLockerHelper' in build phase 'Copy Files'
-➜ Explicit dependency on target 'Sparkle' in project 'Sparkle'
-Target 'Sparkle' in project 'Sparkle' (no dependencies)
-Target 'AppLockerHelper' in project 'AppLocker' (no dependencies)
-Target 'Launcher' in project 'AppLocker' (no dependencies)

@@ -88,10 +88,11 @@ jobs:
             sys.exit(1)
       shell: python
       
-    - name: Clean SPM cache
+    - name: Clean Swift Package cache
       run: |
         rm -rf ~/Library/Caches/org.swift.swiftpm/
-        rm -rf .build
+        rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
 
     - name: Debug Build
       if: github.event_name != 'workflow_dispatch'
@@ -165,6 +166,19 @@ jobs:
       continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Prepare Sparkle Key
+      run: |
+        {
+          echo "-----BEGIN PRIVATE KEY-----"
+          echo "${SPARKLE_KEY}"
+          echo "-----END PRIVATE KEY-----"
+        } | tr -d '\r' > sparkle_key.pem
+        chmod 600 sparkle_key.pem
+      env:
+        SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
+
+
 
     - name: Generate Sparkle Appcast
       if: github.event_name == 'workflow_dispatch'
@@ -177,8 +191,10 @@ jobs:
         PART4='</tt></a> '
         PART5='</li>'
         CHANGELOG="$(git log -"$(git rev-list --count $(git rev-list -1 "$(git tag -l | grep -v 'alpha' | tail -1)")..HEAD)" --format="${PART1}%H${PART2}%H${PART3}%h${PART4}%s${PART5}" | cat)"
-        SPARKLE_BIN='./build/SourcePackages/artifacts/sparkle/Sparkle/bin'
         PUBDATE="$(date +"%a, %d %b %Y %T %z")"
+        SPARKLE_BIN='./build/SourcePackages/artifacts/sparkle/Sparkle/bin'
+        SIGNED_ATTR=$($SPARKLE_BIN/sign_update --ed-key-file sparkle_key.pem ./Artifacts/AppLocker.dmg)
+
         APPCAST=(
             '<?xml version="1.0" standalone="yes"?>'
             '<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">'
@@ -194,7 +210,7 @@ jobs:
             '            ]]>'
             '            </description>'
             '            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>'
-            "            <enclosure url=\"https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg\" sparkle:version=\"${VER}-stable-${SHORT_SHA}\" sparkle:shortVersionString=\"${VER}\" type=\"application/octet-stream\" $($SPARKLE_BIN/sign_update -s ${SPARKLE_KEY} ./Artifacts/AppLocker.dmg)/>"
+            "            <enclosure url=\"https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg\" sparkle:version=\"${VER}-stable-${SHORT_SHA}\" sparkle:shortVersionString=\"${VER}\" type=\"application/octet-stream\" ${SIGNED_ATTR}/>"
             '        </item>'
             '    </channel>'
             '</rss>'
@@ -205,6 +221,11 @@ jobs:
       shell: zsh {0}
       env:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
+        
+    - name: Delete private key
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        rm -f sparkle_key.pem
 
     - name: Publish GitHub Release
       if: ((github.event_name == 'push' && github.ref_name == 'master') || github.event_name == 'workflow_dispatch') && contains(github.event.head_commit.message, 'Bump version') == false
