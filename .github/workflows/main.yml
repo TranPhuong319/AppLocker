@@ -178,8 +178,6 @@ jobs:
       env:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
 
-
-
     - name: Generate Sparkle Appcast
       if: github.event_name == 'workflow_dispatch'
       run: |
