@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>About AppLocker</key>
+	<string>Giới thiệu về AppLocker</string>
+	<key>Add application to lock</key>
+	<string>Thêm ứng dụng để khoá</string>
+	<key>Application is waiting to be deleted</key>
+	<string>Ứng dụng đang chờ xoá</string>
+	<key>Automatically check for updates.</key>
+	<string>Tự động kiểm tra cập nhật.</string>
+	<key>Automatically download new updates.</key>
+	<string>Tự động tải về bản cập nhật.</string>
+	<key>Cancel</key>
+	<string>Huỷ bỏ</string>
+	<key>Check for Updates...</key>
+	<string>Kiểm tra cập nhật...</string>
+	<key>Checking for updates…</key>
+	<string>Đang kiểm tra cập nhật…</string>
+	<key>Close</key>
+	<string>Đóng</string>
+	<key>Delete</key>
+	<string>Xoá</string>
+	<key>Delete all from the waiting list</key>
+	<string>Xoá tất cả khỏi hàng chờ</string>
+	<key>Error</key>
+	<string>Lỗi</string>
+	<key>Launch At Login</key>
+	<string>Mở khi đăng nhập</string>
+	<key>Lock (%d)</key>
+	<string>Khoá (%d)</string>
+	<key>Locked application</key>
+	<string>Ứng dụng đã khoá</string>
+	<key>Locking...</key>
+	<string>Đang khoá...</string>
+	<key>Manage the application list</key>
+	<string>Quản lý danh sách Ứng dụng</string>
+	<key>Quit AppLocker</key>
+	<string>Thoát AppLocker</string>
+	<key>Select the application to lock</key>
+	<string>Chọn ứng dụng để khoá</string>
+	<key>Settings</key>
+	<string>Cài đặt</string>
+	<key>There is no locked application.</key>
+	<string>Không có ứng dụng nào bị khoá.</string>
+	<key>Uninstall AppLocker</key>
+	<string>Gỡ cài đặt AppLocker</string>
+	<key>Unlock</key>
+	<string>Mở khoá</string>
+	<key>Updating AppLocker</key>
+	<string>Cập nhật AppLocker</string>
+	<key>Waiting for %d task(s)...</key>
+	<string>Đang chờ %d tác vụ...</string>
+	<key>authenticate to open the application list</key>
+	<string>xác thực để mở danh sách Ứng dụng</string>
+	<key>quit application</key>
+	<string>thoát ứng dụng</string>
+</dict>
+</plist>

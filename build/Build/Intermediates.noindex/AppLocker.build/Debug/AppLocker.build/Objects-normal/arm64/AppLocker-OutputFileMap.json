@@ -1,0 +1,148 @@
+{
+  "" : {
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLocker-master.dia",
+    "emit-module-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLocker-master-emit-module.d",
+    "emit-module-diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLocker-master-emit-module.dia",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLocker-master.swiftdeps"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/AppLockerLoader/AppDelegate.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppDelegate~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/AppLockerLoader/AppLockerApp.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerApp~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Authentication/AuthenticationManager.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AuthenticationManager~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Main/AppInfo.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppInfo~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Main/AppListWindowController.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppListWindowController~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Main/ContentView.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Main/LockManager.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/LockManager~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Settings/SettingsView.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsView~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Settings/SettingsWindowController.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/SettingsWindowController~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/AppLocker/Update/AppUpdater.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppUpdater~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/Extensions/Locatizable.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/Shared/AppLockerHelperProtocol.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/Shared/Log.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log~partial.swiftmodule"
+  },
+  "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : "xcframework",
+        "packageRef" : {
+          "identity" : "sparkle",
+          "kind" : "fileSystem",
+          "location" : "/Volumes/Xcode Project/AppLocker/Source Code/Sparkle",
+          "name" : "Sparkle"
+        },
+        "path" : "/Volumes/Xcode Project/AppLocker/Source Code/build/SourcePackages/artifacts/sparkle/Sparkle/Sparkle.xcframework",
+        "source" : {
+          "checksum" : "e8d166c5961baeac8421df2e154a3059667631b9ca3919b0f3d8f18f26ddd79a",
+          "type" : "remote",
+          "url" : "https://github.com/TranPhuong319/Sparkle/releases/download/2.7.1/Sparkle-for-Swift-Package-Manager.zip"
+        },
+        "targetName" : "Sparkle"
+      }
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "sparkle",
+          "kind" : "fileSystem",
+          "location" : "/Volumes/Xcode Project/AppLocker/Source Code/Sparkle",
+          "name" : "Sparkle"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Volumes/Xcode Project/AppLocker/Source Code/Sparkle"
+        },
+        "subpath" : "sparkle"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

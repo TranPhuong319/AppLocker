@@ -1,0 +1,18 @@
+"/Volumes/Xcode Project/AppLocker/Source Code/Shared/AppLockerHelperProtocol.swift":
+  dependencies: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.d"
+  object: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.o"
+  swift-dependencies: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.swiftdeps"
+  diagnostics: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.dia"
+  const-values: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/AppLockerHelperProtocol.swiftconstvalues"
+"/Volumes/Xcode Project/AppLocker/Source Code/Extensions/Locatizable.swift":
+  const-values: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.swiftconstvalues"
+  object: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.o"
+  dependencies: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.d"
+  swift-dependencies: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.swiftdeps"
+  diagnostics: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Locatizable.dia"
+"/Volumes/Xcode Project/AppLocker/Source Code/Shared/Log.swift":
+  diagnostics: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.dia"
+  dependencies: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.d"
+  swift-dependencies: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.swiftdeps"
+  const-values: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.swiftconstvalues"
+  object: "/Volumes/Xcode Project/AppLocker/Source Code/build/Build/Intermediates.noindex/AppLocker.build/Debug/AppLocker.build/Objects-normal/arm64/Log.o"
