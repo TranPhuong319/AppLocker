@@ -87,6 +87,11 @@ jobs:
             print(f"::error::{str(e)}")
             sys.exit(1)
       shell: python
+      
+    - name: Clean SPM cache
+      run: |
+        rm -rf ~/Library/Caches/org.swift.swiftpm/
+        rm -rf .build
 
     - name: Debug Build
       if: github.event_name != 'workflow_dispatch'
