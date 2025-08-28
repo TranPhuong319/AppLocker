@@ -92,11 +92,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
         Logfile.core.info("Uninstall Clicked")
     }
     
-    @objc func checkUpdate(){
+    @objc func checkUpdate() {
         Logfile.core.info("CheckUpdate Clicked")
         // Gọi check update thủ công
         AppUpdater.shared.checkForUpdates()
+        // Kích hoạt app lên foreground
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Delay tí để Sparkle kịp tạo cửa sổ
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            for window in NSApp.windows {
+                let windowClass = String(describing: type(of: window))
+                if windowClass.contains("SU") || windowClass.contains("SPU") {
+                    window.makeKeyAndOrderFront(nil) // đem lên trước
+                    window.orderFrontRegardless() // ép ra trên cùng
+                }
+            }
+        }
     }
+    
     @objc func launchAtLogin(_ sender: NSMenuItem) {
         Task {
             let loginItem = SMAppService.mainApp
@@ -119,9 +133,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
         }
     }
 
-    @objc func about(){
+    @objc func about() {
         Logfile.core.info("About Clicked")
+
+        // Hiển thị About panel
         NSApp.orderFrontStandardAboutPanel(nil)
+
+        // Kích hoạt app lên foreground và ép cửa sổ About lên trên cùng
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Delay tí để About panel kịp tạo cửa sổ
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            for window in NSApp.windows {
+                let windowClass = String(describing: type(of: window))
+                if windowClass.contains("About") {
+                    window.makeKeyAndOrderFront(nil)   // đưa lên trước
+                    window.orderFrontRegardless()      // ép ra trên cùng
+                }
+            }
+        }
     }
 
     // Hàm này chạy mỗi khi user click mở menu
