@@ -1,0 +1,20 @@
+- 746339baedb134b930953137c2e5bc5e00fd26d1 Troubleshoot signing
+- 746339baedb134b930953137c2e5bc5e00fd26d1 Troubleshoot signing
+- 7285078ff0429cfb39520c3f9391cef0078c8817 Update issue templates
+- 359c3269d47e0fe561a5e0cce86b17bab0489c9a Fix checksums
+- d9640c598f3fcba8e763cafecbf3d86c84d9d256 Change Sparkle local to URL
+- 10a93ce538e38e80b821ba1244197d985a9e5612 Update Checksums
+- f117bd41bdff4959798ac40110fde1820123660a Update Checksums
+- 03f78ca6044fdfbf79e98e70fbe10f7085e03bc2 fix url Sparkle
+- 1b8d7f2cf169aa17d96a594fceecdb2974e1b9be Fix bugs
+- 92d163ad7c5140e60be5856612f13a874a211ad2 Fix bugs
+- f5c33d487688d38aa3a1bc6a933d3643bc11753b Fix bugs
+- 05269ca8b9b104ab7fcb37f930464e1077d1d8fd Fix bugs
+- 9412773e0295f79b0b55c0e7815e71eb8a5b5830 Fix bugs
+- 78246efb14bfffcc5f608b09136a7cb0dd0ae13c Change Copyright
+- e6763408e5c59162d179388c99fcf7579d17b8e2 Deleted remote myfolk
+- cd8bf21878a427c8d50b39664ede7bf483163f43 Add and config for Update feature
+- 73670e2eeec145b1da57ad6d4304a2b13fe125f2 Update Entitlements for Sparkle
+- 386f5ed7ec27831087f8d5f9c92c7de1ab6c74ee Create Settings View and Settings Window Controller
+- 7d3c4e18e507ece21587bc1b81461236f60ba879 Bump version to 1.4.0
+- a873717e158dd03d904749749138061c00a5c7b3 Add a hidden menu when pressing and holding Options + clicking on the icon

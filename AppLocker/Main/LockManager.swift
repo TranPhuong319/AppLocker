@@ -60,7 +60,7 @@ class LockManager: ObservableObject {
             let launcherApp = urls.first(where: { !$0.lastPathComponent.hasPrefix(".") }) // Telegram.app
 
             var skipGroup = false
-            if let hidden = hiddenApp, let launcher = launcherApp {
+            if (hiddenApp != nil), let launcher = launcherApp {
                 // Kiểm tra marker trong Resources của launcher (launcher/Contents/Resources/<AppName>.app)
                 let marker = launcher.appendingPathComponent("Contents/Resources/\(baseName).app")
                 if FileManager.default.fileExists(atPath: marker.path) {
