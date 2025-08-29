@@ -67,6 +67,17 @@
         }
       }
     },
+    "Beta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử nghiệm"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -243,6 +254,17 @@
         }
       }
     },
+    "Stable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chính thức"
+          }
+        }
+      }
+    },
     "There is no locked application." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -272,6 +294,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mở khoá"
+          }
+        }
+      }
+    },
+    "Update Channel" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kênh Cập nhật"
           }
         }
       }

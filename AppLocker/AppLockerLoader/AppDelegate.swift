@@ -57,7 +57,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
                 if success {
                     AppListWindowController.show()
                     Logfile.core.debug("Opened AppList")
-                    AppUpdater.shared.gentleReminder()
                 } else {
                     Logfile.core.error("Error when opening list app: \(errorMessage as NSObject?, privacy: .public)")
                 }
@@ -78,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
 
     @objc func openSettings() {
         Logfile.core.info("Settings Clicked")
-        SettingsWindowController.shared.show()
+        SettingsWindowController.show()
     }
 
     @objc func uninstall() {
@@ -87,8 +86,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
 
     @objc func checkUpdate() {
         Logfile.core.info("CheckUpdate Clicked")
+
+        // Lấy update channel từ UserDefaults
+        let savedChannel = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
+        let useBeta = (savedChannel == "Beta")
+
         // Gọi check update thủ công
-        AppUpdater.shared.checkForUpdates()
+        AppUpdater.shared.checkForUpdates(useBeta: useBeta)
+
         // Kích hoạt app lên foreground
         NSApp.activate(ignoringOtherApps: true)
 
@@ -98,11 +103,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
                 let windowClass = String(describing: type(of: window))
                 if windowClass.contains("SU") || windowClass.contains("SPU") {
                     window.makeKeyAndOrderFront(nil) // đem lên trước
-                    window.orderFrontRegardless() // ép ra trên cùng
+                    window.orderFrontRegardless()     // ép ra trên cùng
                 }
             }
         }
     }
+
 
     @objc func launchAtLogin(_ sender: NSMenuItem) {
         Task {
