@@ -1,4 +1,4 @@
-name: CI
+name: Build
 
 on:
   - push
@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  CI:
+  Build:
     runs-on: macos-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
         HOMEBREW_NO_AUTO_UPDATE: 1
 
     - name: Manage Version
-      if: (github.event_name == 'push' && github.ref_name == 'master') || github.event_name == 'workflow_dispatch'
+      if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
         git fetch --prune --unshallow --tags
         GIT_SHA="$(git rev-parse --short HEAD)"
@@ -48,7 +48,7 @@ jobs:
         fi
       shell: zsh {0}
 
-    - name: Lint
+    - name: Lint Code
       run: swiftlint lint --reporter github-actions-logging
       continue-on-error: true
     - name: i18n Stats
@@ -107,7 +107,7 @@ jobs:
           CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO \
           | xcbeautify --renderer terminal
 
-    - name: Release Build (Universal)
+    - name: Release Build
       run: |
         set -o pipefail && xcodebuild \
           ARCHS="arm64 x86_64" \
@@ -120,7 +120,7 @@ jobs:
           | xcbeautify
 
     - name: Create Disk Image
-      if: (github.event_name == 'push' && github.ref_name == 'master') || github.event_name == 'workflow_dispatch'
+      if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
         XCBUILD_PATH="build/Build/Products/Release"
         cp LICENSE $XCBUILD_PATH
@@ -142,33 +142,36 @@ jobs:
         cd -
         mkdir Artifacts
         cp -R ${XCBUILD_PATH}/*.dmg Artifacts
+        
     - name: Setup Prerelease Variables
-      if: github.event_name == 'push' && github.ref_name == 'master'
+      if: github.event_name == 'push' && github.ref_name == 'main'
       run: |
         echo "REL_TAG=v${VER}-alpha" >> $GITHUB_ENV
         echo "IS_PRE=true" >> $GITHUB_ENV
         echo '### Disclaimer:' >> ReleaseNotes.md
         echo '***This alpha version is for testing only.***' >> ReleaseNotes.md
         echo 'It is not ready for daily use and we do not guarantee its usability.' >> ReleaseNotes.md
+        
     - name: Setup Release Variables
       if: github.event_name == 'workflow_dispatch'
       run: |
         echo "REL_TAG=v${VER}" >> $GITHUB_ENV
         echo "IS_PRE=false" >> $GITHUB_ENV
+        
     - name: Generate Release Notes
-      if: (github.event_name == 'push' && github.ref_name == 'master') || github.event_name == 'workflow_dispatch'
+      if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
         echo '### The latest updates are:' >> ReleaseNotes.md
-        git log -"$(git rev-list --count $(git rev-list -1 "$(git tag -l | grep -v 'alpha' | tail -1)")..HEAD)" --format="- %H %s" | grep -v '.git\|Merge\|yml\|CI' | sed  '/^$/d' >> ReleaseNotes.md
+        git log -"$(git rev-list --count $(git rev-list -1 "$(git tag -l | grep -v 'alpha' | tail -1)")..HEAD)" --format="- %H %s" | grep -v '.git\|Merge\|yml\|Build' | sed  '/^$/d' >> ReleaseNotes.md
+    
     - name: Delete Old Prerelease
-      if: (github.event_name == 'push' && github.ref_name == 'master') || github.event_name == 'workflow_dispatch'
+      if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: gh release delete ${{ env.OLD_PRE_TAG }} --cleanup-tag
       continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Prepare Sparkle Key
-      if: github.event_name == 'workflow_dispatch'
       run: |
         echo "${SPARKLE_KEY}" | tr -d '\r' > sparkle_key.pem
         chmod 600 sparkle_key.pem
@@ -176,7 +179,6 @@ jobs:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
 
     - name: Generate Sparkle Appcast
-      if: github.event_name == 'workflow_dispatch'
       run: |
         REPO_COMMIT_URL='https://github.com/TranPhuong319/AppLocker/commit/'
         INDENT='                    '
@@ -218,12 +220,11 @@ jobs:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
         
     - name: Delete private key
-      if: github.event_name == 'workflow_dispatch'
       run: |
         rm -f sparkle_key.pem
 
     - name: Publish GitHub Release
-      if: ((github.event_name == 'push' && github.ref_name == 'master') || github.event_name == 'workflow_dispatch') && contains(github.event.head_commit.message, 'Bump version') == false
+      if: ((github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch') && contains(github.event.head_commit.message, 'Bump version') == false
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
