@@ -168,6 +168,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Prepare Sparkle Key
+      if: github.event_name == 'workflow_dispatch'
       run: |
         echo "${SPARKLE_KEY}" | tr -d '\r' > sparkle_key.pem
         chmod 600 sparkle_key.pem
