@@ -54,8 +54,9 @@ class LockManager: ObservableObject {
                 apps.append(contentsOf: processNormalGroup(urls: urls))
             }
         }
-
-        logInstalledApps(apps)
+        #if DEBUG
+            logInstalledApps(apps)
+        #endif
         return apps
     }
 
