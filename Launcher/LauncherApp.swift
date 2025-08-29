@@ -23,11 +23,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let appURL = try? FileManager.default.contentsOfDirectory(at: resourcesURL, includingPropertiesForKeys: nil)
             .first(where: { $0.pathExtension == "app" && $0.lastPathComponent.hasPrefix(".locked_") }) {
 
-            let appName = appURL.deletingPathExtension().lastPathComponent.replacingOccurrences(of: ".locked_", with: "")
+            let appName = appURL.deletingPathExtension()
+                .lastPathComponent
+                .replacingOccurrences(of: ".locked_", with: "")
+            
             let disguisedAppPath = "/Applications/\(appName).app"
 
             if lockedApps[disguisedAppPath] != nil {
-                let realAppURL = URL(fileURLWithPath:"/Applications/.\(appName).app")
+                let realAppURL = URL(fileURLWithPath: "/Applications/.\(appName).app")
 
                 // Check app thật đang chạy chưa
                 let bundleID = Bundle(url: realAppURL)?.bundleIdentifier

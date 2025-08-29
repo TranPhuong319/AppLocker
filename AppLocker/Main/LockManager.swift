@@ -36,17 +36,32 @@ class LockManager: ObservableObject {
             alert.runModal()
         }
     }
-    
+
     func getInstalledApps() -> [InstalledApp] {
         let appsDir = "/Applications"
-        var apps: [InstalledApp] = []
-
         guard let contents = try? FileManager.default.contentsOfDirectory(
             at: URL(fileURLWithPath: appsDir),
             includingPropertiesForKeys: nil
-        ) else { return apps }
+        ) else { return [] }
 
-        // Gom các app theo tên gốc (Telegram, Zoom, v.v.)
+        let grouped = groupAppsByBaseName(contents)
+        var apps: [InstalledApp] = []
+
+        for (baseName, urls) in grouped {
+            if let lockedApp = processLockedGroup(baseName: baseName, urls: urls) {
+                apps.append(lockedApp)
+            } else {
+                apps.append(contentsOf: processNormalGroup(urls: urls))
+            }
+        }
+
+        logInstalledApps(apps)
+        return apps
+    }
+
+    // MARK: - Helpers
+
+    private func groupAppsByBaseName(_ contents: [URL]) -> [String: [URL]] {
         var grouped: [String: [URL]] = [:]
         for appURL in contents where appURL.pathExtension == "app" {
             let baseName = appURL.deletingPathExtension()
@@ -54,90 +69,57 @@ class LockManager: ObservableObject {
                 .trimmingCharacters(in: CharacterSet(charactersIn: "."))
             grouped[baseName, default: []].append(appURL)
         }
-
-        for (baseName, urls) in grouped {
-            let hiddenApp = urls.first(where: { $0.lastPathComponent.hasPrefix(".") }) // .Telegram.app
-            let launcherApp = urls.first(where: { !$0.lastPathComponent.hasPrefix(".") }) // Telegram.app
-
-            var skipGroup = false
-            if (hiddenApp != nil), let launcher = launcherApp {
-                // Kiểm tra marker trong Resources của launcher (launcher/Contents/Resources/<AppName>.app)
-                let marker = launcher.appendingPathComponent("Contents/Resources/\(baseName).app")
-                if FileManager.default.fileExists(atPath: marker.path) {
-                    // Nếu có marker → đây là cặp "bị khóa"
-                    skipGroup = true
-                }
-            }
-
-            if skipGroup {
-                // THAY VÌ tiếp tục bỏ qua cả 2, ta thêm 1 entry đại diện (launcher) vào allApps
-                // để `lockedAppObjects` có thể tìm thấy app bị khóa và hiển thị.
-                if let launcher = launcherApp {
-                    // Ưu tiên lấy thông tin (bundleID / icon) từ bản thật (hidden) nếu có,
-                    // còn không thì lấy từ launcher.
-                    var displayBundleURL = launcher
-                    if let hidden = hiddenApp {
-                        // hidden là .Telegram.app — kiểm tra xem có thể load bundle từ hidden không
-                        if FileManager.default.fileExists(atPath: hidden.path),
-                           Bundle(url: hidden) != nil {
-                            displayBundleURL = hidden
-                        }
-                    }
-
-                    if let bundle = Bundle(url: displayBundleURL),
-                       let bundleID = bundle.bundleIdentifier {
-                        let name = launcher.deletingPathExtension().lastPathComponent
-                        // Nếu dùng hidden để lấy icon, icon sẽ là icon của app thật
-                        let icon = NSWorkspace.shared.icon(forFile: displayBundleURL.path)
-                        icon.size = NSSize(width: 32, height: 32)
-
-                        apps.append(InstalledApp(
-                            name: name,
-                            bundleID: bundleID,
-                            icon: icon,
-                            path: launcher.path // path phải là launcher path (đại diện)
-                        ))
-                    } else {
-                        // Fallback: nếu không lấy được bundle từ hidden/launcher thì vẫn thêm launcher
-                        let name = launcher.deletingPathExtension().lastPathComponent
-                        let icon = NSWorkspace.shared.icon(forFile: launcher.path)
-                        icon.size = NSSize(width: 32, height: 32)
-                        apps.append(InstalledApp(name: name, bundleID: "", icon: icon, path: launcher.path))
-                    }
-                }
-                // Đã xử lý group, tiếp tục vòng for tiếp theo
-                continue
-            }
-
-            // Nếu không bị skip thì thêm từng app bình thường
-            for appURL in urls {
-                if let bundle = Bundle(url: appURL),
-                   let bundleID = bundle.bundleIdentifier {
-                    let name = appURL.deletingPathExtension().lastPathComponent
-                    let icon = NSWorkspace.shared.icon(forFile: appURL.path)
-                    icon.size = NSSize(width: 32, height: 32)
-                    apps.append(InstalledApp(
-                        name: name,
-                        bundleID: bundleID,
-                        icon: icon,
-                        path: appURL.path
-                    ))
-                }
-            }
-        }
-
-        // Debug
-        #if DEBUG
-        print("🔒 Locked Apps: \(lockedApps.keys)")
-        print("📂 All Apps: \(allApps.map { $0.name })")
-        print("getInstalledApps() -> \(apps.count) apps")
-        for a in apps {
-            print(" • \(a.name) | bundleID=\(a.bundleID) | path=\(a.path)")
-        }
-        #endif
-
-        return apps
+        return grouped
     }
+
+    private func processLockedGroup(baseName: String, urls: [URL]) -> InstalledApp? {
+        let hiddenApp = urls.first(where: { $0.lastPathComponent.hasPrefix(".") })
+        let launcherApp = urls.first(where: { !$0.lastPathComponent.hasPrefix(".") })
+
+        guard let launcher = launcherApp, hiddenApp != nil else { return nil }
+
+        let marker = launcher.appendingPathComponent("Contents/Resources/\(baseName).app")
+        guard FileManager.default.fileExists(atPath: marker.path) else { return nil }
+
+        // Ưu tiên lấy bundle từ hidden, fallback launcher
+        var displayBundleURL = launcher
+        if let hidden = hiddenApp,
+           FileManager.default.fileExists(atPath: hidden.path),
+           Bundle(url: hidden) != nil {
+            displayBundleURL = hidden
+        }
+
+        return makeInstalledApp(from: displayBundleURL, fallbackLauncher: launcher)
+    }
+
+    private func processNormalGroup(urls: [URL]) -> [InstalledApp] {
+        urls.compactMap { makeInstalledApp(from: $0, fallbackLauncher: nil) }
+    }
+
+    private func makeInstalledApp(from url: URL, fallbackLauncher: URL?) -> InstalledApp? {
+        if let bundle = Bundle(url: url), let bundleID = bundle.bundleIdentifier {
+            let name = (fallbackLauncher ?? url).deletingPathExtension().lastPathComponent
+            let icon = NSWorkspace.shared.icon(forFile: url.path)
+            icon.size = NSSize(width: 32, height: 32)
+            return InstalledApp(name: name, bundleID: bundleID, icon: icon, path: (fallbackLauncher ?? url).path)
+        } else if let launcher = fallbackLauncher {
+            // fallback nếu không load được bundle
+            let name = launcher.deletingPathExtension().lastPathComponent
+            let icon = NSWorkspace.shared.icon(forFile: launcher.path)
+            icon.size = NSSize(width: 32, height: 32)
+            return InstalledApp(name: name, bundleID: "", icon: icon, path: launcher.path)
+        }
+        return nil
+    }
+
+    #if DEBUG
+    private func logInstalledApps(_ apps: [InstalledApp]) {
+        print("getInstalledApps() -> \(apps.count) apps")
+        for app in apps {
+            print(" • \(app.name) | bundleID=\(app.bundleID) | path=\(app.path)")
+        }
+    }
+    #endif
 
 
     init() {
@@ -168,7 +150,7 @@ class LockManager: ObservableObject {
             }
         }
     }
-    
+
     func save() {
         let uid = getuid()
         let gid = getgid()
@@ -176,13 +158,13 @@ class LockManager: ObservableObject {
             let dirURL = configFile.deletingLastPathComponent()
             do {
                 try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
-                
+
                 if FileManager.default.fileExists(atPath: configFile.path) {
                     let readfile: [[String: Any]] = [
                         ["command": "chflags", "args": ["nouchg", configFile.path]],
-                        ["command": "chown", "args": ["\(uid):\(gid)", configFile.path]],
+                        ["command": "chown", "args": ["\(uid):\(gid)", configFile.path]]
                     ]
-                    if sendToHelperBatch(readfile){
+                    if sendToHelperBatch(readfile) {
                         Logfile.core.info("Unlocked successfully")
                     } else {
                         Logfile.core.error("Unlock unsuccessful")
@@ -193,12 +175,12 @@ class LockManager: ObservableObject {
                 encoder.outputFormat = .xml
                 let data = try encoder.encode(lockedApps)
                 try data.write(to: configFile)
-                
+
                 let savefile: [[String: Any]] = [
                     ["command": "chown", "args": ["root:wheel", configFile.path]],
-                    ["command": "chflags", "args": ["uchg", configFile.path]],
+                    ["command": "chflags", "args": ["uchg", configFile.path]]
                 ]
-                if sendToHelperBatch(savefile){
+                if sendToHelperBatch(savefile) {
                     Logfile.core.info("✅ File lock successful")
                 } else {
                     Logfile.core.error("❌ File lock unsuccessful")
@@ -235,7 +217,7 @@ class LockManager: ObservableObject {
                     ["command": "touch", "args": [disguisedAppPath]],
                     ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
                     ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
-                    ["command": "touch", "args": [disguisedAppPath]],
+                    ["command": "touch", "args": [disguisedAppPath]]
                 ]
 
                 if sendToHelperBatch(cmds) {
@@ -246,14 +228,13 @@ class LockManager: ObservableObject {
             } else {
                 // 🔒 Lock
                 guard let infoPlist = NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist")) as? [String: Any],
-                      let execName = infoPlist["CFBundleExecutable"] as? String,
-                      let _ = infoPlist["CFBundleIdentifier"] as? String else {
+                      let execName = infoPlist["CFBundleExecutable"] as? String else {
                     Logfile.core.warning("⚠️ Cannot read info.plist for \(path, privacy: .public)")
                     continue
                 }
 
                 // Lấy iconName nếu có
-                var iconName: String? = nil
+                var iconName: String?
                 if let icon = infoPlist["CFBundleIconFile"] as? String {
                     iconName = icon.hasSuffix(".icns") ? String(icon.dropLast(5)) : icon
                 }
@@ -280,14 +261,27 @@ class LockManager: ObservableObject {
                     ["command": "touch", "args": [markerPath]],
                     ["command": "chown", "args": ["root:wheel", markerPath]],
                     ["command": "chflags", "args": ["uchg", markerPath]],
-                    ["command": "touch", "args": [disguisedAppPath]],
-                    
+                    ["command": "touch", "args": [disguisedAppPath]]
+
                 ]
 
                 // Nếu có icon thì thêm lệnh liên quan đến icon
                 if let iconName = iconName {
-                    cmds.insert(["command": "cp", "args": [appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "/Applications/Launcher.app/Contents/Resources/AppIcon.icns"]], at: 1)
-                    cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]])
+                    cmds.insert(
+                        [
+                            "command": "cp",
+                            "args": [
+                                appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "/Applications/Launcher.app/Contents/Resources/AppIcon.icns"]
+                        ],
+                        at: 1)
+                    cmds.append(
+                        [
+                            "command": "PlistBuddy",
+                            "args": [
+                                "-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]
+                        ]
+                    )
+                    
                 } else {
                     // Nếu không có icon, chỉ xóa CFBundleIconFile trong launcher Info.plist nếu có
                     cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconFile", "\(disguisedAppPath)/Contents/Info.plist"]])
@@ -303,7 +297,7 @@ class LockManager: ObservableObject {
             }
         }
     }
-    
+
     func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
         let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLockerHelper", options: .privileged)
         conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
@@ -320,7 +314,7 @@ class LockManager: ObservableObject {
         } as? AppLockerHelperProtocol
 
         proxy?.sendBatch(commandList) { success, message in
-            if (success){
+            if success {
                 Logfile.core.info("Success: \(message, privacy: .public)")
             } else {
                 Logfile.core.error("Failure: \(message, privacy: .public)")
@@ -333,19 +327,18 @@ class LockManager: ObservableObject {
         conn.invalidate()
         return result
     }
-    
+
     func reloadAllApps() {
         DispatchQueue.global(qos: .background).async {
             let apps = self.getInstalledApps()
             DispatchQueue.main.async {
                 self.allApps = apps
-                
+
             }
         }
     }
-    
+
     func isLocked(path: String) -> Bool {
         return lockedApps[path] != nil
     }
 }
-

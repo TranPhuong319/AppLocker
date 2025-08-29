@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 18/8/25.
 //
 
-
 import OSLog
 
 enum Logfile {

@@ -11,4 +11,3 @@ import Foundation
 public protocol AppLockerHelperProtocol {
     @objc func sendBatch(_ commands: [[String: Any]], withReply reply: @escaping (Bool, String) -> Void)
 }
-

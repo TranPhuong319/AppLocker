@@ -5,12 +5,11 @@
 //  Created by Doe Phương on 26/8/25.
 //
 
-
 import SwiftUI
 
 class SettingsWindowController {
     static let shared = SettingsWindowController()
-    
+
     private var window: NSWindow?
 
     func show() {

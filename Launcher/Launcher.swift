@@ -26,12 +26,9 @@ class Launcher {
     func run() {
         Logfile.launcher.info("🚀 Launcher started")
         Logfile.launcher.info("📝 CommandLine args: \(CommandLine.arguments, privacy: .public)")
-        let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
 
-        guard FileManager.default.fileExists(atPath: resourcesURL.path) else {
-            Logfile.launcher.error("❌ Folder not found: \(resourcesURL.path, privacy: .public)")
-            exit(1)
-        }
+        let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
+        guard checkResourcesFolder(resourcesURL) else { exit(1) }
 
         let lockedApps = loadLockedAppInfos()
 
@@ -40,128 +37,7 @@ class Launcher {
                 .filter { $0.pathExtension == "app" }
 
             for appURL in appURLs {
-                let appName = appURL.deletingPathExtension().lastPathComponent
-
-                // 🔍 Nếu app tên ".locked_TenApp", ta lấy "TenApp"
-//                guard appName.hasPrefix(".locked_") else { continue }
-                let launcherPath = "/Applications/\(appName).app"
-                let hiddenAppRealURL  = URL(fileURLWithPath:"/Applications/.\(appName).app")
-
-                guard let lockedInfo = lockedApps[launcherPath] else {
-                    Logfile.launcher.warning("⚠️ Can't find info for: \(launcherPath)")
-                    continue
-                }
-
-                let execPath = hiddenAppRealURL.appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)").path
-
-                Logfile.launcher.info("🔓 App to unlock: \(lockedInfo.name), Exec: \(lockedInfo.execFile)")
-                let uid = getuid()
-                let gid = getgid()
-
-                // 1. Mở quyền file
-                let unlockCmds: [[String: Any]] = [
-                    ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
-                    ["command": "chflags", "args": ["nouchg", execPath]],
-                    ["command": "chmod", "args": ["a=rx", execPath]],
-                    ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
-                ]
-                let lockCmds: [[String: Any]] = [
-                    ["command": "chmod", "args": ["000", execPath]],
-                    ["command": "chown", "args": ["root:wheel", execPath]],
-                    ["command": "chflags", "args": ["uchg", execPath]],
-                    ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]],
-                ]
-
-                guard sendToHelperBatch(unlockCmds) else {
-                    Logfile.launcher.error("❌ Cannot unlock the Exec file")
-                    exit(1)
-                }
-
-                // 2. Xác thực
-                AuthenticationManager.authenticate(reason: "authentication to open".localized) { success, errorMessage in
-                    DispatchQueue.main.async {
-                        if success {
-                            Logfile.launcher.info("✅ Successful authentication, opening application...")
-
-                            let config = NSWorkspace.OpenConfiguration()
-                            var fileURLToOpen: URL? = nil
-
-                            if let fromDelegate = Launcher.shared.pendingOpenFileURLs.first {
-                                fileURLToOpen = fromDelegate
-                                Logfile.launcher.info("📂 Open with file \(fromDelegate.path)")
-                            } else {
-                                let args = CommandLine.arguments
-                                if args.count > 1 {
-                                    let arg = args[1]
-                                    if FileManager.default.fileExists(atPath: arg) {
-                                        fileURLToOpen = URL(fileURLWithPath: arg)
-                                        Logfile.launcher.info("📂 Open with file: \(fileURLToOpen!.path)")
-                                    } else if let url = URL(string: arg), url.scheme != nil {
-                                        fileURLToOpen = url
-                                        Logfile.launcher.info("🌐 Open with URL: \(url.absoluteString)")
-                                    }
-                                }
-                            }
-                            
-
-                            let openHandler: (NSRunningApplication?, Error?) -> Void = { runningApp, err in
-                                if let err = err {
-                                    Logfile.launcher.error("❌ Can't open the app: \(err)")
-                                    exit(1)
-                                }
-
-                                guard let runningApp = runningApp else {
-                                    Logfile.launcher.error("❌ Can't get the application process")
-                                    exit(1)
-                                }
-
-                                DispatchQueue.global().async {
-                                    while !runningApp.isTerminated {
-                                        sleep(1)
-                                    }
-
-                                    Logfile.launcher.info("📦 App closed. Locking the file ...")
-
-                                    if self.sendToHelperBatch(lockCmds) {
-                                        Logfile.launcher.info("✅ Lock the Exec file")
-                                        exit(0)
-                                    } else {
-                                        Logfile.launcher.error("❌ Can't lock the file")
-                                        exit(1)
-                                    }
-                                }
-                            }
-
-                            if !Launcher.shared.pendingOpenFileURLs.isEmpty {
-                                // ✅ Nếu delegate đã nhận được file(s)
-                                Logfile.launcher.info("📂 Open with pending files: \(Launcher.shared.pendingOpenFileURLs.map(\.path))")
-                                NSWorkspace.shared.open(Launcher.shared.pendingOpenFileURLs,
-                                                        withApplicationAt: hiddenAppRealURL,
-                                                        configuration: config,
-                                                        completionHandler: openHandler)
-                            } else if let fileURLToOpen = fileURLToOpen {
-                                // ✅ Nếu chỉ có 1 file/URL từ args
-                                NSWorkspace.shared.open([fileURLToOpen],
-                                                        withApplicationAt: hiddenAppRealURL,
-                                                        configuration: config,
-                                                        completionHandler: openHandler)
-                            } else {
-                                // ✅ Không có file → chỉ mở app
-                                NSWorkspace.shared.openApplication(at: hiddenAppRealURL,
-                                                                   configuration: config,
-                                                                   completionHandler: openHandler)
-                            }
-
-                        } else {
-                            Logfile.launcher.error("❌ Failure authenticity: \(errorMessage ?? "Unknown error", privacy: .public)")
-                            if self.sendToHelperBatch(lockCmds) {
-                                Logfile.launcher.info("✅ Lock the Exec file")
-                            }
-                            exit(1)
-                        }
-                    }
-                }
-
+                handleApp(appURL, lockedApps: lockedApps)
                 return // chỉ chạy 1 app
             }
 
@@ -171,6 +47,156 @@ class Launcher {
         } catch {
             Logfile.launcher.error("❌ Error when approving the Resources folder: \(error)")
             exit(1)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func checkResourcesFolder(_ url: URL) -> Bool {
+        if !FileManager.default.fileExists(atPath: url.path) {
+            Logfile.launcher.error("❌ Folder not found: \(url.path, privacy: .public)")
+            return false
+        }
+        return true
+    }
+
+    private func handleApp(_ appURL: URL, lockedApps: [String: LockedAppInfo]) {
+        let appName = appURL.deletingPathExtension().lastPathComponent
+        let launcherPath = "/Applications/\(appName).app"
+        let hiddenAppRealURL = URL(fileURLWithPath: "/Applications/.\(appName).app")
+
+        guard let lockedInfo = lockedApps[launcherPath] else {
+            Logfile.launcher.warning("⚠️ Can't find info for: \(launcherPath)")
+            return
+        }
+
+        let execPath = hiddenAppRealURL.appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)").path
+
+        let unlockCmds = buildUnlockCommands(hiddenAppRealURL: hiddenAppRealURL, execPath: execPath)
+        let lockCmds = buildLockCommands(hiddenAppRealURL: hiddenAppRealURL, execPath: execPath)
+
+        guard sendToHelperBatch(unlockCmds) else {
+            Logfile.launcher.error("❌ Cannot unlock the Exec file")
+            exit(1)
+        }
+
+        authenticateAndOpenApp(lockedInfo: lockedInfo,
+                               hiddenAppRealURL: hiddenAppRealURL,
+                               execPath: execPath,
+                               lockCmds: lockCmds)
+    }
+
+    private func buildUnlockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
+        let uid = getuid()
+        let gid = getgid()
+        return [
+            ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
+            ["command": "chflags", "args": ["nouchg", execPath]],
+            ["command": "chmod", "args": ["a=rx", execPath]],
+            ["command": "chown", "args": ["\(uid):\(gid)", execPath]]
+        ]
+    }
+
+    private func buildLockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
+        return [
+            ["command": "chmod", "args": ["000", execPath]],
+            ["command": "chown", "args": ["root:wheel", execPath]],
+            ["command": "chflags", "args": ["uchg", execPath]],
+            ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]]
+        ]
+    }
+
+    private func authenticateAndOpenApp(lockedInfo: LockedAppInfo,
+                                        hiddenAppRealURL: URL,
+                                        execPath: String,
+                                        lockCmds: [[String: Any]]) {
+        AuthenticationManager.authenticate(reason: "authentication to open".localized) { success, errorMessage in
+            DispatchQueue.main.async {
+                if success {
+                    self.openApplication(lockedInfo: lockedInfo,
+                                    hiddenAppRealURL: hiddenAppRealURL,
+                                    lockCmds: lockCmds)
+                } else {
+                    Logfile.launcher.error("❌ Failure authenticity: \(errorMessage ?? "Unknown error", privacy: .public)")
+                    if self.sendToHelperBatch(lockCmds) {
+                        Logfile.launcher.info("✅ Lock the Exec file")
+                    }
+                    exit(1)
+                }
+            }
+        }
+    }
+
+    private func openApplication(lockedInfo: LockedAppInfo,
+                                 hiddenAppRealURL: URL,
+                                 lockCmds: [[String: Any]]) {
+        Logfile.launcher.info("✅ Successful authentication, opening application...")
+
+        let config = NSWorkspace.OpenConfiguration()
+        let fileURLToOpen = resolveFileToOpen()
+
+        let openHandler: (NSRunningApplication?, Error?) -> Void = { runningApp, err in
+            if let err = err {
+                Logfile.launcher.error("❌ Can't open the app: \(err)")
+                exit(1)
+            }
+            guard let runningApp = runningApp else {
+                Logfile.launcher.error("❌ Can't get the application process")
+                exit(1)
+            }
+            self.monitorAppTermination(runningApp, lockCmds: lockCmds)
+        }
+
+        if !Launcher.shared.pendingOpenFileURLs.isEmpty {
+            Logfile.launcher.info("📂 Open with pending files: \(Launcher.shared.pendingOpenFileURLs.map(\.path))")
+            NSWorkspace.shared.open(Launcher.shared.pendingOpenFileURLs,
+                                    withApplicationAt: hiddenAppRealURL,
+                                    configuration: config,
+                                    completionHandler: openHandler)
+        } else if let fileURLToOpen = fileURLToOpen {
+            NSWorkspace.shared.open([fileURLToOpen],
+                                    withApplicationAt: hiddenAppRealURL,
+                                    configuration: config,
+                                    completionHandler: openHandler)
+        } else {
+            NSWorkspace.shared.openApplication(at: hiddenAppRealURL,
+                                               configuration: config,
+                                               completionHandler: openHandler)
+        }
+    }
+
+    private func resolveFileToOpen() -> URL? {
+        if let fromDelegate = Launcher.shared.pendingOpenFileURLs.first {
+            Logfile.launcher.info("📂 Open with file \(fromDelegate.path)")
+            return fromDelegate
+        }
+        let args = CommandLine.arguments
+        if args.count > 1 {
+            let arg = args[1]
+            if FileManager.default.fileExists(atPath: arg) {
+                let url = URL(fileURLWithPath: arg)
+                Logfile.launcher.info("📂 Open with file: \(url.path)")
+                return url
+            } else if let url = URL(string: arg), url.scheme != nil {
+                Logfile.launcher.info("🌐 Open with URL: \(url.absoluteString)")
+                return url
+            }
+        }
+        return nil
+    }
+
+    private func monitorAppTermination(_ runningApp: NSRunningApplication,
+                                       lockCmds: [[String: Any]]) {
+        DispatchQueue.global().async {
+            while !runningApp.isTerminated { sleep(1) }
+            Logfile.launcher.info("📦 App closed. Locking the file ...")
+            if self.sendToHelperBatch(lockCmds) {
+                Logfile.launcher.info("✅ Lock the Exec file")
+                exit(0)
+            } else {
+                Logfile.launcher.error("❌ Can't lock the file")
+                exit(1)
+            }
         }
     }
 

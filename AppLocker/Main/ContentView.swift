@@ -24,7 +24,6 @@ struct InstalledApp: Identifiable, Hashable {
     }
 }
 
-
 struct ContentView: View {
     @StateObject private var manager = LockManager()
     @State private var showingAddApp = false
@@ -57,7 +56,6 @@ struct ContentView: View {
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
-
 
     private var unlockableApps: [InstalledApp] {
         manager.allApps
@@ -225,7 +223,7 @@ struct ContentView: View {
                                 Text("Lock (%d)".localized(with: selectedToLock.count))
                             }
                         }
-                        
+
                         .accentColor(.accentColor)
                         .keyboardShortcut(.defaultAction)
                         .buttonStyle(.borderedProminent)
@@ -320,7 +318,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     func isAppStubbedAsLocked(_ appURL: URL) -> Bool {
         let resourceDir = appURL.appendingPathComponent("Contents/Resources")
 
@@ -346,7 +344,7 @@ struct ContentView: View {
     }
 }
 
-//class ContentViewModel: ObservableObject {
+// class ContentViewModel: ObservableObject {
 //    var settingsWC: SettingsWindowController?
 //
 //    func openSettingsWindow() {
@@ -357,8 +355,7 @@ struct ContentView: View {
 //        settingsWC?.showWindow(nil)
 //        NSApp.activate(ignoringOtherApps: true)
 //    }
-//}
-
+// }
 
 #Preview {
     ContentView()

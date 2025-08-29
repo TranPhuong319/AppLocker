@@ -8,19 +8,19 @@
 import Foundation
 import OSLog
 
-class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol {
+class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol {
     func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
         newConnection.exportedInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
         newConnection.exportedObject = self
         newConnection.resume()
         return true
     }
-    
+
     func sendCommand(_ command: String, args: [String], withReply reply: @escaping (Bool, String) -> Void) {
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
-        
+
         process.standardOutput = outputPipe
         process.standardError = errorPipe
 
@@ -28,7 +28,7 @@ class AppLockerHelper:  NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol
         case "mkdir":
             process.executableURL = URL(fileURLWithPath: "/bin/mkdir")
             process.arguments = args
-            
+
         case "cp":
             process.executableURL = URL(fileURLWithPath: "/bin/cp")
             process.arguments = args
