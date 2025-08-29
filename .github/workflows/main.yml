@@ -180,6 +180,21 @@ jobs:
 
     - name: Generate Sparkle Appcast
       run: |
+        if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+          # push → pre-release alpha
+          VERSION_TYPE="alpha"
+          APPCAST_VER="${VER}-alpha-${SHORT_SHA}"
+          DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/download/${REL_TAG}/AppLocker.dmg"
+        else
+          # workflow_dispatch → stable
+          VERSION_TYPE="stable"
+          APPCAST_VER="${VER}-stable-${SHORT_SHA}"
+          DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg"
+        fi
+      
+        CUR_VER="${MARKETING_VERSION}-${VERSION_TYPE}-${GIT_SHA}"
+        sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${CUR_VER}\";/g" AppLocker.xcodeproj/project.pbxproj
+
         REPO_COMMIT_URL='https://github.com/TranPhuong319/AppLocker/commit/'
         INDENT='                    '
         PART1="${INDENT}<li><a class=\"commit-link\" data-hovercard-type=\"commit\" data-hovercard-url=\"${REPO_COMMIT_URL}"
@@ -207,7 +222,7 @@ jobs:
             '            ]]>'
             '            </description>'
             '            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>'
-            "            <enclosure url=\"https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg\" sparkle:version=\"${VER}-stable-${SHORT_SHA}\" sparkle:shortVersionString=\"${VER}\" type=\"application/octet-stream\" ${SIGNED_ATTR}/>"
+            "            <enclosure url='${DMG_URL}' sparkle:version='${APPCAST_VER}' sparkle:shortVersionString='${VER}' type='application/octet-stream' ${SIGNED_ATTR}/>"
             '        </item>'
             '    </channel>'
             '</rss>'
