@@ -155,6 +155,28 @@
         }
       }
     },
+    "Get experimental updates.%@Note: Experimental updates are often unstable." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhận bản cập nhật thử nghiệm.%@Lưu ý: Các bản cập nhật thử nghiệm thường không ổn định."
+          }
+        }
+      }
+    },
+    "Get official, stable updates." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhận bản cập nhật chính thức, ổn định."
+          }
+        }
+      }
+    },
     "Launch At Login" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -206,17 +228,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quản lý danh sách Ứng dụng"
-          }
-        }
-      }
-    },
-    "quit application" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "thoát ứng dụng"
           }
         }
       }
@@ -299,7 +310,7 @@
       }
     },
     "Update Channel" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

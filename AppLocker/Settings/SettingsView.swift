@@ -14,6 +14,12 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
         case .beta: return "Beta".localized
         }
     }
+    var description: String {
+        switch self {
+        case .stable: return "Get official, stable updates.".localized
+        case .beta: return "Get experimental updates.%@Note: Experimental updates are often unstable.".localized(with: "\n")
+        }
+    }
 }
 
 struct SettingsView: View {
@@ -27,36 +33,53 @@ struct SettingsView: View {
     }()
 
     var body: some View {
-        Form {
-            Section() {
-                Toggle("Automatically check for updates.".localized, isOn: $autoCheck)
-                    .onChange(of: autoCheck) { newValue in
-                        AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
-                    }
-
-                Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
-                    .onChange(of: autoDownload) { newValue in
-                        AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
-                    }
-                
-                Picker("Update Channel".localized, selection: $selectedChannel) {
-                    ForEach(UpdateChannel.allCases, id: \.self) { channel in
-                        Text(channel.displayName).tag(channel)
-                    }
-                }
-                .onChange(of: selectedChannel) { newChannel in
-                    UserDefaults.standard.set(newChannel.rawValue, forKey: "updateChannel")
+        VStack(alignment: .leading, spacing: 0) {
+            Form {
+                Section() {
+                    Toggle("Automatically check for updates.".localized, isOn: $autoCheck)
+                        .onChange(of: autoCheck) { newValue in
+                            AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
+                        }
                     
-                    DispatchQueue.main.async {
-                        switch newChannel {
-                        case .stable:
-                            AppUpdater.shared.checkForUpdates(useBeta: false)
-                        case .beta:
-                            AppUpdater.shared.checkForUpdates(useBeta: true)
+                    Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
+                        .onChange(of: autoDownload) { newValue in
+                            AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
+                        }
+                    
+                    Picker("Update Channel".localized, selection: $selectedChannel) {
+                        ForEach(UpdateChannel.allCases, id: \.self) { channel in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(channel.displayName)
+                                    .font(.body)
+                            }
+                            .tag(channel)
                         }
                     }
+                    .onChange(of: selectedChannel) { newChannel in
+                        UserDefaults.standard.set(newChannel.rawValue, forKey: "updateChannel")
+                        //
+                        //                    DispatchQueue.main.async {
+                        //                        switch newChannel {
+                        //                        case .stable:
+                        //                            AppUpdater.shared.checkForUpdates(useBeta: false)
+                        //                        case .beta:
+                        //                            AppUpdater.shared.checkForUpdates(useBeta: true)
+                        //                        }
+                        //                    }
+                    }
+                    
+                    // Text mô tả, tự động thay đổi theo selectedChannel
+                    Text(selectedChannel.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(nil)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 2)
                 }
             }
+            .frame(width: 390, height: 110, alignment: .top) // giữ kích thước gốc, căn top
         }
         .padding()
         .frame(width: 400)

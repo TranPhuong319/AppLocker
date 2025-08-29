@@ -65,14 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
     }
 
     @objc func quitApp() {
-        AuthenticationManager.authenticate(reason: "quit application".localized) { success, errorMessage in
-            if success {
-                Logfile.core.debug("Quit Application")
-                NSApp.terminate(nil)
-            } else {
-                Logfile.core.error("Error when escaping: \(errorMessage as NSObject?, privacy: .public)")
-            }
-        }
+        NSApp.terminate(nil)
     }
 
     @objc func openSettings() {
