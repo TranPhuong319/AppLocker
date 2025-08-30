@@ -36,6 +36,8 @@ struct ContentView: View {
     @State private var showingMenu = false
 //    @StateObject private var viewModel = ContentViewModel()
     @State private var isDisabled = false
+    @State private var showingLockingPopup = false
+    @State private var lockingMessage = ""
 
     private var lockedAppObjects: [InstalledApp] {
         manager.allApps
@@ -216,14 +218,26 @@ struct ContentView: View {
                 .navigationTitle("Select the application to lock".localized)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button(action: lockSelected) {
-                            if isLocking {
-                                ProgressView()
-                            } else {
-                                Text("Lock (%d)".localized(with: selectedToLock.count))
-                            }
-                        }
+                        Button(action: {
+                            // đóng sheet chính
+                            showingAddApp = false
 
+                            // hiện popup phụ
+                            lockingMessage = "Locking %d apps...".localized(with: selectedToLock.count)
+                            showingLockingPopup = true
+                            pendingLocks = selectedToLock
+
+                            DispatchQueue.global(qos: .userInitiated).async {
+                                manager.toggleLock(for: Array(pendingLocks))
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                    showingLockingPopup = false   // 🔑 tắt popup phụ
+                                    selectedToLock.removeAll()
+                                    pendingLocks.removeAll()
+                                }
+                            }
+                        }) {
+                            Text("Lock (%d)".localized(with: selectedToLock.count))
+                        }
                         .accentColor(.accentColor)
                         .keyboardShortcut(.defaultAction)
                         .buttonStyle(.borderedProminent)
@@ -239,7 +253,6 @@ struct ContentView: View {
                 }
             }
             .frame(minWidth: 500, minHeight: 600)
-            // 👇 Thêm cái này
             .onAppear {
                 manager.reloadAllApps()
                 Logfile.core.info("List apps loaded")
@@ -288,11 +301,20 @@ struct ContentView: View {
                     .keyboardShortcut(.cancelAction)
                     let appsToUnlock = Array(deleteQueue)
                     Button("Unlock".localized) {
-                        DispatchQueue.main.async {
+                        // đóng sheet chính
+                        showingDeleteQueue = false
+                        
+                        // hiện popup phụ
+                        lockingMessage = "Unlocking %d apps...".localized(with: appsToUnlock.count)
+                        showingLockingPopup = true
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
                             manager.toggleLock(for: appsToUnlock)
                             Logfile.core.info("🧾 deleteQueue: \(appsToUnlock, privacy: .public)")
-                            deleteQueue.removeAll()
-                            showingDeleteQueue = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                deleteQueue.removeAll()
+                                showingLockingPopup = false // tắt popup phụ
+                            }
                         }
                     }
                     .accentColor(.accentColor)
@@ -302,6 +324,15 @@ struct ContentView: View {
                 .padding()
             }
             .frame(minWidth: 500, minHeight: 400)
+        }
+        .sheet(isPresented: $showingLockingPopup) {
+            HStack(spacing: 12) {
+                ProgressView()
+                Text(lockingMessage)
+                    .font(.headline)
+            }
+            .padding()
+            .frame(minWidth: 300, minHeight: 100)
         }
     }
 

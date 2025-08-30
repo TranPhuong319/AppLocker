@@ -210,6 +210,17 @@
         }
       }
     },
+    "Locking %d apps..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang khoá %d ứng dụng…"
+          }
+        }
+      }
+    },
     "Locking..." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -305,6 +316,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mở khoá"
+          }
+        }
+      }
+    },
+    "Unlocking %d apps..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang mở khoá %d ứng dụng…"
           }
         }
       }
