@@ -29,8 +29,16 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         window.contentView = hostingView
         window.title = "Settings".localized
-        window.center()
-        window.delegate = nil
+        window.setFrameAutosaveName("")   // không lưu vị trí cũ
+
+        // Center theo visibleFrame (trừ menu bar + dock)
+        if let screen = NSScreen.main {
+            let screenFrame = screen.visibleFrame
+            let windowSize = window.frame.size
+            let x = screenFrame.origin.x + (screenFrame.width - windowSize.width) / 2
+            let y = screenFrame.origin.y + (screenFrame.height - windowSize.height) / 2
+            window.setFrameOrigin(NSPoint(x: x, y: y))
+        }
 
         let controller = SettingsWindowController(window: window)
         window.delegate = controller

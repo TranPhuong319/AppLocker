@@ -7,6 +7,7 @@
 
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct InstalledApp: Identifiable, Hashable {
     let id: String
@@ -34,39 +35,27 @@ struct ContentView: View {
     @State private var isLocking = false
     @State private var lastUnlockableApps: [InstalledApp] = []
     @State private var showingMenu = false
-//    @StateObject private var viewModel = ContentViewModel()
     @State private var isDisabled = false
     @State private var showingLockingPopup = false
     @State private var lockingMessage = ""
 
     private var lockedAppObjects: [InstalledApp] {
-        manager.allApps
-            .filter { manager.lockedApps.keys.contains($0.path) }
-            .map { app in
-                if let info = manager.lockedApps[app.path] {
-                    let appPath = "/Applications/\(info.name).app"
-                    let icon = NSWorkspace.shared.icon(forFile: appPath) // load icon trực tiếp từ app bundle
-                    return InstalledApp(
-                        name: info.name,
-                        bundleID: app.bundleID,
-                        icon: icon,
-                        path: app.path
-                    )
-                } else {
-                    return app
-                }
-            }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        manager.lockedApps.keys.compactMap { path in
+            let info = manager.lockedApps[path]!
+            let icon = NSWorkspace.shared.icon(forFile: path) // icon theo path thật
+            return InstalledApp(
+                name: info.name,
+                bundleID: "", // hoặc để bundleID trống nếu bạn chưa cần
+                icon: icon,
+                path: path
+            )
+        }
+        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     private var unlockableApps: [InstalledApp] {
         manager.allApps
-            .filter { app in
-                // Lọc: Không bị khoá & nằm trong đúng /Applications
-                !manager.lockedApps.keys.contains(app.path)
-                && app.path.hasPrefix("/Applications/")
-                && !app.path.contains("/Contents/")
-            }
+            .filter { !manager.lockedApps.keys.contains($0.path) } // chưa bị khoá theo config
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
@@ -219,22 +208,7 @@ struct ContentView: View {
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: {
-                            // đóng sheet chính
-                            showingAddApp = false
-
-                            // hiện popup phụ
-                            lockingMessage = "Locking %d apps...".localized(with: selectedToLock.count)
-                            showingLockingPopup = true
-                            pendingLocks = selectedToLock
-
-                            DispatchQueue.global(qos: .userInitiated).async {
-                                manager.toggleLock(for: Array(pendingLocks))
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                    showingLockingPopup = false   // 🔑 tắt popup phụ
-                                    selectedToLock.removeAll()
-                                    pendingLocks.removeAll()
-                                }
-                            }
+                            toggleLockPupop(for: selectedToLock, locking: true)
                         }) {
                             Text("Lock (%d)".localized(with: selectedToLock.count))
                         }
@@ -248,6 +222,19 @@ struct ContentView: View {
                             showingAddApp = false
                             selectedToLock.removeAll()
                             pendingLocks.removeAll()
+                        }
+                    }
+                    ToolbarItem(placement: .automatic) {
+                        Button("Others…") {
+                            let panel = NSOpenPanel()
+                            panel.allowsMultipleSelection = true
+                            panel.canChooseFiles = true
+                            panel.canChooseDirectories = false
+                            panel.allowedContentTypes = [.applicationBundle]
+                            
+                            if panel.runModal() == .OK, let url = panel.url {
+                                toggleLockPupop(for: [url.path], locking: true) // 👈 truyền app vừa chọn
+                            }
                         }
                     }
                 }
@@ -301,21 +288,7 @@ struct ContentView: View {
                     .keyboardShortcut(.cancelAction)
                     let appsToUnlock = Array(deleteQueue)
                     Button("Unlock".localized) {
-                        // đóng sheet chính
-                        showingDeleteQueue = false
-                        
-                        // hiện popup phụ
-                        lockingMessage = "Unlocking %d apps...".localized(with: appsToUnlock.count)
-                        showingLockingPopup = true
-                        
-                        DispatchQueue.global(qos: .userInitiated).async {
-                            manager.toggleLock(for: appsToUnlock)
-                            Logfile.core.info("🧾 deleteQueue: \(appsToUnlock, privacy: .public)")
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                deleteQueue.removeAll()
-                                showingLockingPopup = false // tắt popup phụ
-                            }
-                        }
+                        toggleLockPupop(for: Set(appsToUnlock), locking: false)
                     }
                     .accentColor(.accentColor)
                     .keyboardShortcut(.defaultAction)
@@ -332,7 +305,44 @@ struct ContentView: View {
                     .font(.headline)
             }
             .padding()
-            .frame(minWidth: 300, minHeight: 100)
+            .frame(minWidth: 200, minHeight: 100)
+        }
+    }
+    
+    private func toggleLockPupop(for apps: Set<String>, locking: Bool) {
+        if locking {
+            // đóng sheet chính
+            showingAddApp = false
+            
+            // hiện popup phụ
+            lockingMessage = "Locking %d apps...".localized(with: apps.count)
+            showingLockingPopup = true
+            pendingLocks = apps
+            
+            DispatchQueue.global(qos: .userInitiated).async {
+                manager.toggleLock(for: Array(apps))
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    showingLockingPopup = false   // 🔑 tắt popup phụ
+                    selectedToLock.removeAll()
+                    pendingLocks.removeAll()
+                }
+            }
+        } else {
+            // đóng sheet chính
+            showingDeleteQueue = false
+            
+            // hiện popup phụ
+            lockingMessage = "Unlocking %d apps...".localized(with: apps.count)
+            showingLockingPopup = true
+            
+            DispatchQueue.global(qos: .userInitiated).async {
+                manager.toggleLock(for: Array(apps))
+                Logfile.core.info("🧾 deleteQueue: \(apps, privacy: .public)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    deleteQueue.removeAll()
+                    showingLockingPopup = false // tắt popup phụ
+                }
+            }
         }
     }
 
@@ -374,19 +384,6 @@ struct ContentView: View {
         return false
     }
 }
-
-// class ContentViewModel: ObservableObject {
-//    var settingsWC: SettingsWindowController?
-//
-//    func openSettingsWindow() {
-//        if settingsWC == nil {
-//            settingsWC = SettingsWindowController()
-//            settingsWC?.window?.identifier = NSUserInterfaceItemIdentifier("SettingsWindow")
-//        }
-//        settingsWC?.showWindow(nil)
-//        NSApp.activate(ignoringOtherApps: true)
-//    }
-// }
 
 #Preview {
     ContentView()

@@ -177,6 +177,17 @@
         }
       }
     },
+    "Others…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khác…"
+          }
+        }
+      }
+    },
     "Launch At Login" : {
       "extractionState" : "manual",
       "localizations" : {

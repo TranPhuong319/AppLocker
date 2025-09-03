@@ -129,25 +129,27 @@ class LockManager: ObservableObject {
     }
 
     func load() {
-        if !FileManager.default.fileExists(atPath: configFile.path) {
+        // Nếu config.plist chưa tồn tại, khởi tạo rỗng
+        guard FileManager.default.fileExists(atPath: configFile.path) else {
             lockedApps = [:]
             save()
             return
         }
+
         do {
             let data = try Data(contentsOf: configFile)
+            // Giải mã plist thành dictionary [String: LockedAppInfo]
             lockedApps = try PropertyListDecoder().decode([String: LockedAppInfo].self, from: data)
         } catch {
             showAlert(title: "Error".localized, message: "Cannot load the configuration file".localized)
             lockedApps = [:]
         }
-        for (key, value) in lockedApps {
-            if !key.hasPrefix("/") {
-                // Nếu là bundleID → tìm app theo bundleID để lấy path
-                if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: key) {
-                    lockedApps[appURL.path] = value
-                    lockedApps.removeValue(forKey: key)
-                }
+
+        // ✅ Với path tuyệt đối, không cần check bundleID cũ
+        // Xử lý bổ sung: loại bỏ key không hợp lệ (nếu có)
+        for key in lockedApps.keys {
+            if !FileManager.default.fileExists(atPath: key) {
+                lockedApps.removeValue(forKey: key)
             }
         }
     }
@@ -196,18 +198,20 @@ class LockManager: ObservableObject {
         for path in paths {
             let appURL = URL(fileURLWithPath: path)
             let appName = appURL.deletingPathExtension().lastPathComponent
+            let baseDir = appURL.deletingLastPathComponent().path
+            let disguisedAppPath = "\(baseDir)/\(appName).app"
+            let hiddenApp = "\(baseDir)/.\(appName).app"
+            let launcherResources = "\(baseDir)/Launcher.app/Contents/Resources/Locked"
+            let markerPath = "\(disguisedAppPath)/Contents/Resources/\(appName).app"
 
             let uid = getuid()
             let gid = getgid()
 
             if let lockedInfo = lockedApps[path] {
                 // 🔓 Unlock
-                let disguisedAppName = lockedInfo.name
                 let execFile = lockedInfo.execFile
 
-                let disguisedAppPath = "/Applications/\(disguisedAppName).app"
-                let hiddenApp = "/Applications/.\(disguisedAppName).app"
-                let execPath = "\(hiddenApp)/Contents/MacOS/\(execFile)"
+                let execPath = "\(hiddenApp)/Contents/MacOS/\(lockedInfo.execFile)"
 
                 let cmds: [[String: Any]] = [
                     ["command": "chflags", "args": ["nouchg", hiddenApp]],
@@ -241,19 +245,15 @@ class LockManager: ObservableObject {
                 }
 
                 let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
-                let disguisedAppPath = "/Applications/\(appName).app"
-                let hiddenApp = "/Applications/.\(appName).app"
-                let launcherResources = "/Applications/Launcher.app/Contents/Resources/Locked"
-                let markerPath = "\(disguisedAppPath)/Contents/Resources/\(appName).app"
 
                 var cmds: [[String: Any]] = [
-                    ["command": "cp", "args": ["-Rf", launcherURL.path, "/Applications/"]],
+                    ["command": "cp", "args": ["-Rf", launcherURL.path, baseDir]],
                     ["command": "mkdir", "args": ["-p", launcherResources]],
                     ["command": "mv", "args": [appURL.path, hiddenApp]],
                     ["command": "chmod", "args": ["000", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
                     ["command": "chown", "args": ["root:wheel", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
                     ["command": "chflags", "args": ["hidden", hiddenApp]],
-                    ["command": "mv", "args": ["/Applications/Launcher.app", disguisedAppPath]],
+                    ["command": "mv", "args": ["\(baseDir)/Launcher.app", disguisedAppPath]],
                     ["command": "chflags", "args": ["uchg", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.Launcher - \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
@@ -272,7 +272,7 @@ class LockManager: ObservableObject {
                         [
                             "command": "cp",
                             "args": [
-                                appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "/Applications/Launcher.app/Contents/Resources/AppIcon.icns"]
+                                appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "\(baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"]
                         ],
                         at: 1)
                     cmds.append(

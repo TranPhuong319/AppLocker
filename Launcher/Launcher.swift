@@ -62,15 +62,22 @@ class Launcher {
 
     private func handleApp(_ appURL: URL, lockedApps: [String: LockedAppInfo]) {
         let appName = appURL.deletingPathExtension().lastPathComponent
-        let launcherPath = "/Applications/\(appName).app"
-        let hiddenAppRealURL = URL(fileURLWithPath: "/Applications/.\(appName).app")
 
-        guard let lockedInfo = lockedApps[launcherPath] else {
-            Logfile.launcher.warning("⚠️ Can't find info for: \(launcherPath)")
-            return
+        // 🔥 Lấy đúng launcherPath từ config.plist
+        // (ở đây appURL là app copy trong Resources, nên ta match theo tên)
+        guard let (launcherPath, lockedInfo) = lockedApps.first(where: { _, info in
+            info.name == appName
+        }) else {
+            Logfile.launcher.warning("⚠️ Can't find info for: \(appName)")
+            exit(1)
         }
 
-        let execPath = hiddenAppRealURL.appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)").path
+        let disguisedAppURL = URL(fileURLWithPath: launcherPath)
+        let hiddenAppRealURL = disguisedAppURL.deletingLastPathComponent()
+            .appendingPathComponent(".\(appName).app")
+
+        let execPath = hiddenAppRealURL
+            .appendingPathComponent("Contents/MacOS/\(lockedInfo.execFile)").path
 
         let unlockCmds = buildUnlockCommands(hiddenAppRealURL: hiddenAppRealURL, execPath: execPath)
         let lockCmds = buildLockCommands(hiddenAppRealURL: hiddenAppRealURL, execPath: execPath)
@@ -80,10 +87,12 @@ class Launcher {
             exit(1)
         }
 
-        authenticateAndOpenApp(lockedInfo: lockedInfo,
-                               hiddenAppRealURL: hiddenAppRealURL,
-                               execPath: execPath,
-                               lockCmds: lockCmds)
+        authenticateAndOpenApp(
+            lockedInfo: lockedInfo,
+            hiddenAppRealURL: hiddenAppRealURL,
+            execPath: execPath,
+            lockCmds: lockCmds
+        )
     }
 
     private func buildUnlockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
