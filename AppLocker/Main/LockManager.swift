@@ -226,7 +226,9 @@ class LockManager: ObservableObject {
                 ]
 
                 if sendToHelperBatch(cmds) {
-                    lockedApps.removeValue(forKey: path)
+                    DispatchQueue.main.async { [self] in
+                        lockedApps.removeValue(forKey: path)
+                    }
                     save()
                 }
 
@@ -292,7 +294,9 @@ class LockManager: ObservableObject {
                 cmds.append(["command": "chflags", "args": ["uchg", hiddenApp]])
                 cmds.append(["command": "touch", "args": [disguisedAppPath]])
                 if sendToHelperBatch(cmds) {
-                    lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
+                    DispatchQueue.main.async { [self] in
+                        lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
+                    }
                     save()
                 }
             }

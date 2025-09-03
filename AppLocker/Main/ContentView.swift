@@ -123,13 +123,6 @@ struct ContentView: View {
                             }
                             .opacity(deleteQueue.contains(app.path) ? 0.5 : 1.0)
                             .contentShape(Rectangle())
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    deleteQueue.insert(app.path)
-                                } label: {
-                                    Label("Delete".localized, systemImage: "trash")
-                                }
-                            }
                         }
                         // Tạo khoảng trống padding để tránh nút đè lên text cuối list quá sát
                         Rectangle()
@@ -208,7 +201,7 @@ struct ContentView: View {
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: {
-                            toggleLockPupop(for: selectedToLock, locking: true)
+                            toggleLockPopup(for: selectedToLock, locking: true)
                         }) {
                             Text("Lock (%d)".localized(with: selectedToLock.count))
                         }
@@ -233,7 +226,7 @@ struct ContentView: View {
                             panel.allowedContentTypes = [.applicationBundle]
                             
                             if panel.runModal() == .OK, let url = panel.url {
-                                toggleLockPupop(for: [url.path], locking: true) // 👈 truyền app vừa chọn
+                                toggleLockPopup(for: [url.path], locking: true) // 👈 truyền app vừa chọn
                             }
                         }
                     }
@@ -288,7 +281,7 @@ struct ContentView: View {
                     .keyboardShortcut(.cancelAction)
                     let appsToUnlock = Array(deleteQueue)
                     Button("Unlock".localized) {
-                        toggleLockPupop(for: Set(appsToUnlock), locking: false)
+                        toggleLockPopup(for: Set(appsToUnlock), locking: false)
                     }
                     .accentColor(.accentColor)
                     .keyboardShortcut(.defaultAction)
@@ -309,39 +302,31 @@ struct ContentView: View {
         }
     }
     
-    private func toggleLockPupop(for apps: Set<String>, locking: Bool) {
+    private func toggleLockPopup(for apps: Set<String>, locking: Bool) {
+        // đóng sheet chính
         if locking {
-            // đóng sheet chính
             showingAddApp = false
-            
-            // hiện popup phụ
-            lockingMessage = "Locking %d apps...".localized(with: apps.count)
-            showingLockingPopup = true
-            pendingLocks = apps
-            
-            DispatchQueue.global(qos: .userInitiated).async {
-                manager.toggleLock(for: Array(apps))
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    showingLockingPopup = false   // 🔑 tắt popup phụ
+        } else {
+            showingDeleteQueue = false
+        }
+
+        // hiện popup phụ với message phù hợp
+        lockingMessage = locking
+            ? "Locking %d apps...".localized(with: apps.count)
+            : "Unlocking %d apps...".localized(with: apps.count)
+        showingLockingPopup = true
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            manager.toggleLock(for: Array(apps))
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if locking {
                     selectedToLock.removeAll()
                     pendingLocks.removeAll()
-                }
-            }
-        } else {
-            // đóng sheet chính
-            showingDeleteQueue = false
-            
-            // hiện popup phụ
-            lockingMessage = "Unlocking %d apps...".localized(with: apps.count)
-            showingLockingPopup = true
-            
-            DispatchQueue.global(qos: .userInitiated).async {
-                manager.toggleLock(for: Array(apps))
-                Logfile.core.info("🧾 deleteQueue: \(apps, privacy: .public)")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                } else {
                     deleteQueue.removeAll()
-                    showingLockingPopup = false // tắt popup phụ
                 }
+                showingLockingPopup = false
             }
         }
     }
