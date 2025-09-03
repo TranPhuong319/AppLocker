@@ -38,6 +38,8 @@ struct ContentView: View {
     @State private var isDisabled = false
     @State private var showingLockingPopup = false
     @State private var lockingMessage = ""
+    @State private var searchTextUnlockaleApps = ""
+    @State private var searchTextLockApps = ""
 
     private var lockedAppObjects: [InstalledApp] {
         manager.lockedApps.keys.compactMap { path in
@@ -60,7 +62,8 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 9) { // ✅ tất cả cách nhau 9
+            // Label header
             HStack {
                 Text("Locked application".localized)
                     .font(.headline)
@@ -77,7 +80,6 @@ struct ContentView: View {
                 .help("Add application to lock".localized)
                 .disabled(isDisabled)
             }
-            .padding(.bottom, 4)
 
             if lockedAppObjects.isEmpty {
                 Spacer()
@@ -91,48 +93,57 @@ struct ContentView: View {
                 }
                 Spacer()
             } else {
-                ZStack(alignment: .bottom) {
-                    List {
-                        ForEach(lockedAppObjects, id: \.id) { app in
-                            HStack(spacing: 12) {
-                                if let icon = app.icon {
-                                    Image(nsImage: icon)
-                                        .resizable()
-                                        .frame(width: 32, height: 32)
-                                        .cornerRadius(6)
-                                }
-                                VStack(alignment: .leading) {
-                                    Text(app.name)
-//                                    Text(app.bundleID)
-//                                        .font(.caption)
-//                                        .foregroundColor(.secondary)
-                                }
-                                Spacer()
+                // Search field
+                TextField("Search apps...".localized, text: $searchTextLockApps)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal, 8)
 
-                                if selectedToLock.contains(app.path) {
-                                    Image(systemName: "checkmark.circle.fill")
+                // ScrollView thay List
+                ZStack(alignment: .bottom) {
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 6) {
+                            ForEach(lockedAppObjects.filter {
+                                searchTextLockApps.isEmpty || $0.name.localizedCaseInsensitiveContains(searchTextLockApps)
+                            }, id: \.id) { app in
+                                HStack(spacing: 12) {
+                                    if let icon = app.icon {
+                                        Image(nsImage: icon)
+                                            .resizable()
+                                            .frame(width: 32, height: 32)
+                                            .cornerRadius(6)
+                                    }
+                                    VStack(alignment: .leading) {
+                                        Text(app.name)
+                                    }
+                                    Spacer()
+
+                                    if selectedToLock.contains(app.path) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                    }
+                                    Button {
+                                        deleteQueue.insert(app.path)
+                                    } label: {
+                                        Image(systemName: "minus.circle")
+                                            .foregroundColor(.red)
+                                    }
+                                    .buttonStyle(BorderlessButtonStyle())
+                                    .disabled(deleteQueue.contains(app.path))
                                 }
-                                Button(action: {
-                                    deleteQueue.insert(app.path)
-                                }) {
-                                    Image(systemName: "minus.circle")
-                                        .foregroundColor(.red)
-                                }
-                                .buttonStyle(BorderlessButtonStyle())
-                                .disabled(deleteQueue.contains(app.path))
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(Color(NSColor.controlBackgroundColor))
+                                .cornerRadius(8)
+                                .opacity(deleteQueue.contains(app.path) ? 0.5 : 1.0)
                             }
-                            .opacity(deleteQueue.contains(app.path) ? 0.5 : 1.0)
-                            .contentShape(Rectangle())
+
+                            Spacer(minLength: 60) // tránh bar dưới đè app cuối
                         }
-                        // Tạo khoảng trống padding để tránh nút đè lên text cuối list quá sát
-                        Rectangle()
-                            .frame(height: 60)
-                            .opacity(0)
-                            .listRowInsets(EdgeInsets()) // bỏ padding mặc định của row
+                        .padding(.vertical, 4)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(height: 350)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .listStyle(PlainListStyle()) // bỏ style mặc định cho list gọn hơn
+
+                    // 🔴 Bottom bar nếu có deleteQueue
                     if !deleteQueue.isEmpty {
                         Button {
                             showingDeleteQueue = true
@@ -151,50 +162,63 @@ struct ContentView: View {
                             .shadow(radius: 4)
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .frame(height: 32) // chiều cao nút
+                        .frame(height: 32)
                         .padding(.bottom, 8)
                         .transition(.move(edge: .bottom))
                         .animation(.easeInOut, value: deleteQueue.isEmpty)
                     }
                 }
-                .frame(height: 350)
             }
         }
-
-        .padding(EdgeInsets(top: 15, leading: 15, bottom: 20, trailing: 15))
-        .frame(maxWidth: 600, maxHeight: 400)
+        .padding(12) // ✅ cách mép window 8pt
         .sheet(isPresented: $showingAddApp) {
             NavigationStack {
-                List {
-                    ForEach(unlockableApps, id: \.id) { app in
-                        HStack(spacing: 12) {
-                            if let icon = app.icon {
-                                Image(nsImage: icon)
-                                    .resizable()
-                                    .frame(width: 32, height: 32)
-                                    .cornerRadius(4)
+                VStack(spacing: 0) {
+                    // 🔍 Thanh search nằm ngay trên List
+                    HStack {
+                        TextField("Search apps...".localized, text: $searchTextUnlockaleApps)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(8)
+                            .frame(maxWidth: .infinity) // ✅ full chiều ngang
+                        
+                    }
+
+                    Divider()
+
+                    // 📋 Danh sách app lọc theo search
+                    List {
+                        ForEach(unlockableApps.filter {
+                            searchTextUnlockaleApps.isEmpty || $0.name.localizedCaseInsensitiveContains(searchTextUnlockaleApps)
+                        }, id: \.id) { app in
+                            HStack(spacing: 12) {
+                                if let icon = app.icon {
+                                    Image(nsImage: icon)
+                                        .resizable()
+                                        .frame(width: 32, height: 32)
+                                        .cornerRadius(4)
+                                }
+                                Text(app.name)
+                                Spacer()
+                                if pendingLocks.contains(app.path) {
+                                    Text("Locking...".localized)
+                                        .italic()
+                                        .foregroundColor(.gray)
+                                } else if selectedToLock.contains(app.path) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                }
                             }
-                            Text(app.name)
-                            Spacer()
-                            if pendingLocks.contains(app.path) {
-                                Text("Locking...".localized)
-                                    .italic()
-                                    .foregroundColor(.gray)
-                            } else if selectedToLock.contains(app.path) {
-                                Image(systemName: "checkmark.circle.fill")
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                guard !pendingLocks.contains(app.path) else { return }
+                                if selectedToLock.contains(app.path) {
+                                    selectedToLock.remove(app.path)
+                                } else {
+                                    selectedToLock.insert(app.path)
+                                }
                             }
+                            .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            guard !pendingLocks.contains(app.path) else { return }
-                            if selectedToLock.contains(app.path) {
-                                selectedToLock.remove(app.path)
-                            } else {
-                                selectedToLock.insert(app.path)
-                            }
-                        }
-                        .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
-                        .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                     }
                 }
                 .navigationTitle("Select the application to lock".localized)
@@ -210,6 +234,7 @@ struct ContentView: View {
                         .buttonStyle(.borderedProminent)
                         .disabled(selectedToLock.isEmpty || isLocking)
                     }
+
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Close".localized) {
                             showingAddApp = false
@@ -217,6 +242,7 @@ struct ContentView: View {
                             pendingLocks.removeAll()
                         }
                     }
+
                     ToolbarItem(placement: .automatic) {
                         Button("Others…") {
                             let panel = NSOpenPanel()
@@ -226,7 +252,7 @@ struct ContentView: View {
                             panel.allowedContentTypes = [.applicationBundle]
                             
                             if panel.runModal() == .OK, let url = panel.url {
-                                toggleLockPopup(for: [url.path], locking: true) // 👈 truyền app vừa chọn
+                                toggleLockPopup(for: [url.path], locking: true)
                             }
                         }
                     }
@@ -238,6 +264,8 @@ struct ContentView: View {
                 Logfile.core.info("List apps loaded")
             }
         }
+
+        
         .sheet(isPresented: $showingDeleteQueue) {
             VStack(alignment: .leading) {
                 Text("Application is waiting to be deleted".localized)

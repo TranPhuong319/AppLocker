@@ -177,17 +177,6 @@
         }
       }
     },
-    "Others…" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khác…"
-          }
-        }
-      }
-    },
     "Launch At Login" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -254,6 +243,17 @@
         }
       }
     },
+    "Others…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khác…"
+          }
+        }
+      }
+    },
     "Quit AppLocker" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -261,6 +261,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Thoát AppLocker"
+          }
+        }
+      }
+    },
+    "Search apps..." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tìm kiếm ứng dụng…"
           }
         }
       }
