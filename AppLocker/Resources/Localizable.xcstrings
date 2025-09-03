@@ -177,6 +177,28 @@
         }
       }
     },
+    "Helper has not turned on" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helper chưa được bật"
+          }
+        }
+      }
+    },
+    "Helper Tool has registered but needs to turn on System Settings > Login Items." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helper đã được đăng kí nhưng cần bật trong System Settings > Login Items."
+          }
+        }
+      }
+    },
     "Launch At Login" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -265,8 +287,19 @@
         }
       }
     },
+    "Retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử lại"
+          }
+        }
+      }
+    },
     "Search apps..." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

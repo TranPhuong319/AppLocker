@@ -24,13 +24,13 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         let hostingView = NSHostingView(rootView: contentView)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 350),
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false
         )
 
-        window.minSize = NSSize(width: 420, height: 480)
-        window.maxSize = NSSize(width: 420, height: 480)
+        window.minSize = NSSize(width: 450, height: 350)
+        window.maxSize = NSSize(width: 450, height: 350)
 
         window.title = "Manage the application list".localized
         window.contentView = hostingView

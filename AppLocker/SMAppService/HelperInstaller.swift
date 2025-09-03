@@ -90,10 +90,10 @@ struct HelperInstaller {
     }
 
     static func requiresApprovalAlent() {
-        showAlert(title: "Cần bật helper tool",
-                message: "Helper tool đã đăng ký nhưng cần bật trong System Settings > Login Items.",
-                okButton: "Thử lại",
-                skipButton: "Đóng AppLocker") {
+        showAlert(title: NSLocalizedString("Helper has not turned on", comment: "").localized,
+                  message: "Helper Tool has registered but needs to turn on System Settings > Login Items.".localized,
+                  okButton: "Retry".localized,
+                  skipButton: "Quit AppLocker".localized) {
             SMAppService.openSystemSettingsLoginItems()
         }
     }

@@ -64,6 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSXPCListene
         }
     }
 
+
     @objc func quitApp() {
         NSApp.terminate(nil)
     }

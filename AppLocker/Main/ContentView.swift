@@ -131,7 +131,7 @@ struct ContentView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 8)
-                                .background(Color(NSColor.controlBackgroundColor))
+                                .background(.regularMaterial) // macOS 12+
                                 .cornerRadius(8)
                                 .opacity(deleteQueue.contains(app.path) ? 0.5 : 1.0)
                             }
@@ -186,40 +186,50 @@ struct ContentView: View {
                     Divider()
 
                     // 📋 Danh sách app lọc theo search
-                    List {
-                        ForEach(unlockableApps.filter {
-                            searchTextUnlockaleApps.isEmpty || $0.name.localizedCaseInsensitiveContains(searchTextUnlockaleApps)
-                        }, id: \.id) { app in
-                            HStack(spacing: 12) {
-                                if let icon = app.icon {
-                                    Image(nsImage: icon)
-                                        .resizable()
-                                        .frame(width: 32, height: 32)
-                                        .cornerRadius(4)
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 8) {
+                            ForEach(unlockableApps.filter {
+                                searchTextUnlockaleApps.isEmpty ||
+                                $0.name.localizedCaseInsensitiveContains(searchTextUnlockaleApps)
+                            }, id: \.id) { app in
+                                HStack(spacing: 12) {
+                                    if let icon = app.icon {
+                                        Image(nsImage: icon)
+                                            .resizable()
+                                            .frame(width: 32, height: 32)
+                                            .cornerRadius(6)
+                                    }
+                                    Text(app.name)
+                                    Spacer()
+                                    if pendingLocks.contains(app.path) {
+                                        Text("Locking...".localized)
+                                            .italic()
+                                            .foregroundColor(.gray)
+                                    } else if selectedToLock.contains(app.path) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                    }
                                 }
-                                Text(app.name)
-                                Spacer()
-                                if pendingLocks.contains(app.path) {
-                                    Text("Locking...".localized)
-                                        .italic()
-                                        .foregroundColor(.gray)
-                                } else if selectedToLock.contains(app.path) {
-                                    Image(systemName: "checkmark.circle.fill")
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 10)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    guard !pendingLocks.contains(app.path) else { return }
+                                    if selectedToLock.contains(app.path) {
+                                        selectedToLock.remove(app.path)
+                                    } else {
+                                        selectedToLock.insert(app.path)
+                                    }
                                 }
+                                .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
+                                .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                             }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                guard !pendingLocks.contains(app.path) else { return }
-                                if selectedToLock.contains(app.path) {
-                                    selectedToLock.remove(app.path)
-                                } else {
-                                    selectedToLock.insert(app.path)
-                                }
-                            }
-                            .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
-                            .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                         }
+                        .padding(.vertical, 8) // ✅ chỉ giữ padding dọc
+                        .padding(.horizontal)  // ✅ 1 lớp padding ngoài
                     }
+                    .frame(maxHeight: 520)
+
                 }
                 .navigationTitle("Select the application to lock".localized)
                 .toolbar {
@@ -265,38 +275,46 @@ struct ContentView: View {
             }
         }
 
-        
         .sheet(isPresented: $showingDeleteQueue) {
             VStack(alignment: .leading) {
                 Text("Application is waiting to be deleted".localized)
                     .font(.headline)
                     .padding()
 
-                List {
-                    ForEach(lockedAppObjects.filter { deleteQueue.contains($0.path) }, id: \.id) { app in
-                        HStack(spacing: 12) {
-                            if let icon = app.icon {
-                                Image(nsImage: icon)
-                                    .resizable()
-                                    .frame(width: 32, height: 32)
-                                    .cornerRadius(4)
-                            }
-                            Text(app.name)
-                            Spacer()
-                            Button {
-                                deleteQueue.remove(app.path)
-                                // Đóng sheet nếu hàng chờ rỗng
-                                if deleteQueue.isEmpty {
-                                    showingDeleteQueue = false
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        ForEach(lockedAppObjects.filter { deleteQueue.contains($0.path) }, id: \.id) { app in
+                            HStack(spacing: 12) {
+                                if let icon = app.icon {
+                                    Image(nsImage: icon)
+                                        .resizable()
+                                        .frame(width: 32, height: 32)
+                                        .cornerRadius(6)
                                 }
-                            } label: {
-                                Image(systemName: "minus.circle")
-                                    .foregroundColor(.red)
+                                Text(app.name)
+                                Spacer()
+                                Button {
+                                    deleteQueue.remove(app.path)
+                                    if deleteQueue.isEmpty {
+                                        showingDeleteQueue = false
+                                    }
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                        .foregroundColor(.red)
+                                }
+                                .buttonStyle(BorderlessButtonStyle())
                             }
-                            .buttonStyle(BorderlessButtonStyle())
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(.regularMaterial)
+                            .cornerRadius(10)
                         }
                     }
+                    .padding(.vertical, 8)
                 }
+                .frame(maxHeight: 350)
+                .padding(.horizontal)
 
                 Divider()
 
@@ -317,7 +335,7 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            .frame(minWidth: 500, minHeight: 400)
+            .frame(minWidth: 400, minHeight: 450)
         }
         .sheet(isPresented: $showingLockingPopup) {
             HStack(spacing: 12) {
