@@ -99,19 +99,43 @@ class Launcher {
         let uid = getuid()
         let gid = getgid()
         return [
-            ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
-            ["command": "chflags", "args": ["nouchg", execPath]],
-            ["command": "chmod", "args": ["a=rx", execPath]],
-            ["command": "chown", "args": ["\(uid):\(gid)", execPath]]
+            [
+                "do":   ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
+                "undo": ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]]
+            ],
+            [
+                "do":   ["command": "chflags", "args": ["nouchg", execPath]],
+                "undo": ["command": "chflags", "args": ["uchg", execPath]]
+            ],
+            [
+                "do":   ["command": "chmod", "args": ["a=rx", execPath]],  // restore quyền execute
+                "undo": ["command": "chmod", "args": ["000", execPath]]
+            ],
+            [
+                "do":   ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
+                "undo": ["command": "chown", "args": ["root:wheel", execPath]]
+            ]
         ]
     }
 
     private func buildLockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
         return [
-            ["command": "chmod", "args": ["000", execPath]],
-            ["command": "chown", "args": ["root:wheel", execPath]],
-            ["command": "chflags", "args": ["uchg", execPath]],
-            ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]]
+            [
+                "do":   ["command": "chmod", "args": ["000", execPath]],
+                "undo": ["command": "chmod", "args": ["a=rx", execPath]]
+            ],
+            [
+                "do":   ["command": "chown", "args": ["root:wheel", execPath]],
+                "undo": ["command": "chown", "args": ["\(getuid()):staff", execPath]]
+            ],
+            [
+                "do":   ["command": "chflags", "args": ["uchg", execPath]],
+                "undo": ["command": "chflags", "args": ["nouchg", execPath]]
+            ],
+            [
+                "do":   ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]],
+                "undo": ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]]
+            ]
         ]
     }
 

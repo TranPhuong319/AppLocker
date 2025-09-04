@@ -131,9 +131,8 @@ struct ContentView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 8)
-                                .background(.regularMaterial) // macOS 12+
-                                .cornerRadius(8)
-                                .opacity(deleteQueue.contains(app.path) ? 0.5 : 1.0)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                                .opacity(deleteQueue.contains(app.path) ? 0.3 : 1.0)
                             }
 
                             Spacer(minLength: 60) // tránh bar dưới đè app cuối
@@ -154,7 +153,7 @@ struct ContentView: View {
                                     .bold()
                             }
                             .padding()
-                            .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity, maxHeight: 40)
                             .background(Color.red.opacity(0.8))
                             .foregroundColor(.white)
                             .cornerRadius(8)
@@ -169,7 +168,7 @@ struct ContentView: View {
                     }
                 }
             }
-        }
+        }       
         .padding(12) // ✅ cách mép window 8pt
         .sheet(isPresented: $showingAddApp) {
             NavigationStack {
@@ -221,12 +220,12 @@ struct ContentView: View {
                                         selectedToLock.insert(app.path)
                                     }
                                 }
-                                .opacity(selectedToLock.contains(app.path) ? 0.5 : 1.0)
+                                .opacity(selectedToLock.contains(app.path) ? 0.3 : 1.0)
                                 .animation(.easeInOut(duration: 0.2), value: selectedToLock)
                             }
                         }
-                        .padding(.vertical, 8) // ✅ chỉ giữ padding dọc
-                        .padding(.horizontal)  // ✅ 1 lớp padding ngoài
+                        .padding(.vertical, 8) // chỉ giữ padding dọc
+                        .padding(.horizontal)  // 1 lớp padding ngoài
                     }
                     .frame(maxHeight: 520)
 
