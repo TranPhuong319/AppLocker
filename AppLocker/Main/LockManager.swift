@@ -122,7 +122,6 @@ class LockManager: ObservableObject {
     }
     #endif
 
-
     init() {
         load() // Load lockedApps trước
         self.allApps = getInstalledApps()
@@ -195,6 +194,8 @@ class LockManager: ObservableObject {
     }
 
     func toggleLock(for paths: [String]) {
+        var didChange = false
+
         for path in paths {
             let appURL = URL(fileURLWithPath: path)
             let appName = appURL.deletingPathExtension().lastPathComponent
@@ -202,15 +203,12 @@ class LockManager: ObservableObject {
             let disguisedAppPath = "\(baseDir)/\(appName).app"
             let hiddenApp = "\(baseDir)/.\(appName).app"
             let launcherResources = "\(baseDir)/Launcher.app/Contents/Resources/Locked"
-            let markerPath = "\(disguisedAppPath)/Contents/Resources/\(appName).app"
 
             let uid = getuid()
             let gid = getgid()
 
             if let lockedInfo = lockedApps[path] {
                 // 🔓 Unlock
-                let execFile = lockedInfo.execFile
-
                 let execPath = "\(hiddenApp)/Contents/MacOS/\(lockedInfo.execFile)"
 
                 let cmds: [[String: Any]] = [
@@ -221,15 +219,13 @@ class LockManager: ObservableObject {
                     ["command": "mv", "args": [hiddenApp, disguisedAppPath]],
                     ["command": "touch", "args": [disguisedAppPath]],
                     ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
-                    ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
+                    ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(lockedInfo.execFile)"]],
                     ["command": "touch", "args": [disguisedAppPath]]
                 ]
 
                 if sendToHelperBatch(cmds) {
-                    DispatchQueue.main.async { [self] in
-                        lockedApps.removeValue(forKey: path)
-                    }
-                    save()
+                    lockedApps.removeValue(forKey: path)
+                    didChange = true
                 }
 
             } else {
@@ -240,7 +236,6 @@ class LockManager: ObservableObject {
                     continue
                 }
 
-                // Lấy iconName nếu có
                 var iconName: String?
                 if let icon = infoPlist["CFBundleIconFile"] as? String {
                     iconName = icon.hasSuffix(".icns") ? String(icon.dropLast(5)) : icon
@@ -257,49 +252,39 @@ class LockManager: ObservableObject {
                     ["command": "chflags", "args": ["hidden", hiddenApp]],
                     ["command": "mv", "args": ["\(baseDir)/Launcher.app", disguisedAppPath]],
                     ["command": "chflags", "args": ["uchg", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
-                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.Launcher - \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
+                    ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.Launcher-\(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
                     ["command": "mv", "args": ["\(disguisedAppPath)/Contents/MacOS/Launcher", "\(disguisedAppPath)/Contents/MacOS/\(appName)"]],
-                    ["command": "touch", "args": [markerPath]],
-                    ["command": "chown", "args": ["root:wheel", markerPath]],
-                    ["command": "chflags", "args": ["uchg", markerPath]],
                     ["command": "touch", "args": [disguisedAppPath]]
-
                 ]
 
-                // Nếu có icon thì thêm lệnh liên quan đến icon
                 if let iconName = iconName {
                     cmds.insert(
-                        [
-                            "command": "cp",
-                            "args": [
-                                appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path, "\(baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"]
-                        ],
+                        ["command": "cp",
+                         "args": [appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path,
+                                  "\(baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"]],
                         at: 1)
-                    cmds.append(
-                        [
-                            "command": "PlistBuddy",
-                            "args": [
-                                "-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]
-                        ]
-                    )
-                    
+                    cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]])
                 } else {
-                    // Nếu không có icon, chỉ xóa CFBundleIconFile trong launcher Info.plist nếu có
                     cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconFile", "\(disguisedAppPath)/Contents/Info.plist"]])
                     cmds.append(["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]])
                     cmds.append(["command": "rm", "args": ["-rf", "\(disguisedAppPath)/Contents/Resources/AppIcon.icns"]])
                 }
+
                 cmds.append(["command": "chflags", "args": ["uchg", hiddenApp]])
                 cmds.append(["command": "touch", "args": [disguisedAppPath]])
+
                 if sendToHelperBatch(cmds) {
-                    DispatchQueue.main.async { [self] in
-                        lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
-                    }
-                    save()
+                    lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
+                    didChange = true
                 }
             }
+        }
+
+        // chỉ save 1 lần nếu có thay đổi
+        if didChange {
+            save()
         }
     }
 

@@ -25,7 +25,7 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     @State private var autoCheck = false
     @State private var autoDownload = false
-    
+
     // Lấy giá trị từ UserDefaults hoặc mặc định là Stable
     @State private var selectedChannel: UpdateChannel = {
         let saved = UserDefaults.standard.string(forKey: "updateChannel") ?? UpdateChannel.stable.rawValue
@@ -35,17 +35,17 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Form {
-                Section() {
+                Section {
                     Toggle("Automatically check for updates.".localized, isOn: $autoCheck)
                         .onChange(of: autoCheck) { newValue in
                             AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
                         }
-                    
+
                     Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
                         .onChange(of: autoDownload) { newValue in
                             AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
                         }
-                    
+
                     Picker("Update Channel".localized, selection: $selectedChannel) {
                         ForEach(UpdateChannel.allCases, id: \.self) { channel in
                             VStack(alignment: .leading, spacing: 2) {
@@ -67,7 +67,7 @@ struct SettingsView: View {
                         //                        }
                         //                    }
                     }
-                    
+
                     // Text mô tả, tự động thay đổi theo selectedChannel
                     Text(selectedChannel.description)
                         .font(.caption)

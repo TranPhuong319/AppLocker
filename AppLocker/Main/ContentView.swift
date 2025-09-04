@@ -180,7 +180,7 @@ struct ContentView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding(8)
                             .frame(maxWidth: .infinity) // ✅ full chiều ngang
-                        
+
                     }
 
                     Divider()
@@ -260,7 +260,7 @@ struct ContentView: View {
                             panel.canChooseFiles = true
                             panel.canChooseDirectories = false
                             panel.allowedContentTypes = [.applicationBundle]
-                            
+
                             if panel.runModal() == .OK, let url = panel.url {
                                 toggleLockPopup(for: [url.path], locking: true)
                             }
@@ -347,7 +347,7 @@ struct ContentView: View {
             .frame(minWidth: 200, minHeight: 100)
         }
     }
-    
+
     private func toggleLockPopup(for apps: Set<String>, locking: Bool) {
         // đóng sheet chính
         if locking {
