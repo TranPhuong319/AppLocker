@@ -1,94 +1,45 @@
 # 🔐 AppLocker – macOS Application Locker
 
-**AppLocker** is a macOS security tool that lets you lock any application with a disguise mechanism and require user authentication before access.  
-
-This project includes:
-
-- `AppLocker.app`: The main menu bar application that manages locked apps.  
-- `AppLockerHelper`: A privileged helper tool (runs as `root`) that handles access control.  
-- `com.TranPhuong319.AppLockerHelper.plist`: A LaunchDaemon to start the helper at boot.  
+**AppLocker** is a security tool for macOS that allows you to lock any application using a camouflage mechanism and require authentication before access. AppLocker helps protect your privacy and prevents others from opening apps without permission.
 
 ---
 
-## 📦 Releases
-
-You can download prebuilt `.pkg` installation packages from the [Releases](https://github.com/TranPhuong319/AppLocker/releases) section on GitHub.  
-
-The `.pkg` file includes:  
-- Packaged `AppLocker.app`  
-- `AppLockerHelper` helper tool registered with launchd  
-- Post-installation script for automatic configuration  
-
-> ⚠️ After downloading, macOS may require you to allow the app to run (since the app is unsigned): Right click → Open.  
+## 🚀 Key Features
+- 🔐 Lock any application on macOS
+- 🕵️‍♂️ Camouflage apps to prevent unauthorized access
+- ✅ Require authentication (Touch ID / password) before opening apps
+- 📋 Easily manage your locked app list from the menu bar
 
 ---
 
-## ✅ System Requirements
-
-- macOS Ventura or later  
-
----
-
-## ⚙️ Build the `.pkg` File
-
-### 1. Download and install [Packages](http://s.sudre.free.fr/files/Packages_1211_dev.dmg)  
-
-### 2. Open the `AppLocker.pkgproj` file  
-
-### 3. Build the package  
-- Go to **Build → Build** or press `⌘ + B`  
-- After building, the `.pkg` file will be located in `Product/AppLocker.pkg`  
-
-<img width="881" height="369" alt="Screenshot 2025-08-23 at 08 04 21" src="https://github.com/user-attachments/assets/5f89ce9a-7b2a-4794-baa1-bca3caa10f09" />
+## 📦 Installation
+1. Download the `.dmg` file from [Releases](https://github.com/TranPhuong319/AppLocker/releases)
+2. Open the `.dmg` file and drag AppLocker into the **Applications** folder
+3. Open AppLocker for the first time:
+   - Since the app is **not notarized**, macOS will block it
+   - Open **System Preferences → Security & Privacy → General**
+   - Click **Open Anyway** to allow AppLocker to run
+   - Then enter your administrator password to grant access
 
 ---
 
-## 📦 Install AppLocker
-
-Once you have the `AppLocker.pkg` file, install it by running:
-
-```bash
-sudo installer -pkg AppLocker.pkg -target /
-```
-
-Or simply open the installer file. At the `Installation Type` step, select ***Install AppLocker*** (default option).  
-Click **Continue**, enter your administrator password, and the software will be installed.  
-
-<img width="622" height="448" alt="image" src="https://github.com/user-attachments/assets/86195b76-cffa-42b3-9566-0295d145b8a1" />
-
-After installation, components will be located at:
-
-| Component   | Path |
-|-------------|------|
-| App         | `/Applications/AppLocker.app` |
-| Helper      | `/Library/PrivilegedHelperTools/AppLockerHelper` |
-| LaunchDaemon| `/Library/LaunchDaemons/com.TranPhuong319.AppLockerHelper.plist` |
-
-The helper will be registered and automatically started by **launchd**.  
+## ⚠️ Uninstallation Notes
+- Before removing AppLocker, make sure to **unlock all apps**
+- Drag AppLocker into the **Trash** to completely uninstall
 
 ---
 
-## 🧪 Logs
-
-You can view logs using **Console.app**.  
-
----
-
-## ❌ Complete Uninstallation
-
-- Run the `AppLocker.pkg` file again  
-- At the `Installation Type` step, uncheck **Install AppLocker**  
-- Click **Continue**, enter your administrator password  
-
-<img width="622" height="447" alt="image" src="https://github.com/user-attachments/assets/f56e2ff7-bbad-4a19-8fcc-155400709e87" />
-
-The software will be removed.  
-
-> ⚠️ Make sure all applications are **unlocked** before uninstalling.  
+## 💻 System Requirements
+- macOS Ventura 13.5 or later
+- No special permissions are required, but you will need to grant **Privacy** access when opening AppLocker for the first time
 
 ---
 
-## 🧑‍💻 Author
+## 📜 Viewing Logs
+- Open `Console.app` → search for AppLocker logs to see activities like locking/unlocking apps and authentication successes/failures
 
-**Trần Phương**  
-GitHub: [@TranPhuong319](https://github.com/TranPhuong319)  
+---
+
+## 🧑‍💻 Author & Support
+**Tran Phuong**  
+GitHub: [@TranPhuong319](https://github.com/TranPhuong319)
