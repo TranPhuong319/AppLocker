@@ -82,15 +82,11 @@ class Launcher {
         let unlockCmds = buildUnlockCommands(hiddenAppRealURL: hiddenAppRealURL, execPath: execPath)
         let lockCmds = buildLockCommands(hiddenAppRealURL: hiddenAppRealURL, execPath: execPath)
 
-        guard sendToHelperBatch(unlockCmds) else {
-            Logfile.launcher.error("❌ Cannot unlock the Exec file")
-            exit(1)
-        }
-
         authenticateAndOpenApp(
             lockedInfo: lockedInfo,
             hiddenAppRealURL: hiddenAppRealURL,
             execPath: execPath,
+            unlockCmds: unlockCmds,
             lockCmds: lockCmds
         )
     }
@@ -142,7 +138,12 @@ class Launcher {
     private func authenticateAndOpenApp(lockedInfo: LockedAppInfo,
                                         hiddenAppRealURL: URL,
                                         execPath: String,
+                                        unlockCmds: [[String: Any]],
                                         lockCmds: [[String: Any]]) {
+        guard sendToHelperBatch(unlockCmds) else {
+            Logfile.launcher.error("❌ Cannot unlock the Exec file")
+            exit(1)
+        }
         AuthenticationManager.authenticate(reason: "authentication to open".localized) { success, errorMessage in
             DispatchQueue.main.async {
                 if success {
@@ -151,9 +152,6 @@ class Launcher {
                                     lockCmds: lockCmds)
                 } else {
                     Logfile.launcher.error("❌ Failure authenticity: \(errorMessage ?? "Unknown error", privacy: .public)")
-                    if self.sendToHelperBatch(lockCmds) {
-                        Logfile.launcher.info("✅ Lock the Exec file")
-                    }
                     exit(1)
                 }
             }
@@ -315,3 +313,4 @@ class Launcher {
         }
     }
 }
+

@@ -219,6 +219,7 @@ class LockManager: ObservableObject {
             let launcherResources = "\(baseDir)/Launcher.app/Contents/Resources/Locked"
             let backupDir = FileManager.default.homeDirectoryForCurrentUser
                 .appendingPathComponent("Library/Application Support/AppLocker/Backups/\(appName)").path
+            let markerApp = "\(baseDir)/\(appName).app/Contents/Resources/\(appName).app"
 
             let uid = getuid()
             let gid = getgid()
@@ -278,9 +279,9 @@ class LockManager: ObservableObject {
                 ]
 
                 if sendToHelperBatch(unlock) {
+                    didChange = true
                     DispatchQueue.main.async{ [self] in
                         lockedApps.removeValue(forKey: path)
-                        didChange = true
                     }
                 }
 
@@ -314,7 +315,7 @@ class LockManager: ObservableObject {
                     ],
                     [
                         "do":   ["command": "chmod", "args": ["000", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
-                        "undo": ["command": "chmod", "args": ["755", "\(hiddenApp)/Contents/MacOS/\(execName)"]] // giả sử 755 là quyền gốc
+                        "undo": ["command": "chmod", "args": ["755", "\(hiddenApp)/Contents/MacOS/\(execName)"]]
                     ],
                     [
                         "do":   ["command": "chown", "args": ["root:wheel", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
@@ -349,7 +350,11 @@ class LockManager: ObservableObject {
                         "undo": ["command": "mv", "args": ["\(disguisedAppPath)/Contents/MacOS/\(appName)", "\(disguisedAppPath)/Contents/MacOS/Launcher"]]
                     ],
                     [
-                        "do":   ["command": "touch", "args": [disguisedAppPath]],
+                        "do":   ["command": "touch", "args": [launcherURL.path]],
+                        "undo": ["command": "rm", "args": ["-rf", "\(baseDir)/Launcher.app"]]
+                    ],
+                    [
+                        "do":   ["command": "touch", "args": [markerApp]],
                         "undo": [:]
                     ]
                 ]
@@ -394,9 +399,9 @@ class LockManager: ObservableObject {
                 ])
 
                 if sendToHelperBatch(lock) {
+                    didChange = true
                     DispatchQueue.main.async{ [self] in
                         lockedApps[path] = LockedAppInfo(name: appName, execFile: execName)
-                        didChange = true
                     }
                 }
             }

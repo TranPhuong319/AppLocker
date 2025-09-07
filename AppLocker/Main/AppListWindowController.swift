@@ -8,63 +8,117 @@
 import AppKit
 import SwiftUI
 
+class TouchBarHostingController<Content: View>: NSHostingController<Content> {
+    override func makeTouchBar() -> NSTouchBar? {
+        return TouchBarManager.shared.makeTouchBar()
+    }
+}
+
 class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
-
+    private static var invisibleKeyWindow: NSWindow?
+    
     static func show() {
         if let controller = shared {
-            Logfile.core.info("📂 AppListWindowController: Reusing existing window instance")
             controller.showWindow(nil)
             controller.window?.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-
+        
+        // Tạo invisible key window hack Touch Bar
+        if invisibleKeyWindow == nil {
+            let keyWin = NSWindow(
+                contentRect: .zero,
+                styleMask: [],
+                backing: .buffered,
+                defer: false
+            )
+            keyWin.alphaValue = 0
+            keyWin.isOpaque = false
+            keyWin.level = .normal
+            keyWin.makeKeyAndOrderFront(nil)
+            invisibleKeyWindow = keyWin
+        }
+        
+        // Tạo floating window
         let contentView = ContentView()
-        let hostingView = NSHostingView(rootView: contentView)
-
+        let hostingController = TouchBarHostingController(rootView: contentView)
+        
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 450, height: 350),
             styleMask: [.titled, .closable],
-            backing: .buffered, defer: false
+            backing: .buffered,
+            defer: false
         )
-
+        window.contentViewController = hostingController
+        window.setContentSize(NSSize(width: 450, height: 350))
         window.minSize = NSSize(width: 450, height: 350)
         window.maxSize = NSSize(width: 450, height: 350)
-
         window.title = "Manage the application list".localized
-        window.contentView = hostingView
         window.center()
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.delegate = nil
-
+        
+        // Show window
         let controller = AppListWindowController(window: window)
         window.delegate = controller
         shared = controller
-
-        Logfile.core.info("📂 AppListWindowController: New window instance created")
-
+        
         controller.showWindow(nil)
+        controller.updateTouchBar(for: .mainWindow)
+        window.makeKeyAndOrderFront(nil)
+        window.makeFirstResponder(hostingController)
         NSApp.activate(ignoringOtherApps: true)
-        Logfile.core.info("📂 AppListWindowController: Window shown and app activated")
     }
-
+    
     func windowWillClose(_ notification: Notification) {
-        Logfile.core.info("📂 AppListWindowController: Window will close, clearing shared instance")
         AppListWindowController.shared = nil
     }
-
+    
     func windowDidResignKey(_ notification: Notification) {
-        Logfile.core.info("📂 AppListWindowController: Window lost focus, scheduling auto-close check")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let stillHasKeyWindow = NSApp.windows.contains(where: { $0.isKeyWindow })
             if !stillHasKeyWindow {
-                Logfile.core.info("📂 AppListWindowController: No key window found, closing window")
                 self.close()
-            } else {
-                Logfile.core.debug("📂 AppListWindowController: Another key window still active, keeping window open")
             }
         }
+    }
+}
+
+extension AppListWindowController {
+
+    func updateTouchBar(for type: AppState.TouchBarType) {
+        guard let window = self.window else { return }
+
+        // 1️⃣ Tạo NSTouchBar mới
+        let touchBar = NSTouchBar()
+        touchBar.defaultItemIdentifiers = []
+
+        switch type {
+        case .mainWindow:
+            TouchBarManager.shared.registerOrUpdateItem(id: .addApp) {
+                let symbolImage = NSImage(systemSymbolName: "plus", accessibilityDescription: "Add App")
+                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.openPopupAddApp))
+                button.isBordered = true
+                return button
+            }
+        case .addAppPopup:
+            TouchBarManager.shared.registerOrUpdateItem(id: .lockButton) {
+                let symbolImage = NSImage(systemSymbolName: "lock", accessibilityDescription: "Add App")
+                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.lockApp))
+                button.isBordered = true
+                return button
+            }
+        case .deleteQueuePopup:
+            TouchBarManager.shared.registerOrUpdateItem(id: .unlockButton) {
+                let symbolImage = NSImage(systemSymbolName: "lock.open", accessibilityDescription: "Add App")
+                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.unlockApp))
+                button.isBordered = true
+                return button
+            }
+        }
+
+        TouchBarManager.shared.apply(to: window)
     }
 }
