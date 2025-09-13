@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import ServiceManagement
 
 class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol {
     
@@ -37,7 +38,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         case "PlistBuddy":  process.executableURL = URL(fileURLWithPath: "/usr/libexec/PlistBuddy")
         case "touch":       process.executableURL = URL(fileURLWithPath: "/usr/bin/touch")
         default:
-            reply(false, "❌ Command not supported: \(command)")
+            reply(false, "Command not supported: \(command)")
             return
         }
         
@@ -51,9 +52,9 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
             
             if process.terminationStatus == 0 {
-                reply(true, output.isEmpty ? "✅ \(command) success\n" : output)
+                reply(true, output.isEmpty ? "✅ \(command) success" : output)
             } else {
-                reply(false, error.isEmpty ? "❌ \(command) failure\n" : error)
+                reply(false, error.isEmpty ? "❌ \(command) failure" : error)
             }
         } catch {
             reply(false, "❌ Can't run \(command): \(error.localizedDescription)")
@@ -114,5 +115,45 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         
         // Nếu tất cả DO thành công
         reply(true, messages.joined(separator: "\n"))
+    }
+    
+    func uninstallHelper(withReply reply: @escaping (Bool, String) -> Void) {
+        var logs: [String] = []
+
+        func run(_ cmd: String, args: [String]) -> Bool {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: cmd)
+            process.arguments = args
+
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = pipe
+
+            do {
+                try process.run()
+                process.waitUntilExit()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let out = String(data: data, encoding: .utf8) ?? ""
+                logs.append("▶️ \(cmd) \(args.joined(separator: " "))\n\(out)")
+                return process.terminationStatus == 0
+            } catch {
+                logs.append("❌ Error: \(error.localizedDescription)")
+                return false
+            }
+        }
+
+        _ = run("/bin/launchctl", args: ["bootout", "system/com.TranPhuong319.AppLockerHelper"])
+        
+        _ = run("/bin/launchctl", args: ["disable", "system/com.TranPhuong319.AppLockerHelper"])
+        
+        _ = run("/bin/rm", args: ["-rf", "~/Library/Application Support/AppLocker"])
+        
+        _ = run("/bin/rm", args: ["-rf", "~/Library/Preferences/com.TranPhuong319.AppLocker.plist"])
+
+        _ = run("/bin/rm", args: ["-rf", "/Applications/AppLocker.app"])
+
+        _ = run("/usr/bin/killall", args: ["AppLockerHelper"])
+        
+        reply(true, logs.joined(separator: "\n"))
     }
 }

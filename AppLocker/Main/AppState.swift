@@ -25,6 +25,9 @@ class AppState: ObservableObject {
     @Published var searchTextUnlockaleApps = ""
     @Published var searchTextLockApps = ""
     
+    let setWidth = 450
+    let setHeight = 450
+    
     var appsToUnlock: [String] {
         Array(deleteQueue)
     }

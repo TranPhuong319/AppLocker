@@ -13,23 +13,24 @@ enum HelperToolAction {
 }
 
 struct HelperInstaller {
-    // MARK: - Kiểm tra trạng thái đăng ký app
-
+    // MARK: - Kiểm tra trạng thái đăng ký app chính
     static func appRegistrationStatus() -> SMAppService.Status {
         return SMAppService.mainApp.status
     }
 
-    // MARK: - Hiện alert nếu chưa đăng ký
-
-    static func showAlert(title: String, message: String,
-                          okButton: String, skipButton: String,
+    // MARK: - Hiện alert đồng bộ (block) nếu chưa đăng ký
+    static func showAlert(title: String,
+                          message: String,
+                          okButton: String,
+                          skipButton: String,
                           onConfirm: (() -> Void)? = nil) {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.alertStyle = .warning
+        alert.alertStyle = .critical
         alert.addButton(withTitle: okButton)
         alert.addButton(withTitle: skipButton)
+        
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
             onConfirm?()
@@ -39,7 +40,7 @@ struct HelperInstaller {
         }
     }
 
-    // MARK: - Kiểm tra + hiển thị alert tự động
+    // MARK: - Kiểm tra helper, nếu chưa enable → tự cài + hiển thị alert
     @discardableResult
     static func checkAndAlertBlocking(helperToolIdentifier: String) -> Bool {
         while true {
@@ -50,24 +51,22 @@ struct HelperInstaller {
                 return true
 
             case .requiresApproval:
-                requiresApprovalAlent()
+                requiresApprovalAlert()
 
             default:
                 // Chưa cài → thử install
                 let status = manageHelperTool(action: .install, helperToolIdentifier: helperToolIdentifier)
                 if status == .requiresApproval {
-                    // Alert đồng bộ, block flow
-                    requiresApprovalAlent()
+                    requiresApprovalAlert()
                 }
             }
 
-            // Delay nhỏ để tránh loop quá nhanh
+            // tránh loop nhanh → delay nhẹ
             RunLoop.current.run(until: Date().addingTimeInterval(0.5))
         }
     }
 
-    // MARK: - Quản lý Helper Tool
-
+    // MARK: - Cài đặt / gỡ bỏ / kiểm tra Helper Tool
     static func manageHelperTool(action: HelperToolAction = .none,
                                  helperToolIdentifier: String) -> SMAppService.Status {
         let plistName = "\(helperToolIdentifier).plist"
@@ -79,21 +78,34 @@ struct HelperInstaller {
                 try service.register()
                 return service.status
             } catch {
-                return .requiresApproval // hoặc default lỗi
+                Logfile.core.error("Failed to install helper: \(error.localizedDescription)")
+                return .notRegistered
             }
+
         case .uninstall:
-            try? service.unregister()
+            Task {
+                do {
+                    try await service.unregister()
+                    Logfile.core.info("Helper unregistered and killed successfully")
+                } catch {
+                    Logfile.core.error("Failed to unregister helper: \(error.localizedDescription)")
+                }
+            }
             return service.status
+
         case .none:
             return service.status
         }
     }
 
-    static func requiresApprovalAlent() {
-        showAlert(title: NSLocalizedString("Helper has not turned on", comment: "").localized,
-                  message: "Helper Tool has registered but needs to turn on System Settings > Login Items.".localized,
-                  okButton: "Retry".localized,
-                  skipButton: "Quit AppLocker".localized) {
+    // MARK: - Alert khi helper cần bật trong System Settings
+    static func requiresApprovalAlert() {
+        showAlert(
+            title: "Helper has not turned on".localized,
+            message: "Helper Tool has registered but needs to turn on System Settings > Login Items.".localized,
+            okButton: "Retry".localized,
+            skipButton: "Quit AppLocker".localized
+        ) {
             SMAppService.openSystemSettingsLoginItems()
         }
     }

@@ -43,28 +43,24 @@ struct ContentView: View {
                 .help("Add application to lock".localized)
                 .disabled(appState.isDisabled)
             }
-
+            
             if appState.lockedAppObjects.isEmpty {
-                Spacer()
-                HStack {
-                    Spacer()
+                VStack {
                     Text("There is no locked application.".localized)
                         .foregroundColor(.secondary)
                         .font(.title3)
-                        .padding()
-                    Spacer()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
-                Spacer()
             } else {
                 // Search field
                 TextField("Search apps...".localized, text: $appState.searchTextLockApps)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal, 8)
-
+                
                 // ScrollView thay List
                 ZStack(alignment: .bottom) {
                     ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 6) {
+                        LazyVStack(alignment: .center, spacing: 6) {
                             ForEach(appState.lockedAppObjects.filter {
                                 appState.searchTextLockApps.isEmpty || $0.name.localizedCaseInsensitiveContains(appState.searchTextLockApps)
                             }, id: \.id) { app in
@@ -79,7 +75,7 @@ struct ContentView: View {
                                         Text(app.name)
                                     }
                                     Spacer()
-
+                                    
                                     if appState.selectedToLock.contains(app.path) {
                                         Image(systemName: "checkmark.circle.fill")
                                     }
@@ -94,18 +90,23 @@ struct ContentView: View {
                                 }
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 8)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                                .frame(maxWidth: 420)                       // width item
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)     // bo ngoài
+                                        .fill(.ultraThinMaterial)            // blur
+                                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
+                                )
+                                .frame(maxWidth: .infinity)                // căn giữa item trong ScrollView
                                 .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
                             }
-
-                            Spacer(minLength: 60) // tránh bar dưới đè app cuối
                         }
                         .padding(.vertical, 4)
+                        .frame(maxWidth: .infinity) // ScrollView vẫn full width
                     }
-                    .frame(height: 350)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .frame(maxHeight: .infinity) // ScrollView full height window
 
-                    // 🔴 Bottom bar nếu có deleteQueue
+                    // Bottom bar nếu có deleteQueue
                     if !appState.deleteQueue.isEmpty {
                         Button {
                             appState.showingDeleteQueue = true
@@ -115,24 +116,23 @@ struct ContentView: View {
                                 Text("Waiting for %d task(s)...".localized(with: appState.deleteQueue.count))
                                     .bold()
                             }
-                            .padding()
-                            .frame(maxWidth: .infinity, maxHeight: 40)
+                            .frame(maxWidth: .infinity, maxHeight: 35)       // gộp frame
+                            .padding(.horizontal)                         // padding ngoài
                             .background(Color.red.opacity(0.8))
                             .foregroundColor(.white)
                             .cornerRadius(8)
-                            .padding(.horizontal)
                             .shadow(radius: 4)
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .frame(height: 32)
-                        .padding(.bottom, 8)
-                        .transition(.move(edge: .bottom))
+                        .buttonStyle(PlainButtonStyle())                 // giữ kiểu plain
+                        .padding(.bottom, 8)                            // padding dưới
+                        .transition(.move(edge: .bottom))               // animation hiện ẩn
                         .animation(.easeInOut, value: appState.deleteQueue.isEmpty)
                     }
                 }
             }
-        }       
-        .padding(12) // ✅ cách mép window 8pt
+        }
+        .padding(12) // cách mép window
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(isPresented: $appState.showingAddApp) {
             NavigationStack {
                 VStack(spacing: 0) {
@@ -174,7 +174,11 @@ struct ContentView: View {
                                 }
                                 .padding(.vertical, 6)
                                 .padding(.horizontal, 10)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(.regularMaterial)      // blur
+                                        .shadow(color: .black.opacity(0.06), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
+                                )
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     guard !appState.pendingLocks.contains(app.path) else { return }
@@ -276,7 +280,11 @@ struct ContentView: View {
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(.regularMaterial)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(.regularMaterial)      // blur
+                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
+                            )
                             .cornerRadius(10)
                         }
                     }
@@ -350,20 +358,6 @@ struct ContentView: View {
         }
     }
 
-    private func lockSelected() {
-        appState.isLocking = true
-        appState.pendingLocks = appState.selectedToLock
-        DispatchQueue.global(qos: .userInitiated).async {
-            appState.manager.toggleLock(for: Array(appState.pendingLocks))
-            DispatchQueue.main.async {
-                appState.isLocking = false
-                appState.showingAddApp = false
-                appState.selectedToLock.removeAll()
-                appState.pendingLocks.removeAll()
-            }
-        }
-    }
-
     func isAppStubbedAsLocked(_ appURL: URL) -> Bool {
         let resourceDir = appURL.appendingPathComponent("Contents/Resources")
 
@@ -389,6 +383,16 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
+struct PreviewWindow<Content: View>: View {
+    @ObservedObject var appState = AppState.shared
+    let content: Content
+    var body: some View {
+        content
+            .frame(width: CGFloat(appState.setWidth), height: CGFloat(appState.setHeight))
+    }
 }
+
+#Preview {
+    PreviewWindow(content: ContentView())
+}
+

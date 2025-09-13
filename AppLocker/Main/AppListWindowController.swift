@@ -44,21 +44,29 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         // Tạo floating window
         let contentView = ContentView()
         let hostingController = TouchBarHostingController(rootView: contentView)
-        
+
+        // Ép SwiftUI layout trước khi attach window
+        hostingController.view.setFrameSize(NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)))
+        hostingController.view.layoutSubtreeIfNeeded()
+
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 350),
+            contentRect: NSRect(x: 0, y: 0, width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
+        
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        window.standardWindowButton(.zoomButton)?.isHidden = true
         window.contentViewController = hostingController
-        window.setContentSize(NSSize(width: 450, height: 350))
-        window.minSize = NSSize(width: 450, height: 350)
-        window.maxSize = NSSize(width: 450, height: 350)
+        window.setContentSize(NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)))
+        window.minSize = NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight))
+        window.maxSize = NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight))
         window.title = "Manage the application list".localized
-        window.center()
         window.isReleasedWhenClosed = false
         window.level = .floating
+        window.setFrameAutosaveName("")   // không lưu vị trí cũ
+        window.center()
         
         // Show window
         let controller = AppListWindowController(window: window)

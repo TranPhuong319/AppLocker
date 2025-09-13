@@ -275,6 +275,9 @@ class LockManager: ObservableObject {
                     [
                         "do":   ["command": "touch", "args": [disguisedAppPath]],
                         "undo": [:]
+                    ],
+                    [
+                        "do":   ["command": "rm", "args": ["-rf", backupDir]],
                     ]
                 ]
 
