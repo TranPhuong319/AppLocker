@@ -64,7 +64,7 @@ class AppUpdater: NSObject {
                 let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
                 if let latestBeta = releases.first(where: { $0.prerelease }),
                    let appcast = latestBeta.assets.first(where: { $0.name == "appcast.xml" }) {
-                    self.delegate.betaFeedURL = appcast.browserDownloadURL
+                    self.delegate.betaFeedURL = appcast.browser_download_url
                     completion(true)
                 } else {
                     Logfile.core.info("No beta release found")
@@ -80,12 +80,12 @@ class AppUpdater: NSObject {
 
 // MARK: - GitHub API Model
 struct BetaGitHubRelease: Decodable {
-    let tagName: String
+    let tag_name: String
     let prerelease: Bool
     let assets: [BetaGitHubAsset]
 }
 
 struct BetaGitHubAsset: Decodable {
     let name: String
-    let browserDownloadURL: String
+    let browser_download_url: String
 }
