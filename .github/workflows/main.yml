@@ -31,16 +31,16 @@ jobs:
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
         git fetch --prune --unshallow --tags
-        GIT_SHA="$(git rev-parse --short HEAD)"
         CUR_TAG="$(git tag -l | grep -i 'alpha' | tail -1)"
         eval $(grep -m 1 "MARKETING_VERSION =" AppLocker.xcodeproj/project.pbxproj | tr -d ';' | tr -d '\t' | tr -d " ")
         if [[ "$GITHUB_EVENT_NAME" != 'workflow_dispatch' ]]; then
-          sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"\$(MARKETING_VERSION)-alpha-${GIT_SHA}\";/g" AppLocker.xcodeproj/project.pbxproj
+          # alpha
+          sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj
         else
-          sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"\$(MARKETING_VERSION)-stable-${GIT_SHA}\";/g" AppLocker.xcodeproj/project.pbxproj
+          # stable
+          sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj
         fi
         echo "VER=$MARKETING_VERSION" >> $GITHUB_ENV
-        echo "SHORT_SHA=$GIT_SHA" >> $GITHUB_ENV
         if [[ -z $CUR_TAG ]]; then
           echo "OLD_PRE_TAG=NULL" >> $GITHUB_ENV
         else
@@ -177,22 +177,24 @@ jobs:
         chmod 600 sparkle_key.pem
       env:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
-
+    
     - name: Generate Sparkle Appcast
       run: |
+        APPCAST_VER="${GITHUB_RUN_NUMBER}"
         if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
           # push → pre-release alpha
           VERSION_TYPE="alpha"
-          APPCAST_VER="${VER}-alpha-${SHORT_SHA}"
+          SHORTSTRING="${VER}-beta" 
           DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/download/${REL_TAG}/AppLocker.dmg"
         else
           # workflow_dispatch → stable
           VERSION_TYPE="stable"
-          APPCAST_VER="${VER}-stable-${SHORT_SHA}"
+          SHORTSTRING="${VER}"
           DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg"
         fi
       
-        CUR_VER="${MARKETING_VERSION}-${VERSION_TYPE}-${GIT_SHA}"
+        APPCAST_VER="${GITHUB_RUN_NUMBER}"
+        CUR_VER="${APPCAST_VER}"
         sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${CUR_VER}\";/g" AppLocker.xcodeproj/project.pbxproj
 
         REPO_COMMIT_URL='https://github.com/TranPhuong319/AppLocker/commit/'
@@ -222,7 +224,7 @@ jobs:
             '            ]]>'
             '            </description>'
             '            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>'
-            "            <enclosure url='${DMG_URL}' sparkle:version='${APPCAST_VER}' sparkle:shortVersionString='${VER}' type='application/octet-stream' ${SIGNED_ATTR}/>"
+            "            <enclosure url='${DMG_URL}' sparkle:version='${APPCAST_VER}' sparkle:shortVersionString='${SHORTSTRING}' type='application/octet-stream' ${SIGNED_ATTR}/>"
             '        </item>'
             '    </channel>'
             '</rss>'
