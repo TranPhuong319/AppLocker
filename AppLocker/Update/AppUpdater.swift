@@ -8,21 +8,38 @@
 import Foundation
 import Sparkle
 
-class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
-    var betaFeedURL: String? // Lưu URL beta mới nhất lấy từ GitHub
-    var useBeta: Bool = false
+protocol AppUpdaterBridgeDelegate: AnyObject {
+    func didFindUpdate(_ item: SUAppcastItem)
+    func didNotFindUpdate()
+}
 
+class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
+    var betaFeedURL: String?
+    var useBeta: Bool = false
+    weak var bridgeDelegate: AppUpdaterBridgeDelegate?
+
+    // feed URL override
     func feedURLString(for updater: SPUUpdater) -> String? {
         if useBeta {
             return betaFeedURL
         } else {
-            return nil // dùng feed URL trong plist (stable)
+            return nil
         }
+    }
+
+    // Callback khi có update hợp lệ
+    func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+        bridgeDelegate?.didFindUpdate(item)
+    }
+
+    func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+        bridgeDelegate?.didNotFindUpdate()
     }
 }
 
 class AppUpdater: NSObject {
     static let shared = AppUpdater()
+    private var updateTimer: Timer?
 
     private let delegate = UpdaterDelegate()
     let updaterController: SPUStandardUpdaterController
@@ -31,13 +48,49 @@ class AppUpdater: NSObject {
         self.updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: delegate,
-            userDriverDelegate: nil
+            userDriverDelegate: nil // AppDelegate sẽ handle riêng cho manual check
         )
         super.init()
     }
 
-    /// Check update stable hoặc beta
-    func checkForUpdates(useBeta: Bool) {
+    // Cho AppDelegate đăng ký nhận sự kiện
+    func setBridgeDelegate(_ bridgeDelegate: AppUpdaterBridgeDelegate) {
+        delegate.bridgeDelegate = bridgeDelegate
+    }
+
+    func startAutoCheck(interval: TimeInterval = 6*60*60) {
+        updateTimer?.invalidate()
+        DispatchQueue.main.async { [self] in
+            updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [self] _ in
+                let savedChannel = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
+                let useBeta = (savedChannel == "Beta")
+                silentCheckForUpdates(useBeta: useBeta)
+                Logfile.core.info("Run silent check update")
+            }
+        }
+        updateTimer?.tolerance = 10
+    }
+
+    func startTestAutoCheck() {
+        startAutoCheck()
+    }
+
+    // Silent check
+    func silentCheckForUpdates(useBeta: Bool) {
+        delegate.useBeta = useBeta
+        if useBeta {
+            fetchLatestBeta { _ in
+                DispatchQueue.main.async {
+                    self.updaterController.updater.checkForUpdateInformation()
+                }
+            }
+        } else {
+            updaterController.updater.checkForUpdateInformation()
+        }
+    }
+
+    // Manual check
+    func manualCheckForUpdates(useBeta: Bool) {
         delegate.useBeta = useBeta
         if useBeta {
             fetchLatestBeta { _ in
@@ -50,7 +103,7 @@ class AppUpdater: NSObject {
         }
     }
 
-    /// Lấy appcast beta mới nhất từ GitHub API
+    // GitHub API để lấy appcast beta
     private func fetchLatestBeta(completion: @escaping (Bool) -> Void) {
         let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases")!
         URLSession.shared.dataTask(with: url) { data, _, error in
@@ -78,7 +131,7 @@ class AppUpdater: NSObject {
     }
 }
 
-// MARK: - GitHub API Model
+// MARK: - GitHub API Models
 struct BetaGitHubRelease: Decodable {
     let tag_name: String
     let prerelease: Bool

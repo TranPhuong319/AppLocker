@@ -38,6 +38,7 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
         shared = controller
 
         controller.showWindow(nil)
+        window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 

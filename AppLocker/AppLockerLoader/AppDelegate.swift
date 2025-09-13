@@ -11,6 +11,8 @@ import Security
 import ServiceManagement
 import Foundation
 import SwiftUI
+import UserNotifications
+import Sparkle
 
 enum LoginAction {
     case none      // Only check status
@@ -19,16 +21,26 @@ enum LoginAction {
 }
 
 // MARK: AppDelegate.swift
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+    static let shared = AppDelegate()
     var statusItem: NSStatusItem?
     let helperIdentifier = "com.TranPhuong319.AppLockerHelper"
+    var pendingUpdate: SUAppcastItem?
+    let notificationIndentifiers = "AppLockerUpdateNotification"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logfile.core.debug("Loading Application")
 
         HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
         setupMenuBar()
-        _ = AppUpdater.shared
+        
+        AppUpdater.shared.setBridgeDelegate(self)
+        AppUpdater.shared.startTestAutoCheck()
+
+        UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
+            if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
+        }
 //        NSApplication.autoCenterAllWindows()
     }
 }
@@ -159,7 +171,7 @@ extension AppDelegate {
     @objc func checkUpdate() {
         let savedChannel = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
         let useBeta = (savedChannel == "Beta")
-        AppUpdater.shared.checkForUpdates(useBeta: useBeta)
+        AppUpdater.shared.manualCheckForUpdates(useBeta: useBeta)
 
         NSApp.activate(ignoringOtherApps: true)
 
@@ -303,5 +315,46 @@ extension AppDelegate {
         } catch {
             print("Lỗi chạy osascript: \(error)")
         }
+    }
+}
+
+extension AppDelegate: AppUpdaterBridgeDelegate {
+    var supportsGentleScheduledUpdateReminders: Bool { true }
+    
+    func didFindUpdate(_ item: SUAppcastItem) {
+        pendingUpdate = item   // Lưu để khi click notification sẽ mở lại
+
+        let content = UNMutableNotificationContent()
+        content.title = "AppLocker Update Available".localized
+        content.body = "Version %@ is ready".localized(with: item.displayVersionString)
+        content.sound = UNNotificationSound.default
+        content.badge = NSNumber(value: 1)
+        let request = UNNotificationRequest(
+            identifier: "update-\(item.displayVersionString)-\(Date().timeIntervalSince1970)",
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func didNotFindUpdate() {
+        Logfile.core.debug("No update found (silent check)")
+    }
+}
+
+// MARK: - Notification Handling
+extension AppDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.identifier == notificationIndentifiers {
+            // Mở bảng update Sparkle
+            AppUpdater.shared.updaterController.checkForUpdates(nil)
+
+            // Clear notification
+            UNUserNotificationCenter.current()
+                .removeDeliveredNotifications(withIdentifiers: [notificationIndentifiers])
+        }
+        completionHandler()
     }
 }

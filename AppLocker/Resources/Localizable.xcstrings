@@ -34,6 +34,17 @@
         }
       }
     },
+    "AppLocker Update Available" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật AppLocker có sẵn"
+          }
+        }
+      }
+    },
     "authenticate to open the application list" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -448,6 +459,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cập nhật AppLocker"
+          }
+        }
+      }
+    },
+    "Version %@ is ready" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên bản %@ đã sẵn sàng"
           }
         }
       }
