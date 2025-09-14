@@ -179,6 +179,7 @@ jobs:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
     
     - name: Generate Sparkle Appcast
+      if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
         APPCAST_VER="${GITHUB_RUN_NUMBER}"
         if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
