@@ -11,11 +11,12 @@ import AppKit
 class SettingsWindowController: NSWindowController, NSWindowDelegate {
     static var shared: SettingsWindowController?
 
+    // Hiển thị cửa sổ settings
     static func show() {
         if let controller = shared {
+            NSApp.activate(ignoringOtherApps: true)        // activate trước
             controller.showWindow(nil)
             controller.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
             return
         }
 
@@ -30,17 +31,24 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         window.contentView = hostingView
         window.title = "Settings".localized
-        window.setFrameAutosaveName("")   // không lưu vị trí cũ
-        window.center()
         window.standardWindowButton(.zoomButton)?.isHidden = true
+        
         let controller = SettingsWindowController(window: window)
         window.delegate = controller
         shared = controller
 
-        controller.showWindow(nil)
+        // Bật app trước khi show
         NSApp.activate(ignoringOtherApps: true)
+
+        controller.showWindow(nil)
+        window.makeKeyAndOrderFront(nil)
+
+        DispatchQueue.main.async {
+            window.center()
+        }
     }
 
+    // MARK: - NSWindowDelegate
     func windowWillClose(_ notification: Notification) {
         SettingsWindowController.shared = nil
     }

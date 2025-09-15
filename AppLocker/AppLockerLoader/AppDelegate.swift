@@ -78,7 +78,7 @@ extension AppDelegate: NSMenuDelegate {
 
     private func buildOptionMenu(for menu: NSMenu) {
         menu.addItem(NSMenuItem(title: "Settings".localized,
-                                action: #selector(openSettings),
+                                action: #selector(openPreference),
                                 keyEquivalent: ""))
         menu.addItem(.separator())
 
@@ -124,7 +124,7 @@ extension AppDelegate {
         NSApp.terminate(nil)
     }
 
-    @objc func openSettings() {
+    @objc func openPreference() {
         NSApp.activate(ignoringOtherApps: true)
         SettingsWindowController.show()
     }
@@ -136,14 +136,13 @@ extension AppDelegate {
         NSApp.activate(ignoringOtherApps: true)
 
         if manager.lockedApps.isEmpty {
-            let confirm = callAlert(title: "Uninstall Applocker?".localized,
+            let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
                                     message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
-                                    primaryButton: "Uninstall".localized,
-                                    secondaryButton: "Cancel".localized,
-                                    style: .critical)
+                                    style: .critical,
+                                    buttons: ["Uninstall".localized, "Cancel".localized])
             
             switch confirm {
-            case .primary:
+            case .button(index: 0, title: "Uninstall".localized):
                 AuthenticationManager.authenticate(
                     reason: "uninstall the application".localized
                 ) { success, error in
@@ -160,11 +159,16 @@ extension AppDelegate {
                         }
                     }
                 }
-            case .secondary:
+            case .cancelled:
+                break
+            default:
                 break
             }
         } else {
-            _ = callAlert(title: "Unable to uninstall AppLocker".localized, message: "You need to unlock all applications before Uninstalling".localized, style: .critical)
+            AlertShow.showInfo(
+                title: "Unable to uninstall AppLocker".localized,
+                message: "You need to unlock all applications before Uninstalling".localized,
+                style: .critical)
         }
     }
 
@@ -200,46 +204,23 @@ extension AppDelegate {
     }
 
     @objc func about() {
-        NSApp.orderFrontStandardAboutPanel(nil)
+        // 1. Kích hoạt app
         NSApp.activate(ignoringOtherApps: true)
 
+        // 2. Show about panel
+        NSApp.orderFrontStandardAboutPanel(nil)
+
+        // 3. Ép focus sau một tick
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             for window in NSApp.windows {
                 let cls = String(describing: type(of: window))
                 if cls.contains("About") {
-                    window.makeKeyAndOrderFront(nil)
-                    window.orderFrontRegardless()
+                    window.makeKey()                       // biến thành key window
+                    window.makeKeyAndOrderFront(nil)       // bring lên
+                    window.orderFrontRegardless()          // ép ra trước mọi thứ
                 }
             }
         }
-    }
-}
-
-extension AppDelegate {
-    enum AlertResult {
-        case primary
-        case secondary
-    }
-
-    func callAlert(
-        title: String,
-        message: String,
-        primaryButton: String = "OK",
-        secondaryButton: String? = nil,
-        style: NSAlert.Style
-    ) -> AlertResult {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = message
-        alert.alertStyle = style
-        alert.addButton(withTitle: primaryButton)
-        
-        if let secondary = secondaryButton {
-            alert.addButton(withTitle: secondary)
-        }
-        
-        let response = alert.runModal()
-        return response == .alertFirstButtonReturn ? .primary : .secondary
     }
 }
 
@@ -336,7 +317,7 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
         content.title = "AppLocker Update Available".localized
         content.body = "Version %@ is ready".localized(with: item.displayVersionString)
         content.sound = UNNotificationSound.defaultCritical
-        content.badge = NSNumber(value: 1)
+        content.badge = nil
 
         // dùng identifier cố định, để click còn xoá đúng
         let request = UNNotificationRequest(
@@ -364,7 +345,6 @@ extension AppDelegate {
         if response.notification.request.identifier == notificationIndentifiers {
             // Mở bảng update Sparkle
             AppUpdater.shared.updaterController.checkForUpdates(nil)
-
             // Clear notification
             UNUserNotificationCenter.current().removeDeliveredNotifications(
                 withIdentifiers: [notificationIndentifiers]
@@ -373,3 +353,4 @@ extension AppDelegate {
         completionHandler()
     }
 }
+

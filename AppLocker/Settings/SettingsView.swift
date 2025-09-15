@@ -36,16 +36,17 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
             Form {
                 Section {
-                    Toggle("Automatically check for updates.".localized, isOn: $autoCheck)
-                        .onChange(of: autoCheck) { newValue in
-                            AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
-                        }
-
-                    Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
-                        .onChange(of: autoDownload) { newValue in
-                            AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
-                        }
-
+                    Group {
+                        Toggle("Automatically check for updates.".localized, isOn: $autoCheck)
+                            .onChange(of: autoCheck) { newValue in
+                                AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
+                            }
+                        
+                        Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
+                            .onChange(of: autoDownload) { newValue in
+                                AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
+                            }
+                    }
                     Picker("Update Channel".localized, selection: $selectedChannel) {
                         ForEach(UpdateChannel.allCases, id: \.self) { channel in
                             VStack(alignment: .leading, spacing: 2) {

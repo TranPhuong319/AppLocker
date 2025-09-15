@@ -17,42 +17,20 @@ struct HelperInstaller {
     static func appRegistrationStatus() -> SMAppService.Status {
         return SMAppService.mainApp.status
     }
-
-    // MARK: - Hiện alert đồng bộ (block) nếu chưa đăng ký
-    static func showAlert(title: String,
-                          message: String,
-                          okButton: String,
-                          skipButton: String,
-                          onConfirm: (() -> Void)? = nil) {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = message
-        alert.alertStyle = .critical
-        alert.addButton(withTitle: okButton)
-        alert.addButton(withTitle: skipButton)
-        
-        let response = alert.runModal()
-        if response == .alertFirstButtonReturn {
-            onConfirm?()
-        } else {
-            Logfile.core.info("Quit Application")
-            NSApp.terminate(nil)
-        }
-    }
-
+    
     // MARK: - Kiểm tra helper, nếu chưa enable → tự cài + hiển thị alert
     @discardableResult
     static func checkAndAlertBlocking(helperToolIdentifier: String) -> Bool {
         while true {
             let helperStatus = manageHelperTool(action: .none, helperToolIdentifier: helperToolIdentifier)
-
+            
             switch helperStatus {
             case .enabled:
                 return true
-
+                
             case .requiresApproval:
                 requiresApprovalAlert()
-
+                
             default:
                 // Chưa cài → thử install
                 let status = manageHelperTool(action: .install, helperToolIdentifier: helperToolIdentifier)
@@ -60,18 +38,18 @@ struct HelperInstaller {
                     requiresApprovalAlert()
                 }
             }
-
+            
             // tránh loop nhanh → delay nhẹ
             RunLoop.current.run(until: Date().addingTimeInterval(0.5))
         }
     }
-
+    
     // MARK: - Cài đặt / gỡ bỏ / kiểm tra Helper Tool
     static func manageHelperTool(action: HelperToolAction = .none,
                                  helperToolIdentifier: String) -> SMAppService.Status {
         let plistName = "\(helperToolIdentifier).plist"
         let service = SMAppService.daemon(plistName: plistName)
-
+        
         switch action {
         case .install:
             do {
@@ -81,7 +59,7 @@ struct HelperInstaller {
                 Logfile.core.error("Failed to install helper: \(error.localizedDescription)")
                 return .notRegistered
             }
-
+            
         case .uninstall:
             Task {
                 do {
@@ -92,21 +70,23 @@ struct HelperInstaller {
                 }
             }
             return service.status
-
+            
         case .none:
             return service.status
         }
     }
-
+    
     // MARK: - Alert khi helper cần bật trong System Settings
     static func requiresApprovalAlert() {
-        showAlert(
+        let result = AlertShow.show(
             title: "Helper has not turned on".localized,
             message: "Helper Tool has registered but needs to turn on System Settings > Login Items.".localized,
-            okButton: "Retry".localized,
-            skipButton: "Quit AppLocker".localized
-        ) {
-            SMAppService.openSystemSettingsLoginItems()
+            style: .critical,
+            buttons: ["Retry".localized, "Quit AppLocker".localized])
+        switch result {
+        case .button: SMAppService.openSystemSettingsLoginItems()
+        case .cancelled: NSApp.terminate(nil)
         }
     }
 }
+

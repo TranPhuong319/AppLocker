@@ -18,6 +18,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
     private static var invisibleKeyWindow: NSWindow?
     
+    // Hiển thị cửa sổ quản lý danh sách ứng dụng
     static func show() {
         if let controller = shared {
             controller.showWindow(nil)
@@ -36,7 +37,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
             )
             keyWin.alphaValue = 0
             keyWin.isOpaque = false
-            keyWin.level = .normal
             keyWin.makeKeyAndOrderFront(nil)
             invisibleKeyWindow = keyWin
         }
@@ -56,16 +56,18 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
         
-        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-        window.standardWindowButton(.zoomButton)?.isHidden = true
+        [.miniaturizeButton, .zoomButton].forEach {
+            window.standardWindowButton($0)?.isHidden = true
+        }
         window.contentViewController = hostingController
-        window.setContentSize(NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)))
-        window.minSize = NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight))
-        window.maxSize = NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight))
+        let fixedSize = NSSize(width: CGFloat(AppState.shared.setWidth),
+                               height: CGFloat(AppState.shared.setHeight))
+        window.setContentSize(fixedSize)
+        window.minSize = fixedSize
+        window.maxSize = fixedSize
         window.title = "Manage the application list".localized
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.setFrameAutosaveName("")   // không lưu vị trí cũ
         window.center()
         
         // Show window
@@ -80,6 +82,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
     
+    // MARK: - NSWindowDelegate
     func windowWillClose(_ notification: Notification) {
         AppListWindowController.shared = nil
     }
@@ -94,12 +97,11 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     }
 }
 
+// MARK: - Touch Bar
 extension AppListWindowController {
-
     func updateTouchBar(for type: AppState.TouchBarType) {
         guard let window = self.window else { return }
 
-        // 1️⃣ Tạo NSTouchBar mới
         let touchBar = NSTouchBar()
         touchBar.defaultItemIdentifiers = []
 
@@ -111,22 +113,21 @@ extension AppListWindowController {
                 button.isBordered = true
                 return button
             }
-        case .addAppPopup:
-            TouchBarManager.shared.registerOrUpdateItem(id: .lockButton) {
-                let symbolImage = NSImage(systemSymbolName: "lock", accessibilityDescription: "Add App")
-                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.lockApp))
-                button.isBordered = true
-                return button
-            }
-        case .deleteQueuePopup:
-            TouchBarManager.shared.registerOrUpdateItem(id: .unlockButton) {
-                let symbolImage = NSImage(systemSymbolName: "lock.open", accessibilityDescription: "Add App")
-                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.unlockApp))
-                button.isBordered = true
-                return button
-            }
+//        case .addAppPopup:
+//            TouchBarManager.shared.registerOrUpdateItem(id: .lockButton) {
+//                let symbolImage = NSImage(systemSymbolName: "lock", accessibilityDescription: "Add App")
+//                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.lockApp))
+//                button.isBordered = true
+//                return button
+//            }
+//        case .deleteQueuePopup:
+//            TouchBarManager.shared.registerOrUpdateItem(id: .unlockButton) {
+//                let symbolImage = NSImage(systemSymbolName: "lock.open", accessibilityDescription: "Add App")
+//                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.unlockApp))
+//                button.isBordered = true
+//                return button
+//            }
         }
-
         TouchBarManager.shared.apply(to: window)
     }
 }

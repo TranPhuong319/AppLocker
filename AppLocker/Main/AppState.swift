@@ -36,8 +36,8 @@ class AppState: ObservableObject {
     
     enum TouchBarType {
         case mainWindow
-        case addAppPopup
-        case deleteQueuePopup
+//        case addAppPopup
+//        case deleteQueuePopup
     }
     
     var lockedAppObjects: [InstalledApp] {
@@ -46,7 +46,7 @@ class AppState: ObservableObject {
             let icon = NSWorkspace.shared.icon(forFile: path) // icon theo path thật
             return InstalledApp(
                 name: info.name,
-                bundleID: "", // hoặc để bundleID trống nếu bạn chưa cần
+                bundleID: "",
                 icon: icon,
                 path: path
             )

@@ -72,7 +72,11 @@ class AppUpdater: NSObject {
     }
 
     func startTestAutoCheck() {
-        startAutoCheck()
+        #if DEBUG
+            startAutoCheck(interval: 60)
+        #else
+            startAutoCheck()
+        #endif
     }
 
     // Silent check
