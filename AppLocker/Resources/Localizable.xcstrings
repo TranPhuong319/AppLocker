@@ -474,13 +474,13 @@
         }
       }
     },
-    "Waiting for %d task(s)..." : {
+    "Waiting to unlock %d application(s)..." : {
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đang chờ %d tác vụ..."
+            "value" : "Đang chờ mở khoá %d ứng dụng..."
           }
         }
       }

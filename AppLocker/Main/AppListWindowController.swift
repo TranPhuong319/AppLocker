@@ -9,10 +9,14 @@ import AppKit
 import SwiftUI
 
 class TouchBarHostingController<Content: View>: NSHostingController<Content> {
+    var touchBarType: AppState.TouchBarType?
+
     override func makeTouchBar() -> NSTouchBar? {
-        return TouchBarManager.shared.makeTouchBar()
+        guard let type = touchBarType else { return nil }
+        return TouchBarManager.shared.makeTouchBar(for: type)
     }
 }
+
 
 class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
@@ -44,6 +48,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         // Tạo floating window
         let contentView = ContentView()
         let hostingController = TouchBarHostingController(rootView: contentView)
+        hostingController.touchBarType = .mainWindow
 
         // Ép SwiftUI layout trước khi attach window
         hostingController.view.setFrameSize(NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)))
@@ -76,7 +81,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         shared = controller
         
         controller.showWindow(nil)
-        controller.updateTouchBar(for: .mainWindow)
         window.makeKeyAndOrderFront(nil)
         window.makeFirstResponder(hostingController)
         NSApp.activate(ignoringOtherApps: true)
@@ -97,37 +101,3 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     }
 }
 
-// MARK: - Touch Bar
-extension AppListWindowController {
-    func updateTouchBar(for type: AppState.TouchBarType) {
-        guard let window = self.window else { return }
-
-        let touchBar = NSTouchBar()
-        touchBar.defaultItemIdentifiers = []
-
-        switch type {
-        case .mainWindow:
-            TouchBarManager.shared.registerOrUpdateItem(id: .addApp) {
-                let symbolImage = NSImage(systemSymbolName: "plus", accessibilityDescription: "Add App")
-                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.openPopupAddApp))
-                button.isBordered = true
-                return button
-            }
-//        case .addAppPopup:
-//            TouchBarManager.shared.registerOrUpdateItem(id: .lockButton) {
-//                let symbolImage = NSImage(systemSymbolName: "lock", accessibilityDescription: "Add App")
-//                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.lockApp))
-//                button.isBordered = true
-//                return button
-//            }
-//        case .deleteQueuePopup:
-//            TouchBarManager.shared.registerOrUpdateItem(id: .unlockButton) {
-//                let symbolImage = NSImage(systemSymbolName: "lock.open", accessibilityDescription: "Add App")
-//                let button = NSButton(image: symbolImage!, target: TouchBarActionProxy.shared, action: #selector(TouchBarActionProxy.shared.unlockApp))
-//                button.isBordered = true
-//                return button
-//            }
-        }
-        TouchBarManager.shared.apply(to: window)
-    }
-}

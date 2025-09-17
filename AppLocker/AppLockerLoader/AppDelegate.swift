@@ -41,6 +41,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
             if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
         }
+        if let window = NSApp.windows.first {
+            TouchBarManager.shared.apply(to: window, type: .mainWindow)
+        }
 //        NSApplication.autoCenterAllWindows()
     }
 }

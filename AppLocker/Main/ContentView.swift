@@ -28,6 +28,8 @@ struct InstalledApp: Identifiable, Hashable {
 struct ContentView: View {
     @ObservedObject var appState = AppState.shared
     @FocusState var isSearchFocused: Bool
+    @EnvironmentObject var appstate: AppState
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 9) { // ✅ tất cả cách nhau 9
             // Label header
@@ -56,6 +58,7 @@ struct ContentView: View {
                 TextField("Search apps...".localized, text: $appState.searchTextLockApps)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal, 8)
+                    .focused($isSearchFocused)
                 
                 // ScrollView thay List
                 ZStack(alignment: .bottom) {
@@ -105,7 +108,7 @@ struct ContentView: View {
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .frame(maxHeight: .infinity) // ScrollView full height window
-
+                    
                     // Bottom bar nếu có deleteQueue
                     if !appState.deleteQueue.isEmpty {
                         Button {
@@ -113,7 +116,7 @@ struct ContentView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "tray.full")
-                                Text("Waiting for %d task(s)...".localized(with: appState.deleteQueue.count))
+                                Text("Waiting to unlock %d application(s)...".localized(with: appState.deleteQueue.count))
                                     .bold()
                             }
                             .frame(maxWidth: .infinity, maxHeight: 35)       // gộp frame
@@ -231,17 +234,24 @@ struct ContentView: View {
                 Logfile.core.info("List apps loaded")
                 // Remove focus SwiftUI state
                 isSearchFocused = false
-
+                
                 // Dispatch async để AppKit nhận sự thay đổi
                 DispatchQueue.main.async {
+                    // Đổi sang touch bar context sheet Add App
+                    let tb = TouchBarManager.shared.makeTouchBar(for: .addAppPopup)
+                    NSApp.keyWindow?.touchBar = tb
                     NSApp.keyWindow?.makeFirstResponder(nil)
                 }
-
             }
+                
             .onDisappear {
                 DispatchQueue.main.async {
                     appState.searchTextUnlockaleApps = ""
+                    if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
+                        TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
+                    }
                 }
+                
             }
         }
 
@@ -253,9 +263,10 @@ struct ContentView: View {
 
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
-                        let filteredLockedApps = appState.lockedAppObjects.filter {
-                            appState.searchTextLockApps.isEmpty || $0.name.localizedCaseInsensitiveContains(appState.searchTextLockApps)
+                        let filteredLockedApps = appState.lockedAppObjects.filter { app in
+                            appState.deleteQueue.contains(app.path)
                         }
+
                         ForEach(filteredLockedApps, id: \.id) { app in
                             HStack(spacing: 12) {
                                 if let icon = app.icon {
@@ -311,12 +322,20 @@ struct ContentView: View {
                 .padding()
             }
             .frame(minWidth: 400, minHeight: 450)
+            .onAppear {
+                DispatchQueue.main.async {
+                    let tb = TouchBarManager.shared.makeTouchBar(for: .deleteQueuePopup)
+                    NSApp.keyWindow?.touchBar = tb
+                }
+            }
             .onDisappear {
                 DispatchQueue.main.async {
+                    if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
+                        TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
+                    }
                     appState.searchTextLockApps = ""
                 }
             }
-
         }
         .sheet(isPresented: $appState.showingLockingPopup) {
             HStack(spacing: 12) {

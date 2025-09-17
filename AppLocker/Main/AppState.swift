@@ -36,8 +36,8 @@ class AppState: ObservableObject {
     
     enum TouchBarType {
         case mainWindow
-//        case addAppPopup
-//        case deleteQueuePopup
+        case addAppPopup
+        case deleteQueuePopup
     }
     
     var lockedAppObjects: [InstalledApp] {
