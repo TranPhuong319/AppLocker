@@ -108,7 +108,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             tb.defaultItemIdentifiers = [
                 .flexibleSpace,
                 .showDeleteQueuePopup,
-                .addApp
+                .addApp,
+                .flexibleSpace,
             ]
             
         case .addAppPopup:
@@ -138,7 +139,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
                 .addAppOther,
                 .flexibleSpace,
                 .closeAddPopupApp,
-                .lockButton
+                .lockButton,
+                .flexibleSpace,
             ]
             
         case .deleteQueuePopup:
@@ -165,6 +167,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             tb.defaultItemIdentifiers = [
                 .flexibleSpace,
                 .deleteQueueButtons,
+                .flexibleSpace,
             ]
         }
 
