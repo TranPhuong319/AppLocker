@@ -10,8 +10,6 @@
 		E06B45C92E5A9C6C00323A53 /* AppLockerHelper in CopyFiles */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* AppLockerHelper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0871C7D2E47906300B9C17F /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
-		E0CC0D862E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
-		E0CC0DDE2E7C84D700A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0CC0DDD2E7C84D700A7569B /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -53,6 +51,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E01ADC932E7D93B100BE719D /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AuthenticationManager.swift,
+			);
+			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
+		};
 		E03BC41D2E5E1B25001C181D /* Exceptions for "Launcher" folder in "Launcher" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -66,38 +71,6 @@
 				Info.plist,
 			);
 			target = E0EF51A92E31558900161CAB /* AppLocker */;
-		};
-		E04B8E9E2E5D847600BE7903 /* Exceptions for "Shared" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"/Localized: InfoPlist.strings",
-				Alert.swift,
-				AppLockerHelperProtocol.swift,
-				Log.swift,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E04B8EA22E5D848D00BE7903 /* Exceptions for "AppLocker" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Authentication/AuthenticationManager.swift,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E04B8EA42E5D849F00BE7903 /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Alert.swift,
-				AppLockerHelperProtocol.swift,
-			);
-			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
-		};
-		E04B8EA62E5D84C900BE7903 /* Exceptions for "Extensions" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Locatizable.swift,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -115,21 +88,17 @@
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E021AF4E2E41159E003D2400 /* Shared */ = {
+		E01ADC7E2E7D936700BE719D /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E04B8E9E2E5D847600BE7903 /* Exceptions for "Shared" folder in "Launcher" target */,
-				E04B8EA42E5D849F00BE7903 /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
-			);
-			path = Shared;
+			path = Extensions;
 			sourceTree = "<group>";
 		};
-		E05FF9042E51893C0013CC3A /* Extensions */ = {
+		E01ADC8A2E7D93A000BE719D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E04B8EA62E5D84C900BE7903 /* Exceptions for "Extensions" folder in "Launcher" target */,
+				E01ADC932E7D93B100BE719D /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
 			);
-			path = Extensions;
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		E07075972E38BA97001C7950 /* Launcher */ = {
@@ -152,7 +121,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */,
-				E04B8EA22E5D848D00BE7903 /* Exceptions for "AppLocker" folder in "Launcher" target */,
 			);
 			path = AppLocker;
 			sourceTree = "<group>";
@@ -164,8 +132,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E0CC0DDE2E7C84D700A7569B /* Sparkle in Frameworks */,
-				E0CC0D862E7C82D000A7569B /* Sparkle in Frameworks */,
 				E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -187,23 +153,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		E04B8EA82E5D853100BE7903 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		E0EF51A12E31558800161CAB = {
 			isa = PBXGroup;
 			children = (
 				E0EF51AC2E31558900161CAB /* AppLocker */,
-				E07075972E38BA97001C7950 /* Launcher */,
-				E021AF4E2E41159E003D2400 /* Shared */,
 				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
-				E05FF9042E51893C0013CC3A /* Extensions */,
-				E04B8EA82E5D853100BE7903 /* Frameworks */,
+				E01ADC7E2E7D936700BE719D /* Extensions */,
+				E07075972E38BA97001C7950 /* Launcher */,
 				E0EF51AB2E31558900161CAB /* Products */,
+				E01ADC8A2E7D93A000BE719D /* Shared */,
 			);
 			sourceTree = "<group>";
 			usesTabs = 0;
@@ -234,6 +192,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				E01ADC7E2E7D936700BE719D /* Extensions */,
+				E01ADC8A2E7D93A000BE719D /* Shared */,
 				E07075972E38BA97001C7950 /* Launcher */,
 			);
 			name = Launcher;
@@ -255,6 +215,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				E01ADC8A2E7D93A000BE719D /* Shared */,
 				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
 			);
 			name = AppLockerHelper;
@@ -280,8 +241,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				E021AF4E2E41159E003D2400 /* Shared */,
-				E05FF9042E51893C0013CC3A /* Extensions */,
+				E01ADC7E2E7D936700BE719D /* Extensions */,
+				E01ADC8A2E7D93A000BE719D /* Shared */,
 				E0EF51AC2E31558900161CAB /* AppLocker */,
 			);
 			name = AppLocker;

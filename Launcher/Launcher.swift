@@ -7,6 +7,7 @@
 
 import AppKit
 import Foundation
+import ServiceManagement
 
 struct LockedAppInfo: Codable {
     let name: String
@@ -20,10 +21,17 @@ struct LockedAppInfo: Codable {
 
 class Launcher {
     static let shared = Launcher()
-    // ✅ lưu file nhận được từ AppDelegate
+    // lưu file nhận được từ AppDelegate
     var pendingOpenFileURLs: [URL] = []
 
     func run() {
+//        let plistName = "com.TranPhuong319.AppLockerHelper.plist"
+//        let helperStatus = SMAppService.daemon(plistName: plistName).status
+//        
+//        switch helperStatus {
+//        case
+//        }
+        
         Logfile.launcher.info("🚀 Launcher started")
         Logfile.launcher.info("📝 CommandLine args: \(CommandLine.arguments, privacy: .public)")
 
