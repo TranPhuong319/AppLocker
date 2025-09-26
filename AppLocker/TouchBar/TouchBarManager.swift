@@ -109,7 +109,6 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
                 .flexibleSpace,
                 .showDeleteQueuePopup,
                 .addApp,
-                .flexibleSpace,
             ]
             
         case .addAppPopup:
@@ -140,7 +139,6 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
                 .flexibleSpace,
                 .closeAddPopupApp,
                 .lockButton,
-                .flexibleSpace,
             ]
             
         case .deleteQueuePopup:

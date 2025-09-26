@@ -375,6 +375,17 @@
         }
       }
     },
+    "Unable to update AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể cập nhật AppLocker"
+          }
+        }
+      }
+    },
     "Uninstall" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -503,6 +514,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn cần mở khoá tất cả ứng dụng trước khi Gỡ cài đặt"
+          }
+        }
+      }
+    },
+    "You need to unlock all applications before Updating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn cần mở khoá tất cả ứng dụng trước khi cập nhật"
           }
         }
       }

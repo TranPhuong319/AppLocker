@@ -92,7 +92,7 @@ class AppUpdater: NSObject {
             updaterController.updater.checkForUpdateInformation()
         }
     }
-
+        
     // Manual check
     func manualCheckForUpdates(useBeta: Bool) {
         delegate.useBeta = useBeta
@@ -103,7 +103,9 @@ class AppUpdater: NSObject {
                 }
             }
         } else {
-            updaterController.checkForUpdates(nil)
+            DispatchQueue.main.async {
+                self.updaterController.checkForUpdates(nil)
+            }
         }
     }
 

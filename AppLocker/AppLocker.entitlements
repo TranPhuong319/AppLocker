@@ -4,8 +4,10 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<false/>
-	<key>com.apple.security.automation.apple-events</key>
-	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.TranPhuong319.AppLocker</string>
+	</array>
 	<key>com.apple.security.privileged-execution</key>
 	<true/>
 	<key>com.apple.security.privileged-helper</key>
