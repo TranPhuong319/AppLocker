@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import Combine
 
 /// Shared state & logic cho cả ContentView và TouchBar
 class AppState: ObservableObject {
     static let shared = AppState()  // singleton
-    @Published var manager = LockManager()
+    @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
     @Published var showingDeleteQueue = false
     @Published var selectedToLock: Set<String> = []
@@ -24,6 +25,14 @@ class AppState: ObservableObject {
     @Published var lockingMessage = ""
     @Published var searchTextUnlockaleApps = ""
     @Published var searchTextLockApps = ""
+    
+    init() {
+        if modeLock == "Launcher" {
+            manager = LockLauncher()
+        } else {
+            manager = LockES()
+        }
+    }
     
     let setWidth = 450
     let setHeight = 450
@@ -44,12 +53,16 @@ class AppState: ObservableObject {
         manager.lockedApps.keys.compactMap { path in
             let info = manager.lockedApps[path]!
             let icon = NSWorkspace.shared.icon(forFile: path) // icon theo path thật
-            return InstalledApp(
-                name: info.name,
-                bundleID: "",
-                icon: icon,
-                path: path
-            )
+            if let name = info.name {
+                return InstalledApp(
+                    name: name,
+                    bundleID: "",
+                    icon: icon,
+                    path: path
+                )
+            } else {
+                return nil
+            }
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }

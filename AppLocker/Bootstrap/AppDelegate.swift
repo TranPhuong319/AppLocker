@@ -15,28 +15,90 @@ import UserNotifications
 import Sparkle
 
 enum LoginAction {
-    case none      // Only check status
     case install   // Install the helper tool
     case uninstall // Uninstall the helper tool
 }
+
+var modeLock: String? = UserDefaults.standard.string(forKey: "selectedMode")
 
 // MARK: AppDelegate.swift
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     static let shared = AppDelegate()
     var statusItem: NSStatusItem?
-    let helperIdentifier = "com.TranPhuong319.AppLockerHelper"
+    let helperIdentifier = "com.TranPhuong319.AppLocker.Helper"
     var pendingUpdate: SUAppcastItem?
     let notificationIndentifiers = "AppLockerUpdateNotification"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logfile.core.debug("Loading Application")
-
-        HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
-        setupMenuBar()
         
+        if isKextSigningDisabled() {
+            if modeLock == nil {
+                WelcomeWindowController.show()
+                return
+            } else {
+                launchConfig(config: modeLock!)
+            }
+        } else {
+            launchConfig(config: "Launcher")
+        }
+    }
+}
+
+
+class LaunchAgentManager {
+    static let shared = LaunchAgentManager()
+    private init() {}
+
+    private func runLaunchctl(_ args: [String]) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = args
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        try? process.run()
+        process.waitUntilExit()
+    }
+
+    func kickstartAgent(label: String) {
+        let uid = getuid()
+        runLaunchctl(["kickstart", "-k", "gui/\(uid)/\(label)"])
+    }
+
+    func stopAgent(label: String, plistPath: String) {
+        let uid = getuid()
+        runLaunchctl(["bootout", "gui/\(uid)", plistPath])
+    }
+
+    func startAgent(plistPath: String) {
+        let uid = getuid()
+        runLaunchctl(["bootstrap", "gui/\(uid)", plistPath])
+    }
+}
+
+// MARK: - Mode Lock
+extension AppDelegate {
+    func launchConfig(config: String) {
+        if config == "Launcher" {
+            HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
+        } else {
+            let bundlePath = Bundle.main.bundlePath
+            let agentPlistPath = "\(bundlePath)/Contents/Library/LaunchAgents/com.TranPhuong319.AppLocker.agent.plist"
+            LaunchAgentManager.shared.startAgent(plistPath: agentPlistPath)
+            // Đăng ký callback
+            ExtensionInstaller.shared.onInstalled = {
+                print("[App] Starting XPC server after extension install")
+                XPCServer.shared.start()
+            }
+            
+            // Chạy install
+            ExtensionInstaller.shared.install()
+        }
+        setupMenuBar()
         AppUpdater.shared.setBridgeDelegate(self)
         AppUpdater.shared.startTestAutoCheck()
-
+        
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
             if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
@@ -44,7 +106,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
-//        NSApplication.autoCenterAllWindows()
     }
 }
 
@@ -57,11 +118,19 @@ extension AppDelegate: NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
         statusItem?.menu = menu
+
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-
+        
+        let infoItem = NSMenuItem(title: "AppLocker v\(Bundle.main.fullVersion)",
+                                action: nil,
+                                keyEquivalent: "")
+        infoItem.isEnabled = false
+        menu.addItem(infoItem)
+        menu.addItem(.separator())
+        
         if NSEvent.modifierFlags.contains(.option) {
             buildOptionMenu(for: menu)
         } else {
@@ -73,10 +142,12 @@ extension AppDelegate: NSMenuDelegate {
         menu.addItem(NSMenuItem(title: "Manage the application list".localized,
                                 action: #selector(openListApp),
                                 keyEquivalent: "s"))
-        menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
-                                action: #selector(quitApp),
-                                keyEquivalent: "q"))
+        if modeLock == "Launcher" {
+            menu.addItem(.separator())
+            menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
+                                    action: #selector(quitApp),
+                                    keyEquivalent: "q"))
+        }
     }
 
     private func buildOptionMenu(for menu: NSMenu) {
@@ -85,13 +156,15 @@ extension AppDelegate: NSMenuDelegate {
                                 keyEquivalent: ""))
         menu.addItem(.separator())
 
-        let launchItem = NSMenuItem(title: "Launch At Login".localized,
-                                    action: #selector(launchAtLogin),
-                                    keyEquivalent: "")
-        launchItem.target = self
-        launchItem.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
-        menu.addItem(launchItem)
-
+        if modeLock == "Launcher" {
+            let launchItem = NSMenuItem(title: "Launch At Login".localized,
+                                        action: #selector(launchAtLogin),
+                                        keyEquivalent: "")
+            launchItem.target = self
+            launchItem.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
+            menu.addItem(launchItem)
+        }
+        
         menu.addItem(NSMenuItem(title: "Check for Updates...".localized,
                                 action: #selector(checkUpdate),
                                 keyEquivalent: ""))
@@ -105,6 +178,21 @@ extension AppDelegate: NSMenuDelegate {
                                 keyEquivalent: ""))
     }
 }
+
+extension Bundle {
+    var appVersion: String {
+        infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+    }
+
+    var appBuild: String {
+        infoDictionary?["CFBundleVersion"] as? String ?? "?"
+    }
+
+    var fullVersion: String {
+        "\(appVersion) (\(appBuild))"
+    }
+}
+
 
 // MARK: - App Actions
 extension AppDelegate {
@@ -124,7 +212,21 @@ extension AppDelegate {
     }
 
     @objc func quitApp() {
-        NSApp.terminate(nil)
+        if modeLock == "Launcher"{
+            NSApp.terminate(nil)
+        } else {
+            AuthenticationManager.authenticate(
+                reason: "authenticate to quit app".localized
+            ) { success, error in
+                DispatchQueue.main.async {
+                    if success {
+                        NSApp.terminate(nil)
+                    } else {
+                        Logfile.core.error("Error quiting app: \(error as NSObject?, privacy: .public)")
+                    }
+                }
+            }
+        }
     }
 
     @objc func openPreference() {
@@ -134,7 +236,13 @@ extension AppDelegate {
 
     @objc func uninstall() {
         Logfile.core.info("Uninstall Clicked")
-        let manager = LockManager()
+        var manager: any LockManagerProtocol
+        
+        if modeLock == "Launcher" {
+            manager = LockLauncher()
+        } else {
+            manager = LockES()
+        }
         
         NSApp.activate(ignoringOtherApps: true)
 
@@ -268,7 +376,7 @@ extension SMAppService.Status {
 extension AppDelegate {
     func callUninstallHelper() {
         let conn = NSXPCConnection(
-            machServiceName: "com.TranPhuong319.AppLockerHelper",
+            machServiceName: "com.TranPhuong319.AppLocker.Helper",
             options: .privileged
         )
         conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
@@ -357,3 +465,15 @@ extension AppDelegate {
     }
 }
 
+extension AppDelegate {
+    func restartApp() {
+        let path = Bundle.main.bundlePath
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = [path]
+        try? task.run()
+
+        // Thoát app hiện tại
+        NSApp.terminate(nil)
+    }
+}

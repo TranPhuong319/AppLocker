@@ -32,7 +32,11 @@ jobs:
       run: |
         git fetch --prune --unshallow --tags
         CUR_TAG="$(git tag -l | grep -i 'alpha' | tail -1)"
-        eval $(grep -m 1 "MARKETING_VERSION =" AppLocker.xcodeproj/project.pbxproj | tr -d ';' | tr -d '\t' | tr -d " ")
+        MARKETING_VERSION=$(grep "MARKETING_VERSION" AppLocker.xcodeproj/project.pbxproj \
+          | grep -v '\$' \
+          | head -n 1 \
+          | sed -E 's/.*= *"?([^";]+)"?;.*/\1/')
+
         if [[ "$GITHUB_EVENT_NAME" != 'workflow_dispatch' ]]; then
           # alpha
           sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj

@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings
+  AppLocker
+
+  Created by Doe Phương on 2/11/25.
+  
+*/
+
+NSSystemExtensionUsageDescription = "Ứng dụng này cần quyền cài đặt System Extension để theo dõi và chặn ứng dụng khởi động trong danh sách ứng dụng bị khoá.";

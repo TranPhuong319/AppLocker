@@ -56,6 +56,17 @@
         }
       }
     },
+    "authenticate to quit app" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để thoát ứng dụng"
+          }
+        }
+      }
+    },
     "Automatically check for updates." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -166,6 +177,17 @@
         }
       }
     },
+    "ES (Endpoint Security)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ES (Endpoint Security)"
+          }
+        }
+      }
+    },
     "Get experimental updates.%@Note: Experimental updates are often unstable." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -217,6 +239,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mở khi đăng nhập"
+          }
+        }
+      }
+    },
+    "Launcher" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launccher"
           }
         }
       }
@@ -283,6 +316,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Khác…"
+          }
+        }
+      }
+    },
+    "Please choose your preferred lock method:" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng chọn phương thức khóa ưa thích của bạn:"
           }
         }
       }
@@ -474,6 +517,17 @@
         }
       }
     },
+    "Verify that you are opening the %@ app" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực rằng bạn đang mở ứng dụng %@"
+          }
+        }
+      }
+    },
     "Version %@ is ready" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -492,6 +546,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đang chờ mở khoá %d ứng dụng..."
+          }
+        }
+      }
+    },
+    "Welcome to AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chào mừng đến với AppLocker"
           }
         }
       }

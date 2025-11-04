@@ -7,7 +7,7 @@
 
 import Foundation
 
-let listener = NSXPCListener(machServiceName: "com.TranPhuong319.AppLockerHelper")
+let listener = NSXPCListener(machServiceName: "com.TranPhuong319.AppLocker.Helper")
 let delegate = AppLockerHelper()
 listener.delegate = delegate
 listener.resume()

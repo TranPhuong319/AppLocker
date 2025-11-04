@@ -7,58 +7,98 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E06B45C92E5A9C6C00323A53 /* AppLockerHelper in CopyFiles */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* AppLockerHelper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E0871C7D2E47906300B9C17F /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
+		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
+		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0B278AC2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0CC0DDD2E7C84D700A7569B /* Sparkle */; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		E050B4482E86FB35003AEA49 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0EF51A22E31558800161CAB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E050B43F2E86FB33003AEA49;
+			remoteInfo = AppLockerEndpointSecurity;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
-		E021AF4C2E4110AA003D2400 /* CopyFiles */ = {
+		E050B44B2E86FB35003AEA49 /* Embed System Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = "";
-			dstSubfolderSpec = 7;
+			buildActionMask = 2147483647;
+			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
 			files = (
-				E0871C7D2E47906300B9C17F /* Launcher.app in CopyFiles */,
+				E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */,
 			);
+			name = "Embed System Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E058BA142E5A03FC0002D0D2 /* CopyFiles */ = {
+		E058BA142E5A03FC0002D0D2 /* Launch Daemons */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = Contents/Library/LaunchDaemons;
 			dstSubfolderSpec = 1;
 			files = (
 			);
+			name = "Launch Daemons";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E06B45C82E5A9C5400323A53 /* CopyFiles */ = {
+		E06B45C82E5A9C5400323A53 /* Copy Helper */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				E06B45C92E5A9C6C00323A53 /* AppLockerHelper in CopyFiles */,
+				E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */,
 			);
+			name = "Copy Helper";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0749BE32E96D7AB003CD67D /* Copy Launcher */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */,
+			);
+			name = "Copy Launcher";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0749BE62E96D8BE003CD67D /* Launch Agents */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LaunchAgents;
+			dstSubfolderSpec = 1;
+			files = (
+			);
+			name = "Launch Agents";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E0361ACF2E879EC300A37772 /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
+		E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.ESExtension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
+		E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
 		E07075962E38BA97001C7950 /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E0D4C0652E419DAD003C40E3 /* AppLockerHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AppLockerHelper; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.Helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E01ADC932E7D93B100BE719D /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
+		E0361B032E87E7E800A37772 /* Exceptions for "AppLocker" folder in "ESExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				AuthenticationManager.swift,
+				Core/LockedAppConfig.swift,
 			);
-			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
+			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
 		};
 		E03BC41D2E5E1B25001C181D /* Exceptions for "Launcher" folder in "Launcher" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -70,21 +110,73 @@
 		E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				com.TranPhuong319.AppLocker.agent.plist,
 				Info.plist,
 			);
 			target = E0EF51A92E31558900161CAB /* AppLocker */;
 		};
+		E0749BDB2E96D4D8003CD67D /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AuthenticationManager.swift,
+				ESAppProtocol.swift,
+				ESXPCProtocol.swift,
+			);
+			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
+		};
+		E0749BE12E96D5DA003CD67D /* Exceptions for "Shared" folder in "Launcher" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				BlockedApp.swift,
+				ESAppProtocol.swift,
+				ESXPCProtocol.swift,
+			);
+			target = E07075952E38BA97001C7950 /* Launcher */;
+		};
+		E0749BE22E96D5F2003CD67D /* Exceptions for "Shared" folder in "ESExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized: InfoPlist.strings",
+				AppLockerHelperProtocol.swift,
+				AuthenticationManager.swift,
+			);
+			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
+		};
+		E076EEFE2E883E48009F465F /* Exceptions for "ESExtension" folder in "ESExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
+		};
+		E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Log.swift,
+			);
+			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		E04B8E922E5D833700BE7903 /* Exceptions for "AppLockerHelper" folder in "Copy Files" phase from "AppLocker" target */ = {
+		E0749BDF2E96D580003CD67D /* Exceptions for "AppLockerHelper" folder in "Launch Daemons" phase from "AppLocker" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
-				com.TranPhuong319.AppLockerHelper.plist = (CodeSignOnCopy, );
+				com.TranPhuong319.AppLocker.Helper.plist = (CodeSignOnCopy, );
 			};
-			buildPhase = E058BA142E5A03FC0002D0D2 /* CopyFiles */;
+			buildPhase = E058BA142E5A03FC0002D0D2 /* Launch Daemons */;
 			membershipExceptions = (
-				com.TranPhuong319.AppLockerHelper.plist,
+				com.TranPhuong319.AppLocker.Helper.plist,
+			);
+		};
+		E0749BE82E96D8E5003CD67D /* Exceptions for "AppLocker" folder in "Launch Agents" phase from "AppLocker" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				com.TranPhuong319.AppLocker.agent.plist = (CodeSignOnCopy, );
+			};
+			buildPhase = E0749BE62E96D8BE003CD67D /* Launch Agents */;
+			membershipExceptions = (
+				com.TranPhuong319.AppLocker.agent.plist,
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -92,15 +184,28 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E01ADC7E2E7D936700BE719D /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */,
+			);
 			path = Extensions;
 			sourceTree = "<group>";
 		};
 		E01ADC8A2E7D93A000BE719D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E01ADC932E7D93B100BE719D /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
+				E0749BE12E96D5DA003CD67D /* Exceptions for "Shared" folder in "Launcher" target */,
+				E0749BDB2E96D4D8003CD67D /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
+				E0749BE22E96D5F2003CD67D /* Exceptions for "Shared" folder in "ESExtension" target */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		E050B4432E86FB34003AEA49 /* ESExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E076EEFE2E883E48009F465F /* Exceptions for "ESExtension" folder in "ESExtension" target */,
+			);
+			path = ESExtension;
 			sourceTree = "<group>";
 		};
 		E07075972E38BA97001C7950 /* Launcher */ = {
@@ -114,7 +219,7 @@
 		E0D4C0662E419DAD003C40E3 /* AppLockerHelper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E04B8E922E5D833700BE7903 /* Exceptions for "AppLockerHelper" folder in "Copy Files" phase from "AppLocker" target */,
+				E0749BDF2E96D580003CD67D /* Exceptions for "AppLockerHelper" folder in "Launch Daemons" phase from "AppLocker" target */,
 			);
 			path = AppLockerHelper;
 			sourceTree = "<group>";
@@ -123,7 +228,12 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */,
+				E0749BE82E96D8E5003CD67D /* Exceptions for "AppLocker" folder in "Launch Agents" phase from "AppLocker" target */,
+				E0361B032E87E7E800A37772 /* Exceptions for "AppLocker" folder in "ESExtension" target */,
 			);
+			explicitFileTypes = {
+				com.TranPhuong319.AppLocker.agent.plist = text.plist.xml;
+			};
 			path = AppLocker;
 			sourceTree = "<group>";
 		};
@@ -140,10 +250,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E07075932E38BA97001C7950 /* Frameworks */ = {
+		E050B43D2E86FB33003AEA49 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */,
+				E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,6 +272,8 @@
 		E0B2790A2E7FB16C004BC47F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E0361ACF2E879EC300A37772 /* libbsm.tbd */,
+				E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -171,6 +285,7 @@
 				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
 				E01ADC7E2E7D936700BE719D /* Extensions */,
 				E07075972E38BA97001C7950 /* Launcher */,
+				E050B4432E86FB34003AEA49 /* ESExtension */,
 				E0EF51AB2E31558900161CAB /* Products */,
 				E01ADC8A2E7D93A000BE719D /* Shared */,
 				E0B2790A2E7FB16C004BC47F /* Frameworks */,
@@ -183,7 +298,8 @@
 			children = (
 				E0EF51AA2E31558900161CAB /* AppLocker.app */,
 				E07075962E38BA97001C7950 /* Launcher.app */,
-				E0D4C0652E419DAD003C40E3 /* AppLockerHelper */,
+				E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */,
+				E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -191,12 +307,34 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E050B43F2E86FB33003AEA49 /* ESExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E050B44E2E86FB35003AEA49 /* Build configuration list for PBXNativeTarget "ESExtension" */;
+			buildPhases = (
+				E050B43C2E86FB33003AEA49 /* Sources */,
+				E050B43D2E86FB33003AEA49 /* Frameworks */,
+				E076EEFD2E883E48009F465F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E01ADC8A2E7D93A000BE719D /* Shared */,
+				E050B4432E86FB34003AEA49 /* ESExtension */,
+			);
+			name = ESExtension;
+			packageProductDependencies = (
+			);
+			productName = AppLockerEndpointSecurity;
+			productReference = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */;
+			productType = "com.apple.product-type.system-extension";
+		};
 		E07075952E38BA97001C7950 /* Launcher */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E070759F2E38BA9E001C7950 /* Build configuration list for PBXNativeTarget "Launcher" */;
 			buildPhases = (
 				E07075922E38BA97001C7950 /* Sources */,
-				E07075932E38BA97001C7950 /* Frameworks */,
 				E07075942E38BA97001C7950 /* Resources */,
 			);
 			buildRules = (
@@ -234,7 +372,7 @@
 			packageProductDependencies = (
 			);
 			productName = AppLockerHelper;
-			productReference = E0D4C0652E419DAD003C40E3 /* AppLockerHelper */;
+			productReference = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */;
 			productType = "com.apple.product-type.tool";
 		};
 		E0EF51A92E31558900161CAB /* AppLocker */ = {
@@ -243,14 +381,17 @@
 			buildPhases = (
 				E0EF51A62E31558900161CAB /* Sources */,
 				E0EF51A82E31558900161CAB /* Resources */,
-				E021AF4C2E4110AA003D2400 /* CopyFiles */,
-				E058BA142E5A03FC0002D0D2 /* CopyFiles */,
-				E06B45C82E5A9C5400323A53 /* CopyFiles */,
+				E058BA142E5A03FC0002D0D2 /* Launch Daemons */,
+				E06B45C82E5A9C5400323A53 /* Copy Helper */,
 				E04B8EA72E5D852900BE7903 /* Frameworks */,
+				E050B44B2E86FB35003AEA49 /* Embed System Extensions */,
+				E0749BE32E96D7AB003CD67D /* Copy Launcher */,
+				E0749BE62E96D8BE003CD67D /* Launch Agents */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				E050B4492E86FB35003AEA49 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E01ADC7E2E7D936700BE719D /* Extensions */,
@@ -274,9 +415,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					E050B43F2E86FB33003AEA49 = {
+						CreatedOnToolsVersion = 26.0;
+					};
 					E07075952E38BA97001C7950 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -309,12 +453,20 @@
 				E0EF51A92E31558900161CAB /* AppLocker */,
 				E07075952E38BA97001C7950 /* Launcher */,
 				E0D4C0642E419DAD003C40E3 /* AppLockerHelper */,
+				E050B43F2E86FB33003AEA49 /* ESExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E07075942E38BA97001C7950 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E076EEFD2E883E48009F465F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -331,6 +483,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E050B43C2E86FB33003AEA49 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E07075922E38BA97001C7950 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -354,7 +513,81 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		E050B4492E86FB35003AEA49 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
+			targetProxy = E050B4482E86FB35003AEA49 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		E050B44C2E86FB35003AEA49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ESExtension/ESExtension.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/ESExtension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = ESExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.ESExtension;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E050B44D2E86FB35003AEA49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ESExtension/ESExtension.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/ESExtension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = ESExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.ESExtension;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		E07075A02E38BA9E001C7950 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -362,12 +595,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Launcher/Launcher.entitlements;
 				CODE_SIGN_IDENTITY = "-";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "1.6.0-alpha";
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
+				DEVELOPMENT_TEAM = 749P55DL5L;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -383,11 +615,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.6.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.Launcher;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -402,12 +633,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Launcher/Launcher.entitlements;
 				CODE_SIGN_IDENTITY = "-";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "1.6.0-stable";
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
+				DEVELOPMENT_TEAM = 749P55DL5L;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -423,11 +653,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.6.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.Launcher;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -439,16 +668,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLockerHelper;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Helper;
+				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -457,16 +687,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLockerHelper;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Helper;
+				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -614,7 +845,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "1.6.0-alpha";
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -638,7 +869,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -671,7 +902,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "1.6.0-stable";
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -695,7 +926,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -720,6 +951,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E050B44E2E86FB35003AEA49 /* Build configuration list for PBXNativeTarget "ESExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E050B44C2E86FB35003AEA49 /* Debug */,
+				E050B44D2E86FB35003AEA49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E070759F2E38BA9E001C7950 /* Build configuration list for PBXNativeTarget "Launcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

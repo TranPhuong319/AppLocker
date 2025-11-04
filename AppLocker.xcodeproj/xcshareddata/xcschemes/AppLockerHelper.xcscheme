@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E0D4C0642E419DAD003C40E3"
-               BuildableName = "AppLockerHelper"
+               BuildableName = "com.TranPhuong319.AppLocker.Helper"
                BlueprintName = "AppLockerHelper"
                ReferencedContainer = "container:AppLocker.xcodeproj">
             </BuildableReference>
@@ -49,7 +49,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0D4C0642E419DAD003C40E3"
-            BuildableName = "AppLockerHelper"
+            BuildableName = "com.TranPhuong319.AppLocker.Helper"
             BlueprintName = "AppLockerHelper"
             ReferencedContainer = "container:AppLocker.xcodeproj">
          </BuildableReference>
@@ -73,7 +73,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0D4C0642E419DAD003C40E3"
-            BuildableName = "AppLockerHelper"
+            BuildableName = "com.TranPhuong319.AppLocker.Helper"
             BlueprintName = "AppLockerHelper"
             ReferencedContainer = "container:AppLocker.xcodeproj">
          </BuildableReference>

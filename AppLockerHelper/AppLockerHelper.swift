@@ -142,9 +142,9 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             }
         }
 
-        _ = run("/bin/launchctl", args: ["bootout", "system/com.TranPhuong319.AppLockerHelper"])
+        _ = run("/bin/launchctl", args: ["bootout", "system/com.TranPhuong319.AppLocker.Helper"])
         
-        _ = run("/bin/launchctl", args: ["disable", "system/com.TranPhuong319.AppLockerHelper"])
+        _ = run("/bin/launchctl", args: ["disable", "system/com.TranPhuong319.AppLocker.Helper"])
         
         _ = run("/bin/rm", args: ["-rf", "~/Library/Application Support/AppLocker"])
         
@@ -152,7 +152,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
 
         _ = run("/bin/rm", args: ["-rf", "/Applications/AppLocker.app"])
 
-        _ = run("/usr/bin/killall", args: ["AppLockerHelper"])
+        _ = run("/usr/bin/killall", args: ["com.TranPhuong319.AppLocker.Helper"])
         
         reply(true, logs.joined(separator: "\n"))
     }

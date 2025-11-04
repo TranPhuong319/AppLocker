@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings
+  AppLocker
+
+  Created by Doe Phương on 2/11/25.
+  
+*/
+
+NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications.";

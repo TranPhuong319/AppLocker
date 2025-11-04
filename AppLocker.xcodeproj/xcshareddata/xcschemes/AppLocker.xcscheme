@@ -6,6 +6,42 @@
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
       buildArchitectures = "Automatic">
+      <PreActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "DEST=&quot;/Applications/${FULL_PRODUCT_NAME}&quot;&#10;&#10;rm -rf &quot;$DEST&quot;&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "E0EF51A92E31558900161CAB"
+                     BuildableName = "AppLocker.app"
+                     BlueprintName = "AppLocker"
+                     ReferencedContainer = "container:AppLocker.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "APP_PATH=&quot;${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;&#10;cp -R &quot;$APP_PATH&quot; /Applications/&#10;echo &quot;&#x2705; Copied $APP_PATH -&gt; /Applications/&quot;&#10;&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "E0EF51A92E31558900161CAB"
+                     BuildableName = "AppLocker.app"
+                     BlueprintName = "AppLocker"
+                     ReferencedContainer = "container:AppLocker.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -43,8 +79,12 @@
       allowLocationSimulation = "YES"
       consoleMode = "0"
       structuredConsoleMode = "1">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <PathRunnable
+         runnableDebuggingMode = "0"
+         BundleIdentifier = "com.TranPhuong319.AppLocker"
+         FilePath = "/Applications/AppLocker.app">
+      </PathRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0EF51A92E31558900161CAB"
@@ -52,7 +92,7 @@
             BlueprintName = "AppLocker"
             ReferencedContainer = "container:AppLocker.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "IDEPreferLogStreaming = YES"

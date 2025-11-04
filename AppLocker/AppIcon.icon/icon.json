@@ -11,7 +11,7 @@
       "blur-material" : 0.5,
       "layers" : [
         {
-          "blend-mode" : "overlay",
+          "blend-mode" : "normal",
           "fill-specializations" : [
             {
               "value" : {
@@ -34,6 +34,7 @@
               }
             }
           ],
+          "glass" : true,
           "hidden" : false,
           "image-name" : "icon_512x512@2x.svg",
           "name" : "icon_512x512@2x"

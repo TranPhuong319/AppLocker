@@ -268,7 +268,7 @@ class Launcher {
     }
 
     private func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
-        let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLockerHelper", options: .privileged)
+        let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLocker.Helper", options: .privileged)
         conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
         conn.resume()
 
