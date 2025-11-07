@@ -1,17 +1,16 @@
+////
+////  AppLockerApp.swift
+////  AppLocker
+////
+////  Copyright © 2025 TranPhuong319. All rights reserved.
+////
 //
-//  AppLockerApp.swift
-//  AppLocker
+//import SwiftUI
 //
-//  Copyright © 2025 TranPhuong319. All rights reserved.
+//struct AppLockerApp: App {
+//    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 //
-
-import SwiftUI
-
-@main
-struct AppLockerApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
-    var body: some Scene {
-        Settings {}
-    }
-}
+//    var body: some Scene {
+//        Settings {}
+//    }
+//}

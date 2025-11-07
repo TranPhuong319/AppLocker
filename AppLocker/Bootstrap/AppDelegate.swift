@@ -14,12 +14,14 @@ import SwiftUI
 import UserNotifications
 import Sparkle
 
-enum LoginAction {
-    case install   // Install the helper tool
-    case uninstall // Uninstall the helper tool
+enum AgentAction {
+    case install
+    case uninstall
+    case restart
 }
 
 var modeLock: String? = UserDefaults.standard.string(forKey: "selectedMode")
+let plistName = "com.TranPhuong319.AppLocker.agent"
 
 // MARK: AppDelegate.swift
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -45,35 +47,44 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 }
 
-
-class LaunchAgentManager {
-    static let shared = LaunchAgentManager()
-    private init() {}
-
-    private func runLaunchctl(_ args: [String]) {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = args
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-        try? process.run()
-        process.waitUntilExit()
-    }
-
-    func kickstartAgent(label: String) {
-        let uid = getuid()
-        runLaunchctl(["kickstart", "-k", "gui/\(uid)/\(label)"])
-    }
-
-    func stopAgent(label: String, plistPath: String) {
-        let uid = getuid()
-        runLaunchctl(["bootout", "gui/\(uid)", plistPath])
-    }
-
-    func startAgent(plistPath: String) {
-        let uid = getuid()
-        runLaunchctl(["bootstrap", "gui/\(uid)", plistPath])
+extension AppDelegate {
+    func manageAgent(plistName: String, action: AgentAction) {
+        let agent = SMAppService.agent(plistName: "\(plistName).plist")
+        
+        do {
+            switch action {
+            case .install:
+                if agent.status == .enabled {
+                    Logfile.core.info("✅ Agent already registered: \(agent.status.description)")
+                    return
+                }
+                try agent.register()
+                Logfile.core.info("🚀 Agent registered successfully")
+                
+            case .uninstall:
+                if agent.status == .enabled {
+                    try agent.unregister()
+                    Logfile.core.info("🧹 Agent unregistered successfully")
+                } else {
+                    Logfile.core.info("ℹ️ Agent not registered, skipping uninstall")
+                }
+                
+            case .restart:
+                if agent.status == .enabled {
+                    try agent.unregister()
+                    Logfile.core.info("🔄 Agent unregistered for restart")
+                    try agent.register()
+                    Logfile.core.info("✅ Agent restarted successfully")
+                } else {
+                    Logfile.core.info("⚠️ Agent not active, registering new one")
+                    try agent.register()
+                }
+            }
+            
+        } catch {
+            let nsError = error as NSError
+            Logfile.core.error("❌ Failed to manage agent: \(nsError.domain) - code: \(nsError.code) - \(nsError.localizedDescription)")
+        }
     }
 }
 
@@ -83,9 +94,7 @@ extension AppDelegate {
         if config == "Launcher" {
             HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
         } else {
-            let bundlePath = Bundle.main.bundlePath
-            let agentPlistPath = "\(bundlePath)/Contents/Library/LaunchAgents/com.TranPhuong319.AppLocker.agent.plist"
-            LaunchAgentManager.shared.startAgent(plistPath: agentPlistPath)
+            manageAgent(plistName: plistName, action: .install)
             // Đăng ký callback
             ExtensionInstaller.shared.onInstalled = {
                 print("[App] Starting XPC server after extension install")
@@ -141,13 +150,14 @@ extension AppDelegate: NSMenuDelegate {
     private func buildNormalMenu(for menu: NSMenu) {
         menu.addItem(NSMenuItem(title: "Manage the application list".localized,
                                 action: #selector(openListApp),
-                                keyEquivalent: "s"))
-        if modeLock == "Launcher" {
-            menu.addItem(.separator())
-            menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
-                                    action: #selector(quitApp),
-                                    keyEquivalent: "q"))
-        }
+                                keyEquivalent: ","))
+        
+        #if DEBUG
+        menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
+                                action: #selector(quitApp),
+                                keyEquivalent: "q"))
+        #endif
     }
 
     private func buildOptionMenu(for menu: NSMenu) {
@@ -212,21 +222,21 @@ extension AppDelegate {
     }
 
     @objc func quitApp() {
-        if modeLock == "Launcher"{
+//        if modeLock == "Launcher"{
             NSApp.terminate(nil)
-        } else {
-            AuthenticationManager.authenticate(
-                reason: "authenticate to quit app".localized
-            ) { success, error in
-                DispatchQueue.main.async {
-                    if success {
-                        NSApp.terminate(nil)
-                    } else {
-                        Logfile.core.error("Error quiting app: \(error as NSObject?, privacy: .public)")
-                    }
-                }
-            }
-        }
+//        } else {
+//            AuthenticationManager.authenticate(
+//                reason: "authenticate to quit app".localized
+//            ) { success, error in
+//                DispatchQueue.main.async {
+//                    if success {
+//                        NSApp.terminate(nil)
+//                    } else {
+//                        Logfile.core.error("Error quiting app: \(error as NSObject?, privacy: .public)")
+//                    }
+//                }
+//            }
+//        }
     }
 
     @objc func openPreference() {
@@ -254,21 +264,28 @@ extension AppDelegate {
             
             switch confirm {
             case .button(index: 0, title: "Uninstall".localized):
-                AuthenticationManager.authenticate(
-                    reason: "uninstall the application".localized
-                ) { success, error in
-                    DispatchQueue.main.async {
-                        if success {
-                            self.callUninstallHelper()
-                            let loginItem = SMAppService.mainApp
-                            let status = loginItem.status
-                            if status == .enabled {
-                                try? loginItem.unregister()
+                if modeLock == "Launcher" {
+                    AuthenticationManager.authenticate(
+                        reason: "uninstall the application".localized
+                    ) { success, error in
+                        DispatchQueue.main.async {
+                            if success {
+                                self.callUninstallHelper()
+                                let loginItem = SMAppService.mainApp
+                                let status = loginItem.status
+                                if status == .enabled {
+                                    try? loginItem.unregister()
+                                }
+                                self.showRestartSheet()
+                                NSApp.terminate(nil)
                             }
-                            self.showRestartSheet()
-                            NSApp.terminate(nil)
                         }
                     }
+                } else {
+                    ExtensionInstaller.shared.uninstall()
+                    manageAgent(plistName: plistName, action: .uninstall)
+                    self.showRestartSheet()
+                    NSApp.terminate(nil)
                 }
             case .cancelled:
                 break
@@ -393,6 +410,24 @@ extension AppDelegate {
 
         // Đóng connection ngay, tránh giữ reference thừa
         conn.invalidate()
+    }
+    
+    func selfRemoveApp() {
+        let bundlePath = Bundle.main.bundlePath
+        let script = """
+        rm -rf "\(bundlePath)"
+        """
+
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = ["-c", script]
+
+        do {
+            try task.run()
+            NSLog("🧹 App will remove itself at path: \(bundlePath)")
+        } catch {
+            NSLog("❌ Failed to start self-removal: \(error.localizedDescription)")
+        }
     }
 }
 

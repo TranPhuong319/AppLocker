@@ -10,12 +10,6 @@
 	</array>
 	<key>com.apple.security.cs.disable-library-validation</key>
 	<true/>
-	<key>com.apple.security.get-task-allow</key>
-	<true/>
-	<key>com.apple.security.privileged-execution</key>
-	<true/>
-	<key>com.apple.security.privileged-helper</key>
-	<true/>
 	<key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
 	<array>
 		<string>endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc</string>

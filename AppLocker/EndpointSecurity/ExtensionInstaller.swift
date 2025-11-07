@@ -18,7 +18,9 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     let identifier = "com.TranPhuong319.AppLocker.ESExtension"
 
     func install() {
-        let req = OSSystemExtensionRequest.activationRequest(forExtensionWithIdentifier: identifier, queue: .main)
+        let req = OSSystemExtensionRequest.activationRequest(
+            forExtensionWithIdentifier: identifier,
+            queue: .main)
         req.delegate = self
         OSSystemExtensionManager.shared.submitRequest(req)
     }
