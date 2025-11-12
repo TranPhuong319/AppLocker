@@ -30,29 +30,47 @@ class LockES: LockManagerProtocol {
         
         for dir in appsDirs {
             let dirURL = URL(fileURLWithPath: dir)
-            guard let contents = try? fileManager.contentsOfDirectory(at: dirURL, includingPropertiesForKeys: nil) else {
-                continue
-            }
             
-            let apps = contents.compactMap { url -> InstalledApp? in
-                guard url.pathExtension == "app",
-                      let bundle = Bundle(url: url),
+            // 🧭 Duyệt toàn bộ cây thư mục con, bỏ qua file ẩn
+            guard let enumerator = fileManager.enumerator(
+                at: dirURL,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles, .skipsPackageDescendants] // tránh lồng sâu trong .app khác
+            ) else { continue }
+            
+            for case let fileURL as URL in enumerator {
+                // 🎯 Chỉ lấy app bundle
+                guard fileURL.pathExtension == "app",
+                      !fileURL.lastPathComponent.hasPrefix("."),
+                      let bundle = Bundle(url: fileURL),
                       let bundleID = bundle.bundleIdentifier else {
-                    return nil
+                    continue
                 }
                 
-                let name = url.deletingPathExtension().lastPathComponent
-                let icon = NSWorkspace.shared.icon(forFile: url.path)
+                // Dùng tên hiển thị theo Finder (localized)
+                let displayName = FileManager.default.displayName(atPath: fileURL.path)
+                    .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+                
+                // Lấy icon
+                let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                 icon.size = NSSize(width: 32, height: 32)
                 
-                return InstalledApp(name: name, bundleID: bundleID, icon: icon, path: url.path)
+                allApps.append(
+                    InstalledApp(
+                        name: displayName,
+                        bundleID: bundleID,
+                        icon: icon,
+                        path: fileURL.path
+                    )
+                )
             }
-            
-            allApps.append(contentsOf: apps)
         }
         
+        // 🔤 Sắp xếp A-Z theo tên hiển thị
         return allApps
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
+
 
     // MARK: - Persistence helper
     func save() {

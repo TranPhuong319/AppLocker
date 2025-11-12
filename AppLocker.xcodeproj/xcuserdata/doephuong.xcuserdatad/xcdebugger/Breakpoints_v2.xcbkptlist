@@ -30,8 +30,8 @@
             filePath = "AppLocker/Core/LockES.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "113"
-            endingLineNumber = "113"
+            startingLineNumber = "131"
+            endingLineNumber = "131"
             landmarkName = "publishToExtension()"
             landmarkType = "7">
          </BreakpointContent>
@@ -66,52 +66,6 @@
             endingLineNumber = "52"
             landmarkName = "lockedAppObjects"
             landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "4F599C85-46DE-4A5A-BC9A-5C1498DE2E1A"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "AppLocker/Core/AppState.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "53"
-            endingLineNumber = "53"
-            landmarkName = "lockedAppObjects"
-            landmarkType = "24">
-            <Locations>
-               <Location
-                  uuid = "4F599C85-46DE-4A5A-BC9A-5C1498DE2E1A - a57a5502518dc3ac"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.AppState.lockedAppObjects.getter : Swift.Array&lt;AppLocker.InstalledApp&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/AppState.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "53"
-                  endingLineNumber = "53">
-               </Location>
-               <Location
-                  uuid = "4F599C85-46DE-4A5A-BC9A-5C1498DE2E1A - b839a1cc7094f2b2"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (Swift.String) -&gt; Swift.Optional&lt;AppLocker.InstalledApp&gt; in AppLocker.AppState.lockedAppObjects.getter : Swift.Array&lt;AppLocker.InstalledApp&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/AppState.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "54"
-                  endingLineNumber = "54">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

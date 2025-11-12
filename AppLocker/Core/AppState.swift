@@ -51,18 +51,17 @@ class AppState: ObservableObject {
     
     var lockedAppObjects: [InstalledApp] {
         manager.lockedApps.keys.compactMap { path in
-            let info = manager.lockedApps[path]!
-            let icon = NSWorkspace.shared.icon(forFile: path) // icon theo path thật
-            if let name = info.name {
-                return InstalledApp(
-                    name: name,
-                    bundleID: "",
-                    icon: icon,
-                    path: path
-                )
-            } else {
-                return nil
-            }
+            guard (manager.lockedApps[path] != nil) else { return nil }
+            let icon = NSWorkspace.shared.icon(forFile: path)
+            let name = FileManager.default.displayName(atPath: path)
+                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+            
+            return InstalledApp(
+                name: name,
+                bundleID: "",
+                icon: icon,
+                path: path
+            )
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }

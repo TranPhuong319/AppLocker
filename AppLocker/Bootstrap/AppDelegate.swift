@@ -150,7 +150,7 @@ extension AppDelegate: NSMenuDelegate {
     private func buildNormalMenu(for menu: NSMenu) {
         menu.addItem(NSMenuItem(title: "Manage the application list".localized,
                                 action: #selector(openListApp),
-                                keyEquivalent: ","))
+                                keyEquivalent: "l"))
         
         #if DEBUG
         menu.addItem(.separator())

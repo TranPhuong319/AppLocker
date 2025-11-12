@@ -10,7 +10,7 @@ import Foundation
 
 struct LockedAppConfig: Codable, Hashable {
     let bundleID: String
-    let path: String       // key để lookup (giữ giống logic cũ)
+    let path: String
     var sha256: String
     let blockMode: String  // "Launcher" hoặc "ES"
     let execFile: String?  // tên file trong Contents/MacOS/
