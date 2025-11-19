@@ -246,8 +246,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "120"
-            endingLineNumber = "120"
+            startingLineNumber = "119"
+            endingLineNumber = "119"
             landmarkName = "unknown"
             landmarkType = "0">
          </BreakpointContent>
@@ -266,106 +266,6 @@
             endingLineNumber = "14"
             landmarkName = "LockES"
             landmarkType = "3">
-            <Locations>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - 19a024b96e035245"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "property wrapper backing initializer of AppLocker.LockES.allApps : Swift.Array&lt;AppLocker.InstalledApp&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - 69b1d32039af6540"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.allApps.getter : Swift.Array&lt;AppLocker.InstalledApp&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - 46baa428aab9e0d4"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.allApps.setter : Swift.Array&lt;AppLocker.InstalledApp&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - ca46724e1bf8f7e3"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.allApps.modify : Swift.Array&lt;AppLocker.InstalledApp&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - 32c4d333482a7e86"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.$allApps.getter : Combine.Published&lt;Swift.Array&lt;AppLocker.InstalledApp&gt;&gt;.Publisher"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - 779895861cac2190"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.$allApps.setter : Combine.Published&lt;Swift.Array&lt;AppLocker.InstalledApp&gt;&gt;.Publisher"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/%3Cstdin%3E"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "04B194C3-AE29-4685-AADB-20822384E9D9 - 5125fc33446ca561"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.$allApps.modify : Combine.Published&lt;Swift.Array&lt;AppLocker.InstalledApp&gt;&gt;.Publisher"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -382,106 +282,6 @@
             endingLineNumber = "13"
             landmarkName = "LockES"
             landmarkType = "3">
-            <Locations>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - 8b9177b4d83c45e8"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "property wrapper backing initializer of AppLocker.LockES.lockedApps : Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - 6e1468cfc4a55fd1"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.lockedApps.getter : Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - b90c0a5ca52243e5"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.lockedApps.setter : Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - b12d7b0276eb82d4"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.lockedApps.modify : Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - f52b7d0c5d3dc77b"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.$lockedApps.getter : Combine.Published&lt;Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;&gt;.Publisher"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - b275a7b0974cf5"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.$lockedApps.setter : Combine.Published&lt;Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;&gt;.Publisher"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/%3Cstdin%3E"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "BE49DEA2-4012-4848-B7B0-FB5723618F8D - eb6b2f5d1bb7f17b"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "AppLocker.LockES.$lockedApps.modify : Combine.Published&lt;Swift.Dictionary&lt;Swift.String, AppLocker.LockedAppConfig&gt;&gt;.Publisher"
-                  moduleName = "AppLocker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Volumes/Xcode%20Project/AppLocker/Source%20Code/AppLocker/Core/LockES.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -513,6 +313,22 @@
             startingLineNumber = "54"
             endingLineNumber = "54"
             landmarkName = "manageAgent(plistName:action:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E315883B-2068-422A-ADC5-2D2F880B8E79"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "AppLocker/Bootstrap/AppDelegate.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "503"
+            endingLineNumber = "503"
+            landmarkName = "restartApp(mode:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

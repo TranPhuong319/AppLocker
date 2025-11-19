@@ -24,7 +24,7 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         let contentView = WelcomeView()
         let hostingView = NSHostingView(rootView: contentView)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 350, height: 450),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -32,13 +32,13 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
 
         window.contentView = hostingView
         window.title = "Welcome to AppLocker".localized
-        [.miniaturizeButton, .zoomButton, .closeButton].forEach {
+        [.miniaturizeButton, .zoomButton].forEach {
             window.standardWindowButton($0)?.isHidden = true
         }
         let controller = WelcomeWindowController(window: window)
         window.delegate = controller
         shared = controller
-
+        
         // Bật app trước khi show
         NSApp.activate(ignoringOtherApps: true)
 
@@ -48,5 +48,8 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         DispatchQueue.main.async {
             window.center()
         }
+    }
+    func windowWillClose(_ notification: Notification) {
+        NSApp.terminate(nil)
     }
 }

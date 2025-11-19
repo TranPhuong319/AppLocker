@@ -94,7 +94,6 @@ extension AppDelegate {
         if config == "Launcher" {
             HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
         } else {
-            manageAgent(plistName: plistName, action: .install)
             // Đăng ký callback
             ExtensionInstaller.shared.onInstalled = {
                 print("[App] Starting XPC server after extension install")
@@ -501,13 +500,15 @@ extension AppDelegate {
 }
 
 extension AppDelegate {
-    func restartApp() {
+    func restartApp(mode: String) {
         let path = Bundle.main.bundlePath
         let task = Process()
         task.launchPath = "/usr/bin/open"
         task.arguments = [path]
         try? task.run()
-
+        if modeLock != "Launcher" {
+            manageAgent(plistName: plistName, action: .install)
+        }
         // Thoát app hiện tại
         NSApp.terminate(nil)
     }

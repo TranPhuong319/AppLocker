@@ -8,92 +8,114 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @AppStorage("selectedMode") private var selectedMode: String? // Lưu user chọn
+    @AppStorage("selectedMode") private var selectedMode: String = ""
     @State private var shouldRestart = false
     @Environment(\.presentationMode) var presentationMode
+    var copyright: String {
+        Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "Không có thông tin"
+    }
 
     var body: some View {
-        VStack(spacing: 15) {
+        VStack(spacing: 20) {
             if shouldRestart {
                 Color.clear
                     .onAppear {
-                        AppDelegate.shared.restartApp()
+                        AppDelegate.shared.restartApp(mode: selectedMode)
                     }
             } else {
-                VStack(spacing: 10) {
-                    Text("Welcome to AppLocker")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                    
-                    Text("Please choose your preferred lock method:")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.secondary)
+                Spacer().frame(height: 20)
+                
+                // Icon lớn trên đầu
+                if let icon = NSApplication.shared.applicationIconImage {
+                        Image(nsImage: icon)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100) // chỉnh size icon cho vừa
+                } else {
+                    Text("No Icon")
                 }
                 
-                HStack(spacing: 40) {
-                    LockModeButton(title: "Launcher", iconName: "lock.fill") {
-                        selectedMode = "Launcher"
-                        shouldRestart = true
-                    }
-
-                    LockModeButton(title: "ES (Endpoint Security)", iconName: "shield.fill") {
+                // Title
+                Text("Welcome to AppLocker")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                // Description
+                Text("Please choose your preferred lock method:")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                
+                // Hai label có icon nhỏ
+                VStack(spacing: 20) {
+                    LabelButtonView(label: "ES (EndpointSecurity)",
+                                    symbol: "lock.shield.fill") {
                         selectedMode = "ES"
                         shouldRestart = true
                     }
+                    
+                    LabelButtonView(label: "Launcher",
+                                    symbol: "lock.rectangle.fill") {
+                        selectedMode = "Launcher"
+                        shouldRestart = true
+                    }
                 }
+                .padding(.horizontal, 20)
                 
-                Spacer()
+                Spacer().frame(height: 1)
                 
-                Button(action: {
-                    // Hủy màn hình welcome
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("Cancel")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.red)
-                        .padding()
-                        .frame(width: 120)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.red, lineWidth: 2)
-                        )
-                }
+                // Footer text
+                Text(copyright)
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .padding(.bottom, 30)
             }
         }
-        .padding(50)
-        .frame(width: 550, height: 350)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(NSColor.windowBackgroundColor))
-                .shadow(radius: 10)
-        )
+        .frame(width: 350, height: 450)
+        .background(Color(NSColor
+            .windowBackgroundColor))
+        .cornerRadius(10)
+        .shadow(radius: 5)
     }
 }
 
-// MARK: - Button Reusable
-struct LockModeButton: View {
-    let title: String
-    let iconName: String
+// Component cho 1 label có icon nhỏ + text
+struct LabelButtonView: View {
+    let label: String
+    let symbol: String
     let action: () -> Void
+    
+    @State private var isHovering = false
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 10) {
-                Image(systemName: iconName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 40, height: 40)
-                    .foregroundColor(.accentColor)
-                Text(title)
-                    .font(.system(size: 16, weight: .medium))
-                    .multilineTextAlignment(.center)
+            HStack(spacing: 12) {
+                Image(systemName: symbol)
+                    .symbolRenderingMode(.hierarchical)
+                    .font(.system(size: 24))
+                Text(label)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                
+                Spacer()
             }
             .padding()
-            .frame(width: 150, height: 150)
-            .background(.ultraThinMaterial)
-            .cornerRadius(16)
-            .shadow(radius: 5)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(NSColor.windowBackgroundColor))
+                    .brightness(isHovering ? 0.1 : 0)  // Tăng độ sáng 10% khi hover
+            )
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+            .animation(.easeInOut(duration: 0.2), value: isHovering)
         }
         .buttonStyle(PlainButtonStyle())
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
 }
 
