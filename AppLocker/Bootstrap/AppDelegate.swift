@@ -30,10 +30,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     let helperIdentifier = "com.TranPhuong319.AppLocker.Helper"
     var pendingUpdate: SUAppcastItem?
     let notificationIndentifiers = "AppLockerUpdateNotification"
+    var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Logfile.core.debug("Loading Application")
+        Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
         
+        Logfile.core.info("Setting up hotkey manager...")
+        hotkey = HotKeyManager()
+        
+        Logfile.core.info("Checking kext signing status...")
         if isKextSigningDisabled() {
             if modeLock == nil {
                 WelcomeWindowController.show()
@@ -109,9 +114,12 @@ extension AppDelegate {
                 }
             }
             
+            Logfile.core.info("Installing Endpoint Security extension...")
             // Chạy install
             ExtensionInstaller.shared.install()
         }
+        
+        Logfile.core.info("Setting up menu bar...")
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
@@ -148,9 +156,11 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func buildNormalMenu(for menu: NSMenu) {
-        menu.addItem(NSMenuItem(title: "Manage the application list".localized,
-                                action: #selector(openListApp),
-                                keyEquivalent: "l"))
+        let manageItem = NSMenuItem(title: "Manage the application list".localized,
+                                    action: #selector(openListApp),
+                                    keyEquivalent: "l")
+        manageItem.keyEquivalentModifierMask = [.command,.shift]
+        menu.addItem(manageItem)
         
         #if DEBUG
         menu.addItem(.separator())
@@ -163,7 +173,7 @@ extension AppDelegate: NSMenuDelegate {
     private func buildOptionMenu(for menu: NSMenu) {
         menu.addItem(NSMenuItem(title: "Settings".localized,
                                 action: #selector(openPreference),
-                                keyEquivalent: ""))
+                                keyEquivalent: ","))
         menu.addItem(.separator())
 
         if modeLock == "Launcher" {

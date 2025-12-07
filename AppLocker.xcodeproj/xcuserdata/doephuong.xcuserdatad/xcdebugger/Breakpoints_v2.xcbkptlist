@@ -7,22 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "3FF9925A-386F-41F7-8492-B09F3ADFDE10"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "AppLocker/Bootstrap/AppDelegate.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "35"
-            endingLineNumber = "35"
-            landmarkName = "applicationDidFinishLaunching(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "0FDC9AF6-670E-4D7D-B385-CED964FA7241"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -246,8 +230,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "120"
-            endingLineNumber = "120"
+            startingLineNumber = "128"
+            endingLineNumber = "128"
             landmarkName = "unknown"
             landmarkType = "0">
          </BreakpointContent>
@@ -294,8 +278,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "52"
-            endingLineNumber = "52"
+            startingLineNumber = "57"
+            endingLineNumber = "57"
             landmarkName = "manageAgent(plistName:action:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -310,8 +294,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
+            startingLineNumber = "59"
+            endingLineNumber = "59"
             landmarkName = "manageAgent(plistName:action:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -326,8 +310,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "504"
-            endingLineNumber = "504"
+            startingLineNumber = "514"
+            endingLineNumber = "514"
             landmarkName = "restartApp(mode:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -374,8 +358,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "42"
-            endingLineNumber = "42"
+            startingLineNumber = "47"
+            endingLineNumber = "47"
             landmarkName = "applicationDidFinishLaunching(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -390,8 +374,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "96"
-            endingLineNumber = "96"
+            startingLineNumber = "101"
+            endingLineNumber = "101"
             landmarkName = "launchConfig(config:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -406,8 +390,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "100"
-            endingLineNumber = "100"
+            startingLineNumber = "105"
+            endingLineNumber = "105"
             landmarkName = "launchConfig(config:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -502,8 +486,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "38"
-            endingLineNumber = "38"
+            startingLineNumber = "43"
+            endingLineNumber = "43"
             landmarkName = "applicationDidFinishLaunching(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -582,8 +566,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "98"
-            endingLineNumber = "98"
+            startingLineNumber = "103"
+            endingLineNumber = "103"
             landmarkName = "launchConfig(config:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -598,8 +582,8 @@
             filePath = "AppLocker/Bootstrap/AppDelegate.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "113"
-            endingLineNumber = "113"
+            startingLineNumber = "119"
+            endingLineNumber = "119"
             landmarkName = "launchConfig(config:)"
             landmarkType = "7">
          </BreakpointContent>

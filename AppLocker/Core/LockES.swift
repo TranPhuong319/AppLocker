@@ -81,8 +81,8 @@ class LockES: LockManagerProtocol {
     private func computeSHA(for executablePath: String) -> String {
         let url = URL(fileURLWithPath: executablePath)
         guard let data = try? Data(contentsOf: url) else { return "" }
-        let h = SHA256.hash(data: data)
-        return h.map { String(format: "%02x", $0) }.joined()
+        let hash = SHA256.hash(data: data)
+        return hash.map { String(format: "%02x", $0) }.joined()
     }
 
     // MARK: - Toggle lock (ES mode: chỉ ghi config và publish)
