@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
-
 import Foundation
 import SystemExtensions
 
@@ -40,7 +39,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         
         if result == .completed {
             // Delay 1s rồi gọi callback
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            DispatchQueue.main.async() {
                 self.onInstalled?()
             }
         }

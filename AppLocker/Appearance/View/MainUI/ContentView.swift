@@ -94,11 +94,11 @@ struct ContentView: View {
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 8)
                                 .frame(maxWidth: 420)                       // width item
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)     // bo ngoài
-                                        .fill(.ultraThinMaterial)            // blur
-                                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
-                                )
+//                                .background(
+//                                    RoundedRectangle(cornerRadius: 10)     // bo ngoài
+//                                        .fill(.ultraThinMaterial)            // blur
+//                                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
+//                                )
                                 .frame(maxWidth: .infinity)                // căn giữa item trong ScrollView
                                 .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
                             }
@@ -177,11 +177,11 @@ struct ContentView: View {
                                 }
                                 .padding(.vertical, 6)
                                 .padding(.horizontal, 10)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(.regularMaterial)      // blur
-                                        .shadow(color: .black.opacity(0.06), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
-                                )
+//                                .background(
+//                                    RoundedRectangle(cornerRadius: 10)
+//                                        .fill(.regularMaterial)      // blur
+//                                        .shadow(color: .black.opacity(0.06), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
+//                                )
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     guard !appState.pendingLocks.contains(app.path) else { return }
@@ -291,11 +291,11 @@ struct ContentView: View {
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(.regularMaterial)      // blur
-                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
-                            )
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 10)
+//                                    .fill(.regularMaterial)      // blur
+//                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
+//                            )
                             .cornerRadius(10)
                         }
                     }

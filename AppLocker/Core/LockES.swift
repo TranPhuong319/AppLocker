@@ -15,11 +15,11 @@ class LockES: LockManagerProtocol {
     private var periodicTimer: Timer?
 
     init() {
-        ExtensionInstaller.shared.onInstalled = {
+//        ExtensionInstaller.shared.onInstalled = {
             self.lockedApps = ConfigStore.shared.load()
             self.allApps = self.getInstalledApps()
             self.startPeriodicRescan() // 🧠 Thêm dòng này
-        }
+//        }
     }
 
     // MARK: - Installed apps discovery (unchanged)

@@ -107,11 +107,11 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
 //        }
 
         ESManager.sharedInstanceForCallbacks = self
-
-        candidateConfigURLs.forEach { url in
-            reloadConfigIfAvailable(from: url)
-            startWatchingConfig(at: url)
-        }
+//
+//        candidateConfigURLs.forEach { url in
+//            reloadConfigIfAvailable(from: url)
+//            startWatchingConfig(at: url)
+//        }
 
         scheduleTempCleanup()
     }

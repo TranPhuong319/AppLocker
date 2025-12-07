@@ -26,17 +26,17 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     
     // Extension -> App notification when exec attempted and extension denied
     func notifyBlockedExec(name: String, path: String, sha: String) {
-        Logfile.core.log("notifyBlockedExec name=\(name) path=\(path) sha=\(sha). Authorization…")
+        Logfile.core.log("notifyBlockedExec name=\(name, privacy: .public) path=\(path, privacy: .public) sha=\(sha, privacy: .public). Authorization…")
         
         AuthenticationManager.authenticate(
-            reason: "Verify that you are opening the %@ app".localized(with: name)
+            reason: "verify that you are opening the %@ app".localized(with: name)
         ) { success, error in
             DispatchQueue.main.async {
                 if success {
                     ESXPCClient.shared.allowSHAOnce(sha) { accepted in
                         DispatchQueue.main.async {
                             if accepted {
-                                self.logger.log("✅ ES accepted allowSHAOnce for \(sha.prefix(8))")
+                                self.logger.log("✅ ES accepted allowSHAOnce for \(sha.prefix(8), privacy: .public)")
                                 // Relaunch app bundle sau khi ES confirm
                                 let appBundleURL = URL(fileURLWithPath: path)
                                     .deletingLastPathComponent()  // MacOS
@@ -44,7 +44,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
                                     .deletingLastPathComponent()  // App bundle root
                                 NSWorkspace.shared.open(appBundleURL)
                             } else {
-                                self.logger.error("❌ ES rejected allowSHAOnce for \(sha.prefix(8))")
+                                self.logger.error("❌ ES rejected allowSHAOnce for \(sha.prefix(8), privacy: .public)")
                                 self.authError = "ES extension did not approve"
                             }
                         }

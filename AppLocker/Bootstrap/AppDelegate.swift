@@ -96,20 +96,21 @@ extension AppDelegate {
         } else {
             // Đăng ký callback
             ExtensionInstaller.shared.onInstalled = {
-                print("[App] Starting XPC server after extension install")
+                Logfile.core.info("[App] Starting XPC server after extension install")
                 XPCServer.shared.start()
+                Logfile.core.info("Starting menu bar and Notification")
+                self.setupMenuBar()
+                AppUpdater.shared.setBridgeDelegate(self)
+                AppUpdater.shared.startTestAutoCheck()
+                
+                UNUserNotificationCenter.current().delegate = self
+                UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
+                    if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
+                }
             }
             
             // Chạy install
             ExtensionInstaller.shared.install()
-        }
-        setupMenuBar()
-        AppUpdater.shared.setBridgeDelegate(self)
-        AppUpdater.shared.startTestAutoCheck()
-        
-        UNUserNotificationCenter.current().delegate = self
-        UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
-            if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
         }
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
@@ -255,7 +256,7 @@ extension AppDelegate {
         
         NSApp.activate(ignoringOtherApps: true)
 
-        if manager.lockedApps.isEmpty {
+        if manager.lockedApps.isEmpty || modeLock == "ES" {
             let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
                                     message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
                                     style: .critical,

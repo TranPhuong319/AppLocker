@@ -309,6 +309,9 @@
         }
       }
     },
+    "No Icon" : {
+
+    },
     "Others…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -517,7 +520,7 @@
         }
       }
     },
-    "Verify that you are opening the %@ app" : {
+    "verify that you are opening the %@ app" : {
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
