@@ -17,7 +17,7 @@ final class ESXPCClient {
     private var retryCount = 0
 
     // pending queue if updateBlockedApps called before connection ready
-    private var pendingBlockedApps: [[String: String]]?
+    private var lastKnownBlockedApps: [[String: String]] = []
 
     private init() {
         // tiny delay to avoid race but keep it short
@@ -57,10 +57,10 @@ final class ESXPCClient {
         Logfile.core.log("✅ [ESXPCClient] Connected & ready")
 
         // Flush pending apps trên queue ưu tiên cao
-        if let pending = pendingBlockedApps {
-            pendingBlockedApps = nil
+        if !lastKnownBlockedApps.isEmpty {
+            let copy = lastKnownBlockedApps
             xpcQueue.async { [weak self] in
-                self?.updateBlockedApps(pending)
+                self?.updateBlockedApps(copy)
             }
         }
     }
@@ -93,7 +93,7 @@ final class ESXPCClient {
     func updateBlockedApps(_ apps: [[String: String]]) {
         guard let conn = connection else {
             Logfile.core.log("⏳ [ESXPCClient] Connection not ready, queueing updateBlockedApps")
-            pendingBlockedApps = apps
+            lastKnownBlockedApps = apps
             return
         }
 

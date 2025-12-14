@@ -29,6 +29,8 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
+        
+        window.center()
 
         window.contentView = hostingView
         window.title = "Welcome to AppLocker".localized
@@ -44,10 +46,6 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
 
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
-
-        DispatchQueue.main.async {
-            window.center()
-        }
     }
     func windowWillClose(_ notification: Notification) {
         NSApp.terminate(nil)

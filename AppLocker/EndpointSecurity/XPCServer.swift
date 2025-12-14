@@ -12,8 +12,6 @@ import AppKit
 
 final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     static let shared = XPCServer()
-    private let logger = Logger(subsystem: "com.TranPhuong319.AppLocker", category: "XPCServer")
-
     @Published var authError: String? = nil
     
     func start() {
@@ -36,7 +34,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
                     ESXPCClient.shared.allowSHAOnce(sha) { accepted in
                         DispatchQueue.main.async {
                             if accepted {
-                                self.logger.log("✅ ES accepted allowSHAOnce for \(sha.prefix(8), privacy: .public)")
+                                Logfile.core.info("✅ ES accepted allowSHAOnce for \(sha.prefix(8), privacy: .public)")
                                 // Relaunch app bundle sau khi ES confirm
                                 let appBundleURL = URL(fileURLWithPath: path)
                                     .deletingLastPathComponent()  // MacOS
@@ -44,7 +42,9 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
                                     .deletingLastPathComponent()  // App bundle root
                                 NSWorkspace.shared.open(appBundleURL)
                             } else {
-                                self.logger.error("❌ ES rejected allowSHAOnce for \(sha.prefix(8), privacy: .public)")
+                                Logfile.core.error(
+                                    "❌ ES rejected allowSHAOnce for \(sha.prefix(8), privacy: .public)"
+                                )
                                 self.authError = "ES extension did not approve"
                             }
                         }

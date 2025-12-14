@@ -57,6 +57,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>E050B43F2E86FB33003AEA49</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>E07075952E38BA97001C7950</key>
 		<dict>
 			<key>primary</key>

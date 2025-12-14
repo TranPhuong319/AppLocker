@@ -29,23 +29,20 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
 
+        window.center()
+
         window.contentView = hostingView
         window.title = "Settings".localized
         window.standardWindowButton(.zoomButton)?.isHidden = true
-        
+
         let controller = SettingsWindowController(window: window)
         window.delegate = controller
         shared = controller
 
-        // Bật app trước khi show
         NSApp.activate(ignoringOtherApps: true)
 
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
-
-        DispatchQueue.main.async {
-            window.center()
-        }
     }
 
     // MARK: - NSWindowDelegate

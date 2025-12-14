@@ -35,7 +35,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     // MARK: - OSSystemExtensionRequestDelegate
     
     func request(_ request: OSSystemExtensionRequest, didFinishWithResult result: OSSystemExtensionRequest.Result) {
-        print("[Installer] ✅ finished with result: \(result.rawValue)")
+        Logfile.core.info("[Installer] ✅ finished with result: \(result.rawValue)")
         
         if result == .completed {
             // Delay 1s rồi gọi callback
@@ -46,22 +46,22 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
     
     func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
-        print("[Installer] ❌ failed: \(error.localizedDescription)")
+        Logfile.core.error("[Installer] ❌ failed: \(error.localizedDescription)")
     }
     
     func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
-        print("[Installer] ⚠️ needs user approval in System Settings → Privacy & Security")
+        Logfile.core.warning("[Installer] ⚠️ needs user approval in System Settings → Privacy & Security")
     }
     
     func request(_ request: OSSystemExtensionRequest, didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
-        print("[Installer] ℹ️ finished early with result: \(result.rawValue)")
+        Logfile.core.info("[Installer] ℹ️ finished early with result: \(result.rawValue)")
     }
     
     func request(_ request: OSSystemExtensionRequest,
                  actionForReplacingExtension existing: OSSystemExtensionProperties,
                  withExtension ext: OSSystemExtensionProperties
     ) -> OSSystemExtensionRequest.ReplacementAction {
-        print("[Installer] 🔄 Replacing extension \(existing.bundleIdentifier) v\(existing.bundleVersion) with v\(ext.bundleVersion)")
+        Logfile.core.info("[Installer] 🔄 Replacing extension \(existing.bundleIdentifier) v\(existing.bundleVersion) with v\(ext.bundleVersion)")
         return .replace
     }
 }

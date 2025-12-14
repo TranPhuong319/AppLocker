@@ -15,11 +15,11 @@ class LockES: LockManagerProtocol {
     private var periodicTimer: Timer?
 
     init() {
-//        ExtensionInstaller.shared.onInstalled = {
-            self.lockedApps = ConfigStore.shared.load()
-            self.allApps = self.getInstalledApps()
-            self.startPeriodicRescan() // 🧠 Thêm dòng này
-//        }
+        self.lockedApps = ConfigStore.shared.load()
+        self.allApps = self.getInstalledApps()
+        Logfile.core.info("Start scanning SHA...")
+        self.rescanLockedApps()
+        self.startPeriodicRescan()
     }
 
     // MARK: - Installed apps discovery (unchanged)
@@ -159,7 +159,7 @@ extension LockES {
             self.rescanLockedApps()
         }
         RunLoop.current.add(periodicTimer!, forMode: .common)
-        NSLog("⏱️ Bắt đầu quét SHA định kỳ mỗi \(Int(interval)) giây")
+        Logfile.core.info("⏱️ Start periodic SHA scanning every \(Int(interval)) seconds")
     }
 
     func stopPeriodicRescan() {
@@ -168,7 +168,7 @@ extension LockES {
     }
 
     @objc func rescanLockedApps() {
-        NSLog("🔍 Đang quét lại SHA các app đã khóa...")
+        Logfile.core.info("🔍 Re-scanning the SHA of locked apps...")
         var changed = false
         var updatedMap = lockedApps
 
@@ -183,7 +183,7 @@ extension LockES {
             if newSHA != cfg.sha256 {
                 let name = cfg.name ?? "Unknown"
                 let oldHash = cfg.sha256
-                NSLog("⚠️ SHA thay đổi cho \(name): \(oldHash.prefix(8)) → \(newSHA.prefix(8))")
+                Logfile.core.warning("⚠️ SHA changes for \(name): \(oldHash.prefix(8)) → \(newSHA.prefix(8))")
                 let updatedCfg = LockedAppConfig(
                     bundleID: cfg.bundleID,
                     path: cfg.path,
@@ -201,9 +201,9 @@ extension LockES {
             lockedApps = updatedMap
             save()
             publishToExtension()
-            NSLog("✅ Đã cập nhật SHA mới & gửi lại ES")
+            Logfile.core.info("✅ New SHA updated")
         } else {
-            NSLog("✅ Không có thay đổi SHA nào")
+            Logfile.core.info("✅ No SHA changes")
         }
     }
 }

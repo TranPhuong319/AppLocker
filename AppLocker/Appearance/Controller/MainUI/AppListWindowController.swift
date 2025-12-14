@@ -61,6 +61,8 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
         
+        window.center()
+        
         [.miniaturizeButton, .zoomButton].forEach {
             window.standardWindowButton($0)?.isHidden = true
         }
@@ -73,7 +75,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         window.title = "Manage the application list".localized
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.center()
         
         // Show window
         let controller = AppListWindowController(window: window)

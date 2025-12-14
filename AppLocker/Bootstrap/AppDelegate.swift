@@ -17,7 +17,7 @@ import Sparkle
 enum AgentAction {
     case install
     case uninstall
-    case restart
+    case checkAndInstallifNeed
 }
 
 var modeLock: String? = UserDefaults.standard.string(forKey: "selectedMode")
@@ -74,15 +74,11 @@ extension AppDelegate {
                     Logfile.core.info("ℹ️ Agent not registered, skipping uninstall")
                 }
                 
-            case .restart:
-                if agent.status == .enabled {
-                    try agent.unregister()
-                    Logfile.core.info("🔄 Agent unregistered for restart")
-                    try agent.register()
-                    Logfile.core.info("✅ Agent restarted successfully")
-                } else {
+            case .checkAndInstallifNeed:
+                if agent.status != .enabled {
                     Logfile.core.info("⚠️ Agent not active, registering new one")
                     try agent.register()
+                    NSApp.terminate(nil)
                 }
             }
             
@@ -112,6 +108,8 @@ extension AppDelegate {
                 UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
                     if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
                 }
+                Logfile.core.info("Starting User state")
+                SessionObserver.shared.start()
             }
             
             Logfile.core.info("Installing Endpoint Security extension...")

@@ -14,8 +14,8 @@ struct LockedAppInfo: Codable {
     let execFile: String
 
     enum CodingKeys: String, CodingKey {
-        case name = "Name"
-        case execFile = "ExecFile"
+        case name = "name"
+        case execFile = "execFile"
     }
 }
 
