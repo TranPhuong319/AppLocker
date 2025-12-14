@@ -254,24 +254,18 @@ extension AppDelegate {
 
     @objc func uninstall() {
         Logfile.core.info("Uninstall Clicked")
-        var manager: any LockManagerProtocol
-        
-        if modeLock == "Launcher" {
-            manager = LockLauncher()
-        } else {
-            manager = LockES()
-        }
-        
+        let manager = AppState.shared.manager
         NSApp.activate(ignoringOtherApps: true)
 
         if manager.lockedApps.isEmpty || modeLock == "ES" {
             let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
                                     message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
                                     style: .critical,
-                                    buttons: ["Uninstall".localized, "Cancel".localized])
+                                    buttons: ["Cancel".localized, "Uninstall".localized],
+                                    cancelIndex: 0)
             
             switch confirm {
-            case .button(index: 0, title: "Uninstall".localized):
+            case .button(index: 1, title: "Uninstall".localized):
                 if modeLock == "Launcher" {
                     AuthenticationManager.authenticate(
                         reason: "uninstall the application".localized
@@ -290,10 +284,12 @@ extension AppDelegate {
                         }
                     }
                 } else {
+                    ExtensionInstaller.shared.onUninstalled = {
+                        self.manageAgent(plistName: plistName, action: .uninstall)
+                        self.showRestartSheet()
+                        NSApp.terminate(nil)
+                    }
                     ExtensionInstaller.shared.uninstall()
-                    manageAgent(plistName: plistName, action: .uninstall)
-                    self.showRestartSheet()
-                    NSApp.terminate(nil)
                 }
             case .cancelled:
                 break

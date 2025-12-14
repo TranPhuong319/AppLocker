@@ -26,34 +26,43 @@ final class AlertShow {
         title: String,
         message: String,
         style: NSAlert.Style,
-        buttons: [String]
+        buttons: [String],
+        cancelIndex: Int? = nil
     ) -> AlertResult {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
         alert.alertStyle = style
 
-        // Chỉ add tối đa 3 nút (theo giới hạn NSAlert)
-        buttons.prefix(3).forEach { alert.addButton(withTitle: $0) }
+        // NSAlert chỉ hỗ trợ tối đa 3 nút
+        let displayedButtons = Array(buttons.prefix(3))
+        displayedButtons.forEach { alert.addButton(withTitle: $0) }
+
+        // Xác định vị trí cancel
+        let effectiveCancelIndex: Int? = {
+            if let cancelIndex, cancelIndex >= 0, cancelIndex < displayedButtons.count {
+                return cancelIndex
+            }
+            return displayedButtons.isEmpty ? nil : displayedButtons.count - 1
+        }()
 
         NSApplication.shared.activate(ignoringOtherApps: true)
         let response = alert.runModal()
 
-        // Map response -> index
         let index: Int
         switch response {
         case .alertFirstButtonReturn:  index = 0
         case .alertSecondButtonReturn: index = 1
         case .alertThirdButtonReturn:  index = 2
-        default: return .cancelled // user đóng bằng nút X, Esc, Cmd+.
-        }
-
-        // Luôn coi nút cuối cùng là Cancel
-        if index == buttons.count - 1 {
+        default:
             return .cancelled
         }
 
-        return .button(index: index, title: buttons[index])
+        if index == effectiveCancelIndex {
+            return .cancelled
+        }
+
+        return .button(index: index, title: displayedButtons[index])
     }
 
     /// Hiển thị Alert đơn giản chỉ có 1 nút OK
