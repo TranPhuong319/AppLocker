@@ -78,11 +78,23 @@ class LockES: LockManagerProtocol {
     }
 
     // MARK: - SHA helper
-    private func computeSHA(for executablePath: String) -> String {
-        let url = URL(fileURLWithPath: executablePath)
-        guard let data = try? Data(contentsOf: url) else { return "" }
-        let hash = SHA256.hash(data: data)
-        return hash.map { String(format: "%02x", $0) }.joined()
+    private func computeSHA(for executablePath: String) -> String? {
+        let fh: FileHandle
+        do {
+            fh = try FileHandle(forReadingFrom: URL(fileURLWithPath: executablePath))
+        } catch {
+            return nil
+        }
+        defer { try? fh.close() }
+        
+        var hasher = SHA256()
+        while true {
+            let chunkData = fh.readData(ofLength: 64 * 1024) // 64KB
+            if chunkData.isEmpty { break }
+            hasher.update(data: chunkData)
+        }
+        let digest = hasher.finalize()
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 
     // MARK: - Toggle lock (ES mode: chỉ ghi config và publish)
@@ -104,7 +116,10 @@ class LockES: LockManagerProtocol {
 
                 let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
                 let execPath = "\(path)/Contents/MacOS/\(execName)"
-                let sha = computeSHA(for: execPath)
+                guard let sha = computeSHA(for: execPath) else {
+                    NSLog("❌ Cannot compute SHA for \(execPath)")
+                    continue
+                }
                 let bundleID = bundle.bundleIdentifier ?? ""
 
                 let mode = modeLock ?? "ES"
@@ -149,7 +164,7 @@ class LockES: LockManagerProtocol {
     }
 }
 
-// MARK: - Auto SHA Rescan (định kỳ)
+// MARK: - Auto SHA Rescan
 extension LockES {
     func startPeriodicRescan(interval: TimeInterval = 300) {
         // chỉ chạy 1 timer duy nhất
@@ -159,7 +174,7 @@ extension LockES {
             self.rescanLockedApps()
         }
         RunLoop.current.add(periodicTimer!, forMode: .common)
-        Logfile.core.info("⏱️ Start periodic SHA scanning every \(Int(interval)) seconds")
+        Logfile.core.info("Start periodic SHA scanning every\(Int(interval))seconds")
     }
 
     func stopPeriodicRescan() {
@@ -168,7 +183,7 @@ extension LockES {
     }
 
     @objc func rescanLockedApps() {
-        Logfile.core.info("🔍 Re-scanning the SHA of locked apps...")
+        Logfile.core.info("Re-scanning the SHA of locked apps...")
         var changed = false
         var updatedMap = lockedApps
 
@@ -177,13 +192,14 @@ extension LockES {
             let execPath = "\(path)/Contents/MacOS/\(exeFile)"
             guard FileManager.default.fileExists(atPath: execPath) else { continue }
             
-            let newSHA = computeSHA(for: execPath)
-            if newSHA.isEmpty { continue }
+            guard let newSHA = computeSHA(for: execPath), !newSHA.isEmpty else {
+                continue
+            }
 
-            if newSHA != cfg.sha256 {
+            if   cfg.sha256 != newSHA {
                 let name = cfg.name ?? "Unknown"
                 let oldHash = cfg.sha256
-                Logfile.core.warning("⚠️ SHA changes for \(name): \(oldHash.prefix(8)) → \(newSHA.prefix(8))")
+                Logfile.core.warning("SHA changes for \(name): \(oldHash.prefix(8)) → \(newSHA.prefix(8))")
                 let updatedCfg = LockedAppConfig(
                     bundleID: cfg.bundleID,
                     path: cfg.path,
@@ -201,9 +217,9 @@ extension LockES {
             lockedApps = updatedMap
             save()
             publishToExtension()
-            Logfile.core.info("✅ New SHA updated")
+            Logfile.core.info("New SHA updated")
         } else {
-            Logfile.core.info("✅ No SHA changes")
+            Logfile.core.info("No SHA changes")
         }
     }
 }

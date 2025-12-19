@@ -16,7 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        Logfile.launcher.info("📂 AppDelegate got files: \(urls.map { $0.path }, privacy: .public)")
+        Logfile.launcher.info("AppDelegate got files: \(urls.map { $0.path }, privacy: .public)")
 
         let lockedApps = Launcher.shared.loadLockedAppInfos()
 
@@ -39,20 +39,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let config = NSWorkspace.OpenConfiguration()
 
                 if isRunning {
-                    Logfile.launcher.info("🔁 Forwarding files to running app: \(urls.map(\.path))")
+                    Logfile.launcher.info("Forwarding files to running app: \(urls.map(\.path))")
                     NSWorkspace.shared.open(urls, withApplicationAt: realAppURL, configuration: config) { _, err in
                         if let err = err {
-                            Logfile.launcher.error("❌ Can't forward files: \(err.localizedDescription)")
+                            Logfile.launcher.error("Can't forward files: \(err.localizedDescription)")
                         } else {
-                            Logfile.launcher.info("✅ Files forwarded successfully")
+                            Logfile.launcher.info("Files forwarded successfully")
                         }
                     }
                 } else {
-                    Logfile.launcher.warning("⚠️ App not running, fallback to normal launch")
+                    Logfile.launcher.warning("App not running, fallback to normal launch")
                     Launcher.shared.pendingOpenFileURLs.append(contentsOf: urls)
                 }
 
-                break // ✅ xử lý xong app match thì dừng
+                break // xử lý xong app match thì dừng
             }
         }
     }

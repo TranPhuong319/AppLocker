@@ -32,8 +32,8 @@ class Launcher {
 //        case
 //        }
         
-        Logfile.launcher.info("🚀 Launcher started")
-        Logfile.launcher.info("📝 CommandLine args: \(CommandLine.arguments, privacy: .public)")
+        Logfile.launcher.info("Launcher started")
+        Logfile.launcher.info("CommandLine args: \(CommandLine.arguments, privacy: .public)")
 
         let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
         guard checkResourcesFolder(resourcesURL) else { exit(1) }
@@ -49,11 +49,11 @@ class Launcher {
                 return // chỉ chạy 1 app
             }
 
-            Logfile.launcher.error("❌ Can't find the App locked in the Resources")
+            Logfile.launcher.error("Can't find the App locked in the Resources")
             exit(1)
 
         } catch {
-            Logfile.launcher.error("❌ Error when approving the Resources folder: \(error)")
+            Logfile.launcher.error("Error when approving the Resources folder: \(error)")
             exit(1)
         }
     }
@@ -62,7 +62,7 @@ class Launcher {
 
     private func checkResourcesFolder(_ url: URL) -> Bool {
         if !FileManager.default.fileExists(atPath: url.path) {
-            Logfile.launcher.error("❌ Folder not found: \(url.path, privacy: .public)")
+            Logfile.launcher.error("Folder not found: \(url.path, privacy: .public)")
             return false
         }
         return true
@@ -76,7 +76,7 @@ class Launcher {
         guard let (launcherPath, lockedInfo) = lockedApps.first(where: { _, info in
             info.name == appName
         }) else {
-            Logfile.launcher.warning("⚠️ Can't find info for: \(appName)")
+            Logfile.launcher.warning("Can't find info for: \(appName)")
             exit(1)
         }
 
@@ -149,7 +149,7 @@ class Launcher {
                                         unlockCmds: [[String: Any]],
                                         lockCmds: [[String: Any]]) {
         guard sendToHelperBatch(unlockCmds) else {
-            Logfile.launcher.error("❌ Cannot unlock the Exec file")
+            Logfile.launcher.error("Cannot unlock the Exec file")
             exit(1)
         }
         AuthenticationManager.authenticate(reason: "authentication to open".localized) { success, errorMessage in
@@ -159,7 +159,7 @@ class Launcher {
                                     hiddenAppRealURL: hiddenAppRealURL,
                                     lockCmds: lockCmds)
                 } else {
-                    Logfile.launcher.error("❌ Failure authenticity: \(errorMessage ?? "Unknown error", privacy: .public)")
+                    Logfile.launcher.error("Failure authenticity: \(errorMessage ?? "Unknown error", privacy: .public)")
                     exit(1)
                 }
             }
@@ -169,25 +169,25 @@ class Launcher {
     private func openApplication(lockedInfo: LockedAppInfo,
                                  hiddenAppRealURL: URL,
                                  lockCmds: [[String: Any]]) {
-        Logfile.launcher.info("✅ Successful authentication, opening application...")
+        Logfile.launcher.info("Successful authentication, opening application...")
 
         let config = NSWorkspace.OpenConfiguration()
         let fileURLToOpen = resolveFileToOpen()
 
         let openHandler: (NSRunningApplication?, Error?) -> Void = { runningApp, err in
             if let err = err {
-                Logfile.launcher.error("❌ Can't open the app: \(err)")
+                Logfile.launcher.error("Can't open the app: \(err)")
                 exit(1)
             }
             guard let runningApp = runningApp else {
-                Logfile.launcher.error("❌ Can't get the application process")
+                Logfile.launcher.error("Can't get the application process")
                 exit(1)
             }
             self.monitorAppTermination(runningApp, lockCmds: lockCmds)
         }
 
         if !Launcher.shared.pendingOpenFileURLs.isEmpty {
-            Logfile.launcher.info("📂 Open with pending files: \(Launcher.shared.pendingOpenFileURLs.map(\.path))")
+            Logfile.launcher.info("Open with pending files: \(Launcher.shared.pendingOpenFileURLs.map(\.path))")
             NSWorkspace.shared.open(Launcher.shared.pendingOpenFileURLs,
                                     withApplicationAt: hiddenAppRealURL,
                                     configuration: config,
@@ -206,7 +206,7 @@ class Launcher {
 
     private func resolveFileToOpen() -> URL? {
         if let fromDelegate = Launcher.shared.pendingOpenFileURLs.first {
-            Logfile.launcher.info("📂 Open with file \(fromDelegate.path)")
+            Logfile.launcher.info("Open with file \(fromDelegate.path)")
             return fromDelegate
         }
         let args = CommandLine.arguments
@@ -214,10 +214,10 @@ class Launcher {
             let arg = args[1]
             if FileManager.default.fileExists(atPath: arg) {
                 let url = URL(fileURLWithPath: arg)
-                Logfile.launcher.info("📂 Open with file: \(url.path)")
+                Logfile.launcher.info("Open with file: \(url.path)")
                 return url
             } else if let url = URL(string: arg), url.scheme != nil {
-                Logfile.launcher.info("🌐 Open with URL: \(url.absoluteString)")
+                Logfile.launcher.info("Open with URL: \(url.absoluteString)")
                 return url
             }
         }
@@ -228,12 +228,12 @@ class Launcher {
                                        lockCmds: [[String: Any]]) {
         DispatchQueue.global().async {
             while !runningApp.isTerminated { sleep(1) }
-            Logfile.launcher.info("📦 App closed. Locking the file ...")
+            Logfile.launcher.info("App closed. Locking the file ...")
             if self.sendToHelperBatch(lockCmds) {
-                Logfile.launcher.info("✅ Lock the Exec file")
+                Logfile.launcher.info("Lock the Exec file")
                 exit(0)
             } else {
-                Logfile.launcher.error("❌ Can't lock the file")
+                Logfile.launcher.error("Can't lock the file")
                 exit(1)
             }
         }
@@ -241,12 +241,12 @@ class Launcher {
 
     private func handleOpenResult(runningApp: NSRunningApplication?, err: Error?, lockCmds: [[String: Any]]) {
         if let err = err {
-            Logfile.launcher.error("❌ Can't open the app: \(err.localizedDescription)")
+            Logfile.launcher.error("Can't open the app: \(err.localizedDescription)")
             exit(1)
         }
 
         guard let runningApp = runningApp else {
-            Logfile.launcher.error("❌ Can't get the application process")
+            Logfile.launcher.error("Can't get the application process")
             exit(1)
         }
 
@@ -255,13 +255,13 @@ class Launcher {
                 sleep(1)
             }
 
-            Logfile.launcher.info("📦 App escaped. Locking the file ...")
+            Logfile.launcher.info("App escaped. Locking the file ...")
 
             if self.sendToHelperBatch(lockCmds) {
-                Logfile.launcher.info("✅ Lock the Exec file")
+                Logfile.launcher.info("Lock the Exec file")
                 exit(0)
             } else {
-                Logfile.launcher.error("❌ Can't lock the file")
+                Logfile.launcher.error("Can't lock the file")
                 exit(1)
             }
         }
@@ -276,16 +276,16 @@ class Launcher {
         var result = false
 
         let proxy = conn.remoteObjectProxyWithErrorHandler { error in
-            Logfile.launcher.error("❌ XPC error: \(error.localizedDescription)")
+            Logfile.launcher.error("XPC error: \(error.localizedDescription)")
             result = false
             semaphore.signal()
         } as? AppLockerHelperProtocol
 
         proxy?.sendBatch(commandList) { success, message in
             if success {
-                Logfile.launcher.info("✅ Success: \(message, privacy: .public)")
+                Logfile.launcher.info("Success: \(message, privacy: .public)")
             } else {
-                Logfile.launcher.error("❌ Failure: \(message, privacy: .public)")
+                Logfile.launcher.error("Failure: \(message, privacy: .public)")
             }
             result = success
             semaphore.signal()
@@ -301,22 +301,22 @@ class Launcher {
             .appendingPathComponent("Library/Application Support/AppLocker/config.plist")
 
         guard FileManager.default.fileExists(atPath: configURL.path) else {
-            Logfile.launcher.error("❌ File Config does not exist")
+            Logfile.launcher.error("File Config does not exist")
             return [:]
         }
 
         do {
             let data = try Data(contentsOf: configURL)
-            Logfile.launcher.info("📦 Raw data size: \(data.count)")
+            Logfile.launcher.info("Raw data size: \(data.count)")
 
             if let plistStr = String(data: data, encoding: .utf8) {
-                Logfile.launcher.info("📜 Config.plist content:\n\(plistStr)")
+                Logfile.launcher.info("Config.plist content:\n\(plistStr)")
             }
 
             let decoded = try PropertyListDecoder().decode([String: LockedAppInfo].self, from: data)
             return decoded
         } catch {
-            Logfile.launcher.error("❌ Cannot read or decode config.plist: \(error.localizedDescription)")
+            Logfile.launcher.error("Cannot read or decode config.plist: \(error.localizedDescription)")
             return [:]
         }
     }

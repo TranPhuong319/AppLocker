@@ -303,7 +303,7 @@ class LockLauncher: LockManagerProtocol {
         var result: Bool = false
 
         let proxy = conn.remoteObjectProxyWithErrorHandler { error in
-            Logfile.core.error("❌ XPC error: \(error, privacy: .public)")
+            Logfile.core.error("XPC error: \(error, privacy: .public)")
             result = false
             semaphore.signal()
         } as? AppLockerHelperProtocol

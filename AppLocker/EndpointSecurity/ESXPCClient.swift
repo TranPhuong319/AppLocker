@@ -32,7 +32,7 @@ final class ESXPCClient {
     )
 
     func connect() {
-        Logfile.core.log("🔄 [ESXPCClient] Connecting to MachService: \(self.serviceName, privacy: .public)")
+        Logfile.core.log("[ESXPCClient] Connecting to MachService: \(self.serviceName, privacy: .public)")
 
         let conn = NSXPCConnection(machServiceName: serviceName)
         conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
@@ -41,12 +41,12 @@ final class ESXPCClient {
         conn.exportedObject = XPCServer.shared
 
         conn.invalidationHandler = { [weak self] in
-            Logfile.core.error("❌ [ESXPCClient] Connection invalidated")
+            Logfile.core.error("[ESXPCClient] Connection invalidated")
             self?.scheduleReconnect(immediate: true)
         }
 
         conn.interruptionHandler = { [weak self] in
-            Logfile.core.error("⚠️ [ESXPCClient] Connection interrupted")
+            Logfile.core.error("[ESXPCClient] Connection interrupted")
             self?.scheduleReconnect(immediate: false)
         }
 
@@ -54,7 +54,7 @@ final class ESXPCClient {
 
         self.connection = conn
         self.retryCount = 0
-        Logfile.core.log("✅ [ESXPCClient] Connected & ready")
+        Logfile.core.log("[ESXPCClient] Connected & ready")
 
         // Flush pending apps trên queue ưu tiên cao
         if !lastKnownBlockedApps.isEmpty {
@@ -70,7 +70,7 @@ final class ESXPCClient {
         connection = nil
 
         guard retryCount < maxRetries else {
-            Logfile.core.error("🛑 [ESXPCClient] Max retries reached (\(self.maxRetries))")
+            Logfile.core.error("[ESXPCClient] Max retries reached (\(self.maxRetries))")
             return
         }
         retryCount += 1
@@ -82,7 +82,7 @@ final class ESXPCClient {
             delay = min(0.5 * Double(retryCount), 1.0) // gentle backoff but small cap
         }
 
-        Logfile.core.log("⏳ [ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))")
+        Logfile.core.log("[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))")
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.connect()
         }
@@ -92,21 +92,21 @@ final class ESXPCClient {
     // Accepts Swift array of dicts, converts to NSArray for XPC
     func updateBlockedApps(_ apps: [[String: String]]) {
         guard let conn = connection else {
-            Logfile.core.log("⏳ [ESXPCClient] Connection not ready, queueing updateBlockedApps")
+            Logfile.core.log("[ESXPCClient] Connection not ready, queueing updateBlockedApps")
             lastKnownBlockedApps = apps
             return
         }
 
         guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("❌ updateBlockedApps failed: \(String(describing: error), privacy: .public)")
+            Logfile.core.error("updateBlockedApps failed: \(String(describing: error), privacy: .public)")
         }) as? ESAppProtocol else {
-            Logfile.core.error("❌ [ESXPCClient] No valid proxy to send update")
+            Logfile.core.error("[ESXPCClient] No valid proxy to send update")
             return
         }
 
         let ns = apps.map { NSDictionary(dictionary: $0) } as NSArray
         proxy.updateBlockedApps(ns)
-        Logfile.core.log("📤 updateBlockedApps sent (\(apps.count, privacy: .public) items)")
+        Logfile.core.log("updateBlockedApps sent (\(apps.count, privacy: .public)items)")
     }
 
     // App requests extension to allow SHA once (with reply ack)
@@ -120,16 +120,16 @@ final class ESXPCClient {
         }
 
         guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("❌ allowSHAOnce failed: \(String(describing: error), privacy: .public)")
+            Logfile.core.error("allowSHAOnce failed: \(String(describing: error), privacy: .public)")
             completion(false)
         }) as? ESAppProtocol else {
-            Logfile.core.error("❌ [ESXPCClient] No valid proxy to send allowSHAOnce")
+            Logfile.core.error("[ESXPCClient] No valid proxy to send allowSHAOnce")
             completion(false)
             return
         }
 
         proxy.allowSHAOnce(sha) { success in
-            Logfile.core.log("🔓 allowSHAOnce reply: \(success ? "success" : "fail") for SHA=\(sha, privacy: .public)")
+            Logfile.core.log("allowSHAOnce reply: \(success ? "success" : "fail") for SHA=\(sha, privacy: .public)")
             completion(success)
         }
     }
@@ -144,16 +144,16 @@ final class ESXPCClient {
         }
 
         guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("❌ allowConfigAccess failed: \(String(describing: error), privacy: .public)")
+            Logfile.core.error("allowConfigAccess failed: \(String(describing: error), privacy: .public)")
             completion(false)
         }) as? ESAppProtocol else {
-            Logfile.core.error("❌ [ESXPCClient] No valid proxy to send allowConfigAccess")
+            Logfile.core.error("[ESXPCClient] No valid proxy to send allowConfigAccess")
             completion(false)
             return
         }
 
         proxy.allowConfigAccess(pid) { success in
-            Logfile.core.log("🔑 allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(pid)")
+            Logfile.core.log("allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(pid)")
             completion(success)
         }
     }

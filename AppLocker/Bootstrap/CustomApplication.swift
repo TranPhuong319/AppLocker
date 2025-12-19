@@ -14,7 +14,6 @@ class CustomApplication: NSApplication {
         if event.type == .keyDown,
            event.modifierFlags.contains(.command),
            event.charactersIgnoringModifiers?.lowercased() == "q" {
-            print("🚫 Cmd + Q bị chặn!")
             return
         }
 

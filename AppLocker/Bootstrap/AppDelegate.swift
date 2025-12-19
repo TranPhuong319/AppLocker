@@ -38,6 +38,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         Logfile.core.info("Setting up hotkey manager...")
         hotkey = HotKeyManager()
         
+        Logfile.core.debug("Mode selected: \(modeLock as NSObject?)")
+        
         Logfile.core.info("Checking kext signing status...")
         if isKextSigningDisabled() {
             if modeLock == nil {
@@ -60,23 +62,23 @@ extension AppDelegate {
             switch action {
             case .install:
                 if agent.status == .enabled {
-                    Logfile.core.info("✅ Agent already registered: \(agent.status.description)")
+                    Logfile.core.info("Agent already registered: \(agent.status.description)")
                     return
                 }
                 try agent.register()
-                Logfile.core.info("🚀 Agent registered successfully")
+                Logfile.core.info("Agent registered successfully")
                 
             case .uninstall:
                 if agent.status == .enabled {
                     try agent.unregister()
-                    Logfile.core.info("🧹 Agent unregistered successfully")
+                    Logfile.core.info("Agent unregistered successfully")
                 } else {
-                    Logfile.core.info("ℹ️ Agent not registered, skipping uninstall")
+                    Logfile.core.info("Agent not registered, skipping uninstall")
                 }
                 
             case .checkAndInstallifNeed:
                 if agent.status != .enabled {
-                    Logfile.core.info("⚠️ Agent not active, registering new one")
+                    Logfile.core.info("Agent not active, registering new one")
                     try agent.register()
                     NSApp.terminate(nil)
                 }
@@ -84,7 +86,7 @@ extension AppDelegate {
             
         } catch {
             let nsError = error as NSError
-            Logfile.core.error("❌ Failed to manage agent: \(nsError.domain) - code: \(nsError.code) - \(nsError.localizedDescription)")
+            Logfile.core.error("Failed to manage agent: \(nsError.domain) - code: \(nsError.code) - \(nsError.localizedDescription)")
         }
     }
 }

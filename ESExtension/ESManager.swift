@@ -106,7 +106,7 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
             guard let self = self else { reply(false); return }
             let expiry = Date().addingTimeInterval(self.allowedPIDWindowSeconds)
             self.allowedPIDs[p] = expiry
-            Logfile.es.log("🔓 allowConfigAccess granted for pid=\(p, privacy: .public) until \(expiry, privacy: .public)")
+            Logfile.es.log("allowConfigAccess granted for pid=\(p, privacy: .public) until \(expiry, privacy: .public)")
             reply(true)
         }
     }
@@ -127,7 +127,7 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
                 self.tempAllowedSHAs.removeValue(forKey: sha)
                 removedSHAs.append(sha)
             }
-            if !removedSHAs.isEmpty { Logfile.es.log("⌛ Temp allowed SHAs expired: \(removedSHAs.count, privacy: .public)") }
+            if !removedSHAs.isEmpty { Logfile.es.log("Temp allowed SHAs expired: \(removedSHAs.count, privacy: .public)") }
         }
     }
 
@@ -149,6 +149,40 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
     }
 }
 
+// MARK: - Helper: respond with safe delay within ES deadline
+@inline(__always)
+func respondWithDeadline(
+    _ result: es_auth_result_t,
+    client: OpaquePointer,
+    message: UnsafePointer<es_message_t>,
+    desiredDelayNs: UInt64 = 5_000_000 // 5ms
+) {
+    let now = mach_absolute_time()
+    let deadline = message.pointee.deadline
+
+    var timebase = mach_timebase_info_data_t()
+    mach_timebase_info(&timebase)
+
+    @inline(__always)
+    func machToNanos(_ t: UInt64) -> UInt64 {
+        t * UInt64(timebase.numer) / UInt64(timebase.denom)
+    }
+
+    let remainingNs = machToNanos(deadline > now ? deadline - now : 0)
+    let marginNs: UInt64 = 500_000 // 0.5ms safety
+    let safeDelayNs = min(desiredDelayNs, remainingNs > marginNs ? remainingNs - marginNs : 0)
+
+    if safeDelayNs > 0 {
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(
+            deadline: .now() + .nanoseconds(Int(safeDelayNs))
+        ) {
+            es_respond_auth_result(client, message, result, false)
+        }
+    } else {
+        es_respond_auth_result(client, message, result, false)
+    }
+}
+
 // MARK: - Lifecycle setup
 extension ESManager {
     private func start() throws {
@@ -165,9 +199,9 @@ extension ESManager {
 
         let execEvents: [es_event_type_t] = [ ES_EVENT_TYPE_AUTH_EXEC ]
         if es_subscribe(client, execEvents, UInt32(execEvents.count)) == ES_RETURN_SUCCESS {
-            Logfile.es.log("✅ Subscribed to AUTH_EXEC")
+            Logfile.es.log("Subscribed to AUTH_EXEC")
         } else {
-            Logfile.es.error("❌ es_subscribe AUTH_EXEC failed")
+            Logfile.es.error("es_subscribe AUTH_EXEC failed")
         }
 
         ESManager.sharedInstanceForCallbacks = self
@@ -203,7 +237,7 @@ extension ESManager {
         l.delegate = self
         l.resume()
         self.listener = l
-        Logfile.es.log("🔌 MachService XPC listener resumed: endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
+        Logfile.es.log("MachService XPC listener resumed: endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
     }
     
     private func withRetryPickAppConnection(
@@ -213,12 +247,12 @@ extension ESManager {
     ) {
         func attempt(_ idx: Int) {
             if let conn = self.pickAppConnection() {
-                Logfile.es.log("🔗 Got active XPC connection on attempt #\(idx + 1, privacy: .public)")
+                Logfile.es.log("Got active XPC connection on attempt #\(idx + 1, privacy: .public)")
                 completion(conn)
                 return
             }
             if idx >= min(maxRetries - 1, delays.count - 1) {
-                Logfile.es.log("❌ No XPC connection after quick retries (attempts=\(idx + 1, privacy: .public), giving up)")
+                Logfile.es.log("No XPC connection after quick retries (attempts=\(idx + 1, privacy: .public), giving up)")
                 completion(nil)
                 return
             }
@@ -233,14 +267,14 @@ extension ESManager {
     private func storeIncomingConnection(_ conn: NSXPCConnection) {
         activeConnectionsQueue.async {
             self.activeConnections.append(conn)
-            Logfile.es.log("➕ Stored incoming XPC connection — total=\(self.activeConnections.count, privacy: .public)")
+            Logfile.es.log("Stored incoming XPC connection — total=\(self.activeConnections.count, privacy: .public)")
         }
     }
     
     private func removeIncomingConnection(_ conn: NSXPCConnection) {
         activeConnectionsQueue.async {
             self.activeConnections.removeAll { $0 === conn }
-            Logfile.es.log("➖ Removed XPC connection — total=\(self.activeConnections.count, privacy: .public)")
+            Logfile.es.log("Removed XPC connection — total=\(self.activeConnections.count, privacy: .public)")
         }
     }
     
@@ -257,7 +291,7 @@ extension ESManager {
     private func sendBlockedNotificationToApp(name: String, path: String, sha: String) {
         withRetryPickAppConnection { conn in
             guard let conn else {
-                Logfile.es.log("❌ No XPC connection available after retries — cannot notify app")
+                Logfile.es.log("No XPC connection available after retries — cannot notify app")
                 return
             }
 
@@ -265,7 +299,7 @@ extension ESManager {
                 Logfile.es.error("XPC notify (async) error: \(String(describing: error), privacy: .public)")
             }) as? ESXPCProtocol {
                 proxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.log("📣 Notified app (async) about blocked exec: \(path, privacy: .public)")
+                Logfile.es.log("Notified app (async) about blocked exec: \(path, privacy: .public)")
                 return
             }
 
@@ -273,11 +307,11 @@ extension ESManager {
                 Logfile.es.error("XPC notify (sync) error: \(String(describing: error), privacy: .public)")
             }) as? ESXPCProtocol {
                 syncProxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.log("📣 Notified app (sync fallback) about blocked exec: \(path, privacy: .public)")
+                Logfile.es.log("Notified app (sync fallback) about blocked exec: \(path, privacy: .public)")
                 return
             }
 
-            Logfile.es.error("❌ Failed to obtain any proxy for notifyBlockedExec")
+            Logfile.es.error("Failed to obtain any proxy for notifyBlockedExec")
         }
     }
 
@@ -291,18 +325,18 @@ extension ESManager {
                 if let path = dict["path"] as? String {
                     pathToSha[path] = sha
                 }
-                Logfile.es.log("📤 updateBlockedApps received SHA: \(sha, privacy: .public)")
+                Logfile.es.log("updateBlockedApps received SHA: \(sha, privacy: .public)")
             } else if let dict = item as? NSDictionary, let sha = dict["sha256"] as? String {
                 shas.append(sha)
                 if let path = dict["path"] as? String { pathToSha[path] = sha }
-                Logfile.es.log("📤 updateBlockedApps received SHA (NSDictionary): \(sha, privacy: .public)")
+                Logfile.es.log("updateBlockedApps received SHA (NSDictionary): \(sha, privacy: .public)")
             }
         }
         stateQueue.async { [weak self] in
             guard let self = self else { return }
             self.blockedSHAs = Set(shas)
             for (p, s) in pathToSha { self.blockedPathToSHA[p] = s }
-            Logfile.es.log("🔄 updateBlockedApps set blockedSHAs (\(shas.count) items)")
+            Logfile.es.log("updateBlockedApps set blockedSHAs (\(shas.count) items)")
         }
     }
 }
@@ -314,7 +348,7 @@ extension ESManager {
             guard let self = self else { return }
             let expiry = Date().addingTimeInterval(self.allowWindowSeconds)
             self.tempAllowedSHAs[sha] = expiry
-            Logfile.es.log("🔓 Temp allowed SHA: \(sha, privacy: .public) until \(expiry, privacy: .public)")
+            Logfile.es.log("Temp allowed SHA: \(sha, privacy: .public) until \(expiry, privacy: .public)")
         }
     }
 
@@ -348,7 +382,7 @@ extension ESManager {
                     if let sha = item["sha256"] as? String {
                         shas.append(sha)
                         if let path = item["path"] as? String { pathToSha[path] = sha }
-                        Logfile.es.log("📄 Found SHA in plist: \(sha, privacy: .public)")
+                        Logfile.es.log("Found SHA in plist: \(sha, privacy: .public)")
                     }
                 }
             } else if let arr = plist as? [[String: Any]] {
@@ -356,7 +390,7 @@ extension ESManager {
                     if let sha = item["sha256"] as? String {
                         shas.append(sha)
                         if let path = item["path"] as? String { pathToSha[path] = sha }
-                        Logfile.es.log("📄 Found SHA in plist array: \(sha, privacy: .public)")
+                        Logfile.es.log("Found SHA in plist array: \(sha, privacy: .public)")
                     }
                 }
             } else if let arr = plist as? NSArray {
@@ -364,21 +398,21 @@ extension ESManager {
                     if let d = item as? NSDictionary, let sha = d["sha256"] as? String {
                         shas.append(sha)
                         if let path = d["path"] as? String { pathToSha[path] = sha }
-                        Logfile.es.log("📄 Found SHA in NSArray: \(sha, privacy: .public)")
+                        Logfile.es.log("Found SHA in NSArray: \(sha, privacy: .public)")
                     }
                 }
             } else {
-                Logfile.es.log("⚠️ Unsupported plist format at \(url.path, privacy: .public)")
+                Logfile.es.log("Unsupported plist format at \(url.path, privacy: .public)")
             }
 
             stateQueue.async { [weak self] in
                 guard let self = self else { return }
                 self.blockedSHAs = Set(shas)
                 for (p, s) in pathToSha { self.blockedPathToSHA[p] = s }
-                Logfile.es.log("🔄 Loaded \(shas.count) blocked SHAs from \(url.path, privacy: .public)")
+                Logfile.es.log("Loaded \(shas.count) blocked SHAs from \(url.path, privacy: .public)")
             }
         } catch {
-            Logfile.es.error("❌ Failed to load config at \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            Logfile.es.error("Failed to load config at \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -419,13 +453,13 @@ extension ESManager {
 
                 DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
                     defer { self.isReloadingConfig = false }
-                    Logfile.es.log("📣 File event triggered reload for \(path, privacy: .public)")
+                    Logfile.es.log("File event triggered reload for \(path, privacy: .public)")
 
                     do {
                         let data = try Data(contentsOf: url)
                         let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
                         guard let dict = plist as? [String: Any], let lockedAppsArray = dict["BlockedApps"] as? [[String: Any]] else {
-                            Logfile.es.error("❌ Invalid plist structure at \(url.path)")
+                            Logfile.es.error("Invalid plist structure at \(url.path)")
                             return
                         }
 
@@ -449,7 +483,7 @@ extension ESManager {
 
                         DispatchQueue.main.async {
                             self.lockedApps = esApps
-                            Logfile.es.log("✅ Reloaded ES apps: \(esApps.count) items")
+                            Logfile.es.log("Reloaded ES apps: \(esApps.count) items")
                         }
 
                         self.stateQueue.async {
@@ -458,7 +492,7 @@ extension ESManager {
                         }
 
                     } catch {
-                        Logfile.es.error("❌ Failed to read plist: \(error.localizedDescription)")
+                        Logfile.es.error("Failed to read plist: \(error.localizedDescription)")
                     }
                 }
 
@@ -475,7 +509,7 @@ extension ESManager {
             source.setCancelHandler { close(fd) }
             self.watchers[path] = source
             source.resume()
-            Logfile.es.log("👀 Started watcher on \(path, privacy: .public)")
+            Logfile.es.log("Started watcher on \(path, privacy: .public)")
         }
     }
 }
@@ -523,13 +557,13 @@ extension ESManager {
 
         if msg.event_type == ES_EVENT_TYPE_AUTH_EXEC {
             guard let path = safePath(fromFilePointer: msg.event.exec.target.pointee.executable) else {
-                Logfile.es.log("⚠️ Missing exec path in AUTH_EXEC. Denying by default.")
+                Logfile.es.log("Missing exec path in AUTH_EXEC. Denying by default.")
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
                 return
             }
 
             guard let mgr = ESManager.sharedInstanceForCallbacks else {
-                Logfile.es.log("⚠️ No ESManager instance. Denying exec.")
+                Logfile.es.log("No ESManager instance. Denying exec.")
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
                 return
             }
@@ -539,25 +573,24 @@ extension ESManager {
             if let mappedSHA = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) {
                 // If temp allowed for this SHA -> allow
                 if mgr.isTempAllowed(mappedSHA) {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("✅ Temp allowed by SHA mapping for \(path, privacy: .public)")
+                    respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
+                    Logfile.es.log("Temp allowed by SHA mapping for \(path, privacy: .public)")
                     return
                 }
 
                 let isBlocked = mgr.stateQueue.sync(execute: { mgr.blockedSHAs.contains(mappedSHA) })
                 if isBlocked {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("❌ Denied by mapped SHA for \(path, privacy: .public)")
+                    respondWithDeadline(ES_AUTH_RESULT_DENY, client: client, message: message)
+                    Logfile.es.log("Denied by mapped SHA for \(path, privacy: .public)")
 
-                    // Notify app asynchronously (no need to compute SHA or bundle info on hot-path)
                     DispatchQueue.global(qos: .utility).async {
                         let name = mgr.computeAppName(forExecPath: path)
                         mgr.sendBlockedNotificationToApp(name: name, path: path, sha: mappedSHA)
                     }
                     return
                 } else {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("✅ Allowed by mapped SHA for \(path, privacy: .public)")
+                    respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
+                    Logfile.es.log("Allowed by mapped SHA for \(path, privacy: .public)")
                     return
                 }
             }
@@ -566,13 +599,12 @@ extension ESManager {
             if let cached = mgr.decisionQueue.sync(execute: { mgr.decisionCache[path] }) {
                 switch cached {
                 case .allow:
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("✅ Allowed by cache for \(path, privacy: .public)")
+                    respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
+                    Logfile.es.log("Allowed by cache for \(path, privacy: .public)")
                     return
                 case .deny:
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("❌ Denied by cache for \(path, privacy: .public)")
-                    // Notify in background with stored sha if available
+                    respondWithDeadline(ES_AUTH_RESULT_DENY, client: client, message: message)
+                    Logfile.es.log("Denied by cache for \(path, privacy: .public)")
                     let shaOpt = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] })
                     DispatchQueue.global(qos: .utility).async {
                         let name = mgr.computeAppName(forExecPath: path)
@@ -587,7 +619,7 @@ extension ESManager {
                 // If temp allowed for this SHA -> allow
                 if mgr.isTempAllowed(sha) {
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("✅ Temp allowed by computed SHA for \(path, privacy: .public)")
+                    Logfile.es.log("Temp allowed by computed SHA for \(path, privacy: .public)")
                     // cache mapping and allow decision for future hot-paths
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
                     mgr.decisionQueue.async { mgr.decisionCache[path] = .allow }
@@ -599,7 +631,7 @@ extension ESManager {
                 if isBlockedNow {
                     // Block immediately
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("❌ Denied (sync SHA) for \(path, privacy: .public) • SHA=\(sha, privacy: .public)")
+                    Logfile.es.log("Denied (sync SHA) for \(path, privacy: .public) • SHA=\(sha, privacy: .public)")
 
                     // Cache mapping & deny decision to make future lookups O(1)
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
@@ -614,7 +646,7 @@ extension ESManager {
                 } else {
                     // Not blocked — allow and cache for future
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("✅ Allowed (sync SHA) for \(path, privacy: .public) • SHA=\(sha, privacy: .public)")
+                    Logfile.es.log("Allowed (sync SHA) for \(path, privacy: .public) • SHA=\(sha, privacy: .public)")
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
                     mgr.decisionQueue.async { mgr.decisionCache[path] = .allow }
                     return
@@ -623,7 +655,7 @@ extension ESManager {
                 // Could not compute SHA synchronously (I/O/read error)
                 // Deny by default to ensure first-run is blocked; change to ALLOW if you prefer permissive behavior.
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                Logfile.es.log("⚠️ Failed to compute SHA synchronously for \(path, privacy: .public) — denying by default")
+                Logfile.es.log("Failed to compute SHA synchronously for \(path, privacy: .public) — denying by default")
                 return
             }
         }
@@ -633,7 +665,7 @@ extension ESManager {
 // MARK: - NSXPCListenerDelegate extension
 extension ESManager {
     func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
-        Logfile.es.log("➡️ Incoming XPC connection attempt (pid=\(newConnection.processIdentifier, privacy: .public))")
+        Logfile.es.log("Incoming XPC connection attempt (pid=\(newConnection.processIdentifier, privacy: .public))")
 
         newConnection.exportedInterface = NSXPCInterface(with: ESAppProtocol.self)
         newConnection.exportedObject = self
@@ -642,17 +674,17 @@ extension ESManager {
 
         newConnection.invalidationHandler = { [weak self, weak newConnection] in
             guard let self = self, let conn = newConnection else { return }
-            Logfile.es.log("❌ Incoming XPC connection invalidated")
+            Logfile.es.log("Incoming XPC connection invalidated")
             self.removeIncomingConnection(conn)
         }
 
         newConnection.interruptionHandler = {
-            Logfile.es.log("⚠️ Incoming XPC connection interrupted")
+            Logfile.es.log("Incoming XPC connection interrupted")
         }
 
         storeIncomingConnection(newConnection)
         newConnection.resume()
-        Logfile.es.log("✅ Accepted new XPC connection from client")
+        Logfile.es.log("Accepted new XPC connection from client")
         return true
     }
 }
