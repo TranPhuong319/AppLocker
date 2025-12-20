@@ -17,8 +17,15 @@ class LockES: LockManagerProtocol {
     init() {
         self.lockedApps = ConfigStore.shared.load()
         self.allApps = self.getInstalledApps()
-        Logfile.core.info("Start scanning SHA...")
-        self.rescanLockedApps()
+        
+        Logfile.core.info("Initial scanning started in background...")
+        
+        // Quét lần đầu ngay lập tức ở background
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.rescanLockedApps()
+        }
+        
+        // Bắt đầu chu kỳ lặp lại
         self.startPeriodicRescan()
     }
 
@@ -31,7 +38,7 @@ class LockES: LockManagerProtocol {
         for dir in appsDirs {
             let dirURL = URL(fileURLWithPath: dir)
             
-            // 🧭 Duyệt toàn bộ cây thư mục con, bỏ qua file ẩn
+            // Duyệt toàn bộ cây thư mục con, bỏ qua file ẩn
             guard let enumerator = fileManager.enumerator(
                 at: dirURL,
                 includingPropertiesForKeys: nil,
@@ -39,7 +46,7 @@ class LockES: LockManagerProtocol {
             ) else { continue }
             
             for case let fileURL as URL in enumerator {
-                // 🎯 Chỉ lấy app bundle
+                // Chỉ lấy app bundle
                 guard fileURL.pathExtension == "app",
                       !fileURL.lastPathComponent.hasPrefix("."),
                       let bundle = Bundle(url: fileURL),
@@ -47,11 +54,11 @@ class LockES: LockManagerProtocol {
                     continue
                 }
                 
-                // Dùng tên hiển thị theo Finder (localized)
+                // Use the name displayed in Finder (localized)
                 let displayName = FileManager.default.displayName(atPath: fileURL.path)
                     .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
                 
-                // Lấy icon
+                // Get the icon
                 let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                 icon.size = NSSize(width: 32, height: 32)
                 
@@ -66,7 +73,7 @@ class LockES: LockManagerProtocol {
             }
         }
         
-        // 🔤 Sắp xếp A-Z theo tên hiển thị
+        // Sort A-Z by display name
         return allApps
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
@@ -103,21 +110,21 @@ class LockES: LockManagerProtocol {
 
         for path in paths {
             if let _ = lockedApps[path] {
-                // đang bị block -> remove
+                // is being blocked -> removed
                 lockedApps.removeValue(forKey: path)
                 didChange = true
             } else {
                 guard let bundle = Bundle(url: URL(fileURLWithPath: path)),
                       let execName = bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
                 else {
-                    NSLog("❌ Cannot read Info.plist for \(path)")
+                    Logfile.core.error("Cannot read Info.plist for \(path)")
                     continue
                 }
 
                 let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
                 let execPath = "\(path)/Contents/MacOS/\(execName)"
                 guard let sha = computeSHA(for: execPath) else {
-                    NSLog("❌ Cannot compute SHA for \(execPath)")
+                    Logfile.core.error("Cannot compute SHA for \(execPath)")
                     continue
                 }
                 let bundleID = bundle.bundleIdentifier ?? ""
@@ -167,14 +174,19 @@ class LockES: LockManagerProtocol {
 // MARK: - Auto SHA Rescan
 extension LockES {
     func startPeriodicRescan(interval: TimeInterval = 300) {
-        // chỉ chạy 1 timer duy nhất
         if periodicTimer != nil { return }
         
-        periodicTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-            self.rescanLockedApps()
+        // Create a timer on the Main RunLoop but do the heavy lifting in the Background
+        periodicTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            // Đẩy việc quét SHA sang thread khác ngay lập tức
+            DispatchQueue.global(qos: .utility).async {
+                self?.rescanLockedApps()
+            }
         }
-        RunLoop.current.add(periodicTimer!, forMode: .common)
-        Logfile.core.info("Start periodic SHA scanning every\(Int(interval))seconds")
+        
+        // Make sure the timer still runs when the user scrolls or uses the UI
+        RunLoop.main.add(periodicTimer!, forMode: .common)
+        Logfile.core.info("Start periodic SHA scanning every \(Int(interval)) seconds")
     }
 
     func stopPeriodicRescan() {
@@ -183,11 +195,12 @@ extension LockES {
     }
 
     @objc func rescanLockedApps() {
+        // Run the heavy SHA calculation on the current thread (usually background)
         Logfile.core.info("Re-scanning the SHA of locked apps...")
         var changed = false
-        var updatedMap = lockedApps
+        var updatedMap = self.lockedApps // Copy locally for processing
 
-        for (path, cfg) in lockedApps {
+        for (path, cfg) in updatedMap {
             let exeFile = cfg.execFile ?? "Unknown"
             let execPath = "\(path)/Contents/MacOS/\(exeFile)"
             guard FileManager.default.fileExists(atPath: execPath) else { continue }
@@ -196,10 +209,10 @@ extension LockES {
                 continue
             }
 
-            if   cfg.sha256 != newSHA {
+            if cfg.sha256 != newSHA {
                 let name = cfg.name ?? "Unknown"
-                let oldHash = cfg.sha256
-                Logfile.core.warning("SHA changes for \(name): \(oldHash.prefix(8)) → \(newSHA.prefix(8))")
+                Logfile.core.warning("SHA changes for \(name): \(cfg.sha256.prefix(8)) → \(newSHA.prefix(8))")
+                
                 let updatedCfg = LockedAppConfig(
                     bundleID: cfg.bundleID,
                     path: cfg.path,
@@ -214,10 +227,14 @@ extension LockES {
         }
 
         if changed {
-            lockedApps = updatedMap
-            save()
-            publishToExtension()
-            Logfile.core.info("New SHA updated")
+            // Push the update of the original data and save the file to the Main Thread
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.lockedApps = updatedMap
+                self.save()
+                self.publishToExtension()
+                Logfile.core.info("New SHA updated and published")
+            }
         } else {
             Logfile.core.info("No SHA changes")
         }

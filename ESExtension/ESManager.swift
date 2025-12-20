@@ -18,6 +18,16 @@ enum ExecDecision {
     case deny
 }
 
+enum ESError: Error {
+    case fullDiskAccessMissing    // ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED
+    case notRoot                  // ES_NEW_CLIENT_RESULT_ERR_NOT_PRIVILEGED
+    case entitlementMissing       // ES_NEW_CLIENT_RESULT_ERR_NOT_ENTITLED
+    case tooManyClients           // ES_NEW_CLIENT_RESULT_ERR_TOO_MANY_CLIENTS
+    case internalError            // ES_NEW_CLIENT_RESULT_ERR_INTERNAL
+    case invalidArgument          // ES_NEW_CLIENT_RESULT_ERR_INVALID_ARGUMENT
+    case unknown(Int32)
+}
+
 @objcMembers
 final class ESManager: NSObject, NSXPCListenerDelegate {
     static var sharedInstanceForCallbacks: ESManager?
@@ -47,21 +57,7 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
 
     // Decision cache for quick lookups by path (path -> ExecDecision)
     private var decisionCache: [String: ExecDecision] = [:]
-    private let decisionQueue = DispatchQueue(label: "es.decision.cache")
-
-    // Watchers for config file(s)
-    private var watchers: [String: DispatchSourceFileSystemObject] = [:]
-    private let watchersQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.watchers")
-
-    private lazy var candidateConfigURLs: [URL] = {
-        var urls: [URL] = []
-        if let home = consoleUserHomeDirectory() {
-            let userAppSupport = URL(fileURLWithPath: home)
-                .appendingPathComponent("Library/Application Support/AppLocker/config.plist")
-            urls.append(userAppSupport)
-        }
-        return urls
-    }()
+    private let decisionQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.cache")
 
     // Mach Service listener & incoming connections
     private var listener: NSXPCListener?
@@ -80,24 +76,6 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
     }
 
     deinit { stop() }
-
-    private func consoleUserHomeDirectory() -> String? {
-        var uid: uid_t = 0
-        var gid: gid_t = 0
-        if let cfName = SCDynamicStoreCopyConsoleUser(nil, &uid, &gid) {
-            let username = cfName as String
-            if username == "loginwindow" { return nil }
-            let homePtr = username.withCString { cstr -> UnsafeMutablePointer<passwd>? in
-                return getpwnam(cstr)
-            }
-            if let pw = homePtr {
-                return String(cString: pw.pointee.pw_dir)
-            } else {
-                return "/Users/\(username)"
-            }
-        }
-        return nil
-    }
 
     // App -> Extension: request access for config
     @objc func allowConfigAccess(_ pid: Int32, withReply reply: @escaping (Bool) -> Void) {
@@ -149,40 +127,6 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
     }
 }
 
-// MARK: - Helper: respond with safe delay within ES deadline
-@inline(__always)
-func respondWithDeadline(
-    _ result: es_auth_result_t,
-    client: OpaquePointer,
-    message: UnsafePointer<es_message_t>,
-    desiredDelayNs: UInt64 = 5_000_000 // 5ms
-) {
-    let now = mach_absolute_time()
-    let deadline = message.pointee.deadline
-
-    var timebase = mach_timebase_info_data_t()
-    mach_timebase_info(&timebase)
-
-    @inline(__always)
-    func machToNanos(_ t: UInt64) -> UInt64 {
-        t * UInt64(timebase.numer) / UInt64(timebase.denom)
-    }
-
-    let remainingNs = machToNanos(deadline > now ? deadline - now : 0)
-    let marginNs: UInt64 = 500_000 // 0.5ms safety
-    let safeDelayNs = min(desiredDelayNs, remainingNs > marginNs ? remainingNs - marginNs : 0)
-
-    if safeDelayNs > 0 {
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(
-            deadline: .now() + .nanoseconds(Int(safeDelayNs))
-        ) {
-            es_respond_auth_result(client, message, result, false)
-        }
-    } else {
-        es_respond_auth_result(client, message, result, false)
-    }
-}
-
 // MARK: - Lifecycle setup
 extension ESManager {
     private func start() throws {
@@ -192,15 +136,34 @@ extension ESManager {
             ESManager.handleMessage(client: client, message: message)
         }
 
-        guard res == ES_NEW_CLIENT_RESULT_SUCCESS, let client = self.client else {
-            Logfile.es.error("es_new_client failed: \(String(describing: res), privacy: .public)")
-            throw NSError(domain: "ESManager", code: 1, userInfo: nil)
+        // Kiểm tra nếu không thành công
+        if res != ES_NEW_CLIENT_RESULT_SUCCESS {
+            Logfile.es.error("es_new_client failed with result: \(res.rawValue)")
+            
+            switch res {
+            case ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED:
+                throw ESError.fullDiskAccessMissing
+            case ES_NEW_CLIENT_RESULT_ERR_NOT_PRIVILEGED:
+                throw ESError.notRoot
+            case ES_NEW_CLIENT_RESULT_ERR_NOT_ENTITLED:
+                throw ESError.entitlementMissing
+            case ES_NEW_CLIENT_RESULT_ERR_TOO_MANY_CLIENTS:
+                throw ESError.tooManyClients
+            case ES_NEW_CLIENT_RESULT_ERR_INVALID_ARGUMENT:
+                throw ESError.invalidArgument
+            case ES_NEW_CLIENT_RESULT_ERR_INTERNAL:
+                throw ESError.internalError
+            default:
+                throw ESError.unknown(Int32(res.rawValue))
+            }
+        }
+
+        guard let client = self.client else {
+            throw ESError.internalError
         }
 
         let execEvents: [es_event_type_t] = [ ES_EVENT_TYPE_AUTH_EXEC ]
-        if es_subscribe(client, execEvents, UInt32(execEvents.count)) == ES_RETURN_SUCCESS {
-            Logfile.es.log("Subscribed to AUTH_EXEC")
-        } else {
+        if es_subscribe(client, execEvents, UInt32(execEvents.count)) != ES_RETURN_SUCCESS {
             Logfile.es.error("es_subscribe AUTH_EXEC failed")
         }
 
@@ -221,11 +184,6 @@ extension ESManager {
         activeConnectionsQueue.sync {
             for conn in activeConnections { conn.invalidate() }
             activeConnections.removeAll()
-        }
-
-        watchersQueue.sync {
-            for (_, source) in watchers { source.cancel() }
-            watchers.removeAll()
         }
     }
 }
@@ -359,161 +317,6 @@ extension ESManager {
     }
 }
 
-// MARK: - Watching and auto update list locked app
-extension ESManager {
-    private func reloadConfigIfAvailable(from url: URL) {
-        let path = url.path
-        guard FileManager.default.fileExists(atPath: path) else {
-            Logfile.es.log("Config not found at \(path, privacy: .public)")
-            return
-        }
-        reloadConfig(from: url)
-    }
-
-    private func reloadConfig(from url: URL) {
-        do {
-            let data = try Data(contentsOf: url)
-            let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
-            var shas: [String] = []
-            var pathToSha: [String: String] = [:]
-
-            if let dict = plist as? [String: Any], let arr = dict["BlockedApps"] as? [[String: Any]] {
-                for item in arr {
-                    if let sha = item["sha256"] as? String {
-                        shas.append(sha)
-                        if let path = item["path"] as? String { pathToSha[path] = sha }
-                        Logfile.es.log("Found SHA in plist: \(sha, privacy: .public)")
-                    }
-                }
-            } else if let arr = plist as? [[String: Any]] {
-                for item in arr {
-                    if let sha = item["sha256"] as? String {
-                        shas.append(sha)
-                        if let path = item["path"] as? String { pathToSha[path] = sha }
-                        Logfile.es.log("Found SHA in plist array: \(sha, privacy: .public)")
-                    }
-                }
-            } else if let arr = plist as? NSArray {
-                for item in arr {
-                    if let d = item as? NSDictionary, let sha = d["sha256"] as? String {
-                        shas.append(sha)
-                        if let path = d["path"] as? String { pathToSha[path] = sha }
-                        Logfile.es.log("Found SHA in NSArray: \(sha, privacy: .public)")
-                    }
-                }
-            } else {
-                Logfile.es.log("Unsupported plist format at \(url.path, privacy: .public)")
-            }
-
-            stateQueue.async { [weak self] in
-                guard let self = self else { return }
-                self.blockedSHAs = Set(shas)
-                for (p, s) in pathToSha { self.blockedPathToSHA[p] = s }
-                Logfile.es.log("Loaded \(shas.count) blocked SHAs from \(url.path, privacy: .public)")
-            }
-        } catch {
-            Logfile.es.error("Failed to load config at \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
-        }
-    }
-
-    private func startWatchingConfig(at url: URL) {
-        let path = url.path
-        watchersQueue.async { [weak self] in
-            guard let self = self else { return }
-
-            if let existing = self.watchers[path] {
-                existing.cancel()
-                self.watchers.removeValue(forKey: path)
-            }
-
-            var fd = open(path, O_EVTONLY)
-            if fd < 0 {
-                let parent = url.deletingLastPathComponent().path
-                Logfile.es.log("File \(path, privacy: .public) missing — watching parent dir \(parent, privacy: .public)")
-                let parentFD = open(parent, O_EVTONLY)
-                if parentFD < 0 {
-                    Logfile.es.error("Failed to open parent dir \(parent, privacy: .public)")
-                    return
-                } else {
-                    fd = parentFD
-                }
-            }
-
-            let source = DispatchSource.makeFileSystemObjectSource(
-                fileDescriptor: fd,
-                eventMask: [.write, .delete, .rename],
-                queue: DispatchQueue.global()
-            )
-
-            source.setEventHandler { [weak self] in
-                guard let self = self else { return }
-
-                if self.isReloadingConfig { return }
-                self.isReloadingConfig = true
-
-                DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-                    defer { self.isReloadingConfig = false }
-                    Logfile.es.log("File event triggered reload for \(path, privacy: .public)")
-
-                    do {
-                        let data = try Data(contentsOf: url)
-                        let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
-                        guard let dict = plist as? [String: Any], let lockedAppsArray = dict["BlockedApps"] as? [[String: Any]] else {
-                            Logfile.es.error("Invalid plist structure at \(url.path)")
-                            return
-                        }
-
-                        var esApps: [String: LockedAppConfig] = [:]
-                        var pathToSha: [String: String] = [:]
-                        var shas: [String] = []
-
-                        for appDict in lockedAppsArray {
-                            if let blockMode = appDict["blockMode"] as? String, blockMode == "ES",
-                               let bundleID = appDict["bundleID"] as? String,
-                               let path = appDict["path"] as? String,
-                               let sha256 = appDict["sha256"] as? String {
-                                let execFile = appDict["execFile"] as? String
-                                let name = appDict["name"] as? String ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-                                let cfg = LockedAppConfig(bundleID: bundleID, path: path, sha256: sha256, blockMode: blockMode, execFile: execFile, name: name)
-                                esApps[path] = cfg
-                                pathToSha[path] = sha256
-                                shas.append(sha256)
-                            }
-                        }
-
-                        DispatchQueue.main.async {
-                            self.lockedApps = esApps
-                            Logfile.es.log("Reloaded ES apps: \(esApps.count) items")
-                        }
-
-                        self.stateQueue.async {
-                            for (p, s) in pathToSha { self.blockedPathToSHA[p] = s }
-                            self.blockedSHAs = Set(shas)
-                        }
-
-                    } catch {
-                        Logfile.es.error("Failed to read plist: \(error.localizedDescription)")
-                    }
-                }
-
-                let flags = source.data
-                if flags.contains(.delete) || flags.contains(.rename) {
-                    source.cancel()
-                    close(fd)
-                    self.watchersQueue.asyncAfter(deadline: .now() + .milliseconds(150)) {
-                        self.startWatchingConfig(at: url)
-                    }
-                }
-            }
-
-            source.setCancelHandler { close(fd) }
-            self.watchers[path] = source
-            source.resume()
-            Logfile.es.log("Started watcher on \(path, privacy: .public)")
-        }
-    }
-}
-
 // MARK: - Compute app info
 extension ESManager {
     // Compute SHA256 hash synchronously (used on background queues only)
@@ -607,7 +410,6 @@ final class TTYNotifier {
         
         // --- GỘP LẠI (Dùng String Interpolation) ---
         let message = """
-            \n
             \(boldRed)\(title)\(reset)
             
             \(description)
@@ -663,14 +465,15 @@ extension ESManager {
             // 1) Fast path: Mapped SHA
             if let mappedSHA = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) {
                 if mgr.isTempAllowed(mappedSHA) {
-                    respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
+                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
                     return
                 }
 
                 let isBlocked = mgr.stateQueue.sync(execute: { mgr.blockedSHAs.contains(mappedSHA) })
                 if isBlocked {
                     // -> DENY
-                    respondWithDeadline(ES_AUTH_RESULT_DENY, client: client, message: message)
+                    usleep(1_000)
+                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
                     Logfile.es.log("Denied by mapped SHA: \(path)")
                     
                     // Gửi thông báo ra Terminal
@@ -682,7 +485,7 @@ extension ESManager {
                     }
                     return
                 } else {
-                    respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
+                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
                     return
                 }
             }
@@ -691,11 +494,12 @@ extension ESManager {
             if let cached = mgr.decisionQueue.sync(execute: { mgr.decisionCache[path] }) {
                 switch cached {
                 case .allow:
-                    respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
+                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
                     return
                 case .deny:
                     // -> DENY
-                    respondWithDeadline(ES_AUTH_RESULT_DENY, client: client, message: message)
+                    usleep(1_000)
+                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
                     Logfile.es.log("Denied by cache: \(path)")
                     
                     let shaOpt = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) ?? "Cached-No-SHA"

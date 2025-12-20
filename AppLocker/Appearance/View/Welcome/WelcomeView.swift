@@ -12,7 +12,7 @@ struct WelcomeView: View {
     @State private var shouldRestart = false
     @Environment(\.presentationMode) var presentationMode
     var copyright: String {
-        Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "Không có thông tin"
+        Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
     }
 
     var body: some View {

@@ -106,7 +106,7 @@ final class ESXPCClient {
 
         let ns = apps.map { NSDictionary(dictionary: $0) } as NSArray
         proxy.updateBlockedApps(ns)
-        Logfile.core.log("updateBlockedApps sent (\(apps.count, privacy: .public)items)")
+        Logfile.core.log("updateBlockedApps sent (\(apps.count, privacy: .public) items)")
     }
 
     // App requests extension to allow SHA once (with reply ack)

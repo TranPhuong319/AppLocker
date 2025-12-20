@@ -35,9 +35,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
         
-        Logfile.core.info("Setting up hotkey manager...")
-        hotkey = HotKeyManager()
-        
         Logfile.core.debug("Mode selected: \(modeLock as NSObject?)")
         
         Logfile.core.info("Checking kext signing status...")
@@ -112,6 +109,8 @@ extension AppDelegate {
                 }
                 Logfile.core.info("Starting User state")
                 SessionObserver.shared.start()
+                Logfile.core.info("Setting up hotkey manager...")
+                self.hotkey = HotKeyManager()
             }
             
             Logfile.core.info("Installing Endpoint Security extension...")
@@ -119,7 +118,7 @@ extension AppDelegate {
             ExtensionInstaller.shared.install()
         }
         
-        Logfile.core.info("Setting up menu bar...")
+        Logfile.core.info("Setting up Touch Bar...")
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
