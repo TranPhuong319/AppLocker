@@ -73,7 +73,7 @@ final class ConfigStore {
         group.wait() // chờ ES request nếu cần
 
         let encoder = PropertyListEncoder()
-        encoder.outputFormat = .xml
+        encoder.outputFormat = .binary
         do {
             let data = try encoder.encode(dict)
             try data.write(to: self.configURL, options: .atomic)

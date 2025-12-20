@@ -7,5 +7,7 @@
 		<key>endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc</key>
 		<true/>
 	</dict>
+	<key>NSEndpointSecurityEarlyBoot</key>
+	<true/>
 </dict>
 </plist>

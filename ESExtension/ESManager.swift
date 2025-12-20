@@ -154,8 +154,6 @@ extension ESManager {
 // MARK: - Lifecycle setup
 extension ESManager {
     private func start() throws {
-        setupMachListener()
-
         let res = es_new_client(&self.client) { client, message in
             ESManager.handleMessage(client: client, message: message)
         }
@@ -186,13 +184,17 @@ extension ESManager {
             throw ESError.internalError
         }
 
-        let execEvents: [es_event_type_t] = [ ES_EVENT_TYPE_AUTH_EXEC ]
+        let execEvents: [es_event_type_t] = [
+            ES_EVENT_TYPE_AUTH_EXEC,
+        ]
+        
         if es_subscribe(client, execEvents, UInt32(execEvents.count)) != ES_RETURN_SUCCESS {
             Logfile.es.error("es_subscribe AUTH_EXEC failed")
         }
 
         ESManager.sharedInstanceForCallbacks = self
         scheduleTempCleanup()
+        setupMachListener()
     }
 
     private func stop() {
@@ -345,21 +347,26 @@ extension ESManager {
 extension ESManager {
     // Compute SHA256 hash synchronously (used on background queues only)
     private func computeSHA256Streaming(forPath path: String) -> String? {
-        let fh: FileHandle
-        do {
-            fh = try FileHandle(forReadingFrom: URL(fileURLWithPath: path))
-        } catch {
-            return nil
-        }
+        guard let fh = FileHandle(forReadingAtPath: path) else { return nil }
         defer { try? fh.close() }
 
         var hasher = SHA256()
+        let bufferSize = 256 * 1024 // Tăng lên 256KB để tận dụng tốc độ SSD NVMe
+
         while true {
-            let chunkData = fh.readData(ofLength: 64 * 1024) // 64KB
-            if chunkData.count == 0 { break }
+            // autoreleasepool đảm bảo RAM được giải phóng ngay sau mỗi vòng lặp
+            let data = autoreleasepool { () -> Data? in
+                let chunk = fh.readData(ofLength: bufferSize)
+                return chunk.isEmpty ? nil : chunk
+            }
+
+            guard let chunkData = data else { break }
             hasher.update(data: chunkData)
         }
+
         let digest = hasher.finalize()
+        
+        // Cách convert sang Hex String nhanh nhất trong Swift
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 

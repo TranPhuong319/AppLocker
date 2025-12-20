@@ -29,6 +29,10 @@ class AppState: ObservableObject {
     @Published var filteredLockedApps: [InstalledApp] = []
     @Published var filteredUnlockableApps: [InstalledApp] = []
     
+    // Backing published sources for computed lists so we can use Combine `$` publishers
+    @Published private(set) var lockedAppObjects: [InstalledApp] = []
+    @Published private(set) var unlockableApps: [InstalledApp] = []
+    
     init() {
         if modeLock == "Launcher" {
             manager = LockLauncher()
@@ -36,31 +40,27 @@ class AppState: ObservableObject {
             manager = LockES()
         }
         setupSearchPipeline()
+        refreshAppLists()
     }
     
     private func setupSearchPipeline() {
-        // Pipeline cho Unlockable Apps (Giữ nguyên của bạn)
-        $searchTextUnlockaleApps
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
-            .removeDuplicates()
-            .map { [weak self] text -> [InstalledApp] in
+        // Kết hợp cả Text Search và Danh sách App gốc
+        Publishers.CombineLatest($searchTextLockApps, $lockedAppObjects)
+            .map { [weak self] (text, apps) -> [InstalledApp] in
                 guard let self = self else { return [] }
-                return self.performFilter(text: text, apps: self.unlockableApps)
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$filteredUnlockableApps)
-
-        // Pipeline MỚI cho Locked Apps
-        $searchTextLockApps
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
-            .removeDuplicates()
-            .map { [weak self] text -> [InstalledApp] in
-                guard let self = self else { return [] }
-                // Sử dụng lockedAppObjects (danh sách gốc) để lọc
-                return self.performFilter(text: text, apps: self.lockedAppObjects)
+                return self.performFilter(text: text, apps: apps)
             }
             .receive(on: DispatchQueue.main)
             .assign(to: &$filteredLockedApps)
+
+        Publishers.CombineLatest($searchTextUnlockaleApps, $unlockableApps)
+            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.global()) // Giảm debounce cho mượt
+            .map { [weak self] (text, apps) -> [InstalledApp] in
+                guard let self = self else { return [] }
+                return self.performFilter(text: text, apps: apps)
+            }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$filteredUnlockableApps)
     }
 
     // Hàm hỗ trợ lọc dùng chung để code sạch hơn
@@ -70,6 +70,33 @@ class AppState: ObservableObject {
             return apps // Đã được sort sẵn trong computed property
         } else {
             return apps.filter { $0.name.lowercased().contains(query) }
+        }
+    }
+    
+    private func refreshAppLists() {
+        // Recompute from manager
+        let locked = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
+            guard (manager.lockedApps[path] != nil) else { return nil }
+            let icon = NSWorkspace.shared.icon(forFile: path)
+            let name = FileManager.default.displayName(atPath: path)
+                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+            return InstalledApp(name: name, bundleID: "", icon: icon, path: path)
+        }
+        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+        let unlockable = manager.allApps
+            .filter { !manager.lockedApps.keys.contains($0.path) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+        // Publish on main thread
+        if Thread.isMainThread {
+            self.lockedAppObjects = locked
+            self.unlockableApps = unlockable
+        } else {
+            DispatchQueue.main.async {
+                self.lockedAppObjects = locked
+                self.unlockableApps = unlockable
+            }
         }
     }
     
@@ -86,29 +113,6 @@ class AppState: ObservableObject {
         case mainWindow
         case addAppPopup
         case deleteQueuePopup
-    }
-    
-    var lockedAppObjects: [InstalledApp] {
-        manager.lockedApps.keys.compactMap { path in
-            guard (manager.lockedApps[path] != nil) else { return nil }
-            let icon = NSWorkspace.shared.icon(forFile: path)
-            let name = FileManager.default.displayName(atPath: path)
-                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-            
-            return InstalledApp(
-                name: name,
-                bundleID: "",
-                icon: icon,
-                path: path
-            )
-        }
-        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-    }
-    
-    var unlockableApps: [InstalledApp] {
-        manager.allApps
-            .filter { !manager.lockedApps.keys.contains($0.path) } // chưa bị khoá theo config
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
     
     func toggleLockPopup(for apps: Set<String>, locking: Bool) {
@@ -135,6 +139,10 @@ class AppState: ObservableObject {
                 } else {
                     self.deleteQueue.removeAll()
                 }
+                
+                self.manager.reloadAllApps()
+                self.refreshAppLists()
+                
                 self.showingLockingPopup = false
             }
         }
@@ -142,7 +150,7 @@ class AppState: ObservableObject {
     
     // Logic từ nút +
     func openAddApp() {
-        let currentApps = unlockableApps
+        let currentApps = self.unlockableApps
         if currentApps != lastUnlockableApps {
             lastUnlockableApps = currentApps
         }

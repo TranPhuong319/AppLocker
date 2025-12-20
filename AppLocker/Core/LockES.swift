@@ -85,22 +85,29 @@ class LockES: LockManagerProtocol {
 
     // MARK: - SHA helper
     private func computeSHA(for executablePath: String) -> String? {
-        let fh: FileHandle
-        do {
-            fh = try FileHandle(forReadingFrom: URL(fileURLWithPath: executablePath))
-        } catch {
+        guard let fh = FileHandle(forReadingAtPath: executablePath) else {
             return nil
         }
         defer { try? fh.close() }
         
         var hasher = SHA256()
+        let bufferSize = 256 * 1024 // 256KB giúp đọc nhanh hơn trên SSD
+        
         while true {
-            let chunkData = fh.readData(ofLength: 64 * 1024) // 64KB
-            if chunkData.isEmpty { break }
+            // Sử dụng autoreleasepool để giải phóng bộ nhớ ngay lập tức trong vòng lặp
+            let data = autoreleasepool { () -> Data? in
+                let chunk = fh.readData(ofLength: bufferSize)
+                return chunk.isEmpty ? nil : chunk
+            }
+            
+            guard let chunkData = data else { break }
             hasher.update(data: chunkData)
         }
+        
         let digest = hasher.finalize()
-        return digest.map { String(format: "%02x", $0) }.joined()
+        
+        // Tối ưu hóa chuyển đổi Hex String
+        return digest.reduce("") { $0 + String(format: "%02x", $1) }
     }
 
     // MARK: - Toggle lock (ES mode: chỉ ghi config và publish)

@@ -160,7 +160,7 @@ struct ContentView: View {
                             let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
                             if !userApps.isEmpty {
                                 SectionHeader(title: "Applications".localized)
-                                ForEach(userApps) { app in
+                                ForEach(userApps, id: \.path) { app in
                                     appRow(for: app)
                                 }
                             }
@@ -169,7 +169,7 @@ struct ContentView: View {
                             if !systemApps.isEmpty {
                                 SectionHeader(title: "System Applications".localized)
                                     .padding(.top, 10)
-                                ForEach(systemApps) { app in
+                                ForEach(systemApps, id: \.path) { app in
                                     appRow(for: app)
                                 }
                             }
@@ -356,7 +356,7 @@ struct ContentView: View {
         .padding()
         .frame(minWidth: 200, minHeight: 100)
     }
-    
+        
     // MARK: - Helper
     @ViewBuilder
     func SectionHeader(title: String) -> some View {
