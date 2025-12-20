@@ -352,6 +352,28 @@
         }
       }
     },
+    "Reset" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt lại"
+          }
+        }
+      }
+    },
+    "Reset AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt lại AppLocker"
+          }
+        }
+      }
+    },
     "Retry" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -425,6 +447,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Không có ứng dụng nào bị khoá."
+          }
+        }
+      }
+    },
+    "This operation will delete all settings including the list of locked applications and will reopen the application. \n\nDo you want to continue?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thao tác này sẽ xóa tất cả các cài đặt bao gồm danh sách các ứng dụng bị khóa và sẽ mở lại ứng dụng. \n\nBạn có muốn tiếp tục không?"
           }
         }
       }

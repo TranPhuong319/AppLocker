@@ -77,9 +77,9 @@ final class ConfigStore {
         do {
             let data = try encoder.encode(dict)
             try data.write(to: self.configURL, options: .atomic)
-            NSLog("✅ ConfigStore.save success: wrote \(arr.count) apps")
+            Logfile.core.info("ConfigStore.save success: wrote \(arr.count) apps")
         } catch {
-            NSLog("❌ ConfigStore.save failed: \(error.localizedDescription)")
+            Logfile.core.error("ConfigStore.save failed: \(error.localizedDescription)")
         }
     }
 }

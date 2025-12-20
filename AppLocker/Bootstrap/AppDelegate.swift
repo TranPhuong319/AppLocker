@@ -49,6 +49,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             launchConfig(config: "Launcher")
         }
     }
+    
+    func applicationExactlyOneInstance() {
+        // macOS usually handles this itself via NSApplication.shared
+        // But you can check the identifier (Bundle Identifier)
+        let apps = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
+        if apps.count > 1 {
+            // If you see more than 1 app running, exit the current app
+            NSApp.terminate(nil)
+        }
+    }
 }
 
 extension AppDelegate {
@@ -163,19 +173,20 @@ extension AppDelegate: NSMenuDelegate {
                                     action: #selector(openListApp),
                                     keyEquivalent: "l")
         manageItem.keyEquivalentModifierMask = [.command,.shift]
+        manageItem.image = NSImage(systemSymbolName: "lock.app.dashed", accessibilityDescription: nil)
         menu.addItem(manageItem)
         
         #if DEBUG
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
-                                action: #selector(quitApp),
+                                action: #selector(NSApplication.terminate(_:)),
                                 keyEquivalent: "q"))
         #endif
     }
 
     private func buildOptionMenu(for menu: NSMenu) {
         menu.addItem(NSMenuItem(title: "Settings".localized,
-                                action: #selector(openPreference),
+                                action: #selector(openSettings),
                                 keyEquivalent: ","))
         menu.addItem(.separator())
 
@@ -188,17 +199,37 @@ extension AppDelegate: NSMenuDelegate {
             menu.addItem(launchItem)
         }
         
-        menu.addItem(NSMenuItem(title: "Check for Updates...".localized,
+        let updateItem = NSMenuItem(title: "Check for Updates...".localized,
                                 action: #selector(checkUpdate),
-                                keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "About AppLocker".localized,
+                                keyEquivalent: "")
+        updateItem.image = NSImage(systemSymbolName: "arrow.trianglehead.2.clockwise.rotate.90",
+                                   accessibilityDescription: nil)
+        menu.addItem(updateItem)
+        let aboutItem = NSMenuItem(title: "About AppLocker".localized,
                                 action: #selector(about),
-                                keyEquivalent: ""))
+                                keyEquivalent: "")
+        aboutItem.image = NSImage(systemSymbolName: "info.circle", accessibilityDescription: nil)
+        menu.addItem(aboutItem)
 
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Uninstall AppLocker".localized,
-                                action: #selector(uninstall),
-                                keyEquivalent: ""))
+
+        let uninstallItem = NSMenuItem(title: "Uninstall AppLocker".localized,
+                                       action: #selector(uninstall),
+                                       keyEquivalent: "")
+        uninstallItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
+        menu.addItem(uninstallItem)
+
+        let resetItem = NSMenuItem(title: "Reset AppLocker".localized,
+                                   action: #selector(resetApp), // Hàm xử lý reset của bạn
+                                   keyEquivalent: "")
+        resetItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)
+
+        // Đặt phím bổ trợ là Shift
+        resetItem.keyEquivalentModifierMask = NSEvent.ModifierFlags([.option, .shift])
+        // Đánh dấu đây là mục thay thế cho mục ngay phía trước (uninstallItem)
+        resetItem.isAlternate = true
+
+        menu.addItem(resetItem)
     }
 }
 
@@ -234,25 +265,7 @@ extension AppDelegate {
         }
     }
 
-    @objc func quitApp() {
-//        if modeLock == "Launcher"{
-            NSApp.terminate(nil)
-//        } else {
-//            AuthenticationManager.authenticate(
-//                reason: "authenticate to quit app".localized
-//            ) { success, error in
-//                DispatchQueue.main.async {
-//                    if success {
-//                        NSApp.terminate(nil)
-//                    } else {
-//                        Logfile.core.error("Error quiting app: \(error as NSObject?, privacy: .public)")
-//                    }
-//                }
-//            }
-//        }
-    }
-
-    @objc func openPreference() {
+    @objc func openSettings() {
         NSApp.activate(ignoringOtherApps: true)
         SettingsWindowController.show()
     }
@@ -264,10 +277,10 @@ extension AppDelegate {
 
         if manager.lockedApps.isEmpty || modeLock == "ES" {
             let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
-                                    message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
-                                    style: .critical,
-                                    buttons: ["Cancel".localized, "Uninstall".localized],
-                                    cancelIndex: 0)
+                                         message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
+                                         style: .critical,
+                                         buttons: ["Cancel".localized, "Uninstall".localized],
+                                         cancelIndex: 0)
             
             switch confirm {
             case .button(index: 1, title: "Uninstall".localized):
@@ -283,6 +296,8 @@ extension AppDelegate {
                                 if status == .enabled {
                                     try? loginItem.unregister()
                                 }
+                                self.selfRemoveApp()
+                                self.removeConfig()
                                 self.showRestartSheet()
                                 NSApp.terminate(nil)
                             }
@@ -291,6 +306,8 @@ extension AppDelegate {
                 } else {
                     ExtensionInstaller.shared.onUninstalled = {
                         self.manageAgent(plistName: plistName, action: .uninstall)
+                        self.removeConfig()
+                        self.selfRemoveApp()
                         self.showRestartSheet()
                         NSApp.terminate(nil)
                     }
@@ -306,6 +323,34 @@ extension AppDelegate {
                 title: "Unable to uninstall AppLocker".localized,
                 message: "You need to unlock all applications before Uninstalling".localized,
                 style: .critical)
+        }
+    }
+    
+    @objc func resetApp() {
+        Logfile.core.info("Reset App Clicked")
+        NSApp.activate(ignoringOtherApps: true)
+        let confirm = AlertShow.show(title: "Reset AppLocker".localized,
+                                     message:
+                                        """
+                                        This operation will delete all settings including the list of locked applications and will reopen the application. 
+                                        
+                                        Do you want to continue?
+                                        """.localized,
+                                     style: .critical,
+                                     buttons: ["Cancel".localized, "Reset".localized],
+                                     cancelIndex: 0)
+        switch confirm {
+        case .button(index: 1, title: "Reset".localized):
+            ExtensionInstaller.shared.onUninstalled = {
+                self.removeConfig()
+                self.manageAgent(plistName: plistName, action: .uninstall)
+                modeLock = nil
+                self.restartApp(mode: modeLock)
+            }
+            ExtensionInstaller.shared.uninstall()
+            
+        default:
+            break
         }
     }
 
@@ -433,9 +478,33 @@ extension AppDelegate {
 
         do {
             try task.run()
-            NSLog("🧹 App will remove itself at path: \(bundlePath)")
+            Logfile.core.info("App will remove itself at path: \(bundlePath)")
         } catch {
-            NSLog("❌ Failed to start self-removal: \(error.localizedDescription)")
+            Logfile.core.error("Failed to start self-removal: \(error.localizedDescription)")
+        }
+    }
+    
+    func removeConfig() {
+        let fileManager = FileManager.default
+        
+        guard let appSupportURL = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return
+        }
+        
+        let appFolderURL = appSupportURL.appendingPathComponent("AppLocker")
+        
+        do {
+            if fileManager.fileExists(atPath: appFolderURL.path) {
+                try fileManager.removeItem(at: appFolderURL)
+                Logfile.core.info("The configuration folder has been successfully deleted.")
+                
+                let domain = Bundle.main.bundleIdentifier!
+                UserDefaults.standard.removePersistentDomain(forName: domain)
+                UserDefaults.standard.synchronize()
+                
+            }
+        } catch {
+            Logfile.core.error("Error deleting folder: \(error.localizedDescription, privacy: .public)")
         }
     }
 }
@@ -510,16 +579,17 @@ extension AppDelegate {
 }
 
 extension AppDelegate {
-    func restartApp(mode: String) {
+    func restartApp(mode: String?) {
         let path = Bundle.main.bundlePath
         let task = Process()
         task.launchPath = "/usr/bin/open"
-        task.arguments = [path]
+        task.arguments = ["-n", path]
         try? task.run()
-        if modeLock != "Launcher" {
+        if mode != "Launcher" && mode != nil {
             manageAgent(plistName: plistName, action: .install)
         }
         // Thoát app hiện tại
         NSApp.terminate(nil)
     }
 }
+
