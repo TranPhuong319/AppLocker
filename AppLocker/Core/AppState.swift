@@ -23,14 +23,53 @@ class AppState: ObservableObject {
     @Published var isDisabled = false
     @Published var showingLockingPopup = false
     @Published var lockingMessage = ""
-    @Published var searchTextUnlockaleApps = ""
     @Published var searchTextLockApps = ""
+    @Published var searchTextUnlockaleApps: String = ""
+    
+    @Published var filteredLockedApps: [InstalledApp] = []
+    @Published var filteredUnlockableApps: [InstalledApp] = []
     
     init() {
         if modeLock == "Launcher" {
             manager = LockLauncher()
         } else {
             manager = LockES()
+        }
+        setupSearchPipeline()
+    }
+    
+    private func setupSearchPipeline() {
+        // Pipeline cho Unlockable Apps (Giữ nguyên của bạn)
+        $searchTextUnlockaleApps
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
+            .removeDuplicates()
+            .map { [weak self] text -> [InstalledApp] in
+                guard let self = self else { return [] }
+                return self.performFilter(text: text, apps: self.unlockableApps)
+            }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$filteredUnlockableApps)
+
+        // Pipeline MỚI cho Locked Apps
+        $searchTextLockApps
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.global(qos: .userInitiated))
+            .removeDuplicates()
+            .map { [weak self] text -> [InstalledApp] in
+                guard let self = self else { return [] }
+                // Sử dụng lockedAppObjects (danh sách gốc) để lọc
+                return self.performFilter(text: text, apps: self.lockedAppObjects)
+            }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$filteredLockedApps)
+    }
+
+    // Hàm hỗ trợ lọc dùng chung để code sạch hơn
+    private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
+        let query = text.lowercased().trimmingCharacters(in: .whitespaces)
+        if query.isEmpty {
+            return apps // Đã được sort sẵn trong computed property
+        } else {
+            return apps.filter { $0.name.lowercased().contains(query) }
         }
     }
     

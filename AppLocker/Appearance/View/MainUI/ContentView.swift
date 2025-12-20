@@ -9,19 +9,26 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum AppSource: String {
+    case user = "Applications"
+    case system = "System"
+}
+
 struct InstalledApp: Identifiable, Hashable {
     let id: String
     let name: String
     let bundleID: String
     let icon: NSImage?
     let path: String
+    let source: AppSource?
 
-    init(name: String, bundleID: String, icon: NSImage?, path: String) {
+    init(name: String, bundleID: String, icon: NSImage?, path: String, source: AppSource? = nil) {
         self.id = path
         self.name = name
         self.bundleID = bundleID
         self.icon = icon
         self.path = path
+        self.source = source
     }
 }
 
@@ -31,321 +38,395 @@ struct ContentView: View {
     @EnvironmentObject var appstate: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) { // ✅ tất cả cách nhau 9
-            // Label header
-            HStack {
-                Text("Locked application".localized)
-                    .font(.headline)
-                Spacer()
-                Button {
-                    appState.openAddApp()
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .help("Add application to lock".localized)
-                .disabled(appState.isDisabled)
-            }
+        VStack(alignment: .leading, spacing: 9) {
+            headerView
             
             if appState.lockedAppObjects.isEmpty {
-                VStack {
-                    Text("There is no locked application.".localized)
-                        .foregroundColor(.secondary)
-                        .font(.title3)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                }
+                emptyStateView
             } else {
-                // Search field
-                TextField("Search apps...".localized, text: $appState.searchTextLockApps)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal, 8)
-                    .focused($isSearchFocused)
-                
-                // ScrollView thay List
-                ZStack(alignment: .bottom) {
-                    ScrollView {
-                        LazyVStack(alignment: .center, spacing: 6) {
-                            ForEach(appState.lockedAppObjects.filter {
-                                appState.searchTextLockApps.isEmpty || $0.name.localizedCaseInsensitiveContains(appState.searchTextLockApps)
-                            }, id: \.id) { app in
-                                HStack(spacing: 12) {
-                                    if let icon = app.icon {
-                                        Image(nsImage: icon)
-                                            .resizable()
-                                            .frame(width: 32, height: 32)
-                                            .cornerRadius(6)
-                                    }
-                                    VStack(alignment: .leading) {
-                                        Text(app.name)
-                                    }
-                                    Spacer()
-                                    
-                                    if appState.selectedToLock.contains(app.path) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                    }
-                                    Button {
-                                        appState.deleteQueue.insert(app.path)
-                                    } label: {
-                                        Image(systemName: "minus.circle")
-                                            .foregroundColor(.red)
-                                    }
-                                    .buttonStyle(BorderlessButtonStyle())
-                                    .disabled(appState.deleteQueue.contains(app.path))
-                                }
-                                .padding(.vertical, 4)
-                                .padding(.horizontal, 8)
-                                .frame(maxWidth: 420)                       // width item
-//                                .background(
-//                                    RoundedRectangle(cornerRadius: 10)     // bo ngoài
-//                                        .fill(.ultraThinMaterial)            // blur
-//                                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
-//                                )
-                                .frame(maxWidth: .infinity)                // căn giữa item trong ScrollView
-                                .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                        .frame(maxWidth: .infinity) // ScrollView vẫn full width
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .frame(maxHeight: .infinity) // ScrollView full height window
-                    
-                    // Bottom bar nếu có deleteQueue
-                    if !appState.deleteQueue.isEmpty {
-                        Button {
-                            appState.showingDeleteQueue = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "tray.full")
-                                Text("Waiting to unlock %d application(s)...".localized(with: appState.deleteQueue.count))
-                                    .bold()
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: 35)       // gộp frame
-                            .padding(.horizontal)                         // padding ngoài
-                            .background(Color.red.opacity(0.8))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .shadow(radius: 4)
-                        }
-                        .buttonStyle(PlainButtonStyle())                 // giữ kiểu plain
-                        .padding(.bottom, 8)                            // padding dưới
-                        .transition(.move(edge: .bottom))               // animation hiện ẩn
-                        .animation(.easeInOut, value: appState.deleteQueue.isEmpty)
-                    }
-                }
+                mainListView
             }
         }
-        .padding(12) // cách mép window
+        .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .sheet(isPresented: $appState.showingAddApp) {
-            NavigationStack {
-                VStack(spacing: 0) {
-                    // 🔍 Thanh search nằm ngay trên List
-                    HStack {
-                        TextField("Search apps...".localized, text: $appState.searchTextUnlockaleApps)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(8)
-                            .frame(maxWidth: .infinity) // ✅ full chiều ngang
-                            .focused($isSearchFocused)
-                    }
-
-                    Divider()
-
-                    // 📋 Danh sách app lọc theo search
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 8) {
-                            let filteredApps = appState.unlockableApps.filter { app in
-                                appState.searchTextUnlockaleApps.isEmpty ||
-                                app.name.localizedCaseInsensitiveContains(appState.searchTextUnlockaleApps)
-                            }
-                            ForEach(filteredApps, id: \.id) { app in
-                                HStack(spacing: 12) {
-                                    if let icon = app.icon {
-                                        Image(nsImage: icon)
-                                            .resizable()
-                                            .frame(width: 32, height: 32)
-                                            .cornerRadius(6)
-                                    }
-                                    Text(app.name)
-                                    Spacer()
-                                    if appState.pendingLocks.contains(app.path) {
-                                        Text("Locking...".localized)
-                                            .italic()
-                                            .foregroundColor(.gray)
-                                    } else if appState.selectedToLock.contains(app.path) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                    }
-                                }
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 10)
-//                                .background(
-//                                    RoundedRectangle(cornerRadius: 10)
-//                                        .fill(.regularMaterial)      // blur
-//                                        .shadow(color: .black.opacity(0.06), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
-//                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    guard !appState.pendingLocks.contains(app.path) else { return }
-                                    if appState.selectedToLock.contains(app.path) {
-                                        appState.selectedToLock.remove(app.path)
-                                    } else {
-                                        appState.selectedToLock.insert(app.path)
-                                    }
-                                }
-                                .opacity(appState.selectedToLock.contains(app.path) ? 0.3 : 1.0)
-                                .animation(.easeInOut(duration: 0.2), value: appState.selectedToLock)
-                            }
-                        }
-                        .padding(.vertical, 8) // chỉ giữ padding dọc
-                        .padding(.horizontal)  // 1 lớp padding ngoài
-                    }
-                    .frame(maxHeight: 520)
-
-                }
-                .navigationTitle("Select the application to lock".localized)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(action: {
-                            appState.lockButton()
-                        }) {
-                            Text("Lock (%d)".localized(with: appState.selectedToLock.count))
-                        }
-                        .accentColor(.accentColor)
-                        .keyboardShortcut(.defaultAction)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
-                    }
-
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close".localized) {
-                            appState.closeAddPopup()
-                        }
-                    }
-
-                    ToolbarItem(placement: .automatic) {
-                        Button("Others…") {
-                            appState.addOthersApp()
-                        }
-                    }
-                }
-            }
-            .frame(minWidth: 500, minHeight: 600)
-            .onAppear {
-                appState.manager.reloadAllApps()
-                Logfile.core.info("List apps loaded")
-                // Remove focus SwiftUI state
-                isSearchFocused = false
-                
-                // Dispatch async để AppKit nhận sự thay đổi
-                DispatchQueue.main.async {
-                    // Đổi sang touch bar context sheet Add App
-                    let tb = TouchBarManager.shared.makeTouchBar(for: .addAppPopup)
-                    NSApp.keyWindow?.touchBar = tb
-                    NSApp.keyWindow?.makeFirstResponder(nil)
-                }
-            }
-                
-            .onDisappear {
-                DispatchQueue.main.async {
-                    appState.searchTextUnlockaleApps = ""
-                    if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
-                        TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
-                    }
-                }
-                
-            }
+        .contentShape(Rectangle())
+        .onTapGesture { isSearchFocused = false }
+        // Tách các sheet ra các hàm riêng để giảm tải cho body chính
+        .sheet(isPresented: $appState.showingAddApp) { addAppSheet }
+        .sheet(isPresented: $appState.showingDeleteQueue) { deleteQueueSheet }
+        .sheet(isPresented: $appState.showingLockingPopup) { lockingPopupSheet }
+    }
+    
+    // MARK: - Subviews
+    @ViewBuilder
+    private var headerView: some View {
+        HStack {
+            Text("Locked application".localized).font(.headline)
+            Spacer()
+            Button { appState.openAddApp() } label: { Image(systemName: "plus") }
+            .help("Add application to lock".localized)
+            .disabled(appState.isDisabled)
         }
-
-        .sheet(isPresented: $appState.showingDeleteQueue) {
-            VStack(alignment: .leading) {
-                Text("Application is waiting to be deleted".localized)
-                    .font(.headline)
-                    .padding()
-
+    }
+    
+    @ViewBuilder
+    private var emptyStateView: some View {
+        Text("There is no locked application.".localized)
+            .foregroundColor(.secondary)
+            .font(.title3)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+    
+    @ViewBuilder
+    private var mainListView: some View {
+        VStack(spacing: 9) {
+            TextField("Search apps...".localized, text: $appState.searchTextLockApps)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal, 8)
+                .focused($isSearchFocused)
+                .onSubmit { isSearchFocused = false }
+            
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    LazyVStack(alignment: .center, spacing: 6) {
+                        ForEach(appState.filteredLockedApps, id: \.path) { app in
+                            lockedAppRow(for: app)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)
+                }
+                .background(Color.white.opacity(0.000001).onTapGesture { isSearchFocused = false })
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                if !appState.deleteQueue.isEmpty {
+                    deleteQueueNotificationBar
+                }
+            }
+            .animation(.spring(), value: appState.deleteQueue.isEmpty)
+        }
+    }
+    
+    // MARK: - Row Helper
+    @ViewBuilder
+    private func lockedAppRow(for app: InstalledApp) -> some View {
+        HStack(spacing: 12) {
+            if let icon = app.icon {
+                Image(nsImage: icon).resizable().frame(width: 32, height: 32).cornerRadius(6)
+            }
+            Text(app.name)
+            Spacer()
+            if appState.selectedToLock.contains(app.path) {
+                Image(systemName: "checkmark.circle.fill")
+            }
+            Button {
+                withAnimation(.spring()) {
+                    _ = appState.deleteQueue.insert(app.path)
+                }
+            } label: {
+                Image(systemName: "minus.circle").foregroundColor(.red)
+            }
+            .buttonStyle(BorderlessButtonStyle())
+            .disabled(appState.deleteQueue.contains(app.path))
+        }
+        .padding(.vertical, 4).padding(.horizontal, 8)
+        .frame(maxWidth: 420).frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+        .onTapGesture { isSearchFocused = false }
+        .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
+    }
+    
+    // MARK: - Sheets
+    @ViewBuilder
+    private var addAppSheet: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Thanh search nằm ngay trên List
+                HStack {
+                    TextField("Search apps...".localized, text: $appState.searchTextUnlockaleApps)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(8)
+                        .frame(maxWidth: .infinity) // full chiều ngang
+                        .focused($isSearchFocused)
+                        .onSubmit { unfocus() } // Hàm phụ để ép nhả focus
+                }
+                
+                Divider()
+                
+                // Danh sách app lọc theo search
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
-                        let filteredLockedApps = appState.lockedAppObjects.filter { app in
-                            appState.deleteQueue.contains(app.path)
-                        }
-
-                        ForEach(filteredLockedApps, id: \.id) { app in
-                            HStack(spacing: 12) {
-                                if let icon = app.icon {
-                                    Image(nsImage: icon)
-                                        .resizable()
-                                        .frame(width: 32, height: 32)
-                                        .cornerRadius(6)
+                        if modeLock == "ES" {
+                            let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
+                            if !userApps.isEmpty {
+                                SectionHeader(title: "Applications".localized)
+                                ForEach(userApps) { app in
+                                    appRow(for: app)
                                 }
-                                Text(app.name)
-                                Spacer()
-                                Button {
-                                    appState.deleteQueue.remove(app.path)
-                                    if appState.deleteQueue.isEmpty {
-                                        appState.showingDeleteQueue = false
-                                    }
-                                } label: {
-                                    Image(systemName: "minus.circle")
-                                        .foregroundColor(.red)
-                                }
-                                .buttonStyle(BorderlessButtonStyle())
                             }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 10)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            let systemApps = appState.filteredUnlockableApps.filter { $0.source == .system }
+                            if !systemApps.isEmpty {
+                                SectionHeader(title: "System Applications".localized)
+                                    .padding(.top, 10)
+                                ForEach(systemApps) { app in
+                                    appRow(for: app)
+                                }
+                            }
+                            
+                        } else {
+                            ForEach(appState.filteredUnlockableApps) { app in
+                                appRow(for: app)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal)
+                }
+                .frame(maxHeight: 520)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { unfocus() }
+            .navigationTitle("Select the application to lock".localized)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(action: {
+                        appState.lockButton()
+                    }) {
+                        Text("Lock (%d)".localized(with: appState.selectedToLock.count))
+                    }
+                    .accentColor(.accentColor)
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
+                }
+
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close".localized) {
+                        appState.closeAddPopup()
+                    }
+                }
+
+                ToolbarItem(placement: .automatic) {
+                    Button("Others…") {
+                        appState.addOthersApp()
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 500, minHeight: 600)
+        .onTapGesture { unfocus() }
+        .onAppear {
+            unfocus() // Đảm bảo lúc mở lên không tự focus vào TextField
+            appState.manager.reloadAllApps()
+                        
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Ép AppKit nhả focus của mọi TextField đang hoạt động
+                NSApp.keyWindow?.makeFirstResponder(nil)
+                
+                // TouchBar logic
+                let tb = TouchBarManager.shared.makeTouchBar(for: .addAppPopup)
+                NSApp.keyWindow?.touchBar = tb
+            }
+        }
+            
+        .onDisappear {
+            DispatchQueue.main.async {
+                appState.searchTextUnlockaleApps = ""
+                if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
+                    TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
+                }
+            }
+        }
+    }
+    // Hàm bổ trợ để ép hệ thống nhả Focus hoàn toàn
+    private func unfocus() {
+        isSearchFocused = false
+        // Can thiệp AppKit: Bắt Window hiện tại nhả First Responder
+        DispatchQueue.main.async {
+            NSApp.keyWindow?.makeFirstResponder(nil)
+        }
+    }
+    
+    @ViewBuilder
+    private var deleteQueueNotificationBar: some View {
+        Button { appState.showingDeleteQueue = true } label: {
+            HStack {
+                Image(systemName: "tray.full")
+                Text("Waiting to unlock %d application(s)...".localized(with: appState.deleteQueue.count)).bold()
+            }
+            .frame(maxWidth: .infinity, maxHeight: 35)
+            .background(Color.red.opacity(0.8)).foregroundColor(.white).cornerRadius(8).shadow(radius: 4)
+        }
+        .buttonStyle(PlainButtonStyle()).padding(.horizontal, 16).padding(.bottom, 12)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+    
+    @ViewBuilder
+    private var deleteQueueSheet: some View {
+        VStack(alignment: .leading) {
+            Text("Application is waiting to be deleted".localized)
+                .font(.headline)
+                .padding()
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    let filteredLockedApps = appState.lockedAppObjects.filter { app in
+                        appState.deleteQueue.contains(app.path)
+                    }
+
+                    ForEach(filteredLockedApps, id: \.id) { app in
+                        HStack(spacing: 12) {
+                            if let icon = app.icon {
+                                Image(nsImage: icon)
+                                    .resizable()
+                                    .frame(width: 32, height: 32)
+                                    .cornerRadius(6)
+                            }
+                            Text(app.name)
+                            Spacer()
+                            Button {
+                                appState.deleteQueue.remove(app.path)
+                                if appState.deleteQueue.isEmpty {
+                                    appState.showingDeleteQueue = false
+                                }
+                            } label: {
+                                Image(systemName: "minus.circle")
+                                    .foregroundColor(.red)
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 //                            .background(
 //                                RoundedRectangle(cornerRadius: 10)
 //                                    .fill(.regularMaterial)      // blur
 //                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
 //                            )
-                            .cornerRadius(10)
-                        }
+                        .cornerRadius(10)
                     }
-                    .padding(.vertical, 8)
                 }
-                .frame(maxHeight: 350)
-                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
+            .frame(maxHeight: 350)
+            .padding(.horizontal)
 
-                Divider()
+            Divider()
 
-                HStack {
-                    Spacer()
-                    Button("Delete all from the waiting list".localized) {
-                        appState.deleteAllFromWaitingList()
-                    }
-                    .keyboardShortcut(.cancelAction)
-                    Button("Unlock".localized) {
-                        appState.unlockApp()
-                    }
-                    .accentColor(.accentColor)
-                    .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
+            HStack {
+                Spacer()
+                Button("Delete all from the waiting list".localized) {
+                    appState.deleteAllFromWaitingList()
                 }
-                .padding()
-            }
-            .frame(minWidth: 400, minHeight: 450)
-            .onAppear {
-                DispatchQueue.main.async {
-                    let tb = TouchBarManager.shared.makeTouchBar(for: .deleteQueuePopup)
-                    NSApp.keyWindow?.touchBar = tb
+                .keyboardShortcut(.cancelAction)
+                Button("Unlock".localized) {
+                    appState.unlockApp()
                 }
-            }
-            .onDisappear {
-                DispatchQueue.main.async {
-                    if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
-                        TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
-                    }
-                    appState.searchTextLockApps = ""
-                }
-            }
-        }
-        .sheet(isPresented: $appState.showingLockingPopup) {
-            HStack(spacing: 12) {
-                ProgressView()
-                Text(appState.lockingMessage)
-                    .font(.headline)
+                .accentColor(.accentColor)
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
             }
             .padding()
-            .frame(minWidth: 200, minHeight: 100)
         }
+        .frame(minWidth: 400, minHeight: 450)
+        .onAppear {
+            DispatchQueue.main.async {
+                let tb = TouchBarManager.shared.makeTouchBar(for: .deleteQueuePopup)
+                NSApp.keyWindow?.touchBar = tb
+            }
+        }
+        .onDisappear {
+            DispatchQueue.main.async {
+                if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
+                    TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
+                }
+                appState.searchTextLockApps = ""
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var lockingPopupSheet: some View {
+        HStack(spacing: 12) {
+            ProgressView()
+            Text(appState.lockingMessage)
+                .font(.headline)
+        }
+        .padding()
+        .frame(minWidth: 200, minHeight: 100)
+    }
+    
+    // MARK: - Helper
+    @ViewBuilder
+    func SectionHeader(title: String) -> some View {
+        HStack(spacing: 10) { // Khoảng cách giữa chữ và thanh ngang
+            Text(title) // Chữ in hoa nhẹ nhìn sẽ chuyên nghiệp hơn
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundColor(.secondary.opacity(0.8))
+                .layoutPriority(1) // Đảm bảo chữ không bị cắt nếu quá dài
+            
+            // Thanh ngang nối tiếp chữ
+            Rectangle()
+                .fill(Color.secondary.opacity(0.2))
+                .frame(height: 1) // Độ dày thanh ngang
+        }
+        .padding(.horizontal, 10)
+        .padding(.bottom, 4)
+        .padding(.top, 12)
+    }
+    
+    @ViewBuilder
+    func appRow(for app: InstalledApp) -> some View {
+        Button {
+            unfocus()
+            guard !appState.pendingLocks.contains(app.path) else { return }
+            
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                if appState.selectedToLock.contains(app.path) {
+                    appState.selectedToLock.remove(app.path)
+                } else {
+                    appState.selectedToLock.insert(app.path)
+                }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                if let icon = app.icon {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .frame(width: 32, height: 32)
+                        .cornerRadius(6)
+                } else {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 32, height: 32)
+                }
+                
+                Text(app.name)
+                    .font(.body)
+                    .foregroundColor(.primary) // Đảm bảo text không bị đổi màu theo Button
+                
+                Spacer()
+                
+                if appState.pendingLocks.contains(app.path) {
+                    Text("Locking...".localized)
+                        .italic()
+                        .foregroundColor(.secondary)
+                        .font(.subheadline)
+                } else if appState.selectedToLock.contains(app.path) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.accentColor)
+                        .font(.title3)
+                }
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .frame(maxWidth: .infinity) // Ép HStack chiếm hết chiều ngang của List
+            .contentShape(Rectangle())  // Biến toàn bộ diện tích (kể cả vùng Spacer) thành vùng nhấn
+            // Hiệu ứng mờ cố định khi đã được chọn vào danh sách chờ lock
+            .opacity(appState.selectedToLock.contains(app.path) ? 0.5 : 1.0)
+        }
+        .buttonStyle(AppRowButtonStyle()) // Áp dụng hiệu ứng nhấn
     }
 
     func toggleLockPopup(for apps: Set<String>, locking: Bool) {
@@ -408,6 +489,22 @@ struct PreviewWindow<Content: View>: View {
     var body: some View {
         content
             .frame(width: CGFloat(appState.setWidth), height: CGFloat(appState.setHeight))
+    }
+}
+
+struct AppRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                // Sử dụng RoundedRectangle để bo cong nền khi nhấn
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(configuration.isPressed ? Color.gray.opacity(0.15) : Color.clear)
+                    .padding(.horizontal, 4) // Thêm chút padding để nền không chạm sát mép
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+            .contentShape(Rectangle()) // Vẫn giữ cái này để nhận diện click toàn dòng
     }
 }
 

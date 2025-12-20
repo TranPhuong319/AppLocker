@@ -31,22 +31,25 @@ class LockES: LockManagerProtocol {
 
     // MARK: - Installed apps discovery (unchanged)
     func getInstalledApps() -> [InstalledApp] {
-        let appsDirs = ["/Applications", "/System/Applications"]
+        // Định nghĩa dictionary để map đường dẫn với loại App
+        let appsPaths: [String: AppSource] = [
+            "/Applications": .user,
+            "/System/Applications": .system
+        ]
+        
         var allApps: [InstalledApp] = []
         let fileManager = FileManager.default
         
-        for dir in appsDirs {
+        for (dir, source) in appsPaths {
             let dirURL = URL(fileURLWithPath: dir)
             
-            // Duyệt toàn bộ cây thư mục con, bỏ qua file ẩn
             guard let enumerator = fileManager.enumerator(
                 at: dirURL,
                 includingPropertiesForKeys: nil,
-                options: [.skipsHiddenFiles, .skipsPackageDescendants] // tránh lồng sâu trong .app khác
+                options: [.skipsHiddenFiles, .skipsPackageDescendants]
             ) else { continue }
             
             for case let fileURL as URL in enumerator {
-                // Chỉ lấy app bundle
                 guard fileURL.pathExtension == "app",
                       !fileURL.lastPathComponent.hasPrefix("."),
                       let bundle = Bundle(url: fileURL),
@@ -54,11 +57,9 @@ class LockES: LockManagerProtocol {
                     continue
                 }
                 
-                // Use the name displayed in Finder (localized)
-                let displayName = FileManager.default.displayName(atPath: fileURL.path)
+                let displayName = fileManager.displayName(atPath: fileURL.path)
                     .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
                 
-                // Get the icon
                 let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                 icon.size = NSSize(width: 32, height: 32)
                 
@@ -67,18 +68,16 @@ class LockES: LockManagerProtocol {
                         name: displayName,
                         bundleID: bundleID,
                         icon: icon,
-                        path: fileURL.path
+                        path: fileURL.path,
+                        source: source // Lưu nguồn gốc vào đây
                     )
                 )
             }
         }
         
-        // Sort A-Z by display name
-        return allApps
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        return allApps.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
-
-
+    
     // MARK: - Persistence helper
     func save() {
         ConfigStore.shared.save(self.lockedApps)

@@ -165,7 +165,6 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             tb.defaultItemIdentifiers = [
                 .flexibleSpace,
                 .deleteQueueButtons,
-                .flexibleSpace,
             ]
         }
 

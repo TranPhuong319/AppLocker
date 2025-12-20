@@ -34,6 +34,17 @@
         }
       }
     },
+    "Applications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng"
+          }
+        }
+      }
+    },
     "AppLocker Update Available" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -392,6 +403,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chính thức"
+          }
+        }
+      }
+    },
+    "System Applications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng hệ thống"
           }
         }
       }
