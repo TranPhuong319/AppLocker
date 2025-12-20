@@ -1,0 +1,50 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Identifier:" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Định danh:"
+          }
+        }
+      }
+    },
+    "Parent PID:" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PID chính:"
+          }
+        }
+      }
+    },
+    "Path:" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đường dẫn:"
+          }
+        }
+      }
+    },
+    "The following application has been blocked from execution\\nbecause it was added to the locked list." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng sau đã bị chặn thực thi\\nvì nó đã được thêm vào danh sách bị khóa."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

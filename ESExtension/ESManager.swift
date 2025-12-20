@@ -549,6 +549,82 @@ extension ESManager {
     }
 }
 
+// MARK: - TTY Notifier (Santa Style)
+final class TTYNotifier {
+    
+    /// Tìm đường dẫn TTY của một Process ID (ví dụ: /dev/ttys001)
+    static func getTTYPath(for pid: pid_t) -> String? {
+        let bufferSize = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, nil, 0)
+        guard bufferSize > 0 else { return nil }
+        
+        let fdInfoSize = MemoryLayout<proc_fdinfo>.stride
+        let numFDs = Int(bufferSize) / fdInfoSize
+        var fdInfos = [proc_fdinfo](repeating: proc_fdinfo(), count: numFDs)
+        
+        let result = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, &fdInfos, bufferSize)
+        guard result > 0 else { return nil }
+        
+        for fd in fdInfos {
+            if fd.proc_fdtype == PROX_FDTYPE_VNODE {
+                var vnodeInfo = vnode_fdinfowithpath()
+                let vnodeSize = Int32(MemoryLayout<vnode_fdinfowithpath>.stride)
+                let len = proc_pidfdinfo(pid, fd.proc_fd, PROC_PIDFDVNODEPATHINFO, &vnodeInfo, vnodeSize)
+                
+                if len > 0 {
+                    let path = withUnsafePointer(to: &vnodeInfo.pvip.vip_path) {
+                        $0.withMemoryRebound(to: CChar.self, capacity: Int(MAXPATHLEN)) {
+                            String(cString: $0)
+                        }
+                    }
+                    if path.hasPrefix("/dev/tty") { return path }
+                }
+            }
+        }
+        return nil
+    }
+
+    /// Gửi thông báo chặn vào Terminal
+    static func notify(parentPid: pid_t, blockedPath: String, sha: String, identifier: String? = nil) {
+        guard let ttyPath = getTTYPath(for: parentPid) else { return }
+        
+        // Mở TTY để ghi
+        guard let fileHandle = FileHandle(forWritingAtPath: ttyPath) else { return }
+        defer { try? fileHandle.close() }
+        
+        // Message
+        let title        = "AppLocker"
+        let description  = "The following application has been blocked from execution\nbecause it was added to the locked list."
+        
+        let labelPath    = "Path:"
+        let labelId      = "Identifier:"
+        let labelSha     = "SHA256:"
+        let labelParent  = "Parent PID:"
+        
+        // --- PHẦN ĐỊNH DẠNG (FORMATTING) ---
+        let boldRed = "\u{001B}[1m\u{001B}[31m"
+        let reset   = "\u{001B}[0m"
+        let bold    = "\u{001B}[1m"
+        
+        // --- GỘP LẠI (Dùng String Interpolation) ---
+        let message = """
+            \n
+            \(boldRed)\(title)\(reset)
+            
+            \(description)
+            
+            \(bold)\(labelPath.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(blockedPath)
+            \(bold)\(labelId.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(identifier ?? "Unknown")
+            \(bold)\(labelSha.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(sha)
+            \(bold)\(labelParent.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(parentPid)
+            \n
+            """
+        
+        if let data = message.data(using: .utf8) {
+            fileHandle.write(data)
+        }
+    }
+}
+
 // MARK: - Handle Message
 extension ESManager {
     private static func handleMessage(client: OpaquePointer?, message: UnsafePointer<es_message_t>?) {
@@ -567,21 +643,38 @@ extension ESManager {
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
                 return
             }
+            
+            // Lấy thông tin process cha (Shell/Launcher) để gửi thông báo
+            let parentPid = msg.process.pointee.ppid
+            // Lấy Signing ID nếu có (để hiển thị đẹp hơn)
+            var signingID = "Unsigned/Unknown"
+            if let signingToken = msg.event.exec.target.pointee.signing_id.data {
+                signingID = String(cString: signingToken)
+            }
 
-            // Hot-path: O(1) checks using path and pre-populated maps/caches
-            // 1) If we have a mapped SHA for this exact path, use it for decision (fast)
+            // --- Helper để gửi notify TTY (chạy background để không block kernel response) ---
+            func sendTTYNotification(sha: String) {
+                DispatchQueue.global(qos: .userInteractive).async {
+                    TTYNotifier.notify(parentPid: parentPid, blockedPath: path, sha: sha, identifier: signingID)
+                }
+            }
+            // -------------------------------------------------------------------------------
+
+            // 1) Fast path: Mapped SHA
             if let mappedSHA = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) {
-                // If temp allowed for this SHA -> allow
                 if mgr.isTempAllowed(mappedSHA) {
                     respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
-                    Logfile.es.log("Temp allowed by SHA mapping for \(path, privacy: .public)")
                     return
                 }
 
                 let isBlocked = mgr.stateQueue.sync(execute: { mgr.blockedSHAs.contains(mappedSHA) })
                 if isBlocked {
+                    // -> DENY
                     respondWithDeadline(ES_AUTH_RESULT_DENY, client: client, message: message)
-                    Logfile.es.log("Denied by mapped SHA for \(path, privacy: .public)")
+                    Logfile.es.log("Denied by mapped SHA: \(path)")
+                    
+                    // Gửi thông báo ra Terminal
+                    sendTTYNotification(sha: mappedSHA)
 
                     DispatchQueue.global(qos: .utility).async {
                         let name = mgr.computeAppName(forExecPath: path)
@@ -590,72 +683,72 @@ extension ESManager {
                     return
                 } else {
                     respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
-                    Logfile.es.log("Allowed by mapped SHA for \(path, privacy: .public)")
                     return
                 }
             }
 
-            // 2) If we have a cached decision for this path, apply it
+            // 2) Cache path
             if let cached = mgr.decisionQueue.sync(execute: { mgr.decisionCache[path] }) {
                 switch cached {
                 case .allow:
                     respondWithDeadline(ES_AUTH_RESULT_ALLOW, client: client, message: message)
-                    Logfile.es.log("Allowed by cache for \(path, privacy: .public)")
                     return
                 case .deny:
+                    // -> DENY
                     respondWithDeadline(ES_AUTH_RESULT_DENY, client: client, message: message)
-                    Logfile.es.log("Denied by cache for \(path, privacy: .public)")
-                    let shaOpt = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] })
+                    Logfile.es.log("Denied by cache: \(path)")
+                    
+                    let shaOpt = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) ?? "Cached-No-SHA"
+                    
+                    // Gửi thông báo ra Terminal
+                    sendTTYNotification(sha: shaOpt)
+                    
                     DispatchQueue.global(qos: .utility).async {
                         let name = mgr.computeAppName(forExecPath: path)
-                        mgr.sendBlockedNotificationToApp(name: name, path: path, sha: shaOpt ?? "")
+                        mgr.sendBlockedNotificationToApp(name: name, path: path, sha: shaOpt)
                     }
                     return
                 }
             }
 
-            // 3) No fast decision available — compute SHA synchronously and decide immediately
+            // 3) Slow path: Compute SHA
             if let sha = mgr.computeSHA256Streaming(forPath: path) {
-                // If temp allowed for this SHA -> allow
                 if mgr.isTempAllowed(sha) {
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("Temp allowed by computed SHA for \(path, privacy: .public)")
-                    // cache mapping and allow decision for future hot-paths
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
                     mgr.decisionQueue.async { mgr.decisionCache[path] = .allow }
                     return
                 }
 
-                // Check authoritative blocklist synchronously
                 let isBlockedNow = mgr.stateQueue.sync(execute: { mgr.blockedSHAs.contains(sha) })
                 if isBlockedNow {
-                    // Block immediately
+                    // -> DENY
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied (sync SHA) for \(path, privacy: .public) • SHA=\(sha, privacy: .public)")
-
-                    // Cache mapping & deny decision to make future lookups O(1)
+                    Logfile.es.log("Denied (sync SHA): \(path)")
+                    
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
                     mgr.decisionQueue.async { mgr.decisionCache[path] = .deny }
 
-                    // Notify app asynchronously
+                    // Gửi thông báo ra Terminal
+                    sendTTYNotification(sha: sha)
+
                     DispatchQueue.global(qos: .utility).async {
                         let name = mgr.computeAppName(forExecPath: path)
                         mgr.sendBlockedNotificationToApp(name: name, path: path, sha: sha)
                     }
                     return
                 } else {
-                    // Not blocked — allow and cache for future
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    Logfile.es.log("Allowed (sync SHA) for \(path, privacy: .public) • SHA=\(sha, privacy: .public)")
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
                     mgr.decisionQueue.async { mgr.decisionCache[path] = .allow }
                     return
                 }
             } else {
-                // Could not compute SHA synchronously (I/O/read error)
-                // Deny by default to ensure first-run is blocked; change to ALLOW if you prefer permissive behavior.
+                // Read Error -> Deny
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                Logfile.es.log("Failed to compute SHA synchronously for \(path, privacy: .public) — denying by default")
+                Logfile.es.log("Failed to compute SHA -> Denying: \(path)")
+                // Có thể gửi notify báo lỗi nếu muốn
+                sendTTYNotification(sha: "Read-Error")
                 return
             }
         }
