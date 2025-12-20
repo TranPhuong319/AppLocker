@@ -111,6 +111,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				com.TranPhuong319.AppLocker.agent.plist,
+				Core/AppInfo.swift,
 				Info.plist,
 			);
 			target = E0EF51A92E31558900161CAB /* AppLocker */;
@@ -127,7 +128,6 @@
 		E0749BE12E96D5DA003CD67D /* Exceptions for "Shared" folder in "Launcher" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				BlockedApp.swift,
 				ESAppProtocol.swift,
 				ESXPCProtocol.swift,
 			);
@@ -438,7 +438,6 @@
 			knownRegions = (
 				vi,
 				en,
-				Base,
 			);
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;
@@ -532,7 +531,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/ESExtension/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = ESExtension;
+				INFOPLIST_KEY_CFBundleDisplayName = "AppLocker Endpoint Security Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -565,7 +564,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/ESExtension/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = ESExtension;
+				INFOPLIST_KEY_CFBundleDisplayName = "AppLocker Endpoint Security Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -610,6 +609,7 @@
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INSTALL_PATH = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -648,6 +648,7 @@
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
 				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INSTALL_PATH = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -672,6 +673,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				INSTALL_PATH = "";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MARKETING_VERSION = "$(MARKETING_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Helper;
@@ -691,6 +693,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				INSTALL_PATH = "";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MARKETING_VERSION = "$(MARKETING_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Helper;
