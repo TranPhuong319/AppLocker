@@ -63,6 +63,10 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
     private var listener: NSXPCListener?
     private var activeConnections: [NSXPCConnection] = []
     private let activeConnectionsQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc.conns")
+    
+    // Initialize in the system's preferred language (e.g. "vi" or "en")
+    private var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
+    private let langQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.language")
 
     private var isReloadingConfig = false
 
@@ -124,6 +128,26 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
         }
         // If above not valid, attempt use other es APIs or return nil
         return nil
+    }
+}
+
+// MARK: - Change Language if main app send
+extension ESManager {
+    @objc func updateLanguage(to code: String) {
+        langQueue.async {
+            self.currentLanguage = code
+            
+            // Force the UserDefaults of the Extension process to use this language
+             // "AppleLanguages" is the system key, it will override Locale.preferredLanguages
+            UserDefaults.standard.set([code], forKey: "AppleLanguages")
+            UserDefaults.standard.synchronize()
+            
+            Logfile.es.log("ES Process language forced to: \(code, privacy: .public)")
+        }
+    }
+    
+    func getCurrentLanguage() -> String {
+        return langQueue.sync { self.currentLanguage }
     }
 }
 
@@ -396,12 +420,17 @@ final class TTYNotifier {
         
         // Message
         let title        = "AppLocker"
-        let description  = "The following application has been blocked from execution\nbecause it was added to the locked list."
+        let description  =
+        """
+        The following application has been blocked from execution
+        because it was added to the locked list.
+        """.localized
         
-        let labelPath    = "Path:"
-        let labelId      = "Identifier:"
-        let labelSha     = "SHA256:"
-        let labelParent  = "Parent PID:"
+        let labelPath    = "Path:".localized
+        let labelId      = "Identifier:".localized
+        let labelSha     = "SHA256:".localized
+        let labelParent  = "Parent PID:".localized
+        let labelAuth    = "Authenticate...".localized
         
         // --- PHẦN ĐỊNH DẠNG (FORMATTING) ---
         let boldRed = "\u{001B}[1m\u{001B}[31m"
@@ -410,6 +439,7 @@ final class TTYNotifier {
         
         // --- GỘP LẠI (Dùng String Interpolation) ---
         let message = """
+            \n
             \(boldRed)\(title)\(reset)
             
             \(description)
@@ -418,6 +448,7 @@ final class TTYNotifier {
             \(bold)\(labelId.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(identifier ?? "Unknown")
             \(bold)\(labelSha.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(sha)
             \(bold)\(labelParent.padding(toLength: 12, withPad: " ", startingAt: 0))\(reset) \(parentPid)
+            \(labelAuth)
             \n
             """
         
@@ -474,7 +505,7 @@ extension ESManager {
                     // -> DENY
                     usleep(1_000)
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied by mapped SHA: \(path)")
+                    Logfile.es.log("Denied by mapped SHA: \(path, privacy: .public)")
                     
                     // Gửi thông báo ra Terminal
                     sendTTYNotification(sha: mappedSHA)
@@ -500,7 +531,7 @@ extension ESManager {
                     // -> DENY
                     usleep(1_000)
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied by cache: \(path)")
+                    Logfile.es.log("Denied by cache: \(path, privacy: .public)")
                     
                     let shaOpt = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) ?? "Cached-No-SHA"
                     
@@ -528,7 +559,7 @@ extension ESManager {
                 if isBlockedNow {
                     // -> DENY
                     es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied (sync SHA): \(path)")
+                    Logfile.es.log("Denied (sync SHA): \(path, privacy: .public)")
                     
                     mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
                     mgr.decisionQueue.async { mgr.decisionCache[path] = .deny }
@@ -550,7 +581,7 @@ extension ESManager {
             } else {
                 // Read Error -> Deny
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                Logfile.es.log("Failed to compute SHA -> Denying: \(path)")
+                Logfile.es.log("Failed to compute SHA -> Denying: \(path, privacy: .public)")
                 // Có thể gửi notify báo lỗi nếu muốn
                 sendTTYNotification(sha: "Read-Error")
                 return

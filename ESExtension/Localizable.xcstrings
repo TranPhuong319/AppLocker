@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Authenticate..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác thực..."
+          }
+        }
+      }
+    },
     "Identifier:" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -18,7 +29,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PID chính:"
+            "value" : "PID cha:"
           }
         }
       }
@@ -34,13 +45,13 @@
         }
       }
     },
-    "The following application has been blocked from execution\\nbecause it was added to the locked list." : {
+    "The following application has been blocked from execution\nbecause it was added to the locked list." : {
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ứng dụng sau đã bị chặn thực thi\\nvì nó đã được thêm vào danh sách bị khóa."
+            "value" : "Ứng dụng sau đã bị chặn thực thi\nvì nó đã được thêm vào danh sách bị khóa."
           }
         }
       }

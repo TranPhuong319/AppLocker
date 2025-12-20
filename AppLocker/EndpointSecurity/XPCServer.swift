@@ -24,8 +24,15 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     
     // Extension -> App notification when exec attempted and extension denied
     func notifyBlockedExec(name: String, path: String, sha: String) {
-        Logfile.core.log("notifyBlockedExec name=\(name, privacy: .public) path=\(path, privacy: .public) sha=\(sha, privacy: .public). Authorization…")
-        
+        Logfile.core.log(
+            """
+            Endpoint Security Blocked Apps
+            Name:   \(name, privacy: .public)
+            Path:   \(path, privacy: .public)
+            SHA256: \(sha.prefix(8), privacy: .public)
+            Authorization...
+            """
+        )
         AuthenticationManager.authenticate(
             reason: "verify that you are opening the %@ app".localized(with: name)
         ) { success, error in

@@ -152,6 +152,7 @@
 		E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Locatizable.swift,
 				Log.swift,
 			);
 			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
@@ -438,6 +439,7 @@
 			knownRegions = (
 				vi,
 				en,
+				Base,
 			);
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;

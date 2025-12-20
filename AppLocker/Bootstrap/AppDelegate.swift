@@ -95,11 +95,13 @@ extension AppDelegate {
             HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
         } else {
             // Đăng ký callback
-            ExtensionInstaller.shared.onInstalled = {
+            ExtensionInstaller.shared.onInstalled = {                
                 Logfile.core.info("[App] Starting XPC server after extension install")
                 XPCServer.shared.start()
+                
                 Logfile.core.info("Starting menu bar and Notification")
                 self.setupMenuBar()
+                
                 AppUpdater.shared.setBridgeDelegate(self)
                 AppUpdater.shared.startTestAutoCheck()
                 
@@ -107,20 +109,22 @@ extension AppDelegate {
                 UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
                     if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
                 }
+                
                 Logfile.core.info("Starting User state")
                 SessionObserver.shared.start()
+                
                 Logfile.core.info("Setting up hotkey manager...")
                 self.hotkey = HotKeyManager()
+                
+                Logfile.core.info("Setting up Touch Bar...")
+                if let window = NSApp.windows.first {
+                    TouchBarManager.shared.apply(to: window, type: .mainWindow)
+                }
             }
             
             Logfile.core.info("Installing Endpoint Security extension...")
             // Chạy install
             ExtensionInstaller.shared.install()
-        }
-        
-        Logfile.core.info("Setting up Touch Bar...")
-        if let window = NSApp.windows.first {
-            TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
     }
 }

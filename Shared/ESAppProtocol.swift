@@ -16,4 +16,7 @@ import Foundation
     
     // App -> Extension: request access to config.plist
     func allowConfigAccess(_ pid: Int32, withReply reply: @escaping (Bool) -> Void)
+    
+    // App -> Extension: Send language
+    func updateLanguage(to code: String)
 }

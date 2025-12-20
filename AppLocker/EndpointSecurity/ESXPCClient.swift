@@ -55,6 +55,14 @@ final class ESXPCClient {
         self.connection = conn
         self.retryCount = 0
         Logfile.core.log("[ESXPCClient] Connected & ready")
+        
+        Logfile.core.info("Sending App Languages to Endpoint Security")
+        
+        if let customLangs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
+           let primary = customLangs.first {
+            
+            updateLanguage(primary)
+        }
 
         // Flush pending apps trên queue ưu tiên cao
         if !lastKnownBlockedApps.isEmpty {
@@ -133,6 +141,25 @@ final class ESXPCClient {
             completion(success)
         }
     }
+    
+    func updateLanguage(_ langCode: String) {
+        guard let conn = connection else {
+            Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
+            // Bạn có thể lưu vào một biến 'pendingLanguage' nếu muốn gửi ngay khi connect lại
+            return
+        }
+
+        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+            Logfile.core.error("updateLanguage failed: \(String(describing: error), privacy: .public)")
+        }) as? ESAppProtocol else {
+            Logfile.core.error("[ESXPCClient] No valid proxy to send language update")
+            return
+        }
+
+        proxy.updateLanguage(to: langCode)
+        Logfile.core.log("updateLanguage sent: \(langCode, privacy: .public)")
+    }
+    
     // App requests extension to allow config access once (with reply ack)
     func allowConfigAccess(_ pid: Int32, completion: @escaping (Bool) -> Void) {
         guard let conn = connection else {
