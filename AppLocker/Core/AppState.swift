@@ -74,29 +74,44 @@ class AppState: ObservableObject {
     }
     
     private func refreshAppLists() {
-        // Recompute from manager
-        let locked = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
-            guard (manager.lockedApps[path] != nil) else { return nil }
+        // 1. Lấy danh sách Locked Apps
+        let locked: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
+            guard manager.lockedApps[path] != nil else { return nil }
+            
             let icon = NSWorkspace.shared.icon(forFile: path)
             let name = FileManager.default.displayName(atPath: path)
                 .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-            return InstalledApp(name: name, bundleID: "", icon: icon, path: path)
+            
+            // Xác định source dựa trên đường dẫn
+            let source: AppSource = path.hasPrefix("/System") ? .system : .user
+            
+            return InstalledApp(name: name, bundleID: "", icon: icon, path: path, source: source)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        let unlockable = manager.allApps
-            .filter { !manager.lockedApps.keys.contains($0.path) }
+        // 2. Lấy danh sách Unlockable Apps (Sửa lỗi tại đây)
+        // Chèn kiểu [InstalledApp] rõ ràng cho biến allAppsFromManager
+        let allAppsFromManager: [InstalledApp] = manager.allApps
+        
+        let unlockable: [InstalledApp] = allAppsFromManager
+            .filter { (app: InstalledApp) -> Bool in
+                // Chỉ định rõ (app: InstalledApp) giúp trình biên dịch không bị bối rối
+                return !manager.lockedApps.keys.contains(app.path)
+            }
+            .map { app in
+                // Gán source nếu app từ manager đang bị nil
+                if app.source == nil {
+                    let src: AppSource = app.path.hasPrefix("/System") ? .system : .user
+                    return InstalledApp(name: app.name, bundleID: app.bundleID, icon: app.icon, path: app.path, source: src)
+                }
+                return app
+            }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        // Publish on main thread
-        if Thread.isMainThread {
+        // 3. Cập nhật UI trên Main Thread
+        DispatchQueue.main.async {
             self.lockedAppObjects = locked
             self.unlockableApps = unlockable
-        } else {
-            DispatchQueue.main.async {
-                self.lockedAppObjects = locked
-                self.unlockableApps = unlockable
-            }
         }
     }
     

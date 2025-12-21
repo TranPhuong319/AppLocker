@@ -332,8 +332,8 @@ extension AppDelegate {
         let confirm = AlertShow.show(title: "Reset AppLocker".localized,
                                      message:
                                         """
-                                        This operation will delete all settings including the list of locked applications and will reopen the application. 
-                                        
+                                        This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.
+
                                         Do you want to continue?
                                         """.localized,
                                      style: .critical,
@@ -585,7 +585,7 @@ extension AppDelegate {
         task.launchPath = "/usr/bin/open"
         task.arguments = ["-n", path]
         try? task.run()
-        if mode != "Launcher" && mode != nil {
+        if mode == "ES" {
             manageAgent(plistName: plistName, action: .install)
         }
         // Thoát app hiện tại

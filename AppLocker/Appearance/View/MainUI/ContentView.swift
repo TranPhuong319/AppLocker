@@ -89,8 +89,24 @@ struct ContentView: View {
             ZStack(alignment: .bottom) {
                 ScrollView {
                     LazyVStack(alignment: .center, spacing: 6) {
-                        ForEach(appState.filteredLockedApps, id: \.path) { app in
-                            lockedAppRow(for: app)
+                        let apps = appState.filteredLockedApps
+                        let userApps = apps.filter { $0.source == .user }
+                        let systemApps = apps.filter { $0.source == .system }
+                        let unknownApps = apps.filter { $0.source == nil } // Phòng hờ source bị nil
+
+                        if !userApps.isEmpty {
+                            SectionHeader(title: "Applications".localized)
+                            ForEach(userApps) { lockedAppRow(for: $0) }
+                        }
+
+                        if !systemApps.isEmpty {
+                            SectionHeader(title: "System Applications".localized)
+                            ForEach(systemApps) { lockedAppRow(for: $0) }
+                        }
+
+                        // Nếu cả 2 group trên đều trống nhưng apps lại có dữ liệu (do source bị nil)
+                        if userApps.isEmpty && systemApps.isEmpty && !apps.isEmpty {
+                            ForEach(apps) { lockedAppRow(for: $0) }
                         }
                     }
                     .padding(.vertical, 4)
@@ -271,40 +287,25 @@ struct ContentView: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
-                    let filteredLockedApps = appState.lockedAppObjects.filter { app in
-                        appState.deleteQueue.contains(app.path)
-                    }
-
-                    ForEach(filteredLockedApps, id: \.id) { app in
-                        HStack(spacing: 12) {
-                            if let icon = app.icon {
-                                Image(nsImage: icon)
-                                    .resizable()
-                                    .frame(width: 32, height: 32)
-                                    .cornerRadius(6)
-                            }
-                            Text(app.name)
-                            Spacer()
-                            Button {
-                                appState.deleteQueue.remove(app.path)
-                                if appState.deleteQueue.isEmpty {
-                                    appState.showingDeleteQueue = false
-                                }
-                            } label: {
-                                Image(systemName: "minus.circle")
-                                    .foregroundColor(.red)
-                            }
-                            .buttonStyle(BorderlessButtonStyle())
+                    // Lọc danh sách app nằm trong Queue
+                    let appsInQueue = appState.lockedAppObjects.filter { appState.deleteQueue.contains($0.path) }
+                    
+                    // Nhóm 1: User Apps
+                    let userApps = appsInQueue.filter { $0.source == .user }
+                    if !userApps.isEmpty {
+                        SectionHeader(title: "Applications".localized)
+                        ForEach(userApps, id: \.path) { app in
+                            deleteQueueRow(for: app)
                         }
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 10)
-//                                    .fill(.regularMaterial)      // blur
-//                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)  // chỉ tạo cảm giác nổi
-//                            )
-                        .cornerRadius(10)
+                    }
+                    
+                    // Nhóm 2: System Apps
+                    let systemApps = appsInQueue.filter { $0.source == .system }
+                    if !systemApps.isEmpty {
+                        SectionHeader(title: "System Applications".localized)
+                        ForEach(systemApps, id: \.path) { app in
+                            deleteQueueRow(for: app)
+                        }
                     }
                 }
                 .padding(.vertical, 8)
@@ -344,6 +345,29 @@ struct ContentView: View {
                 appState.searchTextLockApps = ""
             }
         }
+    }
+    
+    // Tạo thêm hàm Row riêng cho Delete Queue để code gọn hơn
+    @ViewBuilder
+    private func deleteQueueRow(for app: InstalledApp) -> some View {
+        HStack(spacing: 12) {
+            if let icon = app.icon {
+                Image(nsImage: icon).resizable().frame(width: 32, height: 32).cornerRadius(6)
+            }
+            Text(app.name)
+            Spacer()
+            Button {
+                withAnimation {
+                    appState.deleteQueue.remove(app.path)
+                    if appState.deleteQueue.isEmpty { appState.showingDeleteQueue = false }
+                }
+            } label: {
+                Image(systemName: "minus.circle").foregroundColor(.red)
+            }
+            .buttonStyle(BorderlessButtonStyle())
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
     }
     
     @ViewBuilder
@@ -428,36 +452,7 @@ struct ContentView: View {
         }
         .buttonStyle(AppRowButtonStyle()) // Áp dụng hiệu ứng nhấn
     }
-
-    func toggleLockPopup(for apps: Set<String>, locking: Bool) {
-        // đóng sheet chính
-        if locking {
-            appState.showingAddApp = false
-        } else {
-            appState.showingDeleteQueue = false
-        }
-
-        // hiện popup phụ với message phù hợp
-        appState.lockingMessage = locking
-            ? "Locking %d apps...".localized(with: apps.count)
-            : "Unlocking %d apps...".localized(with: apps.count)
-        appState.showingLockingPopup = true
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            appState.manager.toggleLock(for: Array(apps))
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if locking {
-                    appState.selectedToLock.removeAll()
-                    appState.pendingLocks.removeAll()
-                } else {
-                    appState.deleteQueue.removeAll()
-                }
-                appState.showingLockingPopup = false
-            }
-        }
-    }
-
+    
     func isAppStubbedAsLocked(_ appURL: URL) -> Bool {
         let resourceDir = appURL.appendingPathComponent("Contents/Resources")
 
