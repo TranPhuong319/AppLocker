@@ -296,8 +296,11 @@ extension AppDelegate {
                                 if status == .enabled {
                                     try? loginItem.unregister()
                                 }
+                                _ = HelperInstaller.manageHelperTool(
+                                    action: .uninstall, helperToolIdentifier: self.helperIdentifier
+                                )
                                 self.selfRemoveApp()
-                                self.removeConfig()
+                                
                                 self.showRestartSheet()
                                 NSApp.terminate(nil)
                             }
@@ -341,13 +344,27 @@ extension AppDelegate {
                                      cancelIndex: 0)
         switch confirm {
         case .button(index: 1, title: "Reset".localized):
-            ExtensionInstaller.shared.onUninstalled = {
+            if modeLock == "ES" {
+                ExtensionInstaller.shared.onUninstalled = {
+                    self.removeConfig()
+                    self.manageAgent(plistName: plistName, action: .uninstall)
+                    modeLock = nil
+                    self.restartApp(mode: modeLock)
+                }
+                ExtensionInstaller.shared.uninstall()
+            } else {
+                let loginItem = SMAppService.mainApp
+                let status = loginItem.status
+                if status == .enabled {
+                    try? loginItem.unregister()
+                }
                 self.removeConfig()
-                self.manageAgent(plistName: plistName, action: .uninstall)
-                modeLock = nil
-                self.restartApp(mode: modeLock)
+                _ = HelperInstaller.manageHelperTool(
+                    action: .uninstall, helperToolIdentifier: helperIdentifier
+                )
+                self.resetApp()
+                
             }
-            ExtensionInstaller.shared.uninstall()
             
         default:
             break

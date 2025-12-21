@@ -67,6 +67,7 @@ struct ContentView: View {
             .help("Add application to lock".localized)
             .disabled(appState.isDisabled)
         }
+        .padding(.horizontal, 8)
     }
     
     @ViewBuilder
@@ -80,11 +81,25 @@ struct ContentView: View {
     @ViewBuilder
     private var mainListView: some View {
         VStack(spacing: 9) {
-            TextField("Search apps...".localized, text: $appState.searchTextLockApps)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal, 8)
-                .focused($isSearchFocused)
-                .onSubmit { isSearchFocused = false }
+            // 1. Thanh Search: Đã loại bỏ padding ngang riêng lẻ để đi theo container chung
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 4) // Đẩy kính lúp vào một chút
+                
+                TextField("Search apps...".localized, text: $appState.searchTextLockApps)
+                    .textFieldStyle(.plain) // Quan trọng: Loại bỏ khung mặc định của TextField
+                    .focused($isSearchFocused)
+                    .onSubmit { unfocus() }
+            }
+            .padding(7) // Tạo khoảng trống giữa nội dung và khung bar
+            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.secondary.opacity(0.2))
+            )
+            .padding(.horizontal, 8) 
             
             ZStack(alignment: .bottom) {
                 ScrollView {
@@ -92,18 +107,17 @@ struct ContentView: View {
                         let apps = appState.filteredLockedApps
                         let userApps = apps.filter { $0.source == .user }
                         let systemApps = apps.filter { $0.source == .system }
-                        let unknownApps = apps.filter { $0.source == nil } // Phòng hờ source bị nil
-
+                        
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications".localized)
                             ForEach(userApps) { lockedAppRow(for: $0) }
                         }
-
+                        
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications".localized)
                             ForEach(systemApps) { lockedAppRow(for: $0) }
                         }
-
+                        
                         // Nếu cả 2 group trên đều trống nhưng apps lại có dữ liệu (do source bị nil)
                         if userApps.isEmpty && systemApps.isEmpty && !apps.isEmpty {
                             ForEach(apps) { lockedAppRow(for: $0) }
@@ -112,6 +126,7 @@ struct ContentView: View {
                     .padding(.vertical, 4)
                     .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)
                 }
+                .scrollIndicators(.hidden)
                 .background(Color.white.opacity(0.000001).onTapGesture { isSearchFocused = false })
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 
@@ -157,19 +172,29 @@ struct ContentView: View {
     private var addAppSheet: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Thanh search nằm ngay trên List
+                // 1. Thanh Search: Đã loại bỏ padding ngang riêng lẻ để đi theo container chung
                 HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 4) // Đẩy kính lúp vào một chút
+                    
                     TextField("Search apps...".localized, text: $appState.searchTextUnlockaleApps)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(8)
-                        .frame(maxWidth: .infinity) // full chiều ngang
+                        .textFieldStyle(.plain) // Quan trọng: Loại bỏ khung mặc định của TextField
                         .focused($isSearchFocused)
-                        .onSubmit { unfocus() } // Hàm phụ để ép nhả focus
+                        .onSubmit { unfocus() }
                 }
-                
+                .padding(7) // Tạo khoảng trống giữa nội dung và khung bar
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.secondary.opacity(0.2))
+                )
+                .padding(.horizontal)
+                .padding(.vertical)
                 Divider()
                 
-                // Danh sách app lọc theo search
+                // 2. Danh sách app
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         if modeLock == "ES" {
@@ -189,7 +214,6 @@ struct ContentView: View {
                                     appRow(for: app)
                                 }
                             }
-                            
                         } else {
                             ForEach(appState.filteredUnlockableApps) { app in
                                 appRow(for: app)
@@ -197,9 +221,12 @@ struct ContentView: View {
                         }
                     }
                     .padding(.vertical, 8)
-                    .padding(.horizontal)
+                    // Đã bỏ padding(.horizontal) ở đây để dùng chung ở lớp ngoài
                 }
-                .frame(maxHeight: 520)
+                .scrollIndicators(.hidden)
+                .padding(.horizontal) // Đảm bảo List thụt lề bằng đúng Search bar
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: 420)
             }
             .contentShape(Rectangle())
             .onTapGesture { unfocus() }
@@ -230,7 +257,7 @@ struct ContentView: View {
                 }
             }
         }
-        .frame(minWidth: 500, minHeight: 600)
+        .frame(minWidth: 400, minHeight: 500)
         .onTapGesture { unfocus() }
         .onAppear {
             unfocus() // Đảm bảo lúc mở lên không tự focus vào TextField
@@ -280,11 +307,12 @@ struct ContentView: View {
     
     @ViewBuilder
     private var deleteQueueSheet: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
             Text("Application is waiting to be deleted".localized)
                 .font(.headline)
-                .padding()
-
+                .padding([.horizontal, .top]) // Chỉ giữ padding trên và hai bên
+                .padding(.bottom, 0)
+            
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     // Lọc danh sách app nằm trong Queue
@@ -310,7 +338,8 @@ struct ContentView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .frame(maxHeight: 350)
+            .scrollIndicators(.hidden)
+            .frame(maxHeight: 270)
             .padding(.horizontal)
 
             Divider()
@@ -330,7 +359,7 @@ struct ContentView: View {
             }
             .padding()
         }
-        .frame(minWidth: 400, minHeight: 450)
+        .frame(minWidth: 350, minHeight: 370)
         .onAppear {
             DispatchQueue.main.async {
                 let tb = TouchBarManager.shared.makeTouchBar(for: .deleteQueuePopup)
@@ -396,8 +425,8 @@ struct ContentView: View {
                 .frame(height: 1) // Độ dày thanh ngang
         }
         .padding(.horizontal, 10)
-        .padding(.bottom, 4)
-        .padding(.top, 12)
+        .padding(.bottom, 2)
+        .padding(.top, 6)
     }
     
     @ViewBuilder
