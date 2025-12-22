@@ -4,6 +4,9 @@
 //
 //  Copyright © 2025 TranPhuong319. All rights reserved.
 //
+//  EN: Creates and manages the floating window that hosts the SwiftUI app list.
+//  VI: Tạo và quản lý cửa sổ nổi chứa danh sách ứng dụng bằng SwiftUI.
+//
 
 import AppKit
 import SwiftUI
@@ -17,12 +20,12 @@ class TouchBarHostingController<Content: View>: NSHostingController<Content> {
     }
 }
 
-
 class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
     private static var invisibleKeyWindow: NSWindow?
     
-    // Hiển thị cửa sổ quản lý danh sách ứng dụng
+    // EN: Show the window for managing the application list.
+    // VI: Hiển thị cửa sổ quản lý danh sách ứng dụng.
     static func show() {
         if let controller = shared {
             controller.showWindow(nil)
@@ -31,7 +34,8 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
             return
         }
         
-        // Tạo invisible key window hack Touch Bar
+        // EN: Create an invisible key window to enable Touch Bar in SwiftUI window.
+        // VI: Tạo key window vô hình để kích hoạt Touch Bar cho cửa sổ SwiftUI.
         if invisibleKeyWindow == nil {
             let keyWin = NSWindow(
                 contentRect: .zero,
@@ -45,12 +49,14 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
             invisibleKeyWindow = keyWin
         }
         
-        // Tạo floating window
+        // EN: Create floating window that hosts ContentView.
+        // VI: Tạo cửa sổ nổi chứa ContentView.
         let contentView = ContentView()
         let hostingController = TouchBarHostingController(rootView: contentView)
         hostingController.touchBarType = .mainWindow
 
-        // Ép SwiftUI layout trước khi attach window
+        // EN: Force SwiftUI layout before attaching to window.
+        // VI: Ép SwiftUI layout trước khi gắn vào window.
         hostingController.view.setFrameSize(NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)))
         hostingController.view.layoutSubtreeIfNeeded()
 
@@ -76,7 +82,8 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.level = .floating
         
-        // Show window
+        // EN: Show window and make it key.
+        // VI: Hiển thị cửa sổ và đưa lên trước.
         let controller = AppListWindowController(window: window)
         window.delegate = controller
         shared = controller

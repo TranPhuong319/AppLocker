@@ -4,6 +4,9 @@
 //
 //  Copyright © 2025 TranPhuong319. All rights reserved.
 //
+//  EN: App lifecycle, menu bar, updates, and integration with ES/Launcher modes.
+//  VI: Vòng đời ứng dụng, menu bar, cập nhật, và tích hợp với chế độ ES/Launcher.
+//
 
 import AppKit
 import LocalAuthentication
@@ -14,6 +17,8 @@ import SwiftUI
 import UserNotifications
 import Sparkle
 
+// EN: Possible actions for the agent (login item) management.
+// VI: Các hành động có thể cho quản lý agent (login item).
 enum AgentAction {
     case install
     case uninstall
@@ -51,17 +56,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     func applicationExactlyOneInstance() {
-        // macOS usually handles this itself via NSApplication.shared
-        // But you can check the identifier (Bundle Identifier)
+        // EN: macOS typically enforces single instance via NSApplication.
+        // VI: macOS thường đảm bảo một instance qua NSApplication.
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
         if apps.count > 1 {
-            // If you see more than 1 app running, exit the current app
             NSApp.terminate(nil)
         }
     }
 }
 
 extension AppDelegate {
+    // EN: Register/unregister/check the login item agent.
+    // VI: Đăng ký/hủy/kiểm tra agent đăng nhập.
     func manageAgent(plistName: String, action: AgentAction) {
         let agent = SMAppService.agent(plistName: "\(plistName).plist")
         
@@ -98,13 +104,14 @@ extension AppDelegate {
     }
 }
 
-// MARK: - Mode Lock
+// MARK: - Mode Lock / Chế độ khóa
 extension AppDelegate {
     func launchConfig(config: String) {
         if config == "Launcher" {
             HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
         } else {
-            // Đăng ký callback
+            // EN: Register callback after the ES extension is installed.
+            // VI: Đăng ký callback sau khi cài extension ES.
             ExtensionInstaller.shared.onInstalled = {                
                 Logfile.core.info("[App] Starting XPC server after extension install")
                 XPCServer.shared.start()
@@ -133,13 +140,12 @@ extension AppDelegate {
             }
             
             Logfile.core.info("Installing Endpoint Security extension...")
-            // Chạy install
             ExtensionInstaller.shared.install()
         }
     }
 }
 
-// MARK: - Menu Bar
+// MARK: - Menu Bar / Thanh menu
 extension AppDelegate: NSMenuDelegate {
     func setupMenuBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -220,13 +226,13 @@ extension AppDelegate: NSMenuDelegate {
         menu.addItem(uninstallItem)
 
         let resetItem = NSMenuItem(title: "Reset AppLocker".localized,
-                                   action: #selector(resetApp), // Hàm xử lý reset của bạn
+                                   action: #selector(resetApp),
                                    keyEquivalent: "")
         resetItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)
 
-        // Đặt phím bổ trợ là Shift
+        // EN: Alternate item (Option+Shift) to replace Uninstall.
+        // VI: Mục thay thế (Option+Shift) để thay thế Uninstall.
         resetItem.keyEquivalentModifierMask = NSEvent.ModifierFlags([.option, .shift])
-        // Đánh dấu đây là mục thay thế cho mục ngay phía trước (uninstallItem)
         resetItem.isAlternate = true
 
         menu.addItem(resetItem)
@@ -248,7 +254,7 @@ extension Bundle {
 }
 
 
-// MARK: - App Actions
+// MARK: - App Actions / Hành động ứng dụng
 extension AppDelegate {
     @objc func openListApp() {
         AuthenticationManager.authenticate(
@@ -403,20 +409,23 @@ extension AppDelegate {
     }
 
     @objc func about() {
-        // 1. Kích hoạt app
+        // EN: 1) Activate app
+        // VI: 1) Kích hoạt ứng dụng
         NSApp.activate(ignoringOtherApps: true)
 
-        // 2. Show about panel
+        // EN: 2) Show standard about panel
+        // VI: 2) Hiển thị bảng About chuẩn
         NSApp.orderFrontStandardAboutPanel(nil)
 
-        // 3. Ép focus sau một tick
+        // EN: 3) Force focus after a short delay
+        // VI: 3) Ép focus sau một khoảng ngắn
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             for window in NSApp.windows {
                 let cls = String(describing: type(of: window))
                 if cls.contains("About") {
-                    window.makeKey()                       // biến thành key window
-                    window.makeKeyAndOrderFront(nil)       // bring lên
-                    window.orderFrontRegardless()          // ép ra trước mọi thứ
+                    window.makeKey()
+                    window.makeKeyAndOrderFront(nil)
+                    window.orderFrontRegardless()
                 }
             }
         }
@@ -471,15 +480,18 @@ extension AppDelegate {
         conn.resume()
 
         if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            // Ignore luôn vì sau khi uninstall helper sẽ tự kill
+            // EN: Ignore errors because helper will terminate itself after uninstall.
+            // VI: Bỏ qua lỗi vì helper sẽ tự thoát sau khi gỡ cài đặt.
             Logfile.core.debug("XPC connection closed (expected): \(error.localizedDescription)")
         }) as? AppLockerHelperProtocol {
             proxy.uninstallHelper() { _, _ in
-                // Fire-and-forget: không cần xử lý gì ở đây
+                // EN: Fire-and-forget.
+                // VI: Gửi và quên.
             }
         }
 
-        // Đóng connection ngay, tránh giữ reference thừa
+        // EN: Close connection immediately to avoid holding references.
+        // VI: Đóng kết nối ngay để tránh giữ tham chiếu thừa.
         conn.invalidate()
     }
     
@@ -560,7 +572,8 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
         content.sound = UNNotificationSound.defaultCritical
         content.badge = nil
 
-        // dùng identifier cố định, để click còn xoá đúng
+        // EN: Use a fixed identifier to remove the correct notification when tapped.
+        // VI: Dùng định danh cố định để xoá đúng thông báo khi người dùng bấm.
         let request = UNNotificationRequest(
             identifier: notificationIndentifiers,
             content: content,
@@ -578,15 +591,17 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
     }
 }
 
-// MARK: - Notification Handling
+// MARK: - Notification Handling / Xử lý thông báo
 extension AppDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         if response.notification.request.identifier == notificationIndentifiers {
-            // Mở bảng update Sparkle
+            // EN: Open Sparkle update window.
+            // VI: Mở cửa sổ cập nhật của Sparkle.
             AppUpdater.shared.updaterController.checkForUpdates(nil)
-            // Clear notification
+            // EN: Clear the delivered notification.
+            // VI: Xoá thông báo đã gửi.
             UNUserNotificationCenter.current().removeDeliveredNotifications(
                 withIdentifiers: [notificationIndentifiers]
             )
@@ -605,7 +620,8 @@ extension AppDelegate {
         if mode == "ES" {
             manageAgent(plistName: plistName, action: .install)
         }
-        // Thoát app hiện tại
+        // EN: Terminate current app after relaunch.
+        // VI: Thoát ứng dụng hiện tại sau khi khởi chạy lại.
         NSApp.terminate(nil)
     }
 }

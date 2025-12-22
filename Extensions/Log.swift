@@ -4,6 +4,9 @@
 //
 //  Created by Doe Phương on 18/8/25.
 //
+//  EN: Centralized OSLog categories for the app and components.
+//  VI: Nhóm OSLog tập trung cho ứng dụng và các thành phần.
+//
 
 import OSLog
 

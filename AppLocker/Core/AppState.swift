@@ -4,13 +4,17 @@
 //
 //  Created by Doe Phương on 5/9/25.
 //
+//  EN: Shared observable state and UI coordination for ContentView and Touch Bar.
+//  VI: Trạng thái quan sát dùng chung và điều phối UI cho ContentView và Touch Bar.
+//
 
 import SwiftUI
 import Combine
 
-/// Shared state & logic cho cả ContentView và TouchBar
+// EN: Shared state & logic for ContentView and Touch Bar.
+// VI: Trạng thái & logic dùng chung cho ContentView và Touch Bar.
 class AppState: ObservableObject {
-    static let shared = AppState()  // singleton
+    static let shared = AppState()  // EN: Singleton instance. VI: Thực thể singleton.
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
     @Published var showingDeleteQueue = false
@@ -29,7 +33,8 @@ class AppState: ObservableObject {
     @Published var filteredLockedApps: [InstalledApp] = []
     @Published var filteredUnlockableApps: [InstalledApp] = []
     
-    // Backing published sources for computed lists so we can use Combine `$` publishers
+    // EN: Backing published sources for computed lists to leverage Combine `$`.
+    // VI: Nguồn Published nền cho danh sách tính toán để tận dụng Combine `$`.
     @Published private(set) var lockedAppObjects: [InstalledApp] = []
     @Published private(set) var unlockableApps: [InstalledApp] = []
     
@@ -44,7 +49,8 @@ class AppState: ObservableObject {
     }
     
     private func setupSearchPipeline() {
-        // Kết hợp cả Text Search và Danh sách App gốc
+        // EN: Combine text search with the source lists for responsive filtering.
+        // VI: Kết hợp tìm kiếm văn bản với danh sách nguồn để lọc mượt mà.
         Publishers.CombineLatest($searchTextLockApps, $lockedAppObjects)
             .map { [weak self] (text, apps) -> [InstalledApp] in
                 guard let self = self else { return [] }
@@ -54,7 +60,7 @@ class AppState: ObservableObject {
             .assign(to: &$filteredLockedApps)
 
         Publishers.CombineLatest($searchTextUnlockaleApps, $unlockableApps)
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.global()) // Giảm debounce cho mượt
+            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.global()) // EN: Small debounce for smooth typing. VI: Giảm debounce để gõ mượt.
             .map { [weak self] (text, apps) -> [InstalledApp] in
                 guard let self = self else { return [] }
                 return self.performFilter(text: text, apps: apps)
@@ -63,18 +69,20 @@ class AppState: ObservableObject {
             .assign(to: &$filteredUnlockableApps)
     }
 
-    // Hàm hỗ trợ lọc dùng chung để code sạch hơn
+    // EN: Common filtering helper to keep code DRY.
+    // VI: Hàm lọc dùng chung để code gọn gàng.
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
         let query = text.lowercased().trimmingCharacters(in: .whitespaces)
         if query.isEmpty {
-            return apps // Đã được sort sẵn trong computed property
+            return apps // EN: Already sorted upstream. VI: Đã được sắp xếp từ trước.
         } else {
             return apps.filter { $0.name.lowercased().contains(query) }
         }
     }
     
     private func refreshAppLists() {
-        // 1. Lấy danh sách Locked Apps
+        // EN: 1) Build the list of locked apps from the manager.
+        // VI: 1) Tạo danh sách ứng dụng đã khóa từ manager.
         let locked: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard manager.lockedApps[path] != nil else { return nil }
             
@@ -82,24 +90,27 @@ class AppState: ObservableObject {
             let name = FileManager.default.displayName(atPath: path)
                 .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
             
-            // Xác định source dựa trên đường dẫn
+            // EN: Determine source by path prefix.
+            // VI: Xác định nguồn dựa trên tiền tố đường dẫn.
             let source: AppSource = path.hasPrefix("/System") ? .system : .user
             
             return InstalledApp(name: name, bundleID: "", icon: icon, path: path, source: source)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        // 2. Lấy danh sách Unlockable Apps (Sửa lỗi tại đây)
-        // Chèn kiểu [InstalledApp] rõ ràng cho biến allAppsFromManager
-        let allAppsFromManager: [InstalledApp] = manager.allApps
+        // EN: 2) Build the list of unlockable apps.
+        // VI: 2) Tạo danh sách ứng dụng có thể khóa.
+        let allAppsFromManager: [InstalledApp] = manager.allApps // EN: Explicit type helps inference. VI: Khai báo kiểu rõ ràng để tránh lỗi suy luận.
         
         let unlockable: [InstalledApp] = allAppsFromManager
             .filter { (app: InstalledApp) -> Bool in
-                // Chỉ định rõ (app: InstalledApp) giúp trình biên dịch không bị bối rối
+                // EN: Exclude those already locked.
+                // VI: Loại các ứng dụng đã bị khóa.
                 return !manager.lockedApps.keys.contains(app.path)
             }
             .map { app in
-                // Gán source nếu app từ manager đang bị nil
+                // EN: Fill missing source if needed based on path.
+                // VI: Bổ sung nguồn nếu thiếu dựa trên đường dẫn.
                 if app.source == nil {
                     let src: AppSource = app.path.hasPrefix("/System") ? .system : .user
                     return InstalledApp(name: app.name, bundleID: app.bundleID, icon: app.icon, path: app.path, source: src)
@@ -108,7 +119,8 @@ class AppState: ObservableObject {
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        // 3. Cập nhật UI trên Main Thread
+        // EN: 3) Update UI-bound lists on the main thread.
+        // VI: 3) Cập nhật danh sách gắn với UI trên Main Thread.
         DispatchQueue.main.async {
             self.lockedAppObjects = locked
             self.unlockableApps = unlockable
@@ -130,15 +142,19 @@ class AppState: ObservableObject {
         case deleteQueuePopup
     }
     
+    // EN: Toggle the lock/unlock popup and perform the operation.
+    // VI: Bật tắt popup khóa/mở khóa và thực thi thao tác.
     func toggleLockPopup(for apps: Set<String>, locking: Bool) {
-        // đóng sheet chính
+        // EN: Close the appropriate sheet.
+        // VI: Đóng sheet phù hợp.
         if locking {
             showingAddApp = false
         } else {
             showingDeleteQueue = false
         }
         
-        // hiện popup phụ với message phù hợp
+        // EN: Show secondary popup with contextual message.
+        // VI: Hiển thị popup phụ với thông điệp phù hợp.
         lockingMessage = locking
         ? "Locking %d apps...".localized(with: apps.count)
         : "Unlocking %d apps...".localized(with: apps.count)
@@ -163,7 +179,8 @@ class AppState: ObservableObject {
         }
     }
     
-    // Logic từ nút +
+    // EN: Logic from the "+" button to open add-app sheet.
+    // VI: Logic từ nút "+" để mở popup thêm ứng dụng.
     func openAddApp() {
         let currentApps = self.unlockableApps
         if currentApps != lastUnlockableApps {
@@ -172,12 +189,14 @@ class AppState: ObservableObject {
         showingAddApp = true
     }
     
-    // Logic lock button trong popup khi nhấn nút +
+    // EN: Lock button in the add-app popup.
+    // VI: Nút khóa trong popup thêm ứng dụng.
     func lockButton() {
         toggleLockPopup(for: selectedToLock, locking: true)
     }
     
-    // Close popup khi nhấn nút +
+    // EN: Close the add-app popup and reset selections.
+    // VI: Đóng popup thêm ứng dụng và đặt lại lựa chọn.
     func closeAddPopup() {
         showingAddApp = false
         selectedToLock.removeAll()
@@ -185,7 +204,8 @@ class AppState: ObservableObject {
         searchTextLockApps = ""
     }
     
-    // Nút thêm app khác trong popup khi nhấn +
+    // EN: Add other apps via open panel.
+    // VI: Thêm ứng dụng khác thông qua hộp thoại mở file.
     func addOthersApp() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
@@ -198,12 +218,14 @@ class AppState: ObservableObject {
         }
     }
     
-    // Unlock button trong waiting list
+    // EN: Unlock button in the waiting list sheet.
+    // VI: Nút mở khóa trong sheet hàng đợi.
     func unlockApp() {
         toggleLockPopup(for: Set(appsToUnlock), locking: false)
     }
     
-    // Nút xoá hết app trong hàng chờ khi unlock app
+    // EN: Remove all apps from the waiting list.
+    // VI: Xóa tất cả ứng dụng khỏi danh sách chờ.
     func deleteAllFromWaitingList() {
         deleteQueue.removeAll()
         showingDeleteQueue = false

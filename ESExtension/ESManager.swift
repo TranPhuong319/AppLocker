@@ -13,63 +13,104 @@ import SystemConfiguration
 import Combine
 import CryptoKit
 
+// EN: Execution decision for a process.
+// VI: Quyết định thực thi cho một tiến trình.
 enum ExecDecision {
     case allow
     case deny
 }
 
+// EN: Minimal, fast lock used to protect small critical sections.
+// VI: Khóa tối giản, nhanh dùng để bảo vệ vùng quan trọng nhỏ.
+final class FastLock {
+    private var _lock = os_unfair_lock()
+    
+    /// EN: Execute closure under lock and return its value.
+    /// VI: Thực thi closure dưới khóa và trả về giá trị.
+    @inline(__always)
+    func sync<T>(_ closure: () -> T) -> T {
+        os_unfair_lock_lock(&_lock)
+        defer { os_unfair_lock_unlock(&_lock) }
+        return closure()
+    }
+    
+    /// EN: Execute closure under lock for quick fire-and-forget writes.
+    /// VI: Thực thi closure dưới khóa cho các thao tác ghi nhanh.
+    @inline(__always)
+    func perform(_ closure: () -> Void) {
+        os_unfair_lock_lock(&_lock)
+        closure()
+        os_unfair_lock_unlock(&_lock)
+    }
+}
+
+// EN: Errors returned by es_new_client and related setup.
+// VI: Lỗi trả về từ es_new_client và quá trình thiết lập liên quan.
 enum ESError: Error {
-    case fullDiskAccessMissing    // ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED
-    case notRoot                  // ES_NEW_CLIENT_RESULT_ERR_NOT_PRIVILEGED
-    case entitlementMissing       // ES_NEW_CLIENT_RESULT_ERR_NOT_ENTITLED
-    case tooManyClients           // ES_NEW_CLIENT_RESULT_ERR_TOO_MANY_CLIENTS
-    case internalError            // ES_NEW_CLIENT_RESULT_ERR_INTERNAL
-    case invalidArgument          // ES_NEW_CLIENT_RESULT_ERR_INVALID_ARGUMENT
+    case fullDiskAccessMissing
+    case notRoot
+    case entitlementMissing
+    case tooManyClients
+    case internalError
+    case invalidArgument
     case unknown(Int32)
 }
 
 @objcMembers
 final class ESManager: NSObject, NSXPCListenerDelegate {
+    // EN: Static trampoline for C-style ES callbacks.
+    // VI: Cầu nối tĩnh cho callback kiểu C của ES.
     static var sharedInstanceForCallbacks: ESManager?
 
-    // Public observable for the host app
+    // EN: Published state for host app UI.
+    // VI: Trạng thái công khai cho giao diện app chính.
     @Published var lockedApps: [String: LockedAppConfig] = [:]
-
-    // ES client
-    private var client: OpaquePointer?
-
-    // Block lists / mappings (guarded by stateQueue)
-    // blockedSHAs: authoritative set of blocked SHA256 strings
-    private var blockedSHAs: Set<String> = []
-    // blockedPathToSHA: map executable path -> known sha (populated from config or computed async)
-    private var blockedPathToSHA: [String: String] = [:]
-    fileprivate let stateQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.state")
-
-    // Temporary allow windows (SHA -> expiry)
-    private var tempAllowedSHAs: [String: Date] = [:]
-    private let tempQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.temp")
-    private let allowWindowSeconds: TimeInterval = 10
-
-    // Allowed PIDs for config access
-    private var allowedPIDs: [pid_t: Date] = [:]
-    private let allowedPIDsQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.allowedPIDs")
-    private let allowedPIDWindowSeconds: TimeInterval = 5.0
-
-    // Decision cache for quick lookups by path (path -> ExecDecision)
-    private var decisionCache: [String: ExecDecision] = [:]
-    private let decisionQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.cache")
-
-    // Mach Service listener & incoming connections
-    private var listener: NSXPCListener?
-    private var activeConnections: [NSXPCConnection] = []
-    private let activeConnectionsQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc.conns")
     
-    // Initialize in the system's preferred language (e.g. "vi" or "en")
+    // EN: Endpoint Security client handle.
+    // VI: Con trỏ client của Endpoint Security.
+    private var client: OpaquePointer?
+    
+    // MARK: - State / Trạng thái
+    // EN: Ultra-fast in-memory policy/state protected by a single lock.
+    // VI: Trạng thái/chính sách trong bộ nhớ cực nhanh, bảo vệ bằng một khóa duy nhất.
+    private let stateLock = FastLock()
+    
+    // EN: Block lists / mappings.
+    // VI: Danh sách chặn / ánh xạ.
+    private var blockedSHAs: Set<String> = []                // EN: Blocked SHA-256 digests. VI: Các SHA-256 bị khóa.
+    private var blockedPathToSHA: [String: String] = [:]     // EN: Path -> SHA cache map. VI: Bản đồ cache từ đường dẫn -> SHA.
+    
+    // EN: Temporary allow windows.
+    // VI: Cửa sổ cho phép tạm thời.
+    private var tempAllowedSHAs: [String: Date] = [:]        // EN: SHA with expiry. VI: SHA kèm thời điểm hết hạn.
+    private let allowWindowSeconds: TimeInterval = 10        // EN: Duration for one-time allow. VI: Thời lượng cho phép tạm.
+    
+    // EN: Allowed PIDs for config access.
+    // VI: PID được phép truy cập cấu hình.
+    private var allowedPIDs: [pid_t: Date] = [:]
+    private let allowedPIDWindowSeconds: TimeInterval = 5.0
+    
+    // EN: Decision cache by path.
+    // VI: Bộ nhớ đệm quyết định theo đường dẫn.
+    private var decisionCache: [String: ExecDecision] = [:]
+    
+    // EN: Language settings for this process.
+    // VI: Cài đặt ngôn ngữ cho tiến trình này.
     private var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
-    private let langQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.language")
-
+    
+    // MARK: - XPC connections / Kết nối XPC
+    // EN: Manage incoming/active Mach service connections with a lightweight lock.
+    // VI: Quản lý kết nối Mach service đến/đang hoạt động bằng khóa nhẹ.
+    private let xpcLock = FastLock()                         // EN: Lock for connection list. VI: Khóa cho danh sách kết nối.
+    private var listener: NSXPCListener?                     // EN: Mach service listener. VI: Trình lắng nghe dịch vụ Mach.
+    private var activeConnections: [NSXPCConnection] = []    // EN: Active client connections. VI: Các kết nối đang hoạt động.
+    
+    // EN: Background queue for heavy I/O and hashing (not for locking state).
+    // VI: Hàng đợi nền cho I/O nặng và băm (không dùng để khóa trạng thái).
+    private let bgQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg", qos: .utility, attributes: .concurrent)
+    
     private var isReloadingConfig = false
-
+    
     override init() {
         super.init()
         do {
@@ -78,90 +119,101 @@ final class ESManager: NSObject, NSXPCListenerDelegate {
             Logfile.es.error("ESManager failed start: \(error.localizedDescription, privacy: .public)")
         }
     }
-
+    
     deinit { stop() }
-
-    // App -> Extension: request access for config
+    
+    // EN: App -> Extension: grant short-lived access for a PID to read config.
+    // VI: App -> Extension: cấp quyền ngắn hạn cho PID đọc cấu hình.
     @objc func allowConfigAccess(_ pid: Int32, withReply reply: @escaping (Bool) -> Void) {
         let p = pid_t(pid)
-        allowedPIDsQueue.async { [weak self] in
-            guard let self = self else { reply(false); return }
-            let expiry = Date().addingTimeInterval(self.allowedPIDWindowSeconds)
+        let expiry = Date().addingTimeInterval(self.allowedPIDWindowSeconds)
+        
+        stateLock.perform {
             self.allowedPIDs[p] = expiry
-            Logfile.es.log("allowConfigAccess granted for pid=\(p, privacy: .public) until \(expiry, privacy: .public)")
-            reply(true)
         }
+        
+        Logfile.es.log("allowConfigAccess granted for pid=\(p, privacy: .public) until \(expiry, privacy: .public)")
+        reply(true)
     }
-
+    
+    // EN: Periodically purge expired temporary allows.
+    // VI: Định kỳ dọn các quyền tạm thời đã hết hạn.
     private func scheduleTempCleanup() {
         DispatchQueue.global().asyncAfter(deadline: .now() + 10) { [weak self] in
             self?.cleanupTempAllowed()
             self?.scheduleTempCleanup()
         }
     }
-
+    
+    // EN: Fast in-place filter of expired entries under lock.
+    // VI: Lọc nhanh các mục hết hạn ngay trong bộ nhớ dưới khóa.
     private func cleanupTempAllowed() {
-        tempQueue.async { [weak self] in
+        stateLock.perform { [weak self] in
             guard let self = self else { return }
             let now = Date()
-            var removedSHAs: [String] = []
-            for (sha, expiry) in self.tempAllowedSHAs where expiry <= now {
-                self.tempAllowedSHAs.removeValue(forKey: sha)
-                removedSHAs.append(sha)
+            let countBefore = self.tempAllowedSHAs.count
+            self.tempAllowedSHAs = self.tempAllowedSHAs.filter { $0.value > now }
+            let removedCount = countBefore - self.tempAllowedSHAs.count
+            if removedCount > 0 {
+                Logfile.es.log("Temp allowed SHAs expired: \(removedCount, privacy: .public)")
             }
-            if !removedSHAs.isEmpty { Logfile.es.log("Temp allowed SHAs expired: \(removedSHAs.count, privacy: .public)") }
         }
     }
-
+    
+    // EN: Check if a SHA is currently allowed by a temporary window.
+    // VI: Kiểm tra một SHA có đang được cho phép tạm thời hay không.
     private func isTempAllowed(_ sha: String) -> Bool {
-        return tempQueue.sync {
-            if let expiry = tempAllowedSHAs[sha], expiry > Date() { return true }
+        return stateLock.sync {
+            if let expiry = tempAllowedSHAs[sha] {
+                return expiry > Date()
+            }
             return false
         }
     }
-
+    
+    // EN: Safely extract path from es_file_t pointer.
+    // VI: Trích xuất đường dẫn an toàn từ con trỏ es_file_t.
     private static func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
         guard let filePtr = filePtr else { return nil }
         let file = filePtr.pointee
         if let cstr = file.path.data {
             return String(cString: cstr)
         }
-        // If above not valid, attempt use other es APIs or return nil
         return nil
     }
 }
 
-// MARK: - Change Language if main app send
+// MARK: - Language / Ngôn ngữ
 extension ESManager {
+    // EN: Force the extension process to use a specific language.
+    // VI: Ép tiến trình extension sử dụng ngôn ngữ cụ thể.
     @objc func updateLanguage(to code: String) {
-        langQueue.async {
+        stateLock.perform {
             self.currentLanguage = code
-            
-            // Force the UserDefaults of the Extension process to use this language
-             // "AppleLanguages" is the system key, it will override Locale.preferredLanguages
             UserDefaults.standard.set([code], forKey: "AppleLanguages")
             UserDefaults.standard.synchronize()
-            
             Logfile.es.log("ES Process language forced to: \(code, privacy: .public)")
         }
     }
     
+    // EN: Read the current language in a thread-safe way.
+    // VI: Đọc ngôn ngữ hiện tại một cách an toàn luồng.
     func getCurrentLanguage() -> String {
-        return langQueue.sync { self.currentLanguage }
+        return stateLock.sync { self.currentLanguage }
     }
 }
 
-// MARK: - Lifecycle setup
+// MARK: - Lifecycle / Vòng đời
 extension ESManager {
+    // EN: Create ES client, subscribe to events, and start XPC.
+    // VI: Tạo client ES, đăng ký sự kiện và khởi động XPC.
     private func start() throws {
         let res = es_new_client(&self.client) { client, message in
             ESManager.handleMessage(client: client, message: message)
         }
 
-        // Kiểm tra nếu không thành công
         if res != ES_NEW_CLIENT_RESULT_SUCCESS {
             Logfile.es.error("es_new_client failed with result: \(res.rawValue)")
-            
             switch res {
             case ES_NEW_CLIENT_RESULT_ERR_NOT_PERMITTED:
                 throw ESError.fullDiskAccessMissing
@@ -193,29 +245,42 @@ extension ESManager {
         }
 
         ESManager.sharedInstanceForCallbacks = self
+        
         scheduleTempCleanup()
         setupMachListener()
+        
+        Logfile.es.log("ESManager started successfully")
     }
 
+    // EN: Tear down ES client and XPC connections cleanly.
+    // VI: Giải phóng client ES và các kết nối XPC một cách sạch sẽ.
     private func stop() {
         if let client { es_delete_client(client) }
-        client = nil
+        self.client = nil
         
         ESManager.sharedInstanceForCallbacks = nil
 
         if let l = listener {
             l.delegate = nil
+            l.invalidate()
             listener = nil
         }
-        activeConnectionsQueue.sync {
-            for conn in activeConnections { conn.invalidate() }
+        
+        xpcLock.perform {
+            for conn in activeConnections {
+                conn.invalidate()
+            }
             activeConnections.removeAll()
         }
+        
+        Logfile.es.log("ESManager stopped and cleaned up")
     }
 }
 
-// MARK: - Mach Service XPC setup
+// MARK: - Mach service XPC / Dịch vụ Mach XPC
 extension ESManager {
+    // EN: Set up Mach service listener for the host app.
+    // VI: Thiết lập trình lắng nghe dịch vụ Mach cho app chính.
     private func setupMachListener() {
         let l = NSXPCListener(machServiceName: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
         l.delegate = self
@@ -224,6 +289,8 @@ extension ESManager {
         Logfile.es.log("MachService XPC listener resumed: endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
     }
     
+    // EN: Try to obtain an active app connection with short backoff retries.
+    // VI: Thử lấy kết nối app đang hoạt động với các lần thử và backoff ngắn.
     private func withRetryPickAppConnection(
         maxRetries: Int = 6,
         delays: [TimeInterval] = [0.0, 0.01, 0.02, 0.05, 0.1, 0.25],
@@ -235,11 +302,13 @@ extension ESManager {
                 completion(conn)
                 return
             }
+            
             if idx >= min(maxRetries - 1, delays.count - 1) {
                 Logfile.es.log("No XPC connection after quick retries (attempts=\(idx + 1, privacy: .public), giving up)")
                 completion(nil)
                 return
             }
+            
             let delay = delays[min(idx + 1, delays.count - 1)]
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
                 attempt(idx + 1)
@@ -248,33 +317,40 @@ extension ESManager {
         attempt(0)
     }
     
+    // EN: Store an incoming connection (thread-safe).
+    // VI: Lưu kết nối đến (an toàn luồng).
     private func storeIncomingConnection(_ conn: NSXPCConnection) {
-        activeConnectionsQueue.async {
+        xpcLock.perform {
             self.activeConnections.append(conn)
             Logfile.es.log("Stored incoming XPC connection — total=\(self.activeConnections.count, privacy: .public)")
         }
     }
     
+    // EN: Remove a connection when it goes away.
+    // VI: Gỡ kết nối khi nó kết thúc.
     private func removeIncomingConnection(_ conn: NSXPCConnection) {
-        activeConnectionsQueue.async {
+        xpcLock.perform {
             self.activeConnections.removeAll { $0 === conn }
             Logfile.es.log("Removed XPC connection — total=\(self.activeConnections.count, privacy: .public)")
         }
     }
     
+    // EN: Pick the first available active connection.
+    // VI: Lấy kết nối đang hoạt động đầu tiên.
     private func pickAppConnection() -> NSXPCConnection? {
-        var connOut: NSXPCConnection? = nil
-        activeConnectionsQueue.sync { connOut = self.activeConnections.first }
-        return connOut
+        return xpcLock.sync {
+            return self.activeConnections.first
+        }
     }
 }
 
-// MARK: - Blocked Apps list update
+// MARK: - Blocked apps data / Dữ liệu ứng dụng bị khóa
 extension ESManager {
-    // sync notify to app when a blocked exec occurs
+    // EN: Notify the app when an execution is blocked.
+    // VI: Gửi thông báo cho app khi một lần thực thi bị chặn.
     private func sendBlockedNotificationToApp(name: String, path: String, sha: String) {
         withRetryPickAppConnection { conn in
-            guard let conn else {
+            guard let conn = conn else {
                 Logfile.es.log("No XPC connection available after retries — cannot notify app")
                 return
             }
@@ -294,83 +370,122 @@ extension ESManager {
                 Logfile.es.log("Notified app (sync fallback) about blocked exec: \(path, privacy: .public)")
                 return
             }
-
-            Logfile.es.error("Failed to obtain any proxy for notifyBlockedExec")
         }
     }
 
-    // App -> Extension: updateBlockedApps receives NSArray
+    // EN: Replace blocked app data with new mapping from the host app.
+    // VI: Thay dữ liệu ứng dụng bị khóa bằng ánh xạ mới từ app chính.
     @objc func updateBlockedApps(_ apps: NSArray) {
-        var shas: [String] = []
-        var pathToSha: [String: String] = [:]
+        var newShas = Set<String>()
+        var newPathToSha: [String: String] = [:]
+        
         for item in apps {
-            if let dict = item as? [String: Any], let sha = dict["sha256"] as? String {
-                shas.append(sha)
+            guard let dict = item as? [String: Any] ?? item as? NSDictionary as? [String: Any] else { continue }
+            
+            if let sha = dict["sha256"] as? String {
+                newShas.insert(sha)
                 if let path = dict["path"] as? String {
-                    pathToSha[path] = sha
+                    newPathToSha[path] = sha
                 }
-                Logfile.es.log("updateBlockedApps received SHA: \(sha, privacy: .public)")
-            } else if let dict = item as? NSDictionary, let sha = dict["sha256"] as? String {
-                shas.append(sha)
-                if let path = dict["path"] as? String { pathToSha[path] = sha }
-                Logfile.es.log("updateBlockedApps received SHA (NSDictionary): \(sha, privacy: .public)")
+                Logfile.es.log("Processing update for SHA: \(sha, privacy: .public)")
             }
         }
-        stateQueue.async { [weak self] in
+        
+        stateLock.perform { [weak self] in
             guard let self = self else { return }
-            self.blockedSHAs = Set(shas)
-            for (p, s) in pathToSha { self.blockedPathToSHA[p] = s }
-            Logfile.es.log("updateBlockedApps set blockedSHAs (\(shas.count) items)")
+            self.blockedSHAs = newShas
+            for (p, s) in newPathToSha {
+                self.blockedPathToSHA[p] = s
+            }
+            Logfile.es.log("updateBlockedApps applied: \(newShas.count) SHAs, \(newPathToSha.count) paths")
         }
     }
 }
 
-// MARK: - Temp allow SHA to run
+// MARK: - Temporary allow / Cho phép tạm thời
 extension ESManager {
+    // EN: Allow a SHA to run temporarily.
+    // VI: Cho phép một SHA chạy tạm thời.
     private func allowTempSHA(_ sha: String) {
-        tempQueue.async { [weak self] in
+        let expiry = Date().addingTimeInterval(self.allowWindowSeconds)
+        
+        stateLock.perform { [weak self] in
             guard let self = self else { return }
-            let expiry = Date().addingTimeInterval(self.allowWindowSeconds)
             self.tempAllowedSHAs[sha] = expiry
             Logfile.es.log("Temp allowed SHA: \(sha, privacy: .public) until \(expiry, privacy: .public)")
         }
     }
 
-    // App -> Extension: allowSHAOnce with reply
+    // EN: XPC method — allow once by SHA.
+    // VI: Phương thức XPC — cho phép một lần theo SHA.
     @objc func allowSHAOnce(_ sha: String, withReply reply: @escaping (Bool) -> Void) {
         allowTempSHA(sha)
         reply(true)
     }
 }
 
-// MARK: - Compute app info
+// MARK: - App info / Thông tin ứng dụng
 extension ESManager {
-    // Compute SHA256 hash synchronously (used on background queues only)
+    // EN: Compute SHA-256 of a file by streaming (for background-only use).
+    // VI: Tính SHA-256 theo kiểu streaming (chỉ dùng nền).
     private func computeSHA256Streaming(forPath path: String) -> String? {
-        guard let fh = FileHandle(forReadingAtPath: path) else { return nil }
-        defer { try? fh.close() }
+        // EN: 1) Open file via POSIX call to avoid FileHandle overhead.
+        // VI: 1) Mở file bằng POSIX để tránh overhead của FileHandle.
+        let fd = open(path, O_RDONLY)
+        guard fd >= 0 else { return nil }
+        defer { close(fd) }
 
         var hasher = SHA256()
-        let bufferSize = 256 * 1024 // Tăng lên 256KB để tận dụng tốc độ SSD NVMe
+        
+        // EN: 2) 256KB buffer tuned for SSD/NVMe throughput.
+        // VI: 2) Bộ đệm 256KB tối ưu cho SSD/NVMe.
+        let bufferSize = 256 * 1024
+        let buffer = UnsafeMutableRawPointer.allocate(byteCount: bufferSize, alignment: MemoryLayout<UInt8>.alignment)
+        defer { buffer.deallocate() }
 
         while true {
-            // autoreleasepool đảm bảo RAM được giải phóng ngay sau mỗi vòng lặp
-            let data = autoreleasepool { () -> Data? in
-                let chunk = fh.readData(ofLength: bufferSize)
-                return chunk.isEmpty ? nil : chunk
+            if true {
+                let bytesRead = read(fd, buffer, bufferSize)
+                if bytesRead < 0 { return nil } // EN: read error / VI: Lỗi đọc file
+                if bytesRead == 0 { break }     // EN: EOF / VI: Hết file
+                
+                let rawBuffer = UnsafeRawBufferPointer(start: buffer, count: bytesRead)
+                hasher.update(bufferPointer: rawBuffer)
             }
-
-            guard let chunkData = data else { break }
-            hasher.update(data: chunkData)
         }
 
         let digest = hasher.finalize()
-        
-        // Cách convert sang Hex String nhanh nhất trong Swift
-        return digest.map { String(format: "%02x", $0) }.joined()
-    }
 
-    // Compute a reasonable app name based on path. Not used on hot-path.
+        // EN: 3) Convert digest to hex using a fast lookup.
+        // VI: 3) Chuyển digest sang hex bằng tra cứu nhanh.
+        return fastHex(from: digest)
+    }
+    
+    // EN: Convert SHA-256 digest to a lowercase hex string efficiently.
+    // VI: Chuyển digest SHA-256 sang chuỗi hex chữ thường hiệu quả.
+    private func fastHex(from digest: SHA256.Digest) -> String {
+        // EN: Lookup table using UTF-16 code units to avoid encoding overhead.
+        // VI: Bảng tra cứu dùng mã UTF-16 để tránh chi phí mã hóa.
+        let hexAlphabet = Array("0123456789abcdef".utf16)
+        
+        // EN: SHA-256 produces 32 bytes; hex string is 64 characters.
+        // VI: SHA-256 trả về 32 byte; chuỗi hex có 64 ký tự.
+        var hexChars = [UInt16]()
+        hexChars.reserveCapacity(64)
+
+        for byte in digest {
+            // EN: High nibble lookup.
+            // VI: Tra cứu nibble cao.
+            hexChars.append(hexAlphabet[Int(byte >> 4)])
+            // EN: Low nibble lookup.
+            // VI: Tra cứu nibble thấp.
+            hexChars.append(hexAlphabet[Int(byte & 0x0f)])
+        }
+        
+        return String(utf16CodeUnits: hexChars, count: hexChars.count)
+    }
+    // EN: Derive a human-friendly app name from an executable path.
+    // VI: Suy ra tên ứng dụng dễ đọc từ đường dẫn thực thi.
     private func computeAppName(forExecPath path: String) -> String {
         let execFile = URL(fileURLWithPath: path)
         let appBundleURL = execFile.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
@@ -383,10 +498,10 @@ extension ESManager {
     }
 }
 
-// MARK: - TTY Notifier (Santa Style)
+// MARK: - TTY notifier / Thông báo TTY
 final class TTYNotifier {
-    
-    /// Tìm đường dẫn TTY của một Process ID (ví dụ: /dev/ttys001)
+    /// EN: Find the TTY path of a process (e.g., /dev/ttys001).
+    /// VI: Tìm đường dẫn TTY của một tiến trình (ví dụ: /dev/ttys001).
     static func getTTYPath(for pid: pid_t) -> String? {
         let bufferSize = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, nil, 0)
         guard bufferSize > 0 else { return nil }
@@ -417,15 +532,13 @@ final class TTYNotifier {
         return nil
     }
 
-    /// Gửi thông báo chặn vào Terminal
+    /// EN: Write a colored block message to the parent's TTY when execution is denied.
+    /// VI: Ghi thông điệp có màu lên TTY của tiến trình cha khi bị chặn thực thi.
     static func notify(parentPid: pid_t, blockedPath: String, sha: String, identifier: String? = nil) {
         guard let ttyPath = getTTYPath(for: parentPid) else { return }
-        
-        // Mở TTY để ghi
         guard let fileHandle = FileHandle(forWritingAtPath: ttyPath) else { return }
         defer { try? fileHandle.close() }
         
-        // Message
         let title        = "AppLocker"
         let description  =
         """
@@ -439,12 +552,10 @@ final class TTYNotifier {
         let labelParent  = "Parent PID:".localized
         let labelAuth    = "Authenticate...".localized
         
-        // --- PHẦN ĐỊNH DẠNG (FORMATTING) ---
         let boldRed = "\u{001B}[1m\u{001B}[31m"
         let reset   = "\u{001B}[0m"
         let bold    = "\u{001B}[1m"
         
-        // --- GỘP LẠI (Dùng String Interpolation) ---
         let message = """
             \n
             \(boldRed)\(title)\(reset)
@@ -465,10 +576,12 @@ final class TTYNotifier {
     }
 }
 
-// MARK: - Handle Message
+// MARK: - ES event handling / Xử lý sự kiện ES
 extension ESManager {
+    // EN: Main ES callback; currently only handles AUTH_EXEC.
+    // VI: Callback ES chính; hiện chỉ xử lý AUTH_EXEC.
     private static func handleMessage(client: OpaquePointer?, message: UnsafePointer<es_message_t>?) {
-        guard let client, let message else { return }
+        guard let client = client, let message = message else { return }
         let msg = message.pointee
 
         if msg.event_type == ES_EVENT_TYPE_AUTH_EXEC {
@@ -484,121 +597,93 @@ extension ESManager {
                 return
             }
             
-            // Lấy thông tin process cha (Shell/Launcher) để gửi thông báo
             let parentPid = msg.process.pointee.ppid
-            // Lấy Signing ID nếu có (để hiển thị đẹp hơn)
             var signingID = "Unsigned/Unknown"
             if let signingToken = msg.event.exec.target.pointee.signing_id.data {
                 signingID = String(cString: signingToken)
             }
 
-            // --- Helper để gửi notify TTY (chạy background để không block kernel response) ---
-            func sendTTYNotification(sha: String) {
-                DispatchQueue.global(qos: .userInteractive).async {
-                    TTYNotifier.notify(parentPid: parentPid, blockedPath: path, sha: sha, identifier: signingID)
-                }
-            }
-            // -------------------------------------------------------------------------------
-
-            // 1) Fast path: Mapped SHA
-            if let mappedSHA = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) {
-                if mgr.isTempAllowed(mappedSHA) {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    return
-                }
-
-                let isBlocked = mgr.stateQueue.sync(execute: { mgr.blockedSHAs.contains(mappedSHA) })
-                if isBlocked {
-                    // -> DENY
-                    usleep(1_000)
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied by mapped SHA: \(path, privacy: .public)")
-                    
-                    // Gửi thông báo ra Terminal
-                    sendTTYNotification(sha: mappedSHA)
-
-                    DispatchQueue.global(qos: .utility).async {
-                        let name = mgr.computeAppName(forExecPath: path)
-                        mgr.sendBlockedNotificationToApp(name: name, path: path, sha: mappedSHA)
+            // EN: Helper to deliver notifications for a deny decision.
+            // VI: Trợ giúp gửi thông báo khi quyết định là chặn.
+            func sendNotifications(sha: String, decision: ExecDecision) {
+                if decision == .deny {
+                    DispatchQueue.global(qos: .userInteractive).async {
+                        TTYNotifier.notify(parentPid: parentPid, blockedPath: path, sha: sha, identifier: signingID)
                     }
-                    return
-                } else {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    return
-                }
-            }
-
-            // 2) Cache path
-            if let cached = mgr.decisionQueue.sync(execute: { mgr.decisionCache[path] }) {
-                switch cached {
-                case .allow:
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    return
-                case .deny:
-                    // -> DENY
-                    usleep(1_000)
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied by cache: \(path, privacy: .public)")
-                    
-                    let shaOpt = mgr.stateQueue.sync(execute: { mgr.blockedPathToSHA[path] }) ?? "Cached-No-SHA"
-                    
-                    // Gửi thông báo ra Terminal
-                    sendTTYNotification(sha: shaOpt)
-                    
-                    DispatchQueue.global(qos: .utility).async {
-                        let name = mgr.computeAppName(forExecPath: path)
-                        mgr.sendBlockedNotificationToApp(name: name, path: path, sha: shaOpt)
-                    }
-                    return
-                }
-            }
-
-            // 3) Slow path: Compute SHA
-            if let sha = mgr.computeSHA256Streaming(forPath: path) {
-                if mgr.isTempAllowed(sha) {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
-                    mgr.decisionQueue.async { mgr.decisionCache[path] = .allow }
-                    return
-                }
-
-                let isBlockedNow = mgr.stateQueue.sync(execute: { mgr.blockedSHAs.contains(sha) })
-                if isBlockedNow {
-                    // -> DENY
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
-                    Logfile.es.log("Denied (sync SHA): \(path, privacy: .public)")
-                    
-                    mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
-                    mgr.decisionQueue.async { mgr.decisionCache[path] = .deny }
-
-                    // Gửi thông báo ra Terminal
-                    sendTTYNotification(sha: sha)
-
                     DispatchQueue.global(qos: .utility).async {
                         let name = mgr.computeAppName(forExecPath: path)
                         mgr.sendBlockedNotificationToApp(name: name, path: path, sha: sha)
                     }
-                    return
-                } else {
-                    es_respond_auth_result(client, message, ES_AUTH_RESULT_ALLOW, false)
-                    mgr.stateQueue.async { mgr.blockedPathToSHA[path] = sha }
-                    mgr.decisionQueue.async { mgr.decisionCache[path] = .allow }
-                    return
                 }
+            }
+
+            // EN: Fast path — single lock read of all state.
+            // VI: Đường nhanh — đọc toàn bộ trạng thái trong một lần khóa.
+            let decisionResult: ExecDecision? = mgr.stateLock.sync {
+                if let mappedSHA = mgr.blockedPathToSHA[path] {
+                    if let expiry = mgr.tempAllowedSHAs[mappedSHA], expiry > Date() {
+                        return .allow
+                    }
+                    if mgr.blockedSHAs.contains(mappedSHA) {
+                        return .deny
+                    }
+                }
+                if let cached = mgr.decisionCache[path] {
+                    return cached
+                }
+                return nil
+            }
+
+            if let decision = decisionResult {
+                let authResult = (decision == .allow) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
+                es_respond_auth_result(client, message, authResult, false)
+                
+                if decision == .deny {
+                    Logfile.es.log("Denied by FastPath (Cache/Map): \(path, privacy: .public)")
+                    let shaForNotify = mgr.stateLock.sync { mgr.blockedPathToSHA[path] ?? "Cached-No-SHA" }
+                    sendNotifications(sha: shaForNotify, decision: .deny)
+                }
+                return
+            }
+
+            // EN: Slow path — compute SHA outside the lock.
+            // VI: Đường chậm — tính SHA ngoài khóa.
+            if let sha = mgr.computeSHA256Streaming(forPath: path) {
+                let finalDecision: ExecDecision = mgr.stateLock.sync {
+                    if let expiry = mgr.tempAllowedSHAs[sha], expiry > Date() {
+                        return .allow
+                    }
+                    return mgr.blockedSHAs.contains(sha) ? .deny : .allow
+                }
+
+                mgr.stateLock.perform {
+                    mgr.blockedPathToSHA[path] = sha
+                    mgr.decisionCache[path] = finalDecision
+                }
+
+                let authResult = (finalDecision == .allow) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
+                es_respond_auth_result(client, message, authResult, false)
+                
+                if finalDecision == .deny {
+                    Logfile.es.log("Denied by SlowPath (SHA): \(path, privacy: .public)")
+                    sendNotifications(sha: sha, decision: .deny)
+                }
+                return
+                
             } else {
-                // Read Error -> Deny
                 es_respond_auth_result(client, message, ES_AUTH_RESULT_DENY, false)
                 Logfile.es.log("Failed to compute SHA -> Denying: \(path, privacy: .public)")
-                // Có thể gửi notify báo lỗi nếu muốn
-                sendTTYNotification(sha: "Read-Error")
+                sendNotifications(sha: "Read-Error", decision: .deny)
                 return
             }
         }
     }
 }
 
-// MARK: - NSXPCListenerDelegate extension
+// MARK: - NSXPCListenerDelegate / Đại biểu NSXPCListener
 extension ESManager {
+    // EN: Accept and manage incoming XPC connections from the app.
+    // VI: Chấp nhận và quản lý các kết nối XPC đến từ ứng dụng.
     func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
         Logfile.es.log("Incoming XPC connection attempt (pid=\(newConnection.processIdentifier, privacy: .public))")
 
@@ -623,3 +708,4 @@ extension ESManager {
         return true
     }
 }
+

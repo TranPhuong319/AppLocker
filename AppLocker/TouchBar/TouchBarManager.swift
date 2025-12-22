@@ -4,6 +4,9 @@
 //
 //  Created by Doe Phương on 5/9/25.
 //
+//  EN: Manages NSTouchBar items and updates with AppState changes.
+//  VI: Quản lý các mục NSTouchBar và cập nhật theo thay đổi của AppState.
+//
 
 import AppKit
 import Combine
@@ -26,7 +29,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             }
             .store(in: &cancellables)
 
-        // Lắng nghe thay đổi selectedToLock để update Lock button
+        // EN: Listen for selection or locking state to update lock button.
+        // VI: Lắng nghe thay đổi chọn/đang khóa để cập nhật nút Lock.
         appState.$selectedToLock
             .combineLatest(appState.$isLocking)
             .receive(on: RunLoop.main)
@@ -72,7 +76,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             }
             
             registerOrUpdateItem(id: .showDeleteQueuePopup) {
-                // Container view full width
+                // EN: Full-width container for a prominent red button.
+                // VI: Container toàn chiều rộng cho nút đỏ nổi bật.
                 let container = NSView()
                 
                 let button = NSButton(
@@ -86,17 +91,15 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
                 button.layer?.backgroundColor = NSColor.systemRed.cgColor
                 button.layer?.cornerRadius = 6
                 
-                // Chiều cao cố định
                 button.translatesAutoresizingMaskIntoConstraints = false
                 container.addSubview(button)
                 
-                // Constraints để nút stretch full width
                 NSLayoutConstraint.activate([
                     button.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 0),
                     button.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: 0),
                     button.topAnchor.constraint(equalTo: container.topAnchor),
                     button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-                    button.heightAnchor.constraint(equalToConstant: 30) // chiều cao
+                    button.heightAnchor.constraint(equalToConstant: 30)
                 ])
                 
                 self.deleteQueueButton = button
@@ -179,33 +182,40 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         return item
     }
 
-    /// Xóa hết item cũ
+    // EN: Remove all cached items.
+    // VI: Xóa tất cả item đã lưu.
     func clear() {
         items.removeAll()
     }
 
-    /// Đăng ký hoặc update item
+    // EN: Register or update a custom item builder.
+    // VI: Đăng ký hoặc cập nhật builder cho item tùy chỉnh.
     func registerOrUpdateItem(id: NSTouchBarItem.Identifier, builder: @escaping () -> NSView) {
         items[id] = builder
     }
 
-    /// Apply touchbar cho 1 window với loại cụ thể
+    // EN: Apply a touch bar layout to a window for a given type.
+    // VI: Áp dụng bố cục touch bar cho một cửa sổ theo loại.
     func apply(to window: NSWindow?, type: AppState.TouchBarType) {
         guard let window else { return }
         window.touchBar = makeTouchBar(for: type)
     }
 }
 
-// Định nghĩa identifier chung
+// EN: Common item identifiers.
+// VI: Định danh item dùng chung.
 extension NSTouchBarItem.Identifier {
-    // Main Window
+    // EN: Main Window
+    // VI: Cửa sổ chính
     static let addApp = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.addApp")
-    // Popup Add Lock App
+    // EN: Popup Add Lock App
+    // VI: Popup thêm ứng dụng khóa
     static let lockButton = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.lockButton")
     static let closeAddPopupApp = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.closeAddPopupApp")
     static let addAppOther = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.addAppOther")
     static let centerButtonsLock = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.centerButtonsLock")
-    // Popup Unlock App
+    // EN: Popup Unlock App
+    // VI: Popup mở khóa ứng dụng
     static let unlockButton = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.unlockButton")
     static let clearWaitList = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.clearWaitList")
     static let deleteQueueButtons = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.deleteQueueButtons")

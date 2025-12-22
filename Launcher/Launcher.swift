@@ -4,11 +4,16 @@
 //
 //  Created by Doe Phương on 24/07/2025.
 //
+//  EN: Helper launcher that authenticates and runs a hidden app, then re-locks it on exit.
+//  VI: Trình khởi chạy hỗ trợ: xác thực và mở app ẩn, sau đó khóa lại khi thoát.
+//
 
 import AppKit
 import Foundation
 import ServiceManagement
 
+// EN: Basic info for a locked app stored in config.
+// VI: Thông tin cơ bản của app bị khóa lưu trong cấu hình.
 struct LockedAppInfo: Codable {
     let name: String
     let execFile: String
@@ -21,13 +26,15 @@ struct LockedAppInfo: Codable {
 
 class Launcher {
     static let shared = Launcher()
-    // lưu file nhận được từ AppDelegate
+    // EN: Files received from AppDelegate to open together with the app.
+    // VI: Tệp nhận từ AppDelegate để mở cùng ứng dụng.
     var pendingOpenFileURLs: [URL] = []
 
     func run() {
+// EN: Example of SMAppService daemon status check (unused here).
+// VI: Ví dụ kiểm tra trạng thái daemon SMAppService (không dùng ở đây).
 //        let plistName = "com.TranPhuong319.AppLockerHelper.plist"
 //        let helperStatus = SMAppService.daemon(plistName: plistName).status
-//        
 //        switch helperStatus {
 //        case
 //        }
@@ -35,18 +42,24 @@ class Launcher {
         Logfile.launcher.info("Launcher started")
         Logfile.launcher.info("CommandLine args: \(CommandLine.arguments, privacy: .public)")
 
+        // EN: Locate Resources folder inside this launcher bundle.
+        // VI: Xác định thư mục Resources bên trong bundle của launcher.
         let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
         guard checkResourcesFolder(resourcesURL) else { exit(1) }
 
+        // EN: Load locked app mapping (launcher path -> LockedAppInfo) from config.
+        // VI: Nạp ánh xạ app bị khóa (đường dẫn launcher -> LockedAppInfo) từ config.
         let lockedApps = loadLockedAppInfos()
 
         do {
+            // EN: Find .app bundles packaged inside Resources.
+            // VI: Tìm các bundle .app được đóng gói trong Resources.
             let appURLs = try FileManager.default.contentsOfDirectory(at: resourcesURL, includingPropertiesForKeys: nil)
                 .filter { $0.pathExtension == "app" }
 
             for appURL in appURLs {
                 handleApp(appURL, lockedApps: lockedApps)
-                return // chỉ chạy 1 app
+                return // EN: Only handle one app per launcher run. VI: Chỉ xử lý một app cho mỗi lần chạy launcher.
             }
 
             Logfile.launcher.error("Can't find the App locked in the Resources")
@@ -58,8 +71,10 @@ class Launcher {
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Helpers / Trợ giúp
 
+    // EN: Ensure the Resources folder exists.
+    // VI: Đảm bảo thư mục Resources tồn tại.
     private func checkResourcesFolder(_ url: URL) -> Bool {
         if !FileManager.default.fileExists(atPath: url.path) {
             Logfile.launcher.error("Folder not found: \(url.path, privacy: .public)")
@@ -68,11 +83,13 @@ class Launcher {
         return true
     }
 
+    // EN: Resolve the hidden real app path and kick off authentication/open.
+    // VI: Xác định đường dẫn app thật (bị ẩn) và thực thi xác thực/mở app.
     private func handleApp(_ appURL: URL, lockedApps: [String: LockedAppInfo]) {
         let appName = appURL.deletingPathExtension().lastPathComponent
 
-        // 🔥 Lấy đúng launcherPath từ config.plist
-        // (ở đây appURL là app copy trong Resources, nên ta match theo tên)
+        // EN: Use the launcherPath from config.plist by matching name.
+        // VI: Dùng launcherPath từ config.plist bằng cách khớp theo tên.
         guard let (launcherPath, lockedInfo) = lockedApps.first(where: { _, info in
             info.name == appName
         }) else {
@@ -99,6 +116,8 @@ class Launcher {
         )
     }
 
+    // EN: Commands to temporarily unlock app and its exec file.
+    // VI: Các lệnh để tạm thời mở khóa app và file thực thi.
     private func buildUnlockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
         let uid = getuid()
         let gid = getgid()
@@ -112,7 +131,7 @@ class Launcher {
                 "undo": ["command": "chflags", "args": ["uchg", execPath]]
             ],
             [
-                "do":   ["command": "chmod", "args": ["a=rx", execPath]],  // restore quyền execute
+                "do":   ["command": "chmod", "args": ["a=rx", execPath]],  // EN: restore execute permission. VI: khôi phục quyền thực thi.
                 "undo": ["command": "chmod", "args": ["000", execPath]]
             ],
             [
@@ -122,6 +141,8 @@ class Launcher {
         ]
     }
 
+    // EN: Commands to re-lock the exec file and app bundle.
+    // VI: Các lệnh để khóa lại file thực thi và bundle ứng dụng.
     private func buildLockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
         return [
             [
@@ -143,6 +164,8 @@ class Launcher {
         ]
     }
 
+    // EN: Authenticate user, open the hidden app, and re-lock after it quits.
+    // VI: Xác thực người dùng, mở app ẩn, và khóa lại sau khi app thoát.
     private func authenticateAndOpenApp(lockedInfo: LockedAppInfo,
                                         hiddenAppRealURL: URL,
                                         execPath: String,
@@ -166,6 +189,8 @@ class Launcher {
         }
     }
 
+    // EN: Open the app with optional files/URLs and monitor termination.
+    // VI: Mở app kèm tệp/URL tùy chọn và theo dõi khi app thoát.
     private func openApplication(lockedInfo: LockedAppInfo,
                                  hiddenAppRealURL: URL,
                                  lockCmds: [[String: Any]]) {
@@ -204,6 +229,8 @@ class Launcher {
         }
     }
 
+    // EN: Determine a file/URL to open from arguments or saved list.
+    // VI: Xác định tệp/URL cần mở từ tham số hoặc danh sách đã lưu.
     private func resolveFileToOpen() -> URL? {
         if let fromDelegate = Launcher.shared.pendingOpenFileURLs.first {
             Logfile.launcher.info("Open with file \(fromDelegate.path)")
@@ -224,6 +251,8 @@ class Launcher {
         return nil
     }
 
+    // EN: Wait for the app to quit, then re-lock its files.
+    // VI: Chờ ứng dụng thoát, sau đó khóa lại các tệp.
     private func monitorAppTermination(_ runningApp: NSRunningApplication,
                                        lockCmds: [[String: Any]]) {
         DispatchQueue.global().async {
@@ -239,6 +268,8 @@ class Launcher {
         }
     }
 
+    // EN: (Unused) Alternative result handler for opening app.
+    // VI: (Không dùng) Hàm xử lý kết quả mở app thay thế.
     private func handleOpenResult(runningApp: NSRunningApplication?, err: Error?, lockCmds: [[String: Any]]) {
         if let err = err {
             Logfile.launcher.error("Can't open the app: \(err.localizedDescription)")
@@ -267,6 +298,8 @@ class Launcher {
         }
     }
 
+    // EN: Send a batch of privileged commands to the helper via XPC.
+    // VI: Gửi một loạt lệnh đặc quyền tới helper qua XPC.
     private func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
         let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLocker.Helper", options: .privileged)
         conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
@@ -296,6 +329,8 @@ class Launcher {
         return result
     }
 
+    // EN: Read config.plist for locked apps information.
+    // VI: Đọc config.plist để lấy thông tin ứng dụng bị khóa.
     func loadLockedAppInfos() -> [String: LockedAppInfo] {
         let configURL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/AppLocker/config.plist")

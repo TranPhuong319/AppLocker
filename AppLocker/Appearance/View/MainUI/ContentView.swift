@@ -4,16 +4,23 @@
 //
 //  Copyright © 2025 TranPhuong319. All rights reserved.
 //
+//  EN: Main UI for managing locked applications.
+//  VI: Giao diện chính để quản lý các ứng dụng bị khóa.
+//
 
 import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+// EN: Source of installed application (user/system).
+// VI: Nguồn của ứng dụng đã cài (người dùng/hệ thống).
 enum AppSource: String {
     case user = "Applications"
     case system = "System"
 }
 
+// EN: Lightweight model for an installed app shown in the UI.
+// VI: Mô hình nhẹ cho ứng dụng đã cài hiển thị trên giao diện.
 struct InstalledApp: Identifiable, Hashable {
     let id: String
     let name: String
@@ -51,13 +58,14 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { isSearchFocused = false }
-        // Tách các sheet ra các hàm riêng để giảm tải cho body chính
+        // EN: Split sheets into dedicated builders to keep main body lean.
+        // VI: Tách các sheet thành các hàm riêng để phần body chính gọn nhẹ.
         .sheet(isPresented: $appState.showingAddApp) { addAppSheet }
         .sheet(isPresented: $appState.showingDeleteQueue) { deleteQueueSheet }
         .sheet(isPresented: $appState.showingLockingPopup) { lockingPopupSheet }
     }
     
-    // MARK: - Subviews
+    // MARK: - Subviews / Thành phần con
     @ViewBuilder
     private var headerView: some View {
         HStack {
@@ -81,25 +89,26 @@ struct ContentView: View {
     @ViewBuilder
     private var mainListView: some View {
         VStack(spacing: 9) {
-            // 1. Thanh Search: Đã loại bỏ padding ngang riêng lẻ để đi theo container chung
+            // EN: 1) Search bar — unified padding with container.
+            // VI: 1) Thanh tìm kiếm — đồng nhất padding với container.
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                    .padding(.leading, 4) // Đẩy kính lúp vào một chút
+                    .padding(.leading, 4) // EN: Nudge icon inward. VI: Đẩy biểu tượng vào nhẹ.
                 
                 TextField("Search apps...".localized, text: $appState.searchTextLockApps)
-                    .textFieldStyle(.plain) // Quan trọng: Loại bỏ khung mặc định của TextField
+                    .textFieldStyle(.plain) // EN: Remove default field border. VI: Bỏ khung mặc định của TextField.
                     .focused($isSearchFocused)
                     .onSubmit { unfocus() }
             }
-            .padding(7) // Tạo khoảng trống giữa nội dung và khung bar
+            .padding(7) // EN: Spacing between content and bar frame. VI: Tạo khoảng trống giữa nội dung và khung.
             .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.secondary.opacity(0.2))
             )
-            .padding(.horizontal, 8) 
+            .padding(.horizontal, 8)
             
             ZStack(alignment: .bottom) {
                 ScrollView {
@@ -110,15 +119,16 @@ struct ContentView: View {
                         
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications".localized)
-                            ForEach(userApps) { lockedAppRow(for: $0) }
+                            ForEach(userApps, id: \.path) { lockedAppRow(for: $0) }
                         }
                         
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications".localized)
-                            ForEach(systemApps) { lockedAppRow(for: $0) }
+                            ForEach(systemApps, id: \.path) { lockedAppRow(for: $0) }
                         }
                         
-                        // Nếu cả 2 group trên đều trống nhưng apps lại có dữ liệu (do source bị nil)
+                        // EN: If both groups are empty but there are apps (e.g., missing source), list all.
+                        // VI: Nếu cả hai nhóm trống nhưng vẫn có app (ví dụ thiếu nguồn), hiển thị tất cả.
                         if userApps.isEmpty && systemApps.isEmpty && !apps.isEmpty {
                             ForEach(apps) { lockedAppRow(for: $0) }
                         }
@@ -138,7 +148,7 @@ struct ContentView: View {
         }
     }
     
-    // MARK: - Row Helper
+    // MARK: - Row Helper / Trợ giúp hàng
     @ViewBuilder
     private func lockedAppRow(for app: InstalledApp) -> some View {
         HStack(spacing: 12) {
@@ -167,23 +177,24 @@ struct ContentView: View {
         .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
     }
     
-    // MARK: - Sheets
+    // MARK: - Sheets / Hộp thoại
     @ViewBuilder
     private var addAppSheet: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // 1. Thanh Search: Đã loại bỏ padding ngang riêng lẻ để đi theo container chung
+                // EN: 1) Search bar — dedicated to add-app sheet.
+                // VI: 1) Thanh tìm kiếm — dành riêng cho popup thêm app.
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
-                        .padding(.leading, 4) // Đẩy kính lúp vào một chút
+                        .padding(.leading, 4) // EN: Nudge icon inward. VI: Đẩy biểu tượng vào nhẹ.
                     
                     TextField("Search apps...".localized, text: $appState.searchTextUnlockaleApps)
-                        .textFieldStyle(.plain) // Quan trọng: Loại bỏ khung mặc định của TextField
+                        .textFieldStyle(.plain) // EN: Remove default field border. VI: Bỏ khung mặc định của TextField.
                         .focused($isSearchFocused)
                         .onSubmit { unfocus() }
                 }
-                .padding(7) // Tạo khoảng trống giữa nội dung và khung bar
+                .padding(7) // EN: Spacing between content and bar frame. VI: Tạo khoảng trống giữa nội dung và khung.
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
                 .cornerRadius(8)
                 .overlay(
@@ -194,7 +205,8 @@ struct ContentView: View {
                 .padding(.vertical)
                 Divider()
                 
-                // 2. Danh sách app
+                // EN: 2) App list grouped by source.
+                // VI: 2) Danh sách ứng dụng theo nhóm nguồn.
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         if modeLock == "ES" {
@@ -221,10 +233,9 @@ struct ContentView: View {
                         }
                     }
                     .padding(.vertical, 8)
-                    // Đã bỏ padding(.horizontal) ở đây để dùng chung ở lớp ngoài
                 }
                 .scrollIndicators(.hidden)
-                .padding(.horizontal) // Đảm bảo List thụt lề bằng đúng Search bar
+                .padding(.horizontal) // EN: Align list indent with search bar. VI: Canh lề danh sách bằng thanh tìm kiếm.
                 .frame(maxWidth: .infinity)
                 .frame(maxHeight: 420)
             }
@@ -260,14 +271,16 @@ struct ContentView: View {
         .frame(minWidth: 400, minHeight: 500)
         .onTapGesture { unfocus() }
         .onAppear {
-            unfocus() // Đảm bảo lúc mở lên không tự focus vào TextField
+            unfocus() // EN: Ensure not focused on launch. VI: Đảm bảo khi mở không bị focus.
             appState.manager.reloadAllApps()
                         
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                // Ép AppKit nhả focus của mọi TextField đang hoạt động
+                // EN: Force AppKit to release any active first responder from text fields.
+                // VI: Ép AppKit nhả First Responder của mọi TextField đang hoạt động.
                 NSApp.keyWindow?.makeFirstResponder(nil)
                 
-                // TouchBar logic
+                // EN: Touch Bar configuration for this sheet.
+                // VI: Cấu hình Touch Bar cho sheet này.
                 let tb = TouchBarManager.shared.makeTouchBar(for: .addAppPopup)
                 NSApp.keyWindow?.touchBar = tb
             }
@@ -282,10 +295,12 @@ struct ContentView: View {
             }
         }
     }
-    // Hàm bổ trợ để ép hệ thống nhả Focus hoàn toàn
+    // EN: Helper to fully clear focus from fields.
+    // VI: Hàm bổ trợ để hệ thống nhả focus hoàn toàn.
     private func unfocus() {
         isSearchFocused = false
-        // Can thiệp AppKit: Bắt Window hiện tại nhả First Responder
+        // EN: Ask current window to resign first responder (AppKit interop).
+        // VI: Yêu cầu Window hiện tại nhả First Responder (tương tác AppKit).
         DispatchQueue.main.async {
             NSApp.keyWindow?.makeFirstResponder(nil)
         }
@@ -310,15 +325,17 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Application is waiting to be deleted".localized)
                 .font(.headline)
-                .padding([.horizontal, .top]) // Chỉ giữ padding trên và hai bên
+                .padding([.horizontal, .top]) // EN: Keep only top & horizontal padding. VI: Chỉ giữ padding trên và hai bên.
                 .padding(.bottom, 0)
             
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
-                    // Lọc danh sách app nằm trong Queue
+                    // EN: Filter apps that are in the delete queue.
+                    // VI: Lọc các ứng dụng nằm trong hàng đợi xóa.
                     let appsInQueue = appState.lockedAppObjects.filter { appState.deleteQueue.contains($0.path) }
                     
-                    // Nhóm 1: User Apps
+                    // EN: Group 1 — User apps.
+                    // VI: Nhóm 1 — Ứng dụng người dùng.
                     let userApps = appsInQueue.filter { $0.source == .user }
                     if !userApps.isEmpty {
                         SectionHeader(title: "Applications".localized)
@@ -327,7 +344,8 @@ struct ContentView: View {
                         }
                     }
                     
-                    // Nhóm 2: System Apps
+                    // EN: Group 2 — System apps.
+                    // VI: Nhóm 2 — Ứng dụng hệ thống.
                     let systemApps = appsInQueue.filter { $0.source == .system }
                     if !systemApps.isEmpty {
                         SectionHeader(title: "System Applications".localized)
@@ -376,7 +394,8 @@ struct ContentView: View {
         }
     }
     
-    // Tạo thêm hàm Row riêng cho Delete Queue để code gọn hơn
+    // EN: Separate row builder for delete queue for clarity.
+    // VI: Tạo hàm Row riêng cho Delete Queue để code gọn gàng.
     @ViewBuilder
     private func deleteQueueRow(for app: InstalledApp) -> some View {
         HStack(spacing: 12) {
@@ -410,19 +429,18 @@ struct ContentView: View {
         .frame(minWidth: 200, minHeight: 100)
     }
         
-    // MARK: - Helper
+    // MARK: - Helper / Trợ giúp
     @ViewBuilder
     func SectionHeader(title: String) -> some View {
-        HStack(spacing: 10) { // Khoảng cách giữa chữ và thanh ngang
-            Text(title) // Chữ in hoa nhẹ nhìn sẽ chuyên nghiệp hơn
+        HStack(spacing: 10) { // EN: Gap between text and separator. VI: Khoảng cách giữa chữ và thanh ngang.
+            Text(title)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundColor(.secondary.opacity(0.8))
-                .layoutPriority(1) // Đảm bảo chữ không bị cắt nếu quá dài
+                .layoutPriority(1) // EN: Avoid truncation for long text. VI: Tránh bị cắt khi chữ dài.
             
-            // Thanh ngang nối tiếp chữ
             Rectangle()
                 .fill(Color.secondary.opacity(0.2))
-                .frame(height: 1) // Độ dày thanh ngang
+                .frame(height: 1)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 2)
@@ -457,7 +475,7 @@ struct ContentView: View {
                 
                 Text(app.name)
                     .font(.body)
-                    .foregroundColor(.primary) // Đảm bảo text không bị đổi màu theo Button
+                    .foregroundColor(.primary) // EN: Keep text color independent from Button. VI: Giữ màu chữ không phụ thuộc Button.
                 
                 Spacer()
                 
@@ -474,12 +492,11 @@ struct ContentView: View {
             }
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .frame(maxWidth: .infinity) // Ép HStack chiếm hết chiều ngang của List
-            .contentShape(Rectangle())  // Biến toàn bộ diện tích (kể cả vùng Spacer) thành vùng nhấn
-            // Hiệu ứng mờ cố định khi đã được chọn vào danh sách chờ lock
-            .opacity(appState.selectedToLock.contains(app.path) ? 0.5 : 1.0)
+            .frame(maxWidth: .infinity) // EN: Make row fill full width. VI: Ép hàng chiếm toàn bộ chiều ngang.
+            .contentShape(Rectangle())  // EN: Entire area (incl. Spacer) is tappable. VI: Toàn bộ vùng (kể cả Spacer) có thể nhấn.
+            .opacity(appState.selectedToLock.contains(app.path) ? 0.5 : 1.0) // EN: Dim when selected. VI: Làm mờ khi đã chọn.
         }
-        .buttonStyle(AppRowButtonStyle()) // Áp dụng hiệu ứng nhấn
+        .buttonStyle(AppRowButtonStyle()) // EN: Apply press feedback. VI: Áp dụng hiệu ứng nhấn.
     }
     
     func isAppStubbedAsLocked(_ appURL: URL) -> Bool {
@@ -520,15 +537,16 @@ struct AppRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
-                // Sử dụng RoundedRectangle để bo cong nền khi nhấn
+                // EN: Rounded background when pressed.
+                // VI: Nền bo góc khi nhấn.
                 RoundedRectangle(cornerRadius: 12)
                     .fill(configuration.isPressed ? Color.gray.opacity(0.15) : Color.clear)
-                    .padding(.horizontal, 4) // Thêm chút padding để nền không chạm sát mép
+                    .padding(.horizontal, 4) // EN: Keep some gap from edges. VI: Tạo khoảng cách với mép.
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
-            .contentShape(Rectangle()) // Vẫn giữ cái này để nhận diện click toàn dòng
+            .contentShape(Rectangle()) // EN: Preserve full-row hit testing. VI: Giữ khả năng bấm toàn dòng.
     }
 }
 
