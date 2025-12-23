@@ -6,49 +6,28 @@
 //
 
 import Foundation
+import IOKit
 
 func isKextSigningDisabled() -> Bool {
-    let proc = Process()
-    proc.executableURL = URL(fileURLWithPath: "/usr/sbin/nvram")
-    proc.arguments = ["csr-active-config"]
+    // 1. Lấy tham chiếu đến registry entry của NVRAM (nằm trong "options")
+    let entry = IORegistryEntryFromPath(kIOMainPortDefault, "IODeviceTree:/options")
+    if entry == 0 { return false }
+    
+    // Đảm bảo giải phóng object sau khi dùng xong để tránh leak bộ nhớ
+    defer { IOObjectRelease(entry) }
 
-    let outPipe = Pipe()
-    proc.standardOutput = outPipe
-    proc.standardError = Pipe()
-
-    do {
-        try proc.run()
-    } catch {
+    // 2. Truy vấn thuộc tính "csr-active-config"
+    guard let property = IORegistryEntryCreateCFProperty(entry, "csr-active-config" as CFString, kCFAllocatorDefault, 0) else {
         return false
     }
-    proc.waitUntilExit()
-
-    let data = outPipe.fileHandleForReading.readDataToEndOfFile()
-    guard let raw = String(data: data, encoding: .utf8) else { return false }
-
-    // Tìm mọi cặp hex theo mẫu %xx
-    let pattern = "%([0-9A-Fa-f]{2})"
-    guard let regex = try? NSRegularExpression(pattern: pattern) else { return false }
-    let ns = raw as NSString
-    let matches = regex.matches(in: raw, range: NSRange(location: 0, length: ns.length))
-
-    var bytes = [UInt8]()
-    for m in matches {
-        let hex = ns.substring(with: m.range(at: 1))
-        if let b = UInt8(hex, radix: 16) {
-            bytes.append(b)
-        }
+    
+    let data = property.takeRetainedValue() as? Data
+    
+    // 3. Kiểm tra byte đầu tiên (Bit 0 là ALLOW_UNTRUSTED_KEXTS)
+    if let bytes = data, !bytes.isEmpty {
+        // CSR_ALLOW_UNTRUSTED_KEXTS = 0x01
+        return (bytes[0] & 0x01) != 0
     }
 
-    if bytes.isEmpty { return false }
-
-    // Ghép tối đa 4 byte theo little-endian vào UInt32
-    var mask: UInt32 = 0
-    for (i, b) in bytes.enumerated() {
-        if i >= 4 { break }
-        mask |= UInt32(b) << (8 * i)
-    }
-
-    // ALLOW_UNTRUSTED_KEXTS = 0x1 -> kiểm tra bit 0
-    return (mask & 0x1) != 0
+    return false
 }

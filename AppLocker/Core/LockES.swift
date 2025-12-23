@@ -135,7 +135,7 @@ class LockES: LockManagerProtocol {
                 }
                 let bundleID = bundle.bundleIdentifier ?? ""
 
-                let mode = modeLock ?? "ES"
+                let mode = modeLock?.rawValue ?? AppMode.es.rawValue
                 let cfg = LockedAppConfig(
                     bundleID: bundleID,
                     path: path,

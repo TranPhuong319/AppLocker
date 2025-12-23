@@ -55,7 +55,6 @@ struct ContentView: View {
             }
         }
         .padding(12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { isSearchFocused = false }
         // EN: Split sheets into dedicated builders to keep main body lean.
@@ -209,25 +208,19 @@ struct ContentView: View {
                 // VI: 2) Danh sách ứng dụng theo nhóm nguồn.
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
-                        if modeLock == "ES" {
-                            let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
-                            if !userApps.isEmpty {
-                                SectionHeader(title: "Applications".localized)
-                                ForEach(userApps, id: \.path) { app in
-                                    appRow(for: app)
-                                }
+                        let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
+                        if !userApps.isEmpty {
+                            SectionHeader(title: "Applications".localized)
+                            ForEach(userApps, id: \.path) { app in
+                                appRow(for: app)
                             }
-                            
-                            let systemApps = appState.filteredUnlockableApps.filter { $0.source == .system }
-                            if !systemApps.isEmpty {
-                                SectionHeader(title: "System Applications".localized)
-                                    .padding(.top, 10)
-                                ForEach(systemApps, id: \.path) { app in
-                                    appRow(for: app)
-                                }
-                            }
-                        } else {
-                            ForEach(appState.filteredUnlockableApps) { app in
+                        }
+                        
+                        let systemApps = appState.filteredUnlockableApps.filter { $0.source == .system }
+                        if !systemApps.isEmpty {
+                            SectionHeader(title: "System Applications".localized)
+                                .padding(.top, 10)
+                            ForEach(systemApps, id: \.path) { app in
                                 appRow(for: app)
                             }
                         }
@@ -524,15 +517,6 @@ struct ContentView: View {
     }
 }
 
-struct PreviewWindow<Content: View>: View {
-    @ObservedObject var appState = AppState.shared
-    let content: Content
-    var body: some View {
-        content
-            .frame(width: CGFloat(appState.setWidth), height: CGFloat(appState.setHeight))
-    }
-}
-
 struct AppRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -551,6 +535,8 @@ struct AppRowButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    PreviewWindow(content: ContentView())
+    ContentView()
+        .frame(width: CGFloat(AppState.shared.setWidth),
+               height: CGFloat(AppState.shared.setHeight))
 }
 

@@ -4,9 +4,6 @@
 //
 //  Copyright © 2025 TranPhuong319. All rights reserved.
 //
-//  EN: Creates and manages the floating window that hosts the SwiftUI app list.
-//  VI: Tạo và quản lý cửa sổ nổi chứa danh sách ứng dụng bằng SwiftUI.
-//
 
 import AppKit
 import SwiftUI
@@ -57,12 +54,14 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
 
         // EN: Force SwiftUI layout before attaching to window.
         // VI: Ép SwiftUI layout trước khi gắn vào window.
-        hostingController.view.setFrameSize(NSSize(width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)))
+        hostingController.view.setFrameSize(NSSize(width: CGFloat(AppState.shared.setWidth),
+                                                   height: CGFloat(AppState.shared.setHeight)))
         hostingController.view.layoutSubtreeIfNeeded()
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: CGFloat(AppState.shared.setWidth), height: CGFloat(AppState.shared.setHeight)),
-            styleMask: [.titled, .closable],
+            contentRect: NSRect(x: 0, y: 0, width: CGFloat(AppState.shared.setWidth),
+                                height: CGFloat(AppState.shared.setHeight)),
+            styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )

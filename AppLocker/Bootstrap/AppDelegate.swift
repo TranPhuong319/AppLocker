@@ -25,7 +25,18 @@ enum AgentAction {
     case checkAndInstallifNeed
 }
 
-var modeLock: String? = UserDefaults.standard.string(forKey: "selectedMode")
+enum AppMode: String {
+    case es = "ES"
+    case launcher = "Launcher"
+}
+
+var modeLock: AppMode? = {
+    if let savedValue = UserDefaults.standard.string(forKey: "selectedMode") {
+        return AppMode(rawValue: savedValue)
+    }
+    return nil
+}()
+
 let plistName = "com.TranPhuong319.AppLocker.agent"
 
 // MARK: AppDelegate.swift
@@ -40,18 +51,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
         
-        Logfile.core.debug("Mode selected: \(modeLock as NSObject?)")
+        // Sử dụng optional chaining hoặc miêu tả enum an toàn
+        Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None")")
         
         Logfile.core.info("Checking kext signing status...")
+        
         if isKextSigningDisabled() {
-            if modeLock == nil {
+            if let mode = modeLock {
+                launchConfig(config: mode)
+            } else {
                 WelcomeWindowController.show()
                 return
-            } else {
-                launchConfig(config: modeLock!)
             }
         } else {
-            launchConfig(config: "Launcher")
+            launchConfig(config: .launcher)
         }
     }
     
@@ -106,13 +119,13 @@ extension AppDelegate {
 
 // MARK: - Mode Lock / Chế độ khóa
 extension AppDelegate {
-    func launchConfig(config: String) {
-        if config == "Launcher" {
+    func launchConfig(config: AppMode) {
+        if config == .launcher {
             HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
-        } else {
+        } else if config == .es {
             // EN: Register callback after the ES extension is installed.
             // VI: Đăng ký callback sau khi cài extension ES.
-            ExtensionInstaller.shared.onInstalled = {                
+            ExtensionInstaller.shared.onInstalled = {
                 Logfile.core.info("[App] Starting XPC server after extension install")
                 XPCServer.shared.start()
                 
@@ -149,12 +162,21 @@ extension AppDelegate {
 extension AppDelegate: NSMenuDelegate {
     func setupMenuBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem?.button?.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
-
+        
+        if let button = statusItem?.button {
+            button.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
+            
+            button.translatesAutoresizingMaskIntoConstraints = false
+            
+            NSLayoutConstraint.activate([
+                button.widthAnchor.constraint(equalToConstant: 22),
+                button.heightAnchor.constraint(equalToConstant: 22)
+            ])
+        }
+        
         let menu = NSMenu()
         menu.delegate = self
         statusItem?.menu = menu
-
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -196,7 +218,7 @@ extension AppDelegate: NSMenuDelegate {
                                 keyEquivalent: ","))
         menu.addItem(.separator())
 
-        if modeLock == "Launcher" {
+        if modeLock == .launcher {
             let launchItem = NSMenuItem(title: "Launch At Login".localized,
                                         action: #selector(launchAtLogin),
                                         keyEquivalent: "")
@@ -281,7 +303,7 @@ extension AppDelegate {
         let manager = AppState.shared.manager
         NSApp.activate(ignoringOtherApps: true)
 
-        if manager.lockedApps.isEmpty || modeLock == "ES" {
+        if manager.lockedApps.isEmpty || modeLock == .es {
             let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
                                          message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
                                          style: .critical,
@@ -290,7 +312,17 @@ extension AppDelegate {
             
             switch confirm {
             case .button(index: 1, title: "Uninstall".localized):
-                if modeLock == "Launcher" {
+                switch modeLock {
+                case .es:
+                    ExtensionInstaller.shared.onUninstalled = {
+                        self.manageAgent(plistName: plistName, action: .uninstall)
+                        self.removeConfig()
+                        self.selfRemoveApp()
+                        self.showRestartSheet()
+                        NSApp.terminate(nil)
+                    }
+                    ExtensionInstaller.shared.uninstall()
+                case .launcher:
                     AuthenticationManager.authenticate(
                         reason: "uninstall the application".localized
                     ) { success, error in
@@ -306,21 +338,14 @@ extension AppDelegate {
                                     action: .uninstall, helperToolIdentifier: self.helperIdentifier
                                 )
                                 self.selfRemoveApp()
-                                
+                                self.removeConfig()
                                 self.showRestartSheet()
                                 NSApp.terminate(nil)
                             }
                         }
                     }
-                } else {
-                    ExtensionInstaller.shared.onUninstalled = {
-                        self.manageAgent(plistName: plistName, action: .uninstall)
-                        self.removeConfig()
-                        self.selfRemoveApp()
-                        self.showRestartSheet()
-                        NSApp.terminate(nil)
-                    }
-                    ExtensionInstaller.shared.uninstall()
+                case nil:
+                    break
                 }
             case .cancelled:
                 break
@@ -350,7 +375,19 @@ extension AppDelegate {
                                      cancelIndex: 0)
         switch confirm {
         case .button(index: 1, title: "Reset".localized):
-            if modeLock == "ES" {
+            switch modeLock {
+            case .launcher:
+                let loginItem = SMAppService.mainApp
+                let status = loginItem.status
+                if status == .enabled {
+                    try? loginItem.unregister()
+                }
+                removeConfig()
+                _ = HelperInstaller.manageHelperTool(
+                    action: .uninstall, helperToolIdentifier: helperIdentifier
+                )
+                restartApp(mode: nil)
+            case .es:
                 ExtensionInstaller.shared.onUninstalled = {
                     self.removeConfig()
                     self.manageAgent(plistName: plistName, action: .uninstall)
@@ -358,18 +395,8 @@ extension AppDelegate {
                     self.restartApp(mode: modeLock)
                 }
                 ExtensionInstaller.shared.uninstall()
-            } else {
-                let loginItem = SMAppService.mainApp
-                let status = loginItem.status
-                if status == .enabled {
-                    try? loginItem.unregister()
-                }
-                self.removeConfig()
-                _ = HelperInstaller.manageHelperTool(
-                    action: .uninstall, helperToolIdentifier: helperIdentifier
-                )
-                self.resetApp()
-                
+            case nil:
+                break
             }
             
         default:
@@ -611,13 +638,13 @@ extension AppDelegate {
 }
 
 extension AppDelegate {
-    func restartApp(mode: String?) {
+    func restartApp(mode: AppMode?) {
         let path = Bundle.main.bundlePath
         let task = Process()
         task.launchPath = "/usr/bin/open"
         task.arguments = ["-n", path]
         try? task.run()
-        if mode == "ES" {
+        if mode == .es {
             manageAgent(plistName: plistName, action: .install)
         }
         // EN: Terminate current app after relaunch.

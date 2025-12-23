@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    // VI: Sử dụng rawValue của enum để lưu vào AppStorage
     @AppStorage("selectedMode") private var selectedMode: String = ""
     @State private var shouldRestart = false
-    @Environment(\.presentationMode) var presentationMode
+    
     var copyright: String {
         Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
     }
@@ -20,40 +21,38 @@ struct WelcomeView: View {
             if shouldRestart {
                 Color.clear
                     .onAppear {
-                        AppDelegate.shared.restartApp(mode: selectedMode)
+                        AppDelegate.shared.restartApp(mode: AppMode(rawValue: selectedMode))
                     }
             } else {
                 Spacer().frame(height: 20)
                 
-                // Icon lớn trên đầu
                 if let icon = NSApplication.shared.applicationIconImage {
-                        Image(nsImage: icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 100) // chỉnh size icon cho vừa
+                    Image(nsImage: icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
                 }
                 
-                // Title
                 Text("Welcome to AppLocker")
                     .font(.title)
                     .fontWeight(.bold)
                 
-                // Description
                 Text("Please choose your preferred lock method:")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                 
-                // Hai label có icon nhỏ
                 VStack(spacing: 20) {
+                    // VI: Sử dụng AppMode.es.rawValue thay vì "ES"
                     LabelButtonView(label: "ES (EndpointSecurity)",
                                     symbol: "lock.shield.fill") {
-                        selectedMode = "ES"
+                        selectedMode = AppMode.es.rawValue
                         shouldRestart = true
                     }
                     
+                    // VI: Sử dụng AppMode.launcher.rawValue thay vì "Launcher"
                     LabelButtonView(label: "Launcher",
                                     symbol: "lock.rectangle.fill") {
-                        selectedMode = "Launcher"
+                        selectedMode = AppMode.launcher.rawValue
                         shouldRestart = true
                     }
                 }
@@ -61,7 +60,6 @@ struct WelcomeView: View {
                 
                 Spacer().frame(height: 1)
                 
-                // Footer text
                 Text(copyright)
                     .font(.footnote)
                     .foregroundColor(.gray)
@@ -69,8 +67,7 @@ struct WelcomeView: View {
             }
         }
         .frame(width: 350, height: 450)
-        .background(Color(NSColor
-            .windowBackgroundColor))
+        .background(Color(NSColor.windowBackgroundColor))
         .cornerRadius(10)
         .shadow(radius: 5)
     }

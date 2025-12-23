@@ -275,7 +275,7 @@ class LockLauncher: LockManagerProtocol {
                     DispatchQueue.main.async {
                         // save metadata (keyed by original path)
                         let bundleID = Bundle(url: appURL)?.bundleIdentifier ?? ""
-                        let mode = modeLock ?? "Launcher"
+                        let mode = modeLock?.rawValue ?? AppMode.launcher.rawValue
                         let cfg = LockedAppConfig(bundleID: bundleID,
                                                   path: path,
                                                   sha256: sha,

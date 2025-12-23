@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/TranPhuong319/Sparkle",
       "state" : {
-        "revision" : "c76b0a986f6dcbd38e99738527608d82f328a2c7",
-        "version" : "2.8.0"
+        "revision" : "bff3db1c6d146d62c0b2d317ca2e22f10240eb7c",
+        "version" : "2.8.2"
       }
     }
   ],

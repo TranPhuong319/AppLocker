@@ -39,11 +39,17 @@ class AppState: ObservableObject {
     @Published private(set) var unlockableApps: [InstalledApp] = []
     
     init() {
-        if modeLock == "Launcher" {
+        switch modeLock {
+        case .launcher:
             manager = LockLauncher()
-        } else {
+        case .es:
             manager = LockES()
+        case .none:
+            // VI: Xử lý trường hợp modeLock chưa được set (mặc định hoặc báo lỗi)
+            Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")
+            manager = LockLauncher()
         }
+        
         setupSearchPipeline()
         refreshAppLists()
     }
@@ -127,8 +133,8 @@ class AppState: ObservableObject {
         }
     }
     
-    let setWidth = 450
-    let setHeight = 450
+    let setWidth = 450 // Chiều ngang
+    let setHeight = 470 // chiều cao
     
     var appsToUnlock: [String] {
         Array(deleteQueue)

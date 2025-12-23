@@ -58,15 +58,6 @@ struct SettingsView: View {
                     }
                     .onChange(of: selectedChannel) { newChannel in
                         UserDefaults.standard.set(newChannel.rawValue, forKey: "updateChannel")
-                        //
-                        //                    DispatchQueue.main.async {
-                        //                        switch newChannel {
-                        //                        case .stable:
-                        //                            AppUpdater.shared.checkForUpdates(useBeta: false)
-                        //                        case .beta:
-                        //                            AppUpdater.shared.checkForUpdates(useBeta: true)
-                        //                        }
-                        //                    }
                     }
 
                     // Text mô tả, tự động thay đổi theo selectedChannel
