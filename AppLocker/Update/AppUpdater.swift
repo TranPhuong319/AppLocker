@@ -52,7 +52,6 @@ class AppUpdater: NSObject {
         )
         super.init()
     }
-
     // Cho AppDelegate đăng ký nhận sự kiện
     func setBridgeDelegate(_ bridgeDelegate: AppUpdaterBridgeDelegate) {
         delegate.bridgeDelegate = bridgeDelegate
@@ -78,7 +77,6 @@ class AppUpdater: NSObject {
             startAutoCheck()
         #endif
     }
-
     // Silent check
     func silentCheckForUpdates(useBeta: Bool) {
         delegate.useBeta = useBeta
@@ -92,7 +90,6 @@ class AppUpdater: NSObject {
             updaterController.updater.checkForUpdateInformation()
         }
     }
-        
     // Manual check
     func manualCheckForUpdates(useBeta: Bool) {
         delegate.useBeta = useBeta
@@ -108,7 +105,6 @@ class AppUpdater: NSObject {
             }
         }
     }
-
     // GitHub API để lấy appcast beta
     private func fetchLatestBeta(completion: @escaping (Bool) -> Void) {
         let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases")!
@@ -121,9 +117,9 @@ class AppUpdater: NSObject {
 
             do {
                 let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
-                if let latestBeta = releases.first(where: { $0.prerelease }),
+                if let latestBeta = releases.first(where: { $0.isPrerelease }),
                    let appcast = latestBeta.assets.first(where: { $0.name == "appcast.xml" }) {
-                    self.delegate.betaFeedURL = appcast.browser_download_url
+                    self.delegate.betaFeedURL = appcast.browserDownloadUrl
                     completion(true)
                 } else {
                     Logfile.core.info("No beta release found")
@@ -139,12 +135,21 @@ class AppUpdater: NSObject {
 
 // MARK: - GitHub API Models
 struct BetaGitHubRelease: Decodable {
-    let tag_name: String
-    let prerelease: Bool
+    let isPrerelease: Bool
     let assets: [BetaGitHubAsset]
+
+    enum CodingKeys: String, CodingKey {
+        case isPrerelease = "prerelease"
+        case assets
+    }
 }
 
 struct BetaGitHubAsset: Decodable {
     let name: String
-    let browser_download_url: String
+    let browserDownloadUrl: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case browserDownloadUrl = "browser_download_url"
+    }
 }

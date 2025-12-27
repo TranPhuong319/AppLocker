@@ -10,7 +10,7 @@ import OSLog
 import ServiceManagement
 
 class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol {
-    
+
     func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
         newConnection.exportedInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
         newConnection.exportedObject = self
@@ -23,10 +23,10 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
-        
+
         process.standardOutput = outputPipe
         process.standardError = errorPipe
-        
+
         switch command {
         case "mkdir":       process.executableURL = URL(fileURLWithPath: "/bin/mkdir")
         case "cp":          process.executableURL = URL(fileURLWithPath: "/bin/cp")
@@ -41,16 +41,16 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             reply(false, "Command not supported: \(command)")
             return
         }
-        
+
         process.arguments = args
-        
+
         do {
             try process.run()
             process.waitUntilExit()
-            
+
             let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
             let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-            
+
             if process.terminationStatus == 0 {
                 reply(true, output.isEmpty ? "✅ \(command) success" : output)
             } else {
@@ -60,17 +60,17 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             reply(false, "❌ Can't run \(command): \(error.localizedDescription)")
         }
     }
-    
+
     // MARK: - Parse args safely
     private func parseArgs(_ obj: Any?) -> [String]? {
         guard let arr = obj as? [Any] else { return nil }
         return arr.map { "\($0)" } // convert mọi thứ sang string
     }
-    
+
     // MARK: - Batch with rollback
     func sendBatch(_ commands: [[String: Any]], withReply reply: @escaping (Bool, String) -> Void) {
         var messages: [String] = []
-        
+
         for (index, cmdPair) in commands.enumerated() {
             // Parse DO
             guard let doCmd = cmdPair["do"] as? [String: Any],
@@ -80,7 +80,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
                 reply(false, messages.joined(separator: "\n"))
                 return
             }
-            
+
             // Run DO
             let sem = DispatchSemaphore(value: 0)
             var doSuccess = false
@@ -92,7 +92,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             }
             sem.wait()
             messages.append("Step \(index) do: \(outputMsg)")
-            
+
             // Nếu fail → chạy UNDO của chính lệnh đó
             if !doSuccess, let undoCmd = cmdPair["undo"] as? [String: Any],
                let undoCommand = undoCmd["command"] as? String,
@@ -112,11 +112,11 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
                 return
             }
         }
-        
+
         // Nếu tất cả DO thành công
         reply(true, messages.joined(separator: "\n"))
     }
-    
+
     func uninstallHelper(withReply reply: @escaping (Bool, String) -> Void) {
         var logs: [String] = []
 
@@ -143,17 +143,17 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         }
 
         _ = run("/bin/launchctl", args: ["bootout", "system/com.TranPhuong319.AppLocker.Helper"])
-        
+
         _ = run("/bin/launchctl", args: ["disable", "system/com.TranPhuong319.AppLocker.Helper"])
-        
+
         _ = run("/bin/rm", args: ["-rf", "~/Library/Application Support/AppLocker"])
-        
+
         _ = run("/bin/rm", args: ["-rf", "~/Library/Preferences/com.TranPhuong319.AppLocker.plist"])
 
         _ = run("/bin/rm", args: ["-rf", "/Applications/AppLocker.app"])
 
         _ = run("/usr/bin/killall", args: ["com.TranPhuong319.AppLocker.Helper"])
-        
+
         reply(true, logs.joined(separator: "\n"))
     }
 }

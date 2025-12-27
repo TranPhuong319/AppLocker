@@ -50,12 +50,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
-        
+
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
         Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None")")
-        
+
         Logfile.core.info("Checking kext signing status...")
-        
+
         if isKextSigningDisabled() {
             if let mode = modeLock {
                 launchConfig(config: mode)
@@ -67,7 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             launchConfig(config: .launcher)
         }
     }
-    
+
     func applicationExactlyOneInstance() {
         // EN: macOS typically enforces single instance via NSApplication.
         // VI: macOS thường đảm bảo một instance qua NSApplication.
@@ -83,7 +83,7 @@ extension AppDelegate {
     // VI: Đăng ký/hủy/kiểm tra agent đăng nhập.
     func manageAgent(plistName: String, action: AgentAction) {
         let agent = SMAppService.agent(plistName: "\(plistName).plist")
-        
+
         do {
             switch action {
             case .install:
@@ -93,7 +93,7 @@ extension AppDelegate {
                 }
                 try agent.register()
                 Logfile.core.info("Agent registered successfully")
-                
+
             case .uninstall:
                 if agent.status == .enabled {
                     try agent.unregister()
@@ -101,7 +101,7 @@ extension AppDelegate {
                 } else {
                     Logfile.core.info("Agent not registered, skipping uninstall")
                 }
-                
+
             case .checkAndInstallifNeed:
                 if agent.status != .enabled {
                     Logfile.core.info("Agent not active, registering new one")
@@ -109,7 +109,7 @@ extension AppDelegate {
                     NSApp.terminate(nil)
                 }
             }
-            
+
         } catch {
             let nsError = error as NSError
             Logfile.core.error("Failed to manage agent: \(nsError.domain) - code: \(nsError.code) - \(nsError.localizedDescription)")
@@ -128,30 +128,30 @@ extension AppDelegate {
             ExtensionInstaller.shared.onInstalled = {
                 Logfile.core.info("[App] Starting XPC server after extension install")
                 XPCServer.shared.start()
-                
+
                 Logfile.core.info("Starting menu bar and Notification")
                 self.setupMenuBar()
-                
+
                 AppUpdater.shared.setBridgeDelegate(self)
                 AppUpdater.shared.startTestAutoCheck()
-                
+
                 UNUserNotificationCenter.current().delegate = self
-                UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { granted, error in
+                UNUserNotificationCenter.current().requestAuthorization(options: [.badge, .sound, .alert]) { _, error in
                     if let error = error { Logfile.core.error("Notification error: \(error, privacy: .public)") }
                 }
-                
+
                 Logfile.core.info("Starting User state")
                 SessionObserver.shared.start()
-                
+
                 Logfile.core.info("Setting up hotkey manager...")
                 self.hotkey = HotKeyManager()
-                
+
                 Logfile.core.info("Setting up Touch Bar...")
                 if let window = NSApp.windows.first {
                     TouchBarManager.shared.apply(to: window, type: .mainWindow)
                 }
             }
-            
+
             Logfile.core.info("Installing Endpoint Security extension...")
             ExtensionInstaller.shared.install()
         }
@@ -162,18 +162,18 @@ extension AppDelegate {
 extension AppDelegate: NSMenuDelegate {
     func setupMenuBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        
+
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
-            
+
             button.translatesAutoresizingMaskIntoConstraints = false
-            
+
             NSLayoutConstraint.activate([
                 button.widthAnchor.constraint(equalToConstant: 22),
                 button.heightAnchor.constraint(equalToConstant: 22)
             ])
         }
-        
+
         let menu = NSMenu()
         menu.delegate = self
         statusItem?.menu = menu
@@ -181,14 +181,14 @@ extension AppDelegate: NSMenuDelegate {
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        
+
         let infoItem = NSMenuItem(title: "AppLocker v\(Bundle.main.fullVersion)",
                                 action: nil,
                                 keyEquivalent: "")
         infoItem.isEnabled = false
         menu.addItem(infoItem)
         menu.addItem(.separator())
-        
+
         if NSEvent.modifierFlags.contains(.option) {
             buildOptionMenu(for: menu)
         } else {
@@ -200,10 +200,10 @@ extension AppDelegate: NSMenuDelegate {
         let manageItem = NSMenuItem(title: "Manage the application list".localized,
                                     action: #selector(openListApp),
                                     keyEquivalent: "l")
-        manageItem.keyEquivalentModifierMask = [.command,.shift]
+        manageItem.keyEquivalentModifierMask = [.command, .shift]
         manageItem.image = NSImage(systemSymbolName: "lock.app.dashed", accessibilityDescription: nil)
         menu.addItem(manageItem)
-        
+
         #if DEBUG
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
@@ -226,7 +226,7 @@ extension AppDelegate: NSMenuDelegate {
             launchItem.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
             menu.addItem(launchItem)
         }
-        
+
         let updateItem = NSMenuItem(title: "Check for Updates...".localized,
                                 action: #selector(checkUpdate),
                                 keyEquivalent: "")
@@ -275,7 +275,6 @@ extension Bundle {
     }
 }
 
-
 // MARK: - App Actions / Hành động ứng dụng
 extension AppDelegate {
     @objc func openListApp() {
@@ -309,7 +308,7 @@ extension AppDelegate {
                                          style: .critical,
                                          buttons: ["Cancel".localized, "Uninstall".localized],
                                          cancelIndex: 0)
-            
+
             switch confirm {
             case .button(index: 1, title: "Uninstall".localized):
                 switch modeLock {
@@ -325,7 +324,7 @@ extension AppDelegate {
                 case .launcher:
                     AuthenticationManager.authenticate(
                         reason: "uninstall the application".localized
-                    ) { success, error in
+                    ) { success, _ in
                         DispatchQueue.main.async {
                             if success {
                                 self.callUninstallHelper()
@@ -359,7 +358,7 @@ extension AppDelegate {
                 style: .critical)
         }
     }
-    
+
     @objc func resetApp() {
         Logfile.core.info("Reset App Clicked")
         NSApp.activate(ignoringOtherApps: true)
@@ -398,7 +397,7 @@ extension AppDelegate {
             case nil:
                 break
             }
-            
+
         default:
             break
         }
@@ -511,7 +510,7 @@ extension AppDelegate {
             // VI: Bỏ qua lỗi vì helper sẽ tự thoát sau khi gỡ cài đặt.
             Logfile.core.debug("XPC connection closed (expected): \(error.localizedDescription)")
         }) as? AppLockerHelperProtocol {
-            proxy.uninstallHelper() { _, _ in
+            proxy.uninstallHelper { _, _ in
                 // EN: Fire-and-forget.
                 // VI: Gửi và quên.
             }
@@ -521,7 +520,7 @@ extension AppDelegate {
         // VI: Đóng kết nối ngay để tránh giữ tham chiếu thừa.
         conn.invalidate()
     }
-    
+
     func selfRemoveApp() {
         let bundlePath = Bundle.main.bundlePath
         let script = """
@@ -539,25 +538,25 @@ extension AppDelegate {
             Logfile.core.error("Failed to start self-removal: \(error.localizedDescription)")
         }
     }
-    
+
     func removeConfig() {
         let fileManager = FileManager.default
-        
+
         guard let appSupportURL = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
             return
         }
-        
+
         let appFolderURL = appSupportURL.appendingPathComponent("AppLocker")
-        
+
         do {
             if fileManager.fileExists(atPath: appFolderURL.path) {
                 try fileManager.removeItem(at: appFolderURL)
                 Logfile.core.info("The configuration folder has been successfully deleted.")
-                
+
                 let domain = Bundle.main.bundleIdentifier!
                 UserDefaults.standard.removePersistentDomain(forName: domain)
                 UserDefaults.standard.synchronize()
-                
+
             }
         } catch {
             Logfile.core.error("Error deleting folder: \(error.localizedDescription, privacy: .public)")
@@ -581,7 +580,7 @@ extension AppDelegate {
 
 extension AppDelegate: AppUpdaterBridgeDelegate {
     var supportsGentleScheduledUpdateReminders: Bool { true }
-    
+
     func didFindUpdate(_ item: SUAppcastItem) {
         guard let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
               item.displayVersionString.compare(current, options: .numeric) == .orderedDescending
@@ -652,4 +651,3 @@ extension AppDelegate {
         NSApp.terminate(nil)
     }
 }
-

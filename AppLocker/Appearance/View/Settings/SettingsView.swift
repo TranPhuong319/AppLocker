@@ -16,8 +16,12 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
     }
     var description: String {
         switch self {
-        case .stable: return "Get official, stable updates.".localized
-        case .beta: return "Get experimental updates.%@Note: Experimental updates are often unstable.".localized(with: "\n")
+        case .stable:
+            return "Get official, stable updates.".localized
+        case .beta:
+            return """
+            Get experimental updates.%@Note: Experimental updates are often unstable.
+            """.localized(with: "\n")
         }
     }
 }
@@ -41,7 +45,7 @@ struct SettingsView: View {
                             .onChange(of: autoCheck) { newValue in
                                 AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
                             }
-                        
+
                         Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
                             .onChange(of: autoDownload) { newValue in
                                 AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue

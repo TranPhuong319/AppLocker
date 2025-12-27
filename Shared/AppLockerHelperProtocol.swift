@@ -13,4 +13,3 @@ public protocol AppLockerHelperProtocol {
 
     @objc func uninstallHelper(withReply reply: @escaping (Bool, String) -> Void)
 }
-

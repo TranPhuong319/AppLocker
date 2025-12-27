@@ -20,84 +20,90 @@ class TouchBarHostingController<Content: View>: NSHostingController<Content> {
 class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
     private static var invisibleKeyWindow: NSWindow?
-    
-    // EN: Show the window for managing the application list.
-    // VI: Hiển thị cửa sổ quản lý danh sách ứng dụng.
+
     static func show() {
         if let controller = shared {
-            controller.showWindow(nil)
-            controller.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
+            activateExistingWindow(controller)
             return
         }
-        
-        // EN: Create an invisible key window to enable Touch Bar in SwiftUI window.
-        // VI: Tạo key window vô hình để kích hoạt Touch Bar cho cửa sổ SwiftUI.
-        if invisibleKeyWindow == nil {
-            let keyWin = NSWindow(
-                contentRect: .zero,
-                styleMask: [],
-                backing: .buffered,
-                defer: false
-            )
-            keyWin.alphaValue = 0
-            keyWin.isOpaque = false
-            keyWin.makeKeyAndOrderFront(nil)
-            invisibleKeyWindow = keyWin
-        }
-        
-        // EN: Create floating window that hosts ContentView.
-        // VI: Tạo cửa sổ nổi chứa ContentView.
-        let contentView = ContentView()
-        let hostingController = TouchBarHostingController(rootView: contentView)
-        hostingController.touchBarType = .mainWindow
 
-        // EN: Force SwiftUI layout before attaching to window.
-        // VI: Ép SwiftUI layout trước khi gắn vào window.
-        hostingController.view.setFrameSize(NSSize(width: CGFloat(AppState.shared.setWidth),
-                                                   height: CGFloat(AppState.shared.setHeight)))
-        hostingController.view.layoutSubtreeIfNeeded()
+        ensureInvisibleKeyWindow()
 
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: CGFloat(AppState.shared.setWidth),
-                                height: CGFloat(AppState.shared.setHeight)),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        
-        window.center()
-        
-        [.miniaturizeButton, .zoomButton].forEach {
-            window.standardWindowButton($0)?.isHidden = true
-        }
-        window.contentViewController = hostingController
-        let fixedSize = NSSize(width: CGFloat(AppState.shared.setWidth),
-                               height: CGFloat(AppState.shared.setHeight))
-        window.setContentSize(fixedSize)
-        window.minSize = fixedSize
-        window.maxSize = fixedSize
-        window.title = "Manage the application list".localized
-        window.isReleasedWhenClosed = false
-        window.level = .floating
-        
-        // EN: Show window and make it key.
-        // VI: Hiển thị cửa sổ và đưa lên trước.
+        let hostingController = createHostingController()
+
+        let window = createMainAppWindow(with: hostingController)
+
         let controller = AppListWindowController(window: window)
         window.delegate = controller
         shared = controller
-        
+
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         window.makeFirstResponder(hostingController)
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
+    // MARK: - Helper Methods
+    private static func activateExistingWindow(_ controller: NSWindowController) {
+        controller.showWindow(nil)
+        controller.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private static func ensureInvisibleKeyWindow() {
+        guard invisibleKeyWindow == nil else { return }
+        let keyWin = NSWindow(
+            contentRect: .zero,
+            styleMask: [],
+            backing: .buffered,
+            defer: false
+        )
+        keyWin.alphaValue = 0
+        keyWin.isOpaque = false
+        keyWin.makeKeyAndOrderFront(nil)
+        invisibleKeyWindow = keyWin
+    }
+
+    private static func createHostingController() -> TouchBarHostingController<ContentView> {
+        let hostingController = TouchBarHostingController(rootView: ContentView())
+        hostingController.touchBarType = .mainWindow
+
+        let size = NSSize(width: AppState.shared.setWidth, height: AppState.shared.setHeight)
+        hostingController.view.setFrameSize(size)
+        hostingController.view.layoutSubtreeIfNeeded()
+        return hostingController
+    }
+
+    private static func createMainAppWindow(with contentVC: NSViewController) -> NSWindow {
+        let size = NSSize(width: AppState.shared.setWidth, height: AppState.shared.setHeight)
+        let window = NSWindow(
+            contentRect: NSRect(origin: .zero, size: size),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+
+        window.center()
+        window.title = "Manage the application list".localized
+        window.contentViewController = contentVC
+        window.setContentSize(size)
+        window.minSize = size
+        window.maxSize = size
+        window.isReleasedWhenClosed = false
+        window.level = .floating
+
+        [.miniaturizeButton, .zoomButton].forEach {
+            window.standardWindowButton($0)?.isHidden = true
+        }
+
+        return window
+    }
+
     // MARK: - NSWindowDelegate
     func windowWillClose(_ notification: Notification) {
         AppListWindowController.shared = nil
     }
-    
+
     func windowDidResignKey(_ notification: Notification) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let stillHasKeyWindow = NSApp.windows.contains(where: { $0.isKeyWindow })
@@ -107,4 +113,3 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 }
-

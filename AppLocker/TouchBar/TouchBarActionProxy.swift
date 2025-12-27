@@ -8,9 +8,8 @@
 import AppKit
 
 class TouchBarActionProxy: NSObject {
-    
     static let shared = TouchBarActionProxy()
-    
+
     @objc func openPopupAddApp() {
         AppState.shared.openAddApp()
     }
@@ -18,23 +17,23 @@ class TouchBarActionProxy: NSObject {
     @objc func lockApp() {
         AppState.shared.lockButton()
     }
-    
+
     @objc func closeAddAppPopup() {
         AppState.shared.closeAddPopup()
     }
-    
+
     @objc func addAnotherApp() {
         AppState.shared.addOthersApp()
     }
-    
+
     @objc func unlockApp() {
         AppState.shared.unlockApp()
     }
-    
+
     @objc func clearWaitingList() {
         AppState.shared.deleteAllFromWaitingList()
     }
-    
+
     @objc func showDeleteQueuePopup() {
         AppState.shared.showingDeleteQueue = true
     }

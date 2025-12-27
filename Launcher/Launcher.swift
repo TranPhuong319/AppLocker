@@ -38,7 +38,6 @@ class Launcher {
 //        switch helperStatus {
 //        case
 //        }
-        
         Logfile.launcher.info("Launcher started")
         Logfile.launcher.info("CommandLine args: \(CommandLine.arguments, privacy: .public)")
 
@@ -123,19 +122,19 @@ class Launcher {
         let gid = getgid()
         return [
             [
-                "do":   ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
+                "do": ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]],
                 "undo": ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]]
             ],
             [
-                "do":   ["command": "chflags", "args": ["nouchg", execPath]],
+                "do": ["command": "chflags", "args": ["nouchg", execPath]],
                 "undo": ["command": "chflags", "args": ["uchg", execPath]]
             ],
             [
-                "do":   ["command": "chmod", "args": ["a=rx", execPath]],  // EN: restore execute permission. VI: khôi phục quyền thực thi.
+                "do": ["command": "chmod", "args": ["a=rx", execPath]],
                 "undo": ["command": "chmod", "args": ["000", execPath]]
             ],
             [
-                "do":   ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
+                "do": ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
                 "undo": ["command": "chown", "args": ["root:wheel", execPath]]
             ]
         ]
@@ -146,19 +145,19 @@ class Launcher {
     private func buildLockCommands(hiddenAppRealURL: URL, execPath: String) -> [[String: Any]] {
         return [
             [
-                "do":   ["command": "chmod", "args": ["000", execPath]],
+                "do": ["command": "chmod", "args": ["000", execPath]],
                 "undo": ["command": "chmod", "args": ["a=rx", execPath]]
             ],
             [
-                "do":   ["command": "chown", "args": ["root:wheel", execPath]],
+                "do": ["command": "chown", "args": ["root:wheel", execPath]],
                 "undo": ["command": "chown", "args": ["\(getuid()):staff", execPath]]
             ],
             [
-                "do":   ["command": "chflags", "args": ["uchg", execPath]],
+                "do": ["command": "chflags", "args": ["uchg", execPath]],
                 "undo": ["command": "chflags", "args": ["nouchg", execPath]]
             ],
             [
-                "do":   ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]],
+                "do": ["command": "chflags", "args": ["uchg", hiddenAppRealURL.path]],
                 "undo": ["command": "chflags", "args": ["nouchg", hiddenAppRealURL.path]]
             ]
         ]
@@ -356,4 +355,3 @@ class Launcher {
         }
     }
 }
-

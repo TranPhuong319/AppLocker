@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 6/11/25.
 //
 
-
 import AppKit
 
 class CustomApplication: NSApplication {

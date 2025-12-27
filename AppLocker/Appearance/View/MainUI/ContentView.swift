@@ -43,11 +43,11 @@ struct ContentView: View {
     @ObservedObject var appState = AppState.shared
     @FocusState var isSearchFocused: Bool
     @EnvironmentObject var appstate: AppState
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
             headerView
-            
+
             if appState.lockedAppObjects.isEmpty {
                 emptyStateView
             } else {
@@ -63,7 +63,7 @@ struct ContentView: View {
         .sheet(isPresented: $appState.showingDeleteQueue) { deleteQueueSheet }
         .sheet(isPresented: $appState.showingLockingPopup) { lockingPopupSheet }
     }
-    
+
     // MARK: - Subviews / Thành phần con
     @ViewBuilder
     private var headerView: some View {
@@ -76,7 +76,7 @@ struct ContentView: View {
         }
         .padding(.horizontal, 8)
     }
-    
+
     @ViewBuilder
     private var emptyStateView: some View {
         Text("There is no locked application.".localized)
@@ -84,7 +84,7 @@ struct ContentView: View {
             .font(.title3)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
-    
+
     @ViewBuilder
     private var mainListView: some View {
         VStack(spacing: 9) {
@@ -94,7 +94,7 @@ struct ContentView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
                     .padding(.leading, 4) // EN: Nudge icon inward. VI: Đẩy biểu tượng vào nhẹ.
-                
+
                 TextField("Search apps...".localized, text: $appState.searchTextLockApps)
                     .textFieldStyle(.plain) // EN: Remove default field border. VI: Bỏ khung mặc định của TextField.
                     .focused($isSearchFocused)
@@ -108,24 +108,24 @@ struct ContentView: View {
                     .stroke(Color.secondary.opacity(0.2))
             )
             .padding(.horizontal, 8)
-            
+
             ZStack(alignment: .bottom) {
                 ScrollView {
                     LazyVStack(alignment: .center, spacing: 6) {
                         let apps = appState.filteredLockedApps
                         let userApps = apps.filter { $0.source == .user }
                         let systemApps = apps.filter { $0.source == .system }
-                        
+
                         if !userApps.isEmpty {
-                            SectionHeader(title: "Applications".localized)
+                            sectionHeader(title: "Applications".localized)
                             ForEach(userApps, id: \.path) { lockedAppRow(for: $0) }
                         }
-                        
+
                         if !systemApps.isEmpty {
-                            SectionHeader(title: "System Applications".localized)
+                            sectionHeader(title: "System Applications".localized)
                             ForEach(systemApps, id: \.path) { lockedAppRow(for: $0) }
                         }
-                        
+
                         // EN: If both groups are empty but there are apps (e.g., missing source), list all.
                         // VI: Nếu cả hai nhóm trống nhưng vẫn có app (ví dụ thiếu nguồn), hiển thị tất cả.
                         if userApps.isEmpty && systemApps.isEmpty && !apps.isEmpty {
@@ -138,7 +138,7 @@ struct ContentView: View {
                 .scrollIndicators(.hidden)
                 .background(Color.white.opacity(0.000001).onTapGesture { isSearchFocused = false })
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                
+
                 if !appState.deleteQueue.isEmpty {
                     deleteQueueNotificationBar
                 }
@@ -146,7 +146,7 @@ struct ContentView: View {
             .animation(.spring(), value: appState.deleteQueue.isEmpty)
         }
     }
-    
+
     // MARK: - Row Helper / Trợ giúp hàng
     @ViewBuilder
     private func lockedAppRow(for app: InstalledApp) -> some View {
@@ -175,7 +175,7 @@ struct ContentView: View {
         .onTapGesture { isSearchFocused = false }
         .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
     }
-    
+
     // MARK: - Sheets / Hộp thoại
     @ViewBuilder
     private var addAppSheet: some View {
@@ -187,7 +187,7 @@ struct ContentView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
                         .padding(.leading, 4) // EN: Nudge icon inward. VI: Đẩy biểu tượng vào nhẹ.
-                    
+
                     TextField("Search apps...".localized, text: $appState.searchTextUnlockaleApps)
                         .textFieldStyle(.plain) // EN: Remove default field border. VI: Bỏ khung mặc định của TextField.
                         .focused($isSearchFocused)
@@ -203,22 +203,22 @@ struct ContentView: View {
                 .padding(.horizontal)
                 .padding(.vertical)
                 Divider()
-                
+
                 // EN: 2) App list grouped by source.
                 // VI: 2) Danh sách ứng dụng theo nhóm nguồn.
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
                         if !userApps.isEmpty {
-                            SectionHeader(title: "Applications".localized)
+                            sectionHeader(title: "Applications".localized)
                             ForEach(userApps, id: \.path) { app in
                                 appRow(for: app)
                             }
                         }
-                        
+
                         let systemApps = appState.filteredUnlockableApps.filter { $0.source == .system }
                         if !systemApps.isEmpty {
-                            SectionHeader(title: "System Applications".localized)
+                            sectionHeader(title: "System Applications".localized)
                                 .padding(.top, 10)
                             ForEach(systemApps, id: \.path) { app in
                                 appRow(for: app)
@@ -266,19 +266,19 @@ struct ContentView: View {
         .onAppear {
             unfocus() // EN: Ensure not focused on launch. VI: Đảm bảo khi mở không bị focus.
             appState.manager.reloadAllApps()
-                        
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 // EN: Force AppKit to release any active first responder from text fields.
                 // VI: Ép AppKit nhả First Responder của mọi TextField đang hoạt động.
                 NSApp.keyWindow?.makeFirstResponder(nil)
-                
+
                 // EN: Touch Bar configuration for this sheet.
                 // VI: Cấu hình Touch Bar cho sheet này.
                 let tb = TouchBarManager.shared.makeTouchBar(for: .addAppPopup)
                 NSApp.keyWindow?.touchBar = tb
             }
         }
-            
+
         .onDisappear {
             DispatchQueue.main.async {
                 appState.searchTextUnlockaleApps = ""
@@ -298,7 +298,7 @@ struct ContentView: View {
             NSApp.keyWindow?.makeFirstResponder(nil)
         }
     }
-    
+
     @ViewBuilder
     private var deleteQueueNotificationBar: some View {
         Button { appState.showingDeleteQueue = true } label: {
@@ -312,7 +312,7 @@ struct ContentView: View {
         .buttonStyle(PlainButtonStyle()).padding(.horizontal, 16).padding(.bottom, 12)
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
-    
+
     @ViewBuilder
     private var deleteQueueSheet: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -320,28 +320,28 @@ struct ContentView: View {
                 .font(.headline)
                 .padding([.horizontal, .top]) // EN: Keep only top & horizontal padding. VI: Chỉ giữ padding trên và hai bên.
                 .padding(.bottom, 0)
-            
+
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     // EN: Filter apps that are in the delete queue.
                     // VI: Lọc các ứng dụng nằm trong hàng đợi xóa.
                     let appsInQueue = appState.lockedAppObjects.filter { appState.deleteQueue.contains($0.path) }
-                    
+
                     // EN: Group 1 — User apps.
                     // VI: Nhóm 1 — Ứng dụng người dùng.
                     let userApps = appsInQueue.filter { $0.source == .user }
                     if !userApps.isEmpty {
-                        SectionHeader(title: "Applications".localized)
+                        sectionHeader(title: "Applications".localized)
                         ForEach(userApps, id: \.path) { app in
                             deleteQueueRow(for: app)
                         }
                     }
-                    
+
                     // EN: Group 2 — System apps.
                     // VI: Nhóm 2 — Ứng dụng hệ thống.
                     let systemApps = appsInQueue.filter { $0.source == .system }
                     if !systemApps.isEmpty {
-                        SectionHeader(title: "System Applications".localized)
+                        sectionHeader(title: "System Applications".localized)
                         ForEach(systemApps, id: \.path) { app in
                             deleteQueueRow(for: app)
                         }
@@ -386,7 +386,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     // EN: Separate row builder for delete queue for clarity.
     // VI: Tạo hàm Row riêng cho Delete Queue để code gọn gàng.
     @ViewBuilder
@@ -410,7 +410,7 @@ struct ContentView: View {
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
     }
-    
+
     @ViewBuilder
     private var lockingPopupSheet: some View {
         HStack(spacing: 12) {
@@ -421,16 +421,16 @@ struct ContentView: View {
         .padding()
         .frame(minWidth: 200, minHeight: 100)
     }
-        
+
     // MARK: - Helper / Trợ giúp
     @ViewBuilder
-    func SectionHeader(title: String) -> some View {
-        HStack(spacing: 10) { // EN: Gap between text and separator. VI: Khoảng cách giữa chữ và thanh ngang.
+    func sectionHeader(title: String) -> some View {
+        HStack(spacing: 10) {
             Text(title)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundColor(.secondary.opacity(0.8))
-                .layoutPriority(1) // EN: Avoid truncation for long text. VI: Tránh bị cắt khi chữ dài.
-            
+                .layoutPriority(1)
+
             Rectangle()
                 .fill(Color.secondary.opacity(0.2))
                 .frame(height: 1)
@@ -439,13 +439,13 @@ struct ContentView: View {
         .padding(.bottom, 2)
         .padding(.top, 6)
     }
-    
+
     @ViewBuilder
     func appRow(for app: InstalledApp) -> some View {
         Button {
             unfocus()
             guard !appState.pendingLocks.contains(app.path) else { return }
-            
+
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 if appState.selectedToLock.contains(app.path) {
                     appState.selectedToLock.remove(app.path)
@@ -465,13 +465,13 @@ struct ContentView: View {
                         .fill(Color.gray.opacity(0.2))
                         .frame(width: 32, height: 32)
                 }
-                
+
                 Text(app.name)
                     .font(.body)
                     .foregroundColor(.primary) // EN: Keep text color independent from Button. VI: Giữ màu chữ không phụ thuộc Button.
-                
+
                 Spacer()
-                
+
                 if appState.pendingLocks.contains(app.path) {
                     Text("Locking...".localized)
                         .italic()
@@ -491,7 +491,7 @@ struct ContentView: View {
         }
         .buttonStyle(AppRowButtonStyle()) // EN: Apply press feedback. VI: Áp dụng hiệu ứng nhấn.
     }
-    
+
     func isAppStubbedAsLocked(_ appURL: URL) -> Bool {
         let resourceDir = appURL.appendingPathComponent("Contents/Resources")
 
@@ -539,4 +539,3 @@ struct AppRowButtonStyle: ButtonStyle {
         .frame(width: CGFloat(AppState.shared.setWidth),
                height: CGFloat(AppState.shared.setHeight))
 }
-

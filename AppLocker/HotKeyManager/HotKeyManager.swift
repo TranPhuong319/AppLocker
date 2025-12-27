@@ -9,7 +9,7 @@ import Cocoa
 import Carbon
 
 class HotKeyManager {
-    var hotKeyRef: EventHotKeyRef? = nil
+    var hotKeyRef: EventHotKeyRef?
     var hotKeyID = EventHotKeyID()
 
     init() {

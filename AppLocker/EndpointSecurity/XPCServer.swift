@@ -12,9 +12,9 @@ import AppKit
 
 final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     static let shared = XPCServer()
-    @Published var authError: String? = nil
+    @Published var authError: String?
     private var pendingAuthSHAs = Set<String>()
-    
+
     func start() {
         Logfile.core.log("XPCServer start (app side exported object)")
         let arr = AppState.shared.manager.lockedApps.values.map { $0.toDict() }
@@ -22,7 +22,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
             ESXPCClient.shared.updateBlockedApps(arr)
         }
     }
-    
+
     // Extension -> App notification when exec attempted and extension denied
     func notifyBlockedExec(name: String, path: String, sha: String) {
         // 1. Kiểm tra nếu request này đã và đang hiển thị bảng Auth rồi
@@ -60,7 +60,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
                         DispatchQueue.main.async {
                             if accepted {
                                 Logfile.core.info("ES accepted allowSHAOnce for \(sha.prefix(8), privacy: .public)")
-                                
+
                                 // Relaunch app
                                 let appBundleURL = URL(fileURLWithPath: path)
                                     .deletingLastPathComponent()  // MacOS

@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
-
 import Foundation
 import os
 
@@ -55,12 +54,12 @@ final class ESXPCClient {
         self.connection = conn
         self.retryCount = 0
         Logfile.core.log("[ESXPCClient] Connected & ready")
-        
+
         Logfile.core.info("Sending App Languages to Endpoint Security")
-        
+
         if let customLangs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
            let primary = customLangs.first {
-            
+
             updateLanguage(primary)
         }
 
@@ -141,7 +140,7 @@ final class ESXPCClient {
             completion(success)
         }
     }
-    
+
     func updateLanguage(_ langCode: String) {
         guard let conn = connection else {
             Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
@@ -159,7 +158,7 @@ final class ESXPCClient {
         proxy.updateLanguage(to: langCode)
         Logfile.core.log("updateLanguage sent: \(langCode, privacy: .public)")
     }
-    
+
     // App requests extension to allow config access once (with reply ack)
     func allowConfigAccess(_ pid: Int32, completion: @escaping (Bool) -> Void) {
         guard let conn = connection else {

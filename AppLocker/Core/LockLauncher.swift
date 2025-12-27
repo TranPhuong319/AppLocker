@@ -98,7 +98,12 @@ class LockLauncher: LockManagerProtocol {
             let name = (fallbackLauncher ?? url).deletingPathExtension().lastPathComponent
             let icon = NSWorkspace.shared.icon(forFile: url.path)
             icon.size = NSSize(width: 32, height: 32)
-            return InstalledApp(name: name, bundleID: bundleID, icon: icon, path: (fallbackLauncher ?? url).path)
+            return InstalledApp(
+                name: name,
+                bundleID: bundleID,
+                icon: icon,
+                path: (fallbackLauncher ?? url).path
+            )
         } else if let launcher = fallbackLauncher {
             let name = launcher.deletingPathExtension().lastPathComponent
             let icon = NSWorkspace.shared.icon(forFile: launcher.path)
@@ -122,180 +127,246 @@ class LockLauncher: LockManagerProtocol {
         ConfigStore.shared.save(self.lockedApps)
     }
 
-    // MARK: - SHA helper
-    private func computeSHA(for executablePath: String) -> String {
-        let url = URL(fileURLWithPath: executablePath)
-        guard let data = try? Data(contentsOf: url) else { return "" }
-        let h = SHA256.hash(data: data)
-        return h.map { String(format: "%02x", $0) }.joined()
-    }
-
     // MARK: - Core toggle logic (paths are the paths passed from UI)
     func toggleLock(for paths: [String]) {
         var didChange = false
+        let uid = getuid()
+        let gid = getgid()
 
         for path in paths {
-            let appURL = URL(fileURLWithPath: path)
-            let appName = appURL.deletingPathExtension().lastPathComponent
-            let baseDir = appURL.deletingLastPathComponent().path
-            let disguisedAppPath = "\(baseDir)/\(appName).app"
-            let hiddenApp = "\(baseDir)/.\(appName).app"
-            let launcherResources = "\(baseDir)/Launcher.app/Contents/Resources/Locked"
-            let backupDir = FileManager.default.homeDirectoryForCurrentUser
-                .appendingPathComponent("Library/Application Support/AppLocker/Backups/\(appName)").path
-            let markerApp = "\(baseDir)/\(appName).app/Contents/Resources/\(appName).app"
-
-            let uid = getuid()
-            let gid = getgid()
-
-            do {
-                try FileManager.default.createDirectory(
-                    atPath: backupDir,
-                    withIntermediateDirectories: true,
-                    attributes: nil
-                )
-            } catch {
-                NSLog("Failed create backup dir: \(error.localizedDescription)")
-            }
-
-            // If currently locked -> unlock
             if let lockedInfo = lockedApps[path] {
-                let execFile = lockedInfo.execFile ?? ""
-                let execPath = "\(hiddenApp)/Contents/MacOS/\(execFile)"
-
-                let unlock: [[String: Any]] = [
-                    ["do": ["command": "chflags", "args": ["nouchg", hiddenApp]],
-                     "undo": ["command": "chflags", "args": ["uchg", hiddenApp]]],
-                    ["do": ["command": "chflags", "args": ["nouchg", execPath]],
-                     "undo": ["command": "chflags", "args": ["uchg", execPath]]],
-                    ["do": ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
-                     "undo": ["command": "chown", "args": ["root:wheel", execPath]]],
-                    ["do": ["command": "rm", "args": ["-rf", disguisedAppPath]],
-                     "undo": ["command": "cp", "args": ["-Rf", "\(backupDir)/\(appName).app", baseDir]]],
-                    ["do": ["command": "mv", "args": [hiddenApp, disguisedAppPath]],
-                     "undo": ["command": "mv", "args": [disguisedAppPath, hiddenApp]]],
-                    ["do": ["command": "touch", "args": [disguisedAppPath]], "undo": [:]],
-                    ["do": ["command": "chflags", "args": ["nohidden", disguisedAppPath]],
-                     "undo": ["command": "chflags", "args": ["hidden", disguisedAppPath]]],
-                    ["do": ["command": "chmod", "args": ["755", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]],
-                     "undo": ["command": "chmod", "args": ["000", "\(disguisedAppPath)/Contents/MacOS/\(execFile)"]]],
-                    ["do": ["command": "touch", "args": [disguisedAppPath]], "undo": [:]],
-                    ["do": ["command": "rm", "args": ["-rf", backupDir]]]
-                ]
-
-                if sendToHelperBatch(unlock) {
+                if performUnlock(path: path, info: lockedInfo, uid: uid, gid: gid) {
                     didChange = true
-                    DispatchQueue.main.async {
-                        self.lockedApps.removeValue(forKey: path)
-                    }
                 }
-
             } else {
-                // -> Lock
-                guard let infoPlist = NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist")) as? [String: Any],
-                      let execName = infoPlist["CFBundleExecutable"] as? String else {
-                    NSLog("Cannot read Info.plist for \(path)")
-                    continue
-                }
-
-                var iconName: String?
-                if let icon = infoPlist["CFBundleIconFile"] as? String {
-                    iconName = icon.hasSuffix(".icns") ? String(icon.dropLast(5)) : icon
-                }
-
-                let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
-
-                // compute SHA from original executable before we move/lock it
-                let originalExecPath = appURL.appendingPathComponent("Contents/MacOS/\(execName)").path
-                let sha = computeSHA(for: originalExecPath)
-
-                var lock: [[String: Any]] = [
-                    ["do": ["command": "cp", "args": ["-Rf", launcherURL.path, baseDir]],
-                     "undo": ["command": "rm", "args": ["-rf", "\(baseDir)/Launcher.app"]]],
-                    ["do": ["command": "mkdir", "args": ["-p", launcherResources]],
-                     "undo": ["command": "rm", "args": ["-rf", launcherResources]]],
-                    ["do": ["command": "mv", "args": [appURL.path, hiddenApp]],
-                     "undo": ["command": "mv", "args": [hiddenApp, appURL.path]]],
-                    ["do": ["command": "chmod", "args": ["000", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
-                     "undo": ["command": "chmod", "args": ["755", "\(hiddenApp)/Contents/MacOS/\(execName)"]]],
-                    ["do": ["command": "chown", "args": ["root:wheel", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
-                     "undo": ["command": "chown", "args": ["\(NSUserName()):staff", "\(hiddenApp)/Contents/MacOS/\(execName)"]]],
-                    ["do": ["command": "chflags", "args": ["hidden", hiddenApp]],
-                     "undo": ["command": "chflags", "args": ["nohidden", hiddenApp]]],
-                    ["do": ["command": "mv", "args": ["\(baseDir)/Launcher.app", disguisedAppPath]],
-                     "undo": ["command": "mv", "args": [disguisedAppPath, "\(baseDir)/Launcher.app"]]],
-                    ["do": ["command": "chflags", "args": ["uchg", "\(hiddenApp)/Contents/MacOS/\(execName)"]],
-                     "undo": ["command": "chflags", "args": ["nouchg", "\(hiddenApp)/Contents/MacOS/\(execName)"]]],
-                    ["do": ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleIdentifier com.TranPhuong319.AppLocker.Launcher-\(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
-                     "undo": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIdentifier", "\(disguisedAppPath)/Contents/Info.plist"]]],
-                    ["do": ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleName \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
-                     "undo": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleName", "\(disguisedAppPath)/Contents/Info.plist"]]],
-                    ["do": ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable \(appName)", "\(disguisedAppPath)/Contents/Info.plist"]],
-                     "undo": ["command": "PlistBuddy", "args": ["-c", "Set :CFBundleExecutable Launcher", "\(disguisedAppPath)/Contents/Info.plist"]]],
-                    ["do": ["command": "mv", "args": ["\(disguisedAppPath)/Contents/MacOS/Launcher", "\(disguisedAppPath)/Contents/MacOS/\(appName)"]],
-                     "undo": ["command": "mv", "args": ["\(disguisedAppPath)/Contents/MacOS/\(appName)", "\(disguisedAppPath)/Contents/MacOS/Launcher"]]],
-                    ["do": ["command": "touch", "args": [launcherURL.path]],
-                     "undo": ["command": "rm", "args": ["-rf", "\(baseDir)/Launcher.app"]]],
-                    ["do": ["command": "touch", "args": [markerApp]], "undo": [:]]
-                ]
-
-                if let iconName = iconName {
-                    lock.insert([
-                        "do": ["command": "cp",
-                               "args": [appURL.appendingPathComponent("Contents/Resources/\(iconName).icns").path,
-                                        "\(baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"]],
-                        "undo": ["command": "rm", "args": ["-f", "\(baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"]]
-                    ], at: 1)
-                    lock.append([
-                        "do": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]],
-                        "undo": ["command": "PlistBuddy", "args": ["-c", "Add :CFBundleIconName string \(iconName)", "\(disguisedAppPath)/Contents/Info.plist"]]
-                    ])
-                } else {
-                    lock.append([
-                        "do": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconFile", "\(disguisedAppPath)/Contents/Info.plist"]],
-                        "undo": ["command": "PlistBuddy", "args": ["-c", "Add :CFBundleIconFile string \(String(describing: iconName))", "\(disguisedAppPath)/Contents/Info.plist"]]
-                    ])
-                    lock.append([
-                        "do": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(disguisedAppPath)/Contents/Info.plist"]],
-                        "undo": ["command": "PlistBuddy", "args": ["-c", "Add :CFBundleIconName string \(String(describing: iconName))", "\(disguisedAppPath)/Contents/Info.plist"]]
-                    ])
-                    lock.append([
-                        "do": ["command": "rm", "args": ["-rf", "\(disguisedAppPath)/Contents/Resources/AppIcon.icns"]],
-                        "undo": ["command": "touch", "args": ["\(disguisedAppPath)/Contents/Resources/AppIcon.icns"]]
-                    ])
-                }
-
-                lock.append(["do": ["command": "chflags", "args": ["uchg", hiddenApp]],
-                             "undo": ["command": "chflags", "args": ["nouchg", hiddenApp]]])
-                lock.append(["do": ["command": "touch", "args": [disguisedAppPath]], "undo": [:]])
-                lock.append(["do": ["command": "cp", "args": ["-Rf", disguisedAppPath, backupDir]]])
-
-                if sendToHelperBatch(lock) {
+                if performLock(path: path) {
                     didChange = true
-                    DispatchQueue.main.async {
-                        // save metadata (keyed by original path)
-                        let bundleID = Bundle(url: appURL)?.bundleIdentifier ?? ""
-                        let mode = modeLock?.rawValue ?? AppMode.launcher.rawValue
-                        let cfg = LockedAppConfig(bundleID: bundleID,
-                                                  path: path,
-                                                  sha256: sha,
-                                                  blockMode: mode,
-                                                  execFile: execName,
-                                                  name: appName)
-                        self.lockedApps[path] = cfg
-                    }
                 }
             }
         }
 
-        if didChange {
-            save()
+        if didChange { save() }
+    }
+
+    // MARK: - Private Actions
+    private func performUnlock(
+        path: String,
+        info: LockedAppConfig,
+        uid: uid_t,
+        gid: gid_t) -> Bool {
+        guard let ctx = AppPathContext(path: path) else { return false }
+        let execFile = info.execFile ?? ""
+        let execPath = "\(ctx.hiddenAppPath)/Contents/MacOS/\(execFile)"
+
+        let unlockCommands: [[String: Any]] = [
+            [
+                "do": ["command": "chflags", "args": ["nouchg", ctx.hiddenAppPath]],
+                "undo": ["command": "chflags", "args": ["uchg", ctx.hiddenAppPath]]
+            ],
+            [
+                "do": ["command": "chflags", "args": ["nouchg", execPath]],
+                "undo": ["command": "chflags", "args": ["uchg", execPath]]
+            ],
+            [
+                "do": ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
+                "undo": ["command": "chown", "args": ["root:wheel", execPath]]
+            ],
+            [
+                "do": ["command": "rm", "args": ["-rf", ctx.disguisedAppPath]],
+                "undo": ["command": "cp", "args":
+                            ["-Rf", "\(ctx.backupDir)/\(ctx.appName).app", ctx.baseDir]
+                        ]
+            ],
+            [
+                "do": ["command": "mv", "args": [ctx.hiddenAppPath, ctx.disguisedAppPath]],
+                "undo": ["command": "mv", "args": [ctx.disguisedAppPath, ctx.hiddenAppPath]]
+            ],
+            [
+                "do": ["command": "touch", "args": [ctx.disguisedAppPath]],
+                "undo": [:]
+            ],
+            [
+                "do": ["command": "chflags", "args": ["nohidden", ctx.disguisedAppPath]],
+                "undo": ["command": "chflags", "args": ["hidden", ctx.disguisedAppPath]]
+            ],
+            [
+                "do": ["command": "chmod", "args": [
+                    "755", "\(ctx.disguisedAppPath)/Contents/MacOS/\(execFile)"]
+                      ],
+                "undo": ["command": "chmod", "args": [
+                    "000", "\(ctx.disguisedAppPath)/Contents/MacOS/\(execFile)"]]
+            ],
+            [
+                "do": ["command": "rm", "args": ["-rf", ctx.backupDir]]
+            ]
+        ]
+
+        if sendToHelperBatch(unlockCommands) {
+            DispatchQueue.main.async { self.lockedApps.removeValue(forKey: path) }
+            return true
         }
+        return false
+    }
+
+    private func performLock(path: String) -> Bool {
+        let appURL = URL(fileURLWithPath: path)
+        guard let infoPlist = NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist")) as? [String: Any],
+              let execName = infoPlist["CFBundleExecutable"] as? String,
+              let ctx = AppPathContext(path: path, execName: execName) else { return false }
+
+        createBackupDirectory(at: ctx.backupDir)
+
+        guard let sha = computeSHA(forPath: ctx.originalExecPath) else { return false }
+        let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
+
+        var lockCommands: [[String: Any]] = [
+            [
+                "do": ["command": "cp", "args": ["-Rf", launcherURL.path, ctx.baseDir]],
+                "undo": ["command": "rm", "args": ["-rf", "\(ctx.baseDir)/Launcher.app"]]
+            ],
+            [
+                "do": ["command": "mkdir", "args": ["-p", ctx.launcherResources]],
+                "undo": ["command": "rm", "args": ["-rf", ctx.launcherResources]]
+            ],
+            [
+                "do": ["command": "mv", "args": [appURL.path, ctx.hiddenAppPath]],
+                "undo": ["command": "mv", "args": [ctx.hiddenAppPath, appURL.path]]
+            ],
+            [
+                "do": ["command": "chmod", "args": [
+                    "000", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"]
+                      ]
+            ],
+            [
+                "do": ["command": "chown", "args": [
+                    "root:wheel", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"]]
+            ],
+            [
+                "do": ["command": "chflags", "args": ["hidden", ctx.hiddenAppPath]]
+            ],
+            [
+                "do": ["command": "mv", "args": [
+                    "\(ctx.baseDir)/Launcher.app", ctx.disguisedAppPath]]
+            ],
+            [
+                "do": ["command": "chflags", "args": [
+                    "uchg", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"]]
+            ],
+            [
+                "do": ["command": "PlistBuddy", "args": [
+                    "-c",
+                    "Set :CFBundleIdentifier com.TranPhuong319.AppLocker.Launcher-\(ctx.appName)",
+                    "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
+            ],
+            [
+                "do": ["command": "PlistBuddy", "args": [
+                    "-c", "Set :CFBundleName \(ctx.appName)",
+                    "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
+            ],
+            [
+                "do": ["command": "PlistBuddy", "args": [
+                    "-c", "Set :CFBundleExecutable \(ctx.appName)",
+                    "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
+            ],
+            [
+                "do": ["command": "mv", "args": [
+                    "\(ctx.disguisedAppPath)/Contents/MacOS/Launcher",
+                    "\(ctx.disguisedAppPath)/Contents/MacOS/\(ctx.appName)"]]
+            ]
+        ]
+
+        // Logic xử lý Icon (tách nhỏ tiếp để tránh dài dòng)
+        appendIconCommands(to: &lockCommands, ctx: ctx, infoPlist: infoPlist)
+
+        lockCommands.append(["do": ["command": "chflags", "args": ["uchg", ctx.hiddenAppPath]]])
+        lockCommands.append(["do": ["command": "cp", "args": ["-Rf", ctx.disguisedAppPath, ctx.backupDir]]])
+
+        if sendToHelperBatch(lockCommands) {
+            updateLockedState(path: path, ctx: ctx, sha: sha, execName: execName)
+            return true
+        }
+        return false
+    }
+
+    // MARK: - Sub-helpers
+    private func createBackupDirectory(at path: String) {
+        try? FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+    }
+
+    private func updateLockedState(path: String,
+                                   ctx: AppPathContext,
+                                   sha: String,
+                                   execName: String) {
+        let bundleID = Bundle(url: ctx.appURL)?.bundleIdentifier ?? ""
+        let mode = modeLock?.rawValue ?? AppMode.launcher.rawValue
+        let cfg = LockedAppConfig(
+            bundleID: bundleID,
+            path: path,
+            sha256: sha,
+            blockMode: mode,
+            execFile: execName,
+            name: ctx.appName
+        )
+        DispatchQueue.main.async { self.lockedApps[path] = cfg }
+    }
+
+    private func appendIconCommands(
+        to commands: inout [[String: Any]], ctx: AppPathContext, infoPlist: [String: Any]) {
+        var iconName: String?
+        if let icon = infoPlist["CFBundleIconFile"] as? String {
+            iconName = icon.hasSuffix(".icns") ? String(icon.dropLast(5)) : icon
+        }
+
+        if let name = iconName {
+            let sourceIcon = ctx.appURL.appendingPathComponent(
+                "Contents/Resources/\(name).icns"
+            ).path
+            let destIcon = "\(ctx.baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"
+
+            // Copy icon gốc vào Launcher
+            commands.insert([
+                "do": ["command": "cp", "args": [sourceIcon, destIcon]],
+                "undo": ["command": "rm", "args": ["-f", destIcon]]
+            ], at: 1)
+
+            // Cập nhật Info.plist
+            commands.append([
+                "do": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(ctx.disguisedAppPath)/Contents/Info.plist"]],
+                "undo": ["command": "PlistBuddy", "args": [
+                    "-c", "Add :CFBundleIconName string \(name)",
+                    "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
+            ])
+        } else {
+            appendFallbackIconCommands(to: &commands, ctx: ctx)
+        }
+    }
+
+    private func appendFallbackIconCommands(to commands: inout [[String: Any]], ctx: AppPathContext) {
+        let plistPath = "\(ctx.disguisedAppPath)/Contents/Info.plist"
+        let iconPath = "\(ctx.disguisedAppPath)/Contents/Resources/AppIcon.icns"
+
+        commands.append(contentsOf: [
+            [
+                "do": ["command": "PlistBuddy", "args": [
+                    "-c", "Delete :CFBundleIconFile", plistPath]]
+            ],
+            [
+                "do": ["command": "PlistBuddy", "args": [
+                    "-c", "Delete :CFBundleIconName", plistPath]]
+            ],
+            [
+                "do": ["command": "rm", "args": ["-rf", iconPath]],
+                "undo": ["command": "touch", "args": [iconPath]]
+            ]
+        ])
     }
 
     // helper to send work to privileged helper via XPC (unchanged)
     func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
-        let conn = NSXPCConnection(machServiceName: "com.TranPhuong319.AppLocker.Helper", options: .privileged)
+        let conn = NSXPCConnection(
+            machServiceName: "com.TranPhuong319.AppLocker.Helper",
+            options: .privileged
+        )
         conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
         conn.resume()
 
@@ -333,5 +404,39 @@ class LockLauncher: LockManagerProtocol {
 
     func isLocked(path: String) -> Bool {
         return lockedApps[path] != nil
+    }
+}
+
+// MARK: - Path Helper
+private struct AppPathContext {
+    let appURL: URL
+    let appName: String
+    let baseDir: String
+    let disguisedAppPath: String
+    let hiddenAppPath: String
+    let launcherResources: String
+    let backupDir: String
+    let markerApp: String
+    let originalExecPath: String
+
+    init?(path: String, execName: String? = nil) {
+        let url = URL(fileURLWithPath: path)
+        self.appURL = url
+        self.appName = url.deletingPathExtension().lastPathComponent
+        self.baseDir = url.deletingLastPathComponent().path
+        self.disguisedAppPath = "\(baseDir)/\(appName).app"
+        self.hiddenAppPath = "\(baseDir)/.\(appName).app"
+        self.launcherResources = "\(baseDir)/Launcher.app/Contents/Resources/Locked"
+        self.markerApp = "\(disguisedAppPath)/Contents/Resources/\(appName).app"
+
+        self.backupDir = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/AppLocker/Backups/\(appName)")
+            .path
+
+        if let exec = execName {
+            self.originalExecPath = url.appendingPathComponent("Contents/MacOS/\(exec)").path
+        } else {
+            self.originalExecPath = ""
+        }
     }
 }

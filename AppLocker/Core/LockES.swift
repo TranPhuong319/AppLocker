@@ -17,14 +17,13 @@ class LockES: LockManagerProtocol {
     init() {
         self.lockedApps = ConfigStore.shared.load()
         self.allApps = self.getInstalledApps()
-        
         Logfile.core.info("Initial scanning started in background...")
-        
+
         // Quét lần đầu ngay lập tức ở background
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.rescanLockedApps()
         }
-        
+
         // Bắt đầu chu kỳ lặp lại
         self.startPeriodicRescan()
     }
@@ -36,19 +35,19 @@ class LockES: LockManagerProtocol {
             "/Applications": .user,
             "/System/Applications": .system
         ]
-        
+
         var allApps: [InstalledApp] = []
         let fileManager = FileManager.default
-        
+
         for (dir, source) in appsPaths {
             let dirURL = URL(fileURLWithPath: dir)
-            
+
             guard let enumerator = fileManager.enumerator(
                 at: dirURL,
                 includingPropertiesForKeys: nil,
                 options: [.skipsHiddenFiles, .skipsPackageDescendants]
             ) else { continue }
-            
+
             for case let fileURL as URL in enumerator {
                 guard fileURL.pathExtension == "app",
                       !fileURL.lastPathComponent.hasPrefix("."),
@@ -56,17 +55,17 @@ class LockES: LockManagerProtocol {
                       let bundleID = bundle.bundleIdentifier else {
                     continue
                 }
-                
+
                 let displayName = fileManager.displayName(atPath: fileURL.path)
                     .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-                
+
                 if displayName.localizedCaseInsensitiveContains("AppLocker") {
                     continue
                 }
-                
+
                 let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                 icon.size = NSSize(width: 32, height: 32)
-                
+
                 allApps.append(
                     InstalledApp(
                         name: displayName,
@@ -78,40 +77,13 @@ class LockES: LockManagerProtocol {
                 )
             }
         }
-        
+
         return allApps.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
-    
+
     // MARK: - Persistence helper
     func save() {
         ConfigStore.shared.save(self.lockedApps)
-    }
-
-    // MARK: - SHA helper
-    private func computeSHA(for executablePath: String) -> String? {
-        guard let fh = FileHandle(forReadingAtPath: executablePath) else {
-            return nil
-        }
-        defer { try? fh.close() }
-        
-        var hasher = SHA256()
-        let bufferSize = 256 * 1024 // 256KB giúp đọc nhanh hơn trên SSD
-        
-        while true {
-            // Sử dụng autoreleasepool để giải phóng bộ nhớ ngay lập tức trong vòng lặp
-            let data = autoreleasepool { () -> Data? in
-                let chunk = fh.readData(ofLength: bufferSize)
-                return chunk.isEmpty ? nil : chunk
-            }
-            
-            guard let chunkData = data else { break }
-            hasher.update(data: chunkData)
-        }
-        
-        let digest = hasher.finalize()
-        
-        // Tối ưu hóa chuyển đổi Hex String
-        return digest.reduce("") { $0 + String(format: "%02x", $1) }
     }
 
     // MARK: - Toggle lock (ES mode: chỉ ghi config và publish)
@@ -124,10 +96,8 @@ class LockES: LockManagerProtocol {
                 Logfile.core.warning("App hệ thống ngoài /System/Applications sẽ không bị chặn: \(path)")
                 continue
             }
-            
-            if let _ = lockedApps[path] {
-                // is being blocked -> removed
-                lockedApps.removeValue(forKey: path)
+
+            if lockedApps.removeValue(forKey: path) != nil {
                 didChange = true
             } else {
                 guard let bundle = Bundle(url: URL(fileURLWithPath: path)),
@@ -139,7 +109,7 @@ class LockES: LockManagerProtocol {
 
                 let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
                 let execPath = "\(path)/Contents/MacOS/\(execName)"
-                guard let sha = computeSHA(for: execPath) else {
+                guard let sha = computeSHA(forPath: execPath) else {
                     Logfile.core.error("Cannot compute SHA for \(execPath)")
                     continue
                 }
@@ -191,7 +161,7 @@ class LockES: LockManagerProtocol {
 extension LockES {
     func startPeriodicRescan(interval: TimeInterval = 300) {
         if periodicTimer != nil { return }
-        
+
         // Create a timer on the Main RunLoop but do the heavy lifting in the Background
         periodicTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             // Đẩy việc quét SHA sang thread khác ngay lập tức
@@ -199,7 +169,7 @@ extension LockES {
                 self?.rescanLockedApps()
             }
         }
-        
+
         // Make sure the timer still runs when the user scrolls or uses the UI
         RunLoop.main.add(periodicTimer!, forMode: .common)
         Logfile.core.info("Start periodic SHA scanning every \(Int(interval)) seconds")
@@ -220,15 +190,15 @@ extension LockES {
             let exeFile = cfg.execFile ?? "Unknown"
             let execPath = "\(path)/Contents/MacOS/\(exeFile)"
             guard FileManager.default.fileExists(atPath: execPath) else { continue }
-            
-            guard let newSHA = computeSHA(for: execPath), !newSHA.isEmpty else {
+
+            guard let newSHA = computeSHA(forPath: execPath), !newSHA.isEmpty else {
                 continue
             }
 
             if cfg.sha256 != newSHA {
                 let name = cfg.name ?? "Unknown"
                 Logfile.core.warning("SHA changes for \(name): \(cfg.sha256.prefix(8)) → \(newSHA.prefix(8))")
-                
+
                 let updatedCfg = LockedAppConfig(
                     bundleID: cfg.bundleID,
                     path: cfg.path,
@@ -256,4 +226,3 @@ extension LockES {
         }
     }
 }
-

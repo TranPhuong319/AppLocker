@@ -10,7 +10,7 @@ import Foundation
 final class ConfigStore {
     static let shared = ConfigStore()
     private init() {}
-    
+
     private var configURL: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let dir = appSupport.appendingPathComponent("AppLocker", isDirectory: true)
@@ -24,15 +24,15 @@ final class ConfigStore {
         let modeLock = UserDefaults.standard.string(forKey: "selectedMode") ?? "ES"
         return modeLock != "Launcher"
     }
-    
+
     private func requestAccessIfNeeded(completion: @escaping (Bool) -> Void) {
         guard shouldRequestES() else {
             completion(true) // skip request nếu Launcher
             return
         }
         let pid = getpid()
-        ESXPCClient.shared.allowConfigAccess(pid) { ok in
-            completion(ok)
+        ESXPCClient.shared.allowConfigAccess(pid) { success in
+            completion(success)
         }
     }
 
