@@ -60,6 +60,10 @@ class LockES: LockManagerProtocol {
                 let displayName = fileManager.displayName(atPath: fileURL.path)
                     .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
                 
+                if displayName.localizedCaseInsensitiveContains("AppLocker") {
+                    continue
+                }
+                
                 let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                 icon.size = NSSize(width: 32, height: 32)
                 
@@ -115,6 +119,12 @@ class LockES: LockManagerProtocol {
         var didChange = false
 
         for path in paths {
+            // Rule: Chỉ lock nếu (1) không phải /System/* HOẶC (2) là /System/Applications/*
+            if path.hasPrefix("/System") && !path.hasPrefix("/System/Applications") {
+                Logfile.core.warning("App hệ thống ngoài /System/Applications sẽ không bị chặn: \(path)")
+                continue
+            }
+            
             if let _ = lockedApps[path] {
                 // is being blocked -> removed
                 lockedApps.removeValue(forKey: path)
@@ -246,3 +256,4 @@ extension LockES {
         }
     }
 }
+

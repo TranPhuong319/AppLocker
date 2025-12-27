@@ -13,7 +13,7 @@ import Combine
 
 // EN: Shared state & logic for ContentView and Touch Bar.
 // VI: Trạng thái & logic dùng chung cho ContentView và Touch Bar.
-class AppState: ObservableObject {
+class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     static let shared = AppState()  // EN: Singleton instance. VI: Thực thể singleton.
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
@@ -38,17 +38,20 @@ class AppState: ObservableObject {
     @Published private(set) var lockedAppObjects: [InstalledApp] = []
     @Published private(set) var unlockableApps: [InstalledApp] = []
     
-    init() {
+    override init() {
+        let initialManager: any LockManagerProtocol
         switch modeLock {
         case .launcher:
-            manager = LockLauncher()
+            initialManager = LockLauncher()
         case .es:
-            manager = LockES()
+            initialManager = LockES()
         case .none:
-            // VI: Xử lý trường hợp modeLock chưa được set (mặc định hoặc báo lỗi)
             Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")
-            manager = LockLauncher()
+            initialManager = LockLauncher()
         }
+        self.manager = initialManager
+        
+        super.init()
         
         setupSearchPipeline()
         refreshAppLists()
@@ -214,13 +217,17 @@ class AppState: ObservableObject {
     // VI: Thêm ứng dụng khác thông qua hộp thoại mở file.
     func addOthersApp() {
         let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = true
+        panel.delegate = self
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowedContentTypes = [.applicationBundle]
         
-        if panel.runModal() == .OK, let url = panel.url {
-            toggleLockPopup(for: [url.path], locking: true)
+        if panel.runModal() == .OK {
+            // Lấy tất cả các URL người dùng đã chọn (vì cho phép multiple selection)
+            let paths = Set(panel.urls.map { $0.path })
+            if !paths.isEmpty {
+                toggleLockPopup(for: paths, locking: true)
+            }
         }
     }
     
@@ -235,5 +242,23 @@ class AppState: ObservableObject {
     func deleteAllFromWaitingList() {
         deleteQueue.removeAll()
         showingDeleteQueue = false
+    }
+    
+    // MARK: - NSOpenSavePanelDelegate
+    func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
+        let fileName = url.lastPathComponent // Ví dụ: "AppLocker.app"
+        let path = url.path
+        
+        // 1. Chặn app có tên là "AppLocker" (không phân biệt hoa thường)
+        if fileName.localizedCaseInsensitiveContains("AppLocker") {
+            return false
+        }
+        
+        // 2. Chặn các app đã nằm trong danh sách lockedApps
+        if manager.lockedApps.keys.contains(path) {
+            return false
+        }
+        
+        return true
     }
 }
