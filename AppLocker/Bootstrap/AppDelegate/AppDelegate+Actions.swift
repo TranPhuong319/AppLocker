@@ -1,0 +1,192 @@
+//
+//  AppDelegate+Actions.swift
+//  AppLocker
+//
+//  Created by Doe Phương on 28/12/25.
+//
+
+import Foundation
+import AppKit
+import ServiceManagement
+
+extension AppDelegate {
+    @objc func openListApp() {
+        AuthenticationManager.authenticate(
+            reason: "authenticate to open the application list".localized
+        ) { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    AppListWindowController.show()
+                    Logfile.core.debug("Opened AppList")
+                } else {
+                    Logfile.core.error("Error opening list app: \(error as NSObject?, privacy: .public)")
+                }
+            }
+        }
+    }
+
+    @objc func openSettings() {
+        NSApp.activate(ignoringOtherApps: true)
+        SettingsWindowController.show()
+    }
+
+    @objc func uninstall() {
+        Logfile.core.info("Uninstall Clicked")
+        let manager = AppState.shared.manager
+        NSApp.activate(ignoringOtherApps: true)
+
+        if manager.lockedApps.isEmpty || modeLock == .es {
+            let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
+                                         message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
+                                         style: .critical,
+                                         buttons: ["Cancel".localized, "Uninstall".localized],
+                                         cancelIndex: 0)
+
+            switch confirm {
+            case .button(index: 1, title: "Uninstall".localized):
+                switch modeLock {
+                case .es:
+                    ExtensionInstaller.shared.onUninstalled = {
+                        self.manageAgent(plistName: plistName, action: .uninstall)
+                        self.removeConfig()
+                        self.selfRemoveApp()
+                        self.showRestartSheet()
+                        NSApp.terminate(nil)
+                    }
+                    ExtensionInstaller.shared.uninstall()
+                case .launcher:
+                    AuthenticationManager.authenticate(
+                        reason: "uninstall the application".localized
+                    ) { success, _ in
+                        DispatchQueue.main.async {
+                            if success {
+                                self.callUninstallHelper()
+                                let loginItem = SMAppService.mainApp
+                                let status = loginItem.status
+                                if status == .enabled {
+                                    try? loginItem.unregister()
+                                }
+                                _ = HelperInstaller.manageHelperTool(
+                                    action: .uninstall, helperToolIdentifier: self.helperIdentifier
+                                )
+                                self.selfRemoveApp()
+                                self.removeConfig()
+                                self.showRestartSheet()
+                                NSApp.terminate(nil)
+                            }
+                        }
+                    }
+                case nil:
+                    break
+                }
+            case .cancelled:
+                break
+            default:
+                break
+            }
+        } else {
+            AlertShow.showInfo(
+                title: "Unable to uninstall AppLocker".localized,
+                message: "You need to unlock all applications before Uninstalling".localized,
+                style: .critical)
+        }
+    }
+
+    @objc func resetApp() {
+        Logfile.core.info("Reset App Clicked")
+        NSApp.activate(ignoringOtherApps: true)
+        let confirm = AlertShow.show(title: "Reset AppLocker".localized,
+                                     message:
+                                        """
+                                        This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.
+
+                                        Do you want to continue?
+                                        """.localized,
+                                     style: .critical,
+                                     buttons: ["Cancel".localized, "Reset".localized],
+                                     cancelIndex: 0)
+        switch confirm {
+        case .button(index: 1, title: "Reset".localized):
+            switch modeLock {
+            case .launcher:
+                let loginItem = SMAppService.mainApp
+                let status = loginItem.status
+                if status == .enabled {
+                    try? loginItem.unregister()
+                }
+                removeConfig()
+                _ = HelperInstaller.manageHelperTool(
+                    action: .uninstall, helperToolIdentifier: helperIdentifier
+                )
+                restartApp(mode: nil)
+            case .es:
+                ExtensionInstaller.shared.onUninstalled = {
+                    self.removeConfig()
+                    self.manageAgent(plistName: plistName, action: .uninstall)
+                    modeLock = nil
+                    self.restartApp(mode: modeLock)
+                }
+                ExtensionInstaller.shared.uninstall()
+            case nil:
+                break
+            }
+
+        default:
+            break
+        }
+    }
+
+    @objc func checkUpdate() {
+        let savedChannel = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
+        let useBeta = (savedChannel == "Beta")
+        AppUpdater.shared.manualCheckForUpdates(useBeta: useBeta)
+
+        NSApp.activate(ignoringOtherApps: true)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            for window in NSApp.windows {
+                let cls = String(describing: type(of: window))
+                if cls.contains("SU") || cls.contains("SPU") {
+                    window.makeKeyAndOrderFront(nil)
+                    window.orderFrontRegardless()
+                }
+            }
+        }
+    }
+
+    @objc func launchAtLogin(_ sender: NSMenuItem) {
+        Task {
+            let loginItem = SMAppService.mainApp
+            if sender.state == .on {
+                try? await loginItem.unregister()
+                sender.state = .off
+            } else {
+                try? loginItem.register()
+                sender.state = .on
+            }
+        }
+    }
+
+    @objc func about() {
+        // EN: 1) Activate app
+        // VI: 1) Kích hoạt ứng dụng
+        NSApp.activate(ignoringOtherApps: true)
+
+        // EN: 2) Show standard about panel
+        // VI: 2) Hiển thị bảng About chuẩn
+        NSApp.orderFrontStandardAboutPanel(nil)
+
+        // EN: 3) Force focus after a short delay
+        // VI: 3) Ép focus sau một khoảng ngắn
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            for window in NSApp.windows {
+                let cls = String(describing: type(of: window))
+                if cls.contains("About") {
+                    window.makeKey()
+                    window.makeKeyAndOrderFront(nil)
+                    window.orderFrontRegardless()
+                }
+            }
+        }
+    }
+}

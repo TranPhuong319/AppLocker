@@ -4,17 +4,12 @@
 //
 //  Created by Doe Phương on 5/9/25.
 //
-//  EN: Shared observable state and UI coordination for ContentView and Touch Bar.
-//  VI: Trạng thái quan sát dùng chung và điều phối UI cho ContentView và Touch Bar.
-//
 
 import SwiftUI
 import Combine
 
-// EN: Shared state & logic for ContentView and Touch Bar.
-// VI: Trạng thái & logic dùng chung cho ContentView và Touch Bar.
 class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
-    static let shared = AppState()  // EN: Singleton instance. VI: Thực thể singleton.
+    static let shared = AppState()
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
     @Published var showingDeleteQueue = false
@@ -33,8 +28,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     @Published var filteredLockedApps: [InstalledApp] = []
     @Published var filteredUnlockableApps: [InstalledApp] = []
 
-    // EN: Backing published sources for computed lists to leverage Combine `$`.
-    // VI: Nguồn Published nền cho danh sách tính toán để tận dụng Combine `$`.
     @Published private(set) var lockedAppObjects: [InstalledApp] = []
     @Published private(set) var unlockableApps: [InstalledApp] = []
 
@@ -58,8 +51,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     private func setupSearchPipeline() {
-        // EN: Combine text search with the source lists for responsive filtering.
-        // VI: Kết hợp tìm kiếm văn bản với danh sách nguồn để lọc mượt mà.
         Publishers.CombineLatest($searchTextLockApps, $lockedAppObjects)
             .map { [weak self] (text, apps) -> [InstalledApp] in
                 guard let self = self else { return [] }
@@ -78,12 +69,10 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             .assign(to: &$filteredUnlockableApps)
     }
 
-    // EN: Common filtering helper to keep code DRY.
-    // VI: Hàm lọc dùng chung để code gọn gàng.
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
         let query = text.lowercased().trimmingCharacters(in: .whitespaces)
         if query.isEmpty {
-            return apps // EN: Already sorted upstream. VI: Đã được sắp xếp từ trước.
+            return apps
         } else {
             return apps.filter { $0.name.lowercased().contains(query) }
         }
@@ -107,13 +96,10 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
         let unlockable: [InstalledApp] = allAppsFromManager
             .filter { (app: InstalledApp) -> Bool in
-                // EN: Exclude those already locked.
-                // VI: Loại các ứng dụng đã bị khóa.
+
                 return !manager.lockedApps.keys.contains(app.path)
             }
             .map { app in
-                // EN: Fill missing source if needed based on path.
-                // VI: Bổ sung nguồn nếu thiếu dựa trên đường dẫn.
                 if app.source == nil {
                     let src: AppSource = app.path.hasPrefix("/System") ? .system : .user
                     return InstalledApp(

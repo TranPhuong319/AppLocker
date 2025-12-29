@@ -12,16 +12,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    - uses: actions/cache@v4
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Cache SPM
+      uses: actions/cache@v4
       with:
         path: build/SourcePackages
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
           ${{ runner.os }}-spm-
+    
     - name: Install Dependencies
       run: |
-        brew install create-dmg swiftlint
+        brew install create-dmg swiftlint xcbeautify
+        python -m pip install --upgrade pip
         python -m pip install pycountry
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -30,7 +40,7 @@ jobs:
     - name: Manage Version
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
-        git fetch --prune --unshallow --tags
+        git fetch --prune --tags
         CUR_TAG="$(git tag -l | grep -i 'alpha' | tail -1)"
         MARKETING_VERSION=$(grep "MARKETING_VERSION" AppLocker.xcodeproj/project.pbxproj \
           | grep -v '\$' \
@@ -53,7 +63,8 @@ jobs:
       shell: zsh {0}
 
     - name: Lint Code
-      run: swiftlint lint --reporter github-actions-logging
+      run: |
+        swiftlint lint --reporter github-actions-logging
       continue-on-error: true
     - name: i18n Stats
       run: |
@@ -92,25 +103,6 @@ jobs:
             sys.exit(1)
       shell: python
       
-    - name: Clean Swift Package cache
-      run: |
-        rm -rf ~/Library/Caches/org.swift.swiftpm/
-        rm -rf ~/Library/Developer/Xcode/DerivedData/*
-
-
-    - name: Debug Build
-      if: github.event_name != 'workflow_dispatch'
-      run: |
-        set -o pipefail && xcodebuild \
-          ARCHS="arm64 x86_64" \
-          ONLY_ACTIVE_ARCH=NO \
-          -scheme AppLocker \
-          -configuration Debug \
-          -derivedDataPath build \
-          -disableAutomaticPackageResolution \
-          CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO \
-          | xcbeautify --renderer terminal
-
     - name: Release Build
       run: |
         set -o pipefail && xcodebuild \
@@ -121,8 +113,8 @@ jobs:
           -derivedDataPath build \
           -disableAutomaticPackageResolution \
           CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO \
-          | xcbeautify
-
+          | xcbeautify --renderer terminal
+          
     - name: Create Disk Image
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
@@ -241,10 +233,6 @@ jobs:
       env:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
         
-    - name: Delete private key
-      run: |
-        rm -f sparkle_key.pem
-
     - name: Publish GitHub Release
       if: ((github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch') && contains(github.event.head_commit.message, 'Bump version') == false
       uses: ncipollo/release-action@v1

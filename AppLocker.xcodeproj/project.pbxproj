@@ -14,7 +14,7 @@
 		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
-		E0CF77842F001C8200DE4640 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0CF77832F001C8200DE4640 /* Sparkle */; };
+		E0EA0E7E2F012CA10039033D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0EA0E7D2F012CA10039033D /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -144,6 +144,7 @@
 		E076EEFE2E883E48009F465F /* Exceptions for "ESExtension" folder in "ESExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"ESManager-old.swift",
 				Info.plist,
 			);
 			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
@@ -151,6 +152,7 @@
 		E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AppInfo.swift,
 				ComputeSHA.swift,
 				Locatizable.swift,
 				Log.swift,
@@ -245,7 +247,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E0CF77842F001C8200DE4640 /* Sparkle in Frameworks */,
+				E0EA0E7E2F012CA10039033D /* Sparkle in Frameworks */,
 				E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */,
 				E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */,
 			);
@@ -403,7 +405,7 @@
 			packageProductDependencies = (
 				E0DC1DD82E5DBADF002B454C /* Sparkle */,
 				E04FC7982E5DBE570016518D /* Sparkle */,
-				E0CF77832F001C8200DE4640 /* Sparkle */,
+				E0EA0E7D2F012CA10039033D /* Sparkle */,
 			);
 			productName = AppLocker;
 			productReference = E0EF51AA2E31558900161CAB /* AppLocker.app */;
@@ -444,7 +446,7 @@
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E0CF77822F001C8200DE4640 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				E0EA0E7C2F012CA00039033D /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0EF51AB2E31558900161CAB /* Products */;
@@ -526,11 +528,19 @@
 		E050B44C2E86FB35003AEA49 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ESExtension/ESExtension.entitlements";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
+				CURRENT_PROJECT_VERSION = "999";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/ESExtension/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "AppLocker Endpoint Security Extension";
@@ -547,6 +557,12 @@
 				PRODUCT_NAME = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -560,11 +576,19 @@
 		E050B44D2E86FB35003AEA49 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ESExtension/ESExtension.entitlements";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
+				CURRENT_PROJECT_VERSION = "999";
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/ESExtension/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "AppLocker Endpoint Security Extension";
@@ -581,6 +605,12 @@
 				PRODUCT_NAME = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -601,7 +631,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
+				CURRENT_PROJECT_VERSION = "999";
 				DEVELOPMENT_TEAM = 749P55DL5L;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_APP_SANDBOX = NO;
@@ -640,7 +670,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
+				CURRENT_PROJECT_VERSION = "999";
 				DEVELOPMENT_TEAM = 749P55DL5L;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_APP_SANDBOX = NO;
@@ -852,7 +882,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
+				CURRENT_PROJECT_VERSION = "999";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -910,7 +940,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
+				CURRENT_PROJECT_VERSION = "999";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1008,12 +1038,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E0CF77822F001C8200DE4640 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+		E0EA0E7C2F012CA00039033D /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/TranPhuong319/Sparkle/";
+			repositoryURL = "https://github.com/TranPhuong319/Sparkle.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.8.1;
+				branch = "add-vietnamese-translation";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1023,13 +1053,13 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Sparkle;
 		};
-		E0CF77832F001C8200DE4640 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E0CF77822F001C8200DE4640 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
 		E0DC1DD82E5DBADF002B454C /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = Sparkle;
+		};
+		E0EA0E7D2F012CA10039033D /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E0EA0E7C2F012CA00039033D /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */

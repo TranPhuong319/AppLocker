@@ -12,7 +12,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     static let shared = ExtensionInstaller()
     private override init() {}
 
-    enum Action {
+    private enum Action {
         case install
         case uninstall
     }

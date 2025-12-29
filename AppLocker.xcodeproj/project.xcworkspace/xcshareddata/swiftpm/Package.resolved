@@ -1,13 +1,13 @@
 {
-  "originHash" : "757de01220bec4a9a3709be83d4a901a8461958b716e0d8aea9f5ebded8702c0",
+  "originHash" : "ee3d30edd2e83a2def5b3866fd102d6ad969de122cd70c61ee2d2980abd89911",
   "pins" : [
     {
       "identity" : "sparkle",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/TranPhuong319/Sparkle",
+      "location" : "https://github.com/TranPhuong319/Sparkle.git",
       "state" : {
-        "revision" : "bff3db1c6d146d62c0b2d317ca2e22f10240eb7c",
-        "version" : "2.8.2"
+        "branch" : "add-vietnamese-translation",
+        "revision" : "3766ebed4d0fece457b32aae1d1d250db8c1bdc0"
       }
     }
   ],
