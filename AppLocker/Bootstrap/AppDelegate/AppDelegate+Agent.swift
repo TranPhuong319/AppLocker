@@ -9,44 +9,64 @@ import ServiceManagement
 import AppKit
 import Foundation
 
+enum AgentManageResult {
+    case installed
+    case uninstalled
+    case alreadyInstalled
+    case alreadyUninstalled
+    case failed(Error)
+}
+
 extension AppDelegate {
-    func manageAgent(plistName: String, action: AgentAction) {
+    @discardableResult
+    func manageAgent(
+        plistName: String,
+        action: AgentAction
+    ) -> AgentManageResult {
+
         let agent = SMAppService.agent(plistName: "\(plistName).plist")
 
         do {
             switch action {
+
             case .install:
                 if agent.status == .enabled {
-                    Logfile.core.info("Agent already registered: \(agent.status.description)")
-                    return
+                    Logfile.core.info("Agent already enabled")
+                    return .alreadyInstalled
                 }
                 try agent.register()
-                Logfile.core.info("Agent registered successfully")
+                Logfile.core.info("Agent registered")
+                return .installed
 
             case .uninstall:
-                if agent.status == .enabled {
-                    try agent.unregister()
-                    Logfile.core.info("Agent unregistered successfully")
-                } else {
-                    Logfile.core.info("Agent not registered, skipping uninstall")
-                }
-
-            case .checkAndInstallifNeed:
                 if agent.status != .enabled {
-                    Logfile.core.info("Agent not active, registering new one")
-                    try agent.register()
-                    NSApp.terminate(nil)
+                    Logfile.core.info("Agent already disabled")
+                    return .alreadyUninstalled
                 }
+                try agent.unregister()
+                Logfile.core.info("Agent unregistered")
+                return .uninstalled
+
+            case .check:
+                if agent.status == .enabled {
+                    Logfile.core.info("Agent already enabled")
+                    return .alreadyInstalled
+                }
+                try agent.register()
+                Logfile.core.info("Agent registered")
+                return .installed
             }
 
         } catch {
             let nsError = error as NSError
             Logfile.core.error(
                 """
-                Failed to manage agent: \(nsError.domain) - \
-                code: \(nsError.code) - \(nsError.localizedDescription)
+                Agent manage failed: \(nsError.domain) \
+                \(nsError.code) \
+                \(nsError.localizedDescription)
                 """
             )
+            return .failed(error)
         }
     }
 }

@@ -148,7 +148,10 @@ struct ContentView: View {
                 Text("Waiting to unlock %d application(s)...".localized(with: appState.deleteQueue.count)).bold()
             }
             .frame(maxWidth: .infinity, maxHeight: 35)
-            .background(Color.red.opacity(0.8)).foregroundColor(.white).cornerRadius(8).shadow(radius: 4)
+            .background(Color.red.opacity(0.8))
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .shadow(radius: 4)
         }
         .buttonStyle(PlainButtonStyle()).padding(.horizontal, 16).padding(.bottom, 12)
         .transition(.move(edge: .bottom).combined(with: .opacity))

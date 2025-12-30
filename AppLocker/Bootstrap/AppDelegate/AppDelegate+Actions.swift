@@ -19,7 +19,9 @@ extension AppDelegate {
                     AppListWindowController.show()
                     Logfile.core.debug("Opened AppList")
                 } else {
-                    Logfile.core.error("Error opening list app: \(error as NSObject?, privacy: .public)")
+                    Logfile.core.error(
+                        "Error opening list app: \(error as NSObject?, privacy: .public)"
+                    )
                 }
             }
         }
@@ -36,11 +38,19 @@ extension AppDelegate {
         NSApp.activate(ignoringOtherApps: true)
 
         if manager.lockedApps.isEmpty || modeLock == .es {
-            let confirm = AlertShow.show(title: "Uninstall Applocker?".localized,
-                                         message: "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall".localized(with: "\n\n"),
-                                         style: .critical,
-                                         buttons: ["Cancel".localized, "Uninstall".localized],
-                                         cancelIndex: 0)
+            let confirm = AlertShow.show(
+                title: "Uninstall Applocker?".localized,
+                message:
+                    """
+                    You are about to uninstall AppLocker. \
+                    Please make sure that all apps are unlocked!
+
+                    Your Mac will restart after Successful Uninstall
+                    """.localized,
+                    style: .critical,
+                    buttons: ["Cancel".localized, "Uninstall".localized],
+                    cancelIndex: 0
+            )
 
             switch confirm {
             case .button(index: 1, title: "Uninstall".localized):
@@ -67,7 +77,8 @@ extension AppDelegate {
                                     try? loginItem.unregister()
                                 }
                                 _ = HelperInstaller.manageHelperTool(
-                                    action: .uninstall, helperToolIdentifier: self.helperIdentifier
+                                    action: .uninstall,
+                                    helperToolIdentifier: self.helperIdentifier
                                 )
                                 self.selfRemoveApp()
                                 self.removeConfig()
@@ -95,16 +106,20 @@ extension AppDelegate {
     @objc func resetApp() {
         Logfile.core.info("Reset App Clicked")
         NSApp.activate(ignoringOtherApps: true)
-        let confirm = AlertShow.show(title: "Reset AppLocker".localized,
-                                     message:
-                                        """
-                                        This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.
+        let confirm = AlertShow.show(
+            title: "Reset AppLocker".localized,
+            message:
+            """
+            This operation will delete all settings including the list of locked applications. \
+            After successful reset, the application will be reopened.
 
-                                        Do you want to continue?
-                                        """.localized,
-                                     style: .critical,
-                                     buttons: ["Cancel".localized, "Reset".localized],
-                                     cancelIndex: 0)
+            Do you want to continue?
+            """.localized,
+            style: .critical,
+            buttons: ["Cancel".localized, "Reset".localized],
+            cancelIndex: 0
+        )
+
         switch confirm {
         case .button(index: 1, title: "Reset".localized):
             switch modeLock {
@@ -168,16 +183,9 @@ extension AppDelegate {
     }
 
     @objc func about() {
-        // EN: 1) Activate app
-        // VI: 1) Kích hoạt ứng dụng
         NSApp.activate(ignoringOtherApps: true)
-
-        // EN: 2) Show standard about panel
-        // VI: 2) Hiển thị bảng About chuẩn
         NSApp.orderFrontStandardAboutPanel(nil)
 
-        // EN: 3) Force focus after a short delay
-        // VI: 3) Ép focus sau một khoảng ngắn
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             for window in NSApp.windows {
                 let cls = String(describing: type(of: window))

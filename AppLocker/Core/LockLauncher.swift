@@ -14,7 +14,8 @@ class LockLauncher: LockManagerProtocol {
     @Published var allApps: [InstalledApp] = []
 
     private var currentBundleFile: URL {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory, in: .userDomainMask).first!
         return appSupport.appendingPathComponent("AppLocker/.current_bundle")
     }
 
@@ -30,7 +31,6 @@ class LockLauncher: LockManagerProtocol {
     }
 
     init() {
-        // load persisted config into dictionary
         self.lockedApps = ConfigStore.shared.load()
         self.allApps = getInstalledApps()
     }
@@ -53,9 +53,6 @@ class LockLauncher: LockManagerProtocol {
                 apps.append(contentsOf: processNormalGroup(urls: urls))
             }
         }
-        #if DEBUG
-            logInstalledApps(apps)
-        #endif
         return apps
     }
 
@@ -113,15 +110,6 @@ class LockLauncher: LockManagerProtocol {
         return nil
     }
 
-    #if DEBUG
-    private func logInstalledApps(_ apps: [InstalledApp]) {
-        print("getInstalledApps() -> \(apps.count) apps")
-        for app in apps {
-            print(" • \(app.name) | bundleID=\(app.bundleID) | path=\(app.path)")
-        }
-    }
-    #endif
-
     // MARK: - Persistence helper
     func save() {
         ConfigStore.shared.save(self.lockedApps)
@@ -162,41 +150,33 @@ class LockLauncher: LockManagerProtocol {
             [
                 "do": ["command": "chflags", "args": ["nouchg", ctx.hiddenAppPath]],
                 "undo": ["command": "chflags", "args": ["uchg", ctx.hiddenAppPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "chflags", "args": ["nouchg", execPath]],
                 "undo": ["command": "chflags", "args": ["uchg", execPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "chown", "args": ["\(uid):\(gid)", execPath]],
                 "undo": ["command": "chown", "args": ["root:wheel", execPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "rm", "args": ["-rf", ctx.disguisedAppPath]],
                 "undo": ["command": "cp", "args":
                             ["-Rf", "\(ctx.backupDir)/\(ctx.appName).app", ctx.baseDir]
                         ]
-            ],
-            [
+            ], [
                 "do": ["command": "mv", "args": [ctx.hiddenAppPath, ctx.disguisedAppPath]],
                 "undo": ["command": "mv", "args": [ctx.disguisedAppPath, ctx.hiddenAppPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "touch", "args": [ctx.disguisedAppPath]],
                 "undo": [:]
-            ],
-            [
+            ], [
                 "do": ["command": "chflags", "args": ["nohidden", ctx.disguisedAppPath]],
                 "undo": ["command": "chflags", "args": ["hidden", ctx.disguisedAppPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "chmod", "args": [
                     "755", "\(ctx.disguisedAppPath)/Contents/MacOS/\(execFile)"]
                       ],
                 "undo": ["command": "chmod", "args": [
                     "000", "\(ctx.disguisedAppPath)/Contents/MacOS/\(execFile)"]]
-            ],
-            [
+            ], [
                 "do": ["command": "rm", "args": ["-rf", ctx.backupDir]]
             ]
         ]
@@ -223,63 +203,53 @@ class LockLauncher: LockManagerProtocol {
             [
                 "do": ["command": "cp", "args": ["-Rf", launcherURL.path, ctx.baseDir]],
                 "undo": ["command": "rm", "args": ["-rf", "\(ctx.baseDir)/Launcher.app"]]
-            ],
-            [
+            ], [
                 "do": ["command": "mkdir", "args": ["-p", ctx.launcherResources]],
                 "undo": ["command": "rm", "args": ["-rf", ctx.launcherResources]]
-            ],
-            [
+            ], [
                 "do": ["command": "mv", "args": [appURL.path, ctx.hiddenAppPath]],
                 "undo": ["command": "mv", "args": [ctx.hiddenAppPath, appURL.path]]
-            ],
-            [
+            ], [
                 "do": ["command": "chmod", "args": [
                     "000", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"]
                       ]
-            ],
-            [
+            ], [
                 "do": ["command": "chown", "args": [
                     "root:wheel", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"]]
-            ],
-            [
+            ], [
                 "do": ["command": "chflags", "args": ["hidden", ctx.hiddenAppPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "mv", "args": [
                     "\(ctx.baseDir)/Launcher.app", ctx.disguisedAppPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "chflags", "args": [
                     "uchg", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"]]
-            ],
-            [
+            ], [
                 "do": ["command": "PlistBuddy", "args": [
                     "-c",
                     "Set :CFBundleIdentifier com.TranPhuong319.AppLocker.Launcher-\(ctx.appName)",
                     "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
-            ],
-            [
+            ], [
                 "do": ["command": "PlistBuddy", "args": [
                     "-c", "Set :CFBundleName \(ctx.appName)",
                     "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
-            ],
-            [
+            ], [
                 "do": ["command": "PlistBuddy", "args": [
                     "-c", "Set :CFBundleExecutable \(ctx.appName)",
                     "\(ctx.disguisedAppPath)/Contents/Info.plist"]]
-            ],
-            [
+            ], [
                 "do": ["command": "mv", "args": [
                     "\(ctx.disguisedAppPath)/Contents/MacOS/Launcher",
                     "\(ctx.disguisedAppPath)/Contents/MacOS/\(ctx.appName)"]]
             ]
         ]
 
-        // Logic xử lý Icon (tách nhỏ tiếp để tránh dài dòng)
         appendIconCommands(to: &lockCommands, ctx: ctx, infoPlist: infoPlist)
 
         lockCommands.append(["do": ["command": "chflags", "args": ["uchg", ctx.hiddenAppPath]]])
-        lockCommands.append(["do": ["command": "cp", "args": ["-Rf", ctx.disguisedAppPath, ctx.backupDir]]])
+        lockCommands.append(
+            ["do": ["command": "cp", "args": ["-Rf", ctx.disguisedAppPath, ctx.backupDir]]]
+        )
 
         if sendToHelperBatch(lockCommands) {
             updateLockedState(path: path, ctx: ctx, sha: sha, execName: execName)
@@ -323,13 +293,11 @@ class LockLauncher: LockManagerProtocol {
             ).path
             let destIcon = "\(ctx.baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"
 
-            // Copy icon gốc vào Launcher
             commands.insert([
                 "do": ["command": "cp", "args": [sourceIcon, destIcon]],
                 "undo": ["command": "rm", "args": ["-f", destIcon]]
             ], at: 1)
 
-            // Cập nhật Info.plist
             commands.append([
                 "do": ["command": "PlistBuddy", "args": ["-c", "Delete :CFBundleIconName", "\(ctx.disguisedAppPath)/Contents/Info.plist"]],
                 "undo": ["command": "PlistBuddy", "args": [
@@ -341,7 +309,9 @@ class LockLauncher: LockManagerProtocol {
         }
     }
 
-    private func appendFallbackIconCommands(to commands: inout [[String: Any]], ctx: AppPathContext) {
+    private func appendFallbackIconCommands(
+        to commands: inout [[String: Any]],
+        ctx: AppPathContext) {
         let plistPath = "\(ctx.disguisedAppPath)/Contents/Info.plist"
         let iconPath = "\(ctx.disguisedAppPath)/Contents/Resources/AppIcon.icns"
 
@@ -349,12 +319,10 @@ class LockLauncher: LockManagerProtocol {
             [
                 "do": ["command": "PlistBuddy", "args": [
                     "-c", "Delete :CFBundleIconFile", plistPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "PlistBuddy", "args": [
                     "-c", "Delete :CFBundleIconName", plistPath]]
-            ],
-            [
+            ], [
                 "do": ["command": "rm", "args": ["-rf", iconPath]],
                 "undo": ["command": "touch", "args": [iconPath]]
             ]

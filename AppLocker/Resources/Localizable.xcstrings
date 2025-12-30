@@ -615,13 +615,13 @@
         }
       }
     },
-    "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!%@Your Mac will restart after Successful Uninstall" : {
+    "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!\n\nYour Mac will restart after Successful Uninstall" : {
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Vui lòng đảm bảo rằng tất cả các ứng dụng đã được mở khóa!%@Máy Mac của bạn sẽ khởi động lại sau khi Gỡ cài đặt thành công"
+            "value" : "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Vui lòng đảm bảo rằng tất cả các ứng dụng đã được mở khóa!\n\nMáy Mac của bạn sẽ khởi động lại sau khi Gỡ cài đặt thành công"
           }
         }
       }

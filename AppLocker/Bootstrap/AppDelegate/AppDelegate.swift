@@ -17,7 +17,7 @@ import Sparkle
 enum AgentAction {
     case install
     case uninstall
-    case checkAndInstallifNeed
+    case check
 }
 
 enum AppMode: String {
@@ -50,16 +50,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         Logfile.core.info("Checking kext signing status...")
 
-        if isKextSigningDisabled() {
-            if let mode = modeLock {
-                launchConfig(config: mode)
-            } else {
+        if let mode = modeLock {
+            launchConfig(config: mode)
+        } else {
+            if isKextSigningDisabled() {
                 WelcomeWindowController.show()
                 return
+            } else {
+                launchConfig(config: .launcher)
             }
-        } else {
-            launchConfig(config: .launcher)
         }
+
     }
 
     func applicationExactlyOneInstance() {

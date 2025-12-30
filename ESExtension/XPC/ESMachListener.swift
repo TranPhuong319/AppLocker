@@ -11,10 +11,10 @@ import os
 extension ESManager: NSXPCListenerDelegate {
     // Set up Mach service listener for the host app.
     func setupMachListener() {
-        let l = NSXPCListener(machServiceName: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
-        l.delegate = self
-        l.resume()
-        self.listener = l
+        let listen = NSXPCListener(machServiceName: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
+        listen.delegate = self
+        listen.resume()
+        self.listener = listen
         Logfile.es.log("MachService XPC listener resumed: endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc")
     }
 

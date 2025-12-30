@@ -88,13 +88,14 @@ extension AppDelegate {
     }
 
     func restartApp(mode: AppMode?) {
-        let path = Bundle.main.bundlePath
-        let task = Process()
-        task.launchPath = "/usr/bin/open"
-        task.arguments = ["-n", path]
-        try? task.run()
         if mode == .es {
             manageAgent(plistName: plistName, action: .install)
+        } else {
+            let path = Bundle.main.bundlePath
+            let task = Process()
+            task.launchPath = "/usr/bin/open"
+            task.arguments = ["-n", path]
+            try? task.run()
         }
         NSApp.terminate(nil)
     }

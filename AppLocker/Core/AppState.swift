@@ -135,28 +135,22 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         case deleteQueuePopup
     }
 
-    // EN: Toggle the lock/unlock popup and perform the operation.
-    // VI: Bật tắt popup khóa/mở khóa và thực thi thao tác.
     func toggleLockPopup(for apps: Set<String>, locking: Bool) {
-        // EN: Close the appropriate sheet.
-        // VI: Đóng sheet phù hợp.
         if locking {
             showingAddApp = false
         } else {
             showingDeleteQueue = false
         }
 
-        // EN: Show secondary popup with contextual message.
-        // VI: Hiển thị popup phụ với thông điệp phù hợp.
         lockingMessage = locking
-        ? "Locking %d apps...".localized(with: apps.count)
-        : "Unlocking %d apps...".localized(with: apps.count)
+            ? "Locking %d apps...".localized(with: apps.count)
+            : "Unlocking %d apps...".localized(with: apps.count)
         showingLockingPopup = true
 
         DispatchQueue.global(qos: .userInitiated).async {
             self.manager.toggleLock(for: Array(apps))
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            DispatchQueue.main.async {
                 if locking {
                     self.selectedToLock.removeAll()
                     self.pendingLocks.removeAll()
@@ -172,8 +166,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    // EN: Logic from the "+" button to open add-app sheet.
-    // VI: Logic từ nút "+" để mở popup thêm ứng dụng.
     func openAddApp() {
         let currentApps = self.unlockableApps
         if currentApps != lastUnlockableApps {
@@ -182,14 +174,10 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         showingAddApp = true
     }
 
-    // EN: Lock button in the add-app popup.
-    // VI: Nút khóa trong popup thêm ứng dụng.
     func lockButton() {
         toggleLockPopup(for: selectedToLock, locking: true)
     }
 
-    // EN: Close the add-app popup and reset selections.
-    // VI: Đóng popup thêm ứng dụng và đặt lại lựa chọn.
     func closeAddPopup() {
         showingAddApp = false
         selectedToLock.removeAll()
@@ -197,8 +185,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         searchTextLockApps = ""
     }
 
-    // EN: Add other apps via open panel.
-    // VI: Thêm ứng dụng khác thông qua hộp thoại mở file.
     func addOthersApp() {
         let panel = NSOpenPanel()
         panel.delegate = self
@@ -207,7 +193,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         panel.allowedContentTypes = [.applicationBundle]
 
         if panel.runModal() == .OK {
-            // Lấy tất cả các URL người dùng đã chọn (vì cho phép multiple selection)
             let paths = Set(panel.urls.map { $0.path })
             if !paths.isEmpty {
                 toggleLockPopup(for: paths, locking: true)
@@ -215,14 +200,10 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    // EN: Unlock button in the waiting list sheet.
-    // VI: Nút mở khóa trong sheet hàng đợi.
     func unlockApp() {
         toggleLockPopup(for: Set(appsToUnlock), locking: false)
     }
 
-    // EN: Remove all apps from the waiting list.
-    // VI: Xóa tất cả ứng dụng khỏi danh sách chờ.
     func deleteAllFromWaitingList() {
         deleteQueue.removeAll()
         showingDeleteQueue = false
@@ -230,16 +211,18 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     // MARK: - NSOpenSavePanelDelegate
     func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
-        let fileName = url.lastPathComponent // Ví dụ: "AppLocker.app"
+        let fileName = url.lastPathComponent
         let path = url.path
 
-        // 1. Chặn app có tên là "AppLocker" (không phân biệt hoa thường)
         if fileName.localizedCaseInsensitiveContains("AppLocker") {
             return false
         }
 
-        // 2. Chặn các app đã nằm trong danh sách lockedApps
         if manager.lockedApps.keys.contains(path) {
+            return false
+        }
+
+        if path.hasPrefix("/System/") && !path.hasPrefix("/System/Applications/") {
             return false
         }
 

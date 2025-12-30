@@ -60,13 +60,13 @@ final class TTYNotifier {
         """
         The following application has been blocked from execution
         because it was added to the locked list.
-        """
+        """.localized
 
-        let labelPath    = "Path:"
-        let labelId      = "Identifier:"
-        let labelSha     = "SHA256:"
-        let labelParent  = "Parent PID:"
-        let labelAuth    = "Authenticate..."
+        let labelPath    = "Path:".localized
+        let labelId      = "Identifier:".localized
+        let labelSha     = "SHA256:".localized
+        let labelParent  = "Parent PID:".localized
+        let labelAuth    = "Authenticate...".localized
 
         let boldRed = "\u{001B}[1m\u{001B}[31m"
         let reset   = "\u{001B}[0m"

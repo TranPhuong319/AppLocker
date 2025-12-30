@@ -91,12 +91,6 @@ class LockES: LockManagerProtocol {
         var didChange = false
 
         for path in paths {
-            // Rule: Chỉ lock nếu (1) không phải /System/* HOẶC (2) là /System/Applications/*
-            if path.hasPrefix("/System") && !path.hasPrefix("/System/Applications") {
-                Logfile.core.warning("App hệ thống ngoài /System/Applications sẽ không bị chặn: \(path)")
-                continue
-            }
-
             if lockedApps.removeValue(forKey: path) != nil {
                 didChange = true
             } else {
