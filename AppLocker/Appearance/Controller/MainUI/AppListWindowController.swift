@@ -91,10 +91,10 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         window.maxSize = size
         window.isReleasedWhenClosed = false
         window.level = .floating
-
-        [.miniaturizeButton, .zoomButton].forEach {
-            window.standardWindowButton($0)?.isHidden = true
-        }
+//
+//        [.miniaturizeButton, .zoomButton].forEach {
+//            window.standardWindowButton($0)?.isHidden = true
+//        }
 
         return window
     }

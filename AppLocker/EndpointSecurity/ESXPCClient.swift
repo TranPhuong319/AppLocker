@@ -31,43 +31,42 @@ final class ESXPCClient {
     )
 
     func connect() {
-        Logfile.core.log("[ESXPCClient] Connecting to MachService: \(self.serviceName, privacy: .public)")
+        xpcQueue.async { [weak self] in
+            guard let self = self else { return }
 
-        let conn = NSXPCConnection(machServiceName: serviceName)
-        conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
+            guard self.connection == nil else {
+                return
+            }
 
-        conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
-        conn.exportedObject = XPCServer.shared
+            Logfile.core.log("[ESXPCClient] Connecting to MachService")
 
-        conn.invalidationHandler = { [weak self] in
-            Logfile.core.error("[ESXPCClient] Connection invalidated")
-            self?.scheduleReconnect(immediate: true)
-        }
+            let conn = NSXPCConnection(machServiceName: self.serviceName)
+            conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
+            conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
+            conn.exportedObject = XPCServer.shared
 
-        conn.interruptionHandler = { [weak self] in
-            Logfile.core.error("[ESXPCClient] Connection interrupted")
-            self?.scheduleReconnect(immediate: false)
-        }
+            conn.invalidationHandler = { [weak self] in
+                self?.scheduleReconnect(immediate: true)
+            }
 
-        conn.resume()
+            conn.interruptionHandler = { [weak self] in
+                self?.scheduleReconnect(immediate: false)
+            }
 
-        self.connection = conn
-        self.retryCount = 0
-        Logfile.core.log("[ESXPCClient] Connected & ready")
+            conn.resume()
+            self.connection = conn
+            self.retryCount = 0
 
-        Logfile.core.info("Sending App Languages to Endpoint Security")
+            if !self.lastKnownBlockedApps.isEmpty {
+                let copy = self.lastKnownBlockedApps
+                self.xpcQueue.async {
+                    self.updateBlockedApps(copy)
+                }
+            }
 
-        if let customLangs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
-           let primary = customLangs.first {
-
-            updateLanguage(primary)
-        }
-
-        // Flush pending apps trên queue ưu tiên cao
-        if !lastKnownBlockedApps.isEmpty {
-            let copy = lastKnownBlockedApps
-            xpcQueue.async { [weak self] in
-                self?.updateBlockedApps(copy)
+            if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
+               let primary = langs.first {
+                self.updateLanguage(primary)
             }
         }
     }
@@ -117,11 +116,20 @@ final class ESXPCClient {
     }
 
     // App requests extension to allow SHA once (with reply ack)
-    func allowSHAOnce(_ sha: String, completion: @escaping (Bool) -> Void) {
+    func allowSHAOnce(
+        _ sha: String,
+        retry: Int = 0,
+        completion: @escaping (Bool) -> Void
+    ) {
+        guard retry <= 10 else {
+            Logfile.core.error("allowSHAOnce retry limit reached for SHA \(sha.prefix(8))")
+            completion(false)
+            return
+        }
+
         guard let conn = connection else {
-            // quick retry once after 50ms
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) {
-                self.allowSHAOnce(sha, completion: completion)
+                self.allowSHAOnce(sha, retry: retry + 1, completion: completion)
             }
             return
         }
@@ -130,21 +138,19 @@ final class ESXPCClient {
             Logfile.core.error("allowSHAOnce failed: \(String(describing: error), privacy: .public)")
             completion(false)
         }) as? ESAppProtocol else {
-            Logfile.core.error("[ESXPCClient] No valid proxy to send allowSHAOnce")
             completion(false)
             return
         }
 
         proxy.allowSHAOnce(sha) { success in
-            Logfile.core.log("allowSHAOnce reply: \(success ? "success" : "fail") for SHA=\(sha, privacy: .public)")
             completion(success)
         }
     }
 
+
     func updateLanguage(_ langCode: String) {
         guard let conn = connection else {
             Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
-            // Bạn có thể lưu vào một biến 'pendingLanguage' nếu muốn gửi ngay khi connect lại
             return
         }
 

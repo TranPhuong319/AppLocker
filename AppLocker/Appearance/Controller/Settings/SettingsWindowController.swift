@@ -25,7 +25,7 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
         window.backingType = .buffered
         window.title = "Settings".localized
-        window.standardWindowButton(.zoomButton)?.isHidden = true
+//        window.standardWindowButton(.zoomButton)?.isHidden = true
 
         window.setContentSize(NSSize(width: 500, height: 400))
         window.center()

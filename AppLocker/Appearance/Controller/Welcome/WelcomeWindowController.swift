@@ -34,9 +34,9 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         window.maxSize = fixedSize // Không cho phép resize cửa sổ welcome
 
         window.center()
-
-        window.standardWindowButton(.zoomButton)?.isHidden = true
-        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+//
+//        window.standardWindowButton(.zoomButton)?.isHidden = true
+//        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
 
         let controller = WelcomeWindowController(window: window)
         window.delegate = controller

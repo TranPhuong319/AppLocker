@@ -48,11 +48,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
         Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None")")
 
-        Logfile.core.info("Checking kext signing status...")
-
         if let mode = modeLock {
             launchConfig(config: mode)
         } else {
+            Logfile.core.info("Checking kext signing status...")
             if isKextSigningDisabled() {
                 WelcomeWindowController.show()
                 return

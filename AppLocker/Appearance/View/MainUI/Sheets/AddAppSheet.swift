@@ -14,7 +14,12 @@ struct AddAppSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Select the application to lock".localized)
+                    .font(.headline)
+                    .padding([.horizontal, .top])
+                    .padding(.bottom, 0)
+
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
@@ -34,6 +39,7 @@ struct AddAppSheet: View {
                 )
                 .padding(.horizontal)
                 .padding(.vertical)
+                
                 Divider()
 
                 ScrollView {
@@ -64,7 +70,6 @@ struct AddAppSheet: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { unfocus() }
-            .navigationTitle("Select the application to lock".localized)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: {
