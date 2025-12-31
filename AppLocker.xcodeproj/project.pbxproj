@@ -153,6 +153,7 @@
 			membershipExceptions = (
 				AppInfo.swift,
 				ComputeSHA.swift,
+				FuzzySearcch.swift,
 				Locatizable.swift,
 				Log.swift,
 			);

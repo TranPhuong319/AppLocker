@@ -70,13 +70,16 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
-        let query = text.lowercased().trimmingCharacters(in: .whitespaces)
-        if query.isEmpty {
-            return apps
-        } else {
-            return apps.filter { $0.name.lowercased().contains(query) }
+        let query = text.normalized
+        guard !query.isEmpty else { return apps }
+
+        return apps.filter { app in
+            fuzzyMatch(query: query, target: app.name)
+            || fuzzyMatch(query: query, target: app.bundleID)
+            || fuzzyMatch(query: query, target: app.path)
         }
     }
+
 
     private func refreshAppLists() {
         let locked: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
