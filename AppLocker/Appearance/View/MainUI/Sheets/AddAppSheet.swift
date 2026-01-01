@@ -78,6 +78,7 @@ struct AddAppSheet: View {
                         Text("Lock (%d)".localized(with: appState.selectedToLock.count))
                     }
                     .keyboardShortcut(.defaultAction)
+                    .controlSize(.large)
                     .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
                 }
 
@@ -85,12 +86,14 @@ struct AddAppSheet: View {
                     Button("Close".localized) {
                         appState.closeAddPopup()
                     }
+                    .controlSize(.large)
                 }
 
                 ToolbarItem(placement: .automatic) {
                     Button("Others…") {
                         appState.addOthersApp()
                     }
+                    .controlSize(.large)
                 }
             }
         }

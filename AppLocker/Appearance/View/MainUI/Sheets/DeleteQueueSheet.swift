@@ -50,10 +50,12 @@ struct DeleteQueueSheet: View {
                 Button("Delete all from the waiting list".localized) {
                     appState.deleteAllFromWaitingList()
                 }
+                .controlSize(.large)
                 .keyboardShortcut(.cancelAction)
                 Button("Unlock".localized) {
                     appState.unlockApp()
                 }
+                .controlSize(.large)
                 .accentColor(.accentColor)
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)
