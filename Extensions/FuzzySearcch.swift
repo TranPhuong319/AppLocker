@@ -8,13 +8,13 @@
 import Foundation
 
 func fuzzyMatch(query: String, target: String) -> Bool {
-    let q = query.normalized
-    let t = target.normalized
+    let normalizedQuery = query.normalized
+    let normalizedTarget = target.normalized
 
-    if t.contains(q) { return true }
+    if normalizedTarget.contains(normalizedQuery) { return true }
 
-    let tokens = q.split(separator: " ")
-    return tokens.allSatisfy { t.contains($0) }
+    let queryTokens = normalizedQuery.split(separator: " ")
+    return queryTokens.allSatisfy { normalizedTarget.contains($0) }
 }
 
 extension String {

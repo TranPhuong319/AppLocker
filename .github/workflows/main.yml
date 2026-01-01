@@ -103,13 +103,12 @@ jobs:
             sys.exit(1)
       shell: python
       
-    - name: Release Build
+    - name: Release Archive
       run: |
-        set -o pipefail && xcodebuild \
-          ARCHS="arm64 x86_64" \
-          ONLY_ACTIVE_ARCH=NO \
+        set -o pipefail && xcodebuild archive \
           -scheme AppLocker \
           -configuration Release \
+          -archivePath build/AppLocker.xcarchive \
           -derivedDataPath build \
           -disableAutomaticPackageResolution \
           CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO \
@@ -118,7 +117,7 @@ jobs:
     - name: Create Disk Image
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
-        XCBUILD_PATH="build/Build/Products/Release"
+        XCBUILD_PATH="build/AppLocker.xcarchive/Products/Applications/AppLocker.app"
         cp LICENSE $XCBUILD_PATH
         cd $XCBUILD_PATH        
         curl -sLO https://openintelwireless.github.io/HeliPort/dmg/dmg-background.tiff
@@ -215,9 +214,24 @@ jobs:
             "            <title>${VER}</title>"
             "            <pubDate>${PUBDATE}</pubDate>"
             '            <description><![CDATA['
-            '                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/19.4.0/primer.min.css"><meta charset="UTF-8"><div class="markdown-body"><h3>The latest updates are:</h3><ul>'
+            '                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/19.4.0/primer.min.css">'
+            '                <meta charset="UTF-8">'
+            '                <style>'
+            '                @media (prefers-color-scheme: dark) {'
+            '                  body { background:#0d1117; color:#c9d1d9; }'
+            '                  a { color:#58a6ff; }'
+            '                }'
+            '                @media (prefers-color-scheme: light) {'
+            '                  body { background:#ffffff; color:#24292f; }'
+            '                  a { color:#0969da; }'
+            '                }'
+            '                </style>'
+            '                <div class="markdown-body">'
+            '                  <h3>The latest updates are:</h3>'
+            '                  <ul>'
             "${CHANGELOG}"
-            '                </ul></div>'
+            '                  </ul>'
+            '                </div>'
             '            ]]>'
             '            </description>'
             '            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>'

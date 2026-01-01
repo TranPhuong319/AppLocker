@@ -1,2 +1,2 @@
 excluded:
-  - Sparkle
+  - build/SourcePackages

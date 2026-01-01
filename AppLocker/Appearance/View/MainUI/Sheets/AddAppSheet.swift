@@ -26,7 +26,7 @@ struct AddAppSheet: View {
                         .padding(.leading, 4)
 
                     TextField(
-                        "Search apps..." , text: $appState.searchTextUnlockaleApps)
+                        "Search apps...", text: $appState.searchTextUnlockaleApps)
                         .textFieldStyle(.plain)
                         .focused($isSearchFocused)
                         .onSubmit { unfocus() }
