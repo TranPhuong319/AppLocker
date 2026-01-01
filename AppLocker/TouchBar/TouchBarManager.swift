@@ -53,7 +53,6 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         }
     }
 
-
     func touchBar(_ touchBar: NSTouchBar,
                   makeItemForIdentifier identifier: NSTouchBarItem.Identifier) -> NSTouchBarItem? {
         guard let viewBuilder = items[identifier] else { return nil }
@@ -177,22 +176,22 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             unlockButton.isBordered = true
             unlockButton.bezelStyle = .rounded
             unlockButton.keyEquivalent = "\r"
-            
+
             let clearButton = NSButton(title: "Delete all from the waiting list".localized,
                                        target: TouchBarActionProxy.shared,
                                        action: #selector(TouchBarActionProxy.shared.clearWaitingList))
             clearButton.isBordered = true
             clearButton.bezelStyle = .rounded
-            
+
             let stack = NSStackView(views: [clearButton, unlockButton])
             stack.orientation = .horizontal
             stack.spacing = 10
             stack.alignment = .centerY
-            
+
             NSLayoutConstraint.activate([
                 unlockButton.widthAnchor.constraint(equalTo: clearButton.widthAnchor)
             ])
-            
+
             return stack
         }
 

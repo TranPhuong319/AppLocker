@@ -52,12 +52,12 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
 
             if process.terminationStatus == 0 {
-                reply(true, output.isEmpty ? "✅ \(command) success" : output)
+                reply(true, output.isEmpty ? "\(command) success" : output)
             } else {
-                reply(false, error.isEmpty ? "❌ \(command) failure" : error)
+                reply(false, error.isEmpty ? "\(command) failure" : error)
             }
         } catch {
-            reply(false, "❌ Can't run \(command): \(error.localizedDescription)")
+            reply(false, "Can't run \(command): \(error.localizedDescription)")
         }
     }
 
@@ -76,7 +76,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             guard let doCmd = cmdPair["do"] as? [String: Any],
                   let command = doCmd["command"] as? String,
                   let args = parseArgs(doCmd["args"]) else {
-                messages.append("❌ Invalid 'do' command at index \(index)")
+                messages.append("Invalid 'do' command at index \(index)")
                 reply(false, messages.joined(separator: "\n"))
                 return
             }
@@ -97,17 +97,17 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             if !doSuccess, let undoCmd = cmdPair["undo"] as? [String: Any],
                let undoCommand = undoCmd["command"] as? String,
                let undoArgs = parseArgs(undoCmd["args"]) {
-                messages.append("⚠️ Step \(index) FAILED, running UNDO...")
+                messages.append("Step \(index) FAILED, running UNDO...")
                 let undoSem = DispatchSemaphore(value: 0)
-                sendCommand(undoCommand, args: undoArgs) { ok, out in
-                    messages.append(ok ? "↩️ UNDO OK: \(out)" : "❌ UNDO FAIL: \(out)")
+                sendCommand(undoCommand, args: undoArgs) { success, out in
+                    messages.append(success ? "UNDO OK: \(out)" : "UNDO FAIL: \(out)")
                     undoSem.signal()
                 }
                 undoSem.wait()
                 reply(false, messages.joined(separator: "\n"))
                 return
             } else if !doSuccess {
-                messages.append("❌ Step \(index) FAILED, no UNDO available")
+                messages.append("Step \(index) FAILED, no UNDO available")
                 reply(false, messages.joined(separator: "\n"))
                 return
             }
@@ -134,10 +134,10 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
                 process.waitUntilExit()
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 let out = String(data: data, encoding: .utf8) ?? ""
-                logs.append("▶️ \(cmd) \(args.joined(separator: " "))\n\(out)")
+                logs.append("\(cmd) \(args.joined(separator: " "))\n\(out)")
                 return process.terminationStatus == 0
             } catch {
-                logs.append("❌ Error: \(error.localizedDescription)")
+                logs.append("Error: \(error.localizedDescription)")
                 return false
             }
         }

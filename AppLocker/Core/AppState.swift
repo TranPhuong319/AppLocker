@@ -80,7 +80,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-
     private func refreshAppLists() {
         let locked: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard manager.lockedApps[path] != nil else { return nil }

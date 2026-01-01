@@ -40,10 +40,10 @@ struct ContentView: View {
     @ViewBuilder
     private var headerView: some View {
         HStack {
-            Text("Locked application".localized).font(.headline)
+            Text("Locked application").font(.headline)
             Spacer()
             Button { appState.openAddApp() } label: { Image(systemName: "plus") }
-            .help("Add application to lock".localized)
+            .help("Add application to lock")
             .disabled(appState.isDisabled)
         }
         .padding(.horizontal, 8)
@@ -51,7 +51,7 @@ struct ContentView: View {
 
     @ViewBuilder
     private var emptyStateView: some View {
-        Text("There is no locked application.".localized)
+        Text("There is no locked application.")
             .foregroundColor(.secondary)
             .font(.title3)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -65,7 +65,7 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
                     .padding(.leading, 4)
 
-                TextField("Search apps...".localized, text: $appState.searchTextLockApps)
+                TextField("Search apps...", text: $appState.searchTextLockApps)
                     .textFieldStyle(.plain)
                     .focused($isSearchFocused)
                     .onSubmit { unfocus() }
@@ -87,7 +87,7 @@ struct ContentView: View {
                         let systemApps = apps.filter { $0.source == .system }
 
                         if !userApps.isEmpty {
-                            SectionHeader(title: "Applications".localized)
+                            SectionHeader(title: "Applications")
                             ForEach(userApps, id: \.path) {
                                 LockedAppRow(
                                     app: $0,
@@ -98,7 +98,7 @@ struct ContentView: View {
                         }
 
                         if !systemApps.isEmpty {
-                            SectionHeader(title: "System Applications".localized)
+                            SectionHeader(title: "System Applications")
                             ForEach(systemApps, id: \.path) {
                                 LockedAppRow(
                                     app: $0,
@@ -162,4 +162,5 @@ struct ContentView: View {
     ContentView()
         .frame(width: CGFloat(AppState.shared.setWidth),
                height: CGFloat(AppState.shared.setHeight))
+        .environmentObject(AppState.shared)
 }

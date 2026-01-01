@@ -8,20 +8,21 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 
     // Hiển thị tên cho UI, có thể localize
-    var displayName: String {
+    var displayName: LocalizedStringKey {
         switch self {
-        case .stable: return "Stable".localized
-        case .beta: return "Beta".localized
+        case .stable: return "Stable"
+        case .beta: return "Beta"
         }
     }
-    var description: String {
+    var description: LocalizedStringKey {
         switch self {
         case .stable:
-            return "Get official, stable updates.".localized
+            return "Get official, stable updates."
         case .beta:
             return """
-            Get experimental updates.%@Note: Experimental updates are often unstable.
-            """.localized(with: "\n")
+            Get experimental updates.
+            Note: Experimental updates are often unstable.
+            """
         }
     }
 }
@@ -41,17 +42,17 @@ struct SettingsView: View {
             Form {
                 Section {
                     Group {
-                        Toggle("Automatically check for updates.".localized, isOn: $autoCheck)
+                        Toggle("Automatically check for updates.", isOn: $autoCheck)
                             .onChange(of: autoCheck) { newValue in
                                 AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
                             }
 
-                        Toggle("Automatically download new updates.".localized, isOn: $autoDownload)
+                        Toggle("Automatically download new updates.", isOn: $autoDownload)
                             .onChange(of: autoDownload) { newValue in
                                 AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
                             }
                     }
-                    Picker("Update Channel".localized, selection: $selectedChannel) {
+                    Picker("Update Channel", selection: $selectedChannel) {
                         ForEach(UpdateChannel.allCases, id: \.self) { channel in
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(channel.displayName)
@@ -75,10 +76,9 @@ struct SettingsView: View {
                         .padding(.top, 2)
                 }
             }
-            .frame(width: 390, height: 110, alignment: .top) // giữ kích thước gốc, căn top
         }
+        .fixedSize()
         .padding()
-        .frame(width: 400)
         .onAppear {
             let updater = AppUpdater.shared.updaterController.updater
             autoCheck = updater.automaticallyChecksForUpdates
@@ -87,6 +87,6 @@ struct SettingsView: View {
     }
 }
 
-#Preview{
+#Preview {
     SettingsView()
 }

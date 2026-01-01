@@ -147,7 +147,6 @@ final class ESXPCClient {
         }
     }
 
-
     func updateLanguage(_ langCode: String) {
         guard let conn = connection else {
             Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")

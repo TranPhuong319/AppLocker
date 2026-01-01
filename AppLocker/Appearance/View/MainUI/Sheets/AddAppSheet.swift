@@ -15,7 +15,7 @@ struct AddAppSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Select the application to lock".localized)
+                Text("Select the application to lock")
                     .font(.headline)
                     .padding([.horizontal, .top])
                     .padding(.bottom, 0)
@@ -25,7 +25,8 @@ struct AddAppSheet: View {
                         .foregroundColor(.secondary)
                         .padding(.leading, 4)
 
-                    TextField("Search apps...".localized, text: $appState.searchTextUnlockaleApps)
+                    TextField(
+                        "Search apps..." , text: $appState.searchTextUnlockaleApps)
                         .textFieldStyle(.plain)
                         .focused($isSearchFocused)
                         .onSubmit { unfocus() }
@@ -39,14 +40,14 @@ struct AddAppSheet: View {
                 )
                 .padding(.horizontal)
                 .padding(.vertical)
-                
+
                 Divider()
 
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
                         if !userApps.isEmpty {
-                            SectionHeader(title: "Applications".localized)
+                            SectionHeader(title: "Applications")
                             ForEach(userApps, id: \.path) { app in
                                 AppRow(app: app, appState: appState, unfocus: unfocus)
                             }
@@ -54,7 +55,7 @@ struct AddAppSheet: View {
 
                         let systemApps = appState.filteredUnlockableApps.filter { $0.source == .system }
                         if !systemApps.isEmpty {
-                            SectionHeader(title: "System Applications".localized)
+                            SectionHeader(title: "System Applications")
                                 .padding(.top, 10)
                             ForEach(systemApps, id: \.path) { app in
                                 AppRow(app: app, appState: appState, unfocus: unfocus)
@@ -83,7 +84,7 @@ struct AddAppSheet: View {
                 }
 
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close".localized) {
+                    Button("Close") {
                         appState.closeAddPopup()
                     }
                     .controlSize(.large)

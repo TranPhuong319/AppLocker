@@ -15,7 +15,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     @Published var authError: String?
     private var pendingAuthSHAs = Set<String>()
     private let authQueue = DispatchQueue(label: "com.TranPhuong319.AppLocker.auth.sha.queue")
-    
+
     func start() {
         Logfile.core.log("XPCServer start (app side exported object)")
         let arr = AppState.shared.manager.lockedApps.values.map { $0.toDict() }
@@ -52,7 +52,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
 
         AuthenticationManager.authenticate(
             reason: "verify that you are opening the %@ app".localized(with: name)
-        ) { [weak self] success, error in
+        ) { [weak self] success, _ in
 
             defer {
                 self?.authQueue.async {

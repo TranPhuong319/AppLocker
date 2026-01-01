@@ -42,7 +42,6 @@ struct WelcomeView: View {
                     .foregroundColor(.gray)
 
                 VStack(spacing: 20) {
-                    // VI: Sử dụng AppMode.es.rawValue thay vì "ES"
                     LabelButtonView(label: "ES (EndpointSecurity)",
                                     symbol: "lock.shield.fill") {
                         selectedMode = AppMode.es.rawValue

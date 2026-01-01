@@ -12,7 +12,7 @@ struct DeleteQueueSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Application is waiting to be deleted".localized)
+            Text("Application is waiting to be deleted")
                 .font(.headline)
                 .padding([.horizontal, .top])
                 .padding(.bottom, 0)
@@ -23,7 +23,7 @@ struct DeleteQueueSheet: View {
 
                     let userApps = appsInQueue.filter { $0.source == .user }
                     if !userApps.isEmpty {
-                        SectionHeader(title: "Applications".localized)
+                        SectionHeader(title: "Applications")
                         ForEach(userApps, id: \.path) { app in
                             DeleteQueueRow(app: app, appState: appState)
                         }
@@ -31,7 +31,7 @@ struct DeleteQueueSheet: View {
 
                     let systemApps = appsInQueue.filter { $0.source == .system }
                     if !systemApps.isEmpty {
-                        SectionHeader(title: "System Applications".localized)
+                        SectionHeader(title: "System Applications")
                         ForEach(systemApps, id: \.path) { app in
                             DeleteQueueRow(app: app, appState: appState)
                         }
@@ -47,12 +47,12 @@ struct DeleteQueueSheet: View {
 
             HStack {
                 Spacer()
-                Button("Delete all from the waiting list".localized) {
+                Button("Delete all from the waiting list") {
                     appState.deleteAllFromWaitingList()
                 }
                 .controlSize(.large)
                 .keyboardShortcut(.cancelAction)
-                Button("Unlock".localized) {
+                Button("Unlock") {
                     appState.unlockApp()
                 }
                 .controlSize(.large)

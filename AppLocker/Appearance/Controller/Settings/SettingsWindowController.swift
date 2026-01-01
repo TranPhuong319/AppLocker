@@ -8,7 +8,7 @@
 import SwiftUI
 import AppKit
 
-class SettingsWindowController: NSWindowController, NSWindowDelegate {
+final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     static var shared: SettingsWindowController?
 
     static func show() {
@@ -18,29 +18,35 @@ class SettingsWindowController: NSWindowController, NSWindowDelegate {
             return
         }
 
-        let contentView = SettingsView()
-        let hostingController = NSHostingController(rootView: contentView)
-        let window = NSWindow(contentViewController: hostingController)
+        let hostingController = NSHostingController(rootView: SettingsView())
 
-        window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+        let window = NSWindow(
+            contentViewController: hostingController
+        )
+        window.styleMask = [.titled, .closable, .miniaturizable]
         window.backingType = .buffered
         window.title = "Settings".localized
-//        window.standardWindowButton(.zoomButton)?.isHidden = true
-
-        window.setContentSize(NSSize(width: 500, height: 400))
-        window.center()
+        window.isReleasedWhenClosed = false
 
         let controller = SettingsWindowController(window: window)
         window.delegate = controller
         shared = controller
 
-        NSApp.activate(ignoringOtherApps: true)
         controller.showWindow(nil)
+
+        // Đảm bảo SwiftUI layout xong
+        window.contentView?.layoutSubtreeIfNeeded()
+
+        // Lấy size thật từ SwiftUI
+        let fittingSize = hostingController.view.fittingSize
+        window.setContentSize(fittingSize)
+
+        window.center()
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
-    // MARK: - NSWindowDelegate
+
     func windowWillClose(_ notification: Notification) {
-        // Giải phóng bộ nhớ khi đóng cửa sổ
         SettingsWindowController.shared = nil
     }
 }

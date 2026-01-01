@@ -44,7 +44,7 @@ struct AppRow: View {
                 Spacer()
 
                 if appState.pendingLocks.contains(app.path) {
-                    Text("Locking...".localized)
+                    Text("Locking...")
                         .italic()
                         .foregroundColor(.secondary)
                         .font(.subheadline)
