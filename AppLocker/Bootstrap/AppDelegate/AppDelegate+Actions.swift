@@ -12,7 +12,7 @@ import ServiceManagement
 extension AppDelegate {
     @objc func openListApp() {
         AuthenticationManager.authenticate(
-            reason: "authenticate to open the application list".localized
+            reason: String(localized: "authenticate to open the application list")
         ) { success, error in
             DispatchQueue.main.async {
                 if success {

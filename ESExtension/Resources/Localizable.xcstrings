@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Authenticate..." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -13,7 +13,7 @@
       }
     },
     "Identifier:" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -24,7 +24,7 @@
       }
     },
     "Parent PID:" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -35,7 +35,7 @@
       }
     },
     "Path:" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -46,7 +46,7 @@
       }
     },
     "The following application has been blocked from execution\nbecause it was added to the locked list." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

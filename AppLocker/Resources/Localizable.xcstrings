@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "About AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -43,7 +43,7 @@
       }
     },
     "AppLocker Update Available" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -54,23 +54,11 @@
       }
     },
     "authenticate to open the application list" : {
-      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "xác thực để mở danh sách Ứng dụng"
-          }
-        }
-      }
-    },
-    "authenticate to quit app" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "xác thực để thoát ứng dụng"
           }
         }
       }
@@ -106,7 +94,7 @@
       }
     },
     "Cancel" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -117,7 +105,7 @@
       }
     },
     "Check for Updates..." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -128,7 +116,7 @@
       }
     },
     "Checking for updates…" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -170,7 +158,7 @@
       }
     },
     "Error" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -181,7 +169,7 @@
       }
     },
     "ES (Endpoint Security)" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -212,7 +200,7 @@
       }
     },
     "Helper has not turned on" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -223,7 +211,7 @@
       }
     },
     "Helper Tool has registered but needs to turn on System Settings > Login Items." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -234,7 +222,7 @@
       }
     },
     "Launch At Login" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -245,7 +233,7 @@
       }
     },
     "Launcher" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -256,7 +244,7 @@
       }
     },
     "Lock (%d)" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -277,7 +265,7 @@
       }
     },
     "Locking %d apps..." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -298,7 +286,7 @@
       }
     },
     "Manage the application list" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -329,7 +317,7 @@
       }
     },
     "Quit AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -340,7 +328,7 @@
       }
     },
     "Reset" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -351,7 +339,7 @@
       }
     },
     "Reset AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -362,7 +350,7 @@
       }
     },
     "Retry" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -393,7 +381,7 @@
       }
     },
     "Settings" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -434,7 +422,7 @@
       }
     },
     "This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.\n\nDo you want to continue?" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -445,7 +433,7 @@
       }
     },
     "Unable to uninstall AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -456,7 +444,7 @@
       }
     },
     "Unable to update AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -467,7 +455,7 @@
       }
     },
     "Uninstall" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -478,7 +466,7 @@
       }
     },
     "Uninstall AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -489,7 +477,7 @@
       }
     },
     "Uninstall Applocker?" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -500,7 +488,7 @@
       }
     },
     "uninstall the application" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -521,7 +509,7 @@
       }
     },
     "Unlocking %d apps..." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -542,7 +530,7 @@
       }
     },
     "Updating AppLocker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -553,7 +541,7 @@
       }
     },
     "verify that you are opening the %@ app" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -564,7 +552,7 @@
       }
     },
     "Version %@ is ready" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -575,7 +563,7 @@
       }
     },
     "Waiting to unlock %d application(s)..." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -596,7 +584,7 @@
       }
     },
     "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!\n\nYour Mac will restart after Successful Uninstall" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -607,7 +595,7 @@
       }
     },
     "You need to unlock all applications before Uninstalling" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -618,7 +606,7 @@
       }
     },
     "You need to unlock all applications before Updating" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
