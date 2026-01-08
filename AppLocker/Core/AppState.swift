@@ -213,10 +213,15 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     // MARK: - NSOpenSavePanelDelegate
     func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
-        let fileName = url.lastPathComponent
         let path = url.path
 
-        if fileName.localizedCaseInsensitiveContains("AppLocker") {
+        // Chặn chính app đang chạy
+        if path == Bundle.main.bundleURL.path {
+            return false
+        }
+
+        // Hoặc chặn theo bundle name (ít chính xác hơn path)
+        if url.lastPathComponent == Bundle.main.bundleURL.lastPathComponent {
             return false
         }
 

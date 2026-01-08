@@ -30,11 +30,12 @@ class LockES: LockManagerProtocol {
 
     // MARK: - Installed apps discovery (unchanged)
     func getInstalledApps() -> [InstalledApp] {
-        // Định nghĩa dictionary để map đường dẫn với loại App
         let appsPaths: [String: AppSource] = [
             "/Applications": .user,
             "/System/Applications": .system
         ]
+
+        let selfBundlePath = Bundle.main.bundleURL.path
 
         var allApps: [InstalledApp] = []
         let fileManager = FileManager.default
@@ -56,12 +57,12 @@ class LockES: LockManagerProtocol {
                     continue
                 }
 
-                let displayName = fileManager.displayName(atPath: fileURL.path)
-                    .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-
-                if displayName.localizedCaseInsensitiveContains("AppLocker") {
+                if fileURL.path == selfBundlePath {
                     continue
                 }
+
+                let displayName = fileManager.displayName(atPath: fileURL.path)
+                    .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
 
                 let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                 icon.size = NSSize(width: 32, height: 32)
@@ -72,13 +73,15 @@ class LockES: LockManagerProtocol {
                         bundleID: bundleID,
                         icon: icon,
                         path: fileURL.path,
-                        source: source // Lưu nguồn gốc vào đây
+                        source: source
                     )
                 )
             }
         }
 
-        return allApps.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        return allApps.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
     }
 
     // MARK: - Persistence helper
