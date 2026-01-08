@@ -23,19 +23,7 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
 
         pendingUpdate = item
 
-        let content = UNMutableNotificationContent()
-        content.title = "AppLocker Update Available".localized
-        content.body = "Version %@ is ready".localized(with: item.displayVersionString)
-        content.sound = UNNotificationSound.defaultCritical
-        content.badge = nil
-
-        // EN: Use a fixed identifier to remove the correct notification when tapped.
-        // VI: Dùng định danh cố định để xoá đúng thông báo khi người dùng bấm.
-        let request = UNNotificationRequest(
-            identifier: notificationIndentifiers,
-            content: content,
-            trigger: nil
-        )
+        let request = buildUpdateNotification()
         UNUserNotificationCenter.current().add(request)
     }
 

@@ -56,17 +56,17 @@ final class TTYNotifier {
         defer { try? fileHandle.close() }
 
         let title        = "AppLocker"
-        let description  =
+        let description  = String(localized:
         """
         The following application has been blocked from execution
         because it was added to the locked list.
-        """.localized
+        """)
 
-        let labelPath    = "Path:".localized
-        let labelId      = "Identifier:".localized
-        let labelSha     = "SHA256:".localized
-        let labelParent  = "Parent PID:".localized
-        let labelAuth    = "Authenticate...".localized
+        let labelPath    = String(localized: "Path:")
+        let labelId      = String(localized: "Identifier:")
+        let labelSha     = String(localized: "SHA256:")
+        let labelParent  = String(localized: "Parent PID:")
+        let labelAuth    = String(localized: "Authenticate...")
 
         let boldRed = "\u{001B}[1m\u{001B}[31m"
         let reset   = "\u{001B}[0m"

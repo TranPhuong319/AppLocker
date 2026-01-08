@@ -154,7 +154,6 @@
 				AppInfo.swift,
 				ComputeSHA.swift,
 				FuzzySearcch.swift,
-				Locatizable.swift,
 				Log.swift,
 			);
 			target = E050B43F2E86FB33003AEA49 /* ESExtension */;

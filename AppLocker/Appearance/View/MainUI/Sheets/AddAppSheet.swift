@@ -76,7 +76,7 @@ struct AddAppSheet: View {
                     Button(action: {
                         appState.lockButton()
                     }) {
-                        Text("Lock (%d)".localized(with: appState.selectedToLock.count))
+                        Text("Lock (\(appState.selectedToLock.count))")
                     }
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)

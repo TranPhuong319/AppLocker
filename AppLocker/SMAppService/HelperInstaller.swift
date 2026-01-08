@@ -74,10 +74,20 @@ struct HelperInstaller {
     // MARK: - Alert khi helper cần bật trong System Settings
     static func requiresApprovalAlert() {
         let result = AlertShow.show(
-            title: "Helper has not turned on".localized,
-            message: "Helper Tool has registered but needs to turn on System Settings > Login Items.".localized,
+            title: String(localized: "Helper has not turned on"),
+            message: String(
+                localized:
+                    """
+                    Helper Tool has registered but needs to turn on \
+                    System Settings > Login Items.
+                    """
+            ),
             style: .critical,
-            buttons: ["Retry".localized, "Quit AppLocker".localized])
+            buttons: [
+                String(localized: "Retry"),
+                String(localized: "Quit AppLocker")
+            ]
+        )
         switch result {
         case .button: SMAppService.openSystemSettingsLoginItems()
         case .cancelled: NSApp.terminate(nil)

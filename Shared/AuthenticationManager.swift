@@ -20,13 +20,13 @@ class AuthenticationManager {
                         if success {
                             completion(true, nil)
                         } else {
-                            let message = err?.localizedDescription ?? "Authentication failed for unknown reasons".localized
+                            let message = err?.localizedDescription ?? "Authentication failed for unknown reasons"
                             completion(false, message)
                         }
                     }
                 }
             } else {
-                let message = error?.localizedDescription ?? "This action cannot be performed on this device".localized
+                let message = error?.localizedDescription ?? "This action cannot be performed on this device"
                 DispatchQueue.main.async {
                     completion(false, message)
                 }

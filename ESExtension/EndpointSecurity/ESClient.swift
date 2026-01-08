@@ -10,8 +10,9 @@ import EndpointSecurity
 import os
 
 extension ESManager {
-    // Create ES client, subscribe to events, and start XPC.
     static func start(clientOwner: ESManager) throws {
+        if clientOwner.client != nil { return }
+
         let res = es_new_client(&clientOwner.client) { client, message in
             ESManager.handleMessage(client: client, message: message)
         }
@@ -40,21 +41,24 @@ extension ESManager {
             throw ESError.internalError
         }
 
-        let execEvents: [es_event_type_t] = [
-            ES_EVENT_TYPE_AUTH_EXEC
+        ESManager.sharedInstanceForCallbacks = clientOwner
+        
+        clientOwner.setupMachListener()
+        clientOwner.scheduleTempCleanup()
+
+        let events: [es_event_type_t] = [
+            ES_EVENT_TYPE_AUTH_EXEC,
         ]
 
-        if es_subscribe(client, execEvents, UInt32(execEvents.count)) != ES_RETURN_SUCCESS {
-            Logfile.es.error("es_subscribe AUTH_EXEC failed")
+        let sub = es_subscribe(client, events, UInt32(events.count))
+        if sub != ES_RETURN_SUCCESS {
+            ESManager.sharedInstanceForCallbacks = nil
+            es_delete_client(client)
+            clientOwner.client = nil
+            throw ESError.internalError
         }
 
-        ESManager.sharedInstanceForCallbacks = clientOwner
-
-        // start auxiliary systems
-        clientOwner.scheduleTempCleanup()
-        clientOwner.setupMachListener()
-
-        Logfile.es.log("ESManager (ESClient.start) started successfully")
+        Logfile.es.log("ESClient started listening")
     }
 
     // Tear down ES client and XPC connections cleanly.

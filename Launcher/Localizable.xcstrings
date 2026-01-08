@@ -2,7 +2,6 @@
   "sourceLanguage" : "en",
   "strings" : {
     "authentication to open" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

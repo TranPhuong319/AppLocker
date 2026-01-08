@@ -54,15 +54,9 @@ extension AppDelegate {
     func removeConfig() {
         let fileManager = FileManager.default
 
-        guard let appSupportURL = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            return
-        }
-
-        let appFolderURL = appSupportURL.appendingPathComponent("AppLocker")
-
         do {
-            if fileManager.fileExists(atPath: appFolderURL.path) {
-                try fileManager.removeItem(at: appFolderURL)
+            if fileManager.fileExists(atPath: ConfigStore.shared.configURL.path()) {
+                try fileManager.removeItem(at: ConfigStore.shared.configURL)
                 Logfile.core.info("The configuration folder has been successfully deleted.")
 
                 let domain = Bundle.main.bundleIdentifier!

@@ -46,7 +46,7 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func buildNormalMenu(for menu: NSMenu) {
-        let manageItem = NSMenuItem(title: "Manage the application list".localized,
+        let manageItem = NSMenuItem(title: String(localized: "Manage the application list"),
                                     action: #selector(openListApp),
                                     keyEquivalent: "l")
         manageItem.keyEquivalentModifierMask = [.command, .shift]
@@ -55,20 +55,20 @@ extension AppDelegate: NSMenuDelegate {
 
         #if DEBUG
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit AppLocker".localized,
+        menu.addItem(NSMenuItem(title: String(localized: "Quit AppLocker"),
                                 action: #selector(NSApplication.terminate(_:)),
                                 keyEquivalent: "q"))
         #endif
     }
 
     private func buildOptionMenu(for menu: NSMenu) {
-        menu.addItem(NSMenuItem(title: "Settings".localized,
+        menu.addItem(NSMenuItem(title: String(localized: "Settings"),
                                 action: #selector(openSettings),
                                 keyEquivalent: ","))
         menu.addItem(.separator())
 
         if modeLock == .launcher {
-            let launchItem = NSMenuItem(title: "Launch At Login".localized,
+            let launchItem = NSMenuItem(title: String(localized: "Launch At Login"),
                                         action: #selector(launchAtLogin),
                                         keyEquivalent: "")
             launchItem.target = self
@@ -76,13 +76,13 @@ extension AppDelegate: NSMenuDelegate {
             menu.addItem(launchItem)
         }
 
-        let updateItem = NSMenuItem(title: "Check for Updates...".localized,
+        let updateItem = NSMenuItem(title: String(localized: "Check for Updates..."),
                                 action: #selector(checkUpdate),
                                 keyEquivalent: "")
         updateItem.image = NSImage(systemSymbolName: "arrow.trianglehead.2.clockwise.rotate.90",
                                    accessibilityDescription: nil)
         menu.addItem(updateItem)
-        let aboutItem = NSMenuItem(title: "About AppLocker".localized,
+        let aboutItem = NSMenuItem(title: String(localized: "About AppLocker"),
                                 action: #selector(about),
                                 keyEquivalent: "")
         aboutItem.image = NSImage(systemSymbolName: "info.circle", accessibilityDescription: nil)
@@ -90,13 +90,13 @@ extension AppDelegate: NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        let uninstallItem = NSMenuItem(title: "Uninstall AppLocker".localized,
+        let uninstallItem = NSMenuItem(title: String(localized: "Uninstall AppLocker"),
                                        action: #selector(uninstall),
                                        keyEquivalent: "")
         uninstallItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
         menu.addItem(uninstallItem)
 
-        let resetItem = NSMenuItem(title: "Reset AppLocker".localized,
+        let resetItem = NSMenuItem(title: String(localized: "Reset AppLocker"),
                                    action: #selector(resetApp),
                                    keyEquivalent: "")
         resetItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)

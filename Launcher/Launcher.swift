@@ -174,7 +174,9 @@ class Launcher {
             Logfile.launcher.error("Cannot unlock the Exec file")
             exit(1)
         }
-        AuthenticationManager.authenticate(reason: "authentication to open".localized) { success, errorMessage in
+        AuthenticationManager.authenticate(
+            reason: String(localized: "authentication to open")
+        ) { success, errorMessage in
             DispatchQueue.main.async {
                 if success {
                     self.openApplication(lockedInfo: lockedInfo,

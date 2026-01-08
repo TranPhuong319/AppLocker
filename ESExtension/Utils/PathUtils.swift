@@ -12,10 +12,17 @@ import EndpointSecurity
 func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
     guard let filePtr = filePtr else { return nil }
     let file = filePtr.pointee
-    if let cstr = file.path.data {
-        return String(cString: cstr)
-    }
-    return nil
+    let token = file.path
+    guard let dataPtr = token.data else { return nil }
+    let length = Int(token.length)
+
+    // Tạo String bằng cách decode từ buffer với length (không phụ thuộc null-terminator).
+    let rawPtr = UnsafeRawPointer(dataPtr).assumingMemoryBound(to: UInt8.self)
+    let buffer = UnsafeBufferPointer(start: rawPtr, count: length)
+    let str = String(decoding: buffer, as: UTF8.self)
+
+    // Trả về copy hoàn chỉnh (String ở Swift đã copy-on-write), an toàn để dùng async.
+    return str
 }
 
 extension ESManager {

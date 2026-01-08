@@ -39,21 +39,24 @@ extension AppDelegate {
 
         if manager.lockedApps.isEmpty || modeLock == .es {
             let confirm = AlertShow.show(
-                title: "Uninstall Applocker?".localized,
+                title: String(localized: "Uninstall Applocker?"),
                 message:
-                    """
+                    String(localized: """
                     You are about to uninstall AppLocker. \
                     Please make sure that all apps are unlocked!
 
                     Your Mac will restart after Successful Uninstall
-                    """.localized,
-                    style: .critical,
-                    buttons: ["Cancel".localized, "Uninstall".localized],
-                    cancelIndex: 0
+                    """),
+                style: .critical,
+                buttons: [
+                    String(localized: "Cancel"),
+                    String(localized: "Uninstall")
+                ],
+                cancelIndex: 0
             )
 
             switch confirm {
-            case .button(index: 1, title: "Uninstall".localized):
+            case .button(index: 1, title: String(localized: "Uninstall")):
                 switch modeLock {
                 case .es:
                     ExtensionInstaller.shared.onUninstalled = {
@@ -66,7 +69,7 @@ extension AppDelegate {
                     ExtensionInstaller.shared.uninstall()
                 case .launcher:
                     AuthenticationManager.authenticate(
-                        reason: "uninstall the application".localized
+                        reason: String(localized: "uninstall the application")
                     ) { success, _ in
                         DispatchQueue.main.async {
                             if success {
@@ -97,9 +100,12 @@ extension AppDelegate {
             }
         } else {
             AlertShow.showInfo(
-                title: "Unable to uninstall AppLocker".localized,
-                message: "You need to unlock all applications before Uninstalling".localized,
-                style: .critical)
+                title: String(localized: "Unable to uninstall AppLocker"),
+                message: String(
+                    localized: "You need to unlock all applications before Uninstalling"
+                ),
+                style: .critical
+            )
         }
     }
 
@@ -107,21 +113,24 @@ extension AppDelegate {
         Logfile.core.info("Reset App Clicked")
         NSApp.activate(ignoringOtherApps: true)
         let confirm = AlertShow.show(
-            title: "Reset AppLocker".localized,
+            title: String(localized: "Reset AppLocker"),
             message:
-            """
+            String(localized: """
             This operation will delete all settings including the list of locked applications. \
             After successful reset, the application will be reopened.
 
             Do you want to continue?
-            """.localized,
+            """),
             style: .critical,
-            buttons: ["Cancel".localized, "Reset".localized],
+            buttons: [
+                String(localized: "Cancel"),
+                String(localized: "Reset")
+            ],
             cancelIndex: 0
         )
 
         switch confirm {
-        case .button(index: 1, title: "Reset".localized):
+        case .button(index: 1, title: String(localized: "Reset")):
             switch modeLock {
             case .launcher:
                 let loginItem = SMAppService.mainApp
@@ -152,9 +161,7 @@ extension AppDelegate {
     }
 
     @objc func checkUpdate() {
-        let savedChannel = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
-        let useBeta = (savedChannel == "Beta")
-        AppUpdater.shared.manualCheckForUpdates(useBeta: useBeta)
+        AppUpdater.shared.manualCheckForUpdates()
 
         NSApp.activate(ignoringOtherApps: true)
 

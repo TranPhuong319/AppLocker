@@ -25,7 +25,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         )
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.backingType = .buffered
-        window.title = "Settings".localized
+        window.title = String(localized: "Settings")
         window.isReleasedWhenClosed = false
 
         let controller = SettingsWindowController(window: window)

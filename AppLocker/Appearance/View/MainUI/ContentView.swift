@@ -145,7 +145,8 @@ struct ContentView: View {
         Button { appState.showingDeleteQueue = true } label: {
             HStack {
                 Image(systemName: "tray.full")
-                Text("Waiting to unlock %d application(s)...".localized(with: appState.deleteQueue.count)).bold()
+                Text("Waiting to unlock \(appState.deleteQueue.count) application(s)...")
+                    .bold()
             }
             .frame(maxWidth: .infinity, maxHeight: 35)
             .background(Color.red.opacity(0.8))

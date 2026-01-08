@@ -1,8 +1,27 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A new beta version is available. Do you want to update?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một phiên bản beta mới đã có sẵn. Bạn có muốn cập nhật không?"
+          }
+        }
+      }
+    },
+    "A new stable version is available. Do you want to update?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một phiên bản chính thức mới đã có sẵn. Bạn có muốn cập nhật không?"
+          }
+        }
+      }
+    },
     "About AppLocker" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -38,17 +57,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ứng dụng"
-          }
-        }
-      }
-    },
-    "AppLocker Update Available" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bản cập nhật AppLocker có sẵn"
           }
         }
       }
@@ -93,8 +101,27 @@
         }
       }
     },
+    "Beta Ready to Install" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sẵn sàng cài đặt bản Beta"
+          }
+        }
+      }
+    },
+    "Beta Update Available" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật Beta có sẵn"
+          }
+        }
+      }
+    },
     "Cancel" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -105,23 +132,11 @@
       }
     },
     "Check for Updates..." : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kiểm tra cập nhật..."
-          }
-        }
-      }
-    },
-    "Checking for updates…" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang kiểm tra cập nhật…"
           }
         }
       }
@@ -136,17 +151,6 @@
         }
       }
     },
-    "Delete" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Xoá"
-          }
-        }
-      }
-    },
     "Delete all from the waiting list" : {
       "localizations" : {
         "vi" : {
@@ -157,24 +161,12 @@
         }
       }
     },
-    "Error" : {
-      "extractionState" : "manual",
+    "ES (EndpointSecurity)" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lỗi"
-          }
-        }
-      }
-    },
-    "ES (Endpoint Security)" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ES (Endpoint Security)"
+            "value" : "ES (EndpointSecurity)"
           }
         }
       }
@@ -200,7 +192,6 @@
       }
     },
     "Helper has not turned on" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -211,7 +202,6 @@
       }
     },
     "Helper Tool has registered but needs to turn on System Settings > Login Items." : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -222,7 +212,6 @@
       }
     },
     "Launch At Login" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -233,23 +222,21 @@
       }
     },
     "Launcher" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Launccher"
+            "value" : "Launcher"
           }
         }
       }
     },
-    "Lock (%d)" : {
-      "extractionState" : "manual",
+    "Lock (%lld)" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Khoá (%d)"
+            "value" : "Khoá (%lld)"
           }
         }
       }
@@ -264,13 +251,12 @@
         }
       }
     },
-    "Locking %d apps..." : {
-      "extractionState" : "manual",
+    "Locking %lld apps..." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đang khoá %d ứng dụng…"
+            "value" : "Đang khoá %lld ứng dụng…"
           }
         }
       }
@@ -286,7 +272,6 @@
       }
     },
     "Manage the application list" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -317,7 +302,6 @@
       }
     },
     "Quit AppLocker" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -327,8 +311,17 @@
         }
       }
     },
+    "Ready to Install" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sẵn sàng để Cài đặt"
+          }
+        }
+      }
+    },
     "Reset" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -339,7 +332,6 @@
       }
     },
     "Reset AppLocker" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -350,7 +342,6 @@
       }
     },
     "Retry" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -381,7 +372,6 @@
       }
     },
     "Settings" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -411,6 +401,27 @@
         }
       }
     },
+    "The beta update has been downloaded. Install now?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật beta đã được tải xuống. Cài đặt ngay bây giờ?"
+          }
+        }
+      }
+    },
+    "The update has been downloaded. Install now?" : {
+      "generatesSymbol" : false,
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật đã được tải xuống. Cài đặt ngay bây giờ?"
+          }
+        }
+      }
+    },
     "There is no locked application." : {
       "localizations" : {
         "vi" : {
@@ -422,7 +433,6 @@
       }
     },
     "This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.\n\nDo you want to continue?" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -433,7 +443,6 @@
       }
     },
     "Unable to uninstall AppLocker" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -443,19 +452,7 @@
         }
       }
     },
-    "Unable to update AppLocker" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không thể cập nhật AppLocker"
-          }
-        }
-      }
-    },
     "Uninstall" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -466,7 +463,6 @@
       }
     },
     "Uninstall AppLocker" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -477,7 +473,6 @@
       }
     },
     "Uninstall Applocker?" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -488,7 +483,6 @@
       }
     },
     "uninstall the application" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -508,13 +502,22 @@
         }
       }
     },
-    "Unlocking %d apps..." : {
-      "extractionState" : "manual",
+    "Unlocking %lld apps..." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đang mở khoá %d ứng dụng…"
+            "value" : "Đang mở khoá %lld ứng dụng…"
+          }
+        }
+      }
+    },
+    "Update Available" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật có sẵn"
           }
         }
       }
@@ -529,19 +532,7 @@
         }
       }
     },
-    "Updating AppLocker" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cập nhật AppLocker"
-          }
-        }
-      }
-    },
     "verify that you are opening the %@ app" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -551,24 +542,12 @@
         }
       }
     },
-    "Version %@ is ready" : {
-      "extractionState" : "manual",
+    "Waiting to unlock %lld application(s)..." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Phiên bản %@ đã sẵn sàng"
-          }
-        }
-      }
-    },
-    "Waiting to unlock %d application(s)..." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang chờ mở khoá %d ứng dụng..."
+            "value" : "Đang chờ mở khoá %lld ứng dụng..."
           }
         }
       }
@@ -584,7 +563,6 @@
       }
     },
     "You are about to uninstall AppLocker. Please make sure that all apps are unlocked!\n\nYour Mac will restart after Successful Uninstall" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -595,23 +573,11 @@
       }
     },
     "You need to unlock all applications before Uninstalling" : {
-      "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn cần mở khoá tất cả ứng dụng trước khi Gỡ cài đặt"
-          }
-        }
-      }
-    },
-    "You need to unlock all applications before Updating" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bạn cần mở khoá tất cả ứng dụng trước khi cập nhật"
           }
         }
       }

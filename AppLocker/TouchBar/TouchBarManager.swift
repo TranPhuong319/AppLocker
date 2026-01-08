@@ -37,7 +37,9 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     private func refreshDeleteQueueButton() {
         guard let button = self.deleteQueueButton else { return }
         button.isHidden = self.appState.deleteQueue.isEmpty
-        button.title = "Waiting to unlock %d application(s)...".localized(with: self.appState.deleteQueue.count)
+        button.title = String(
+            localized: "Waiting to unlock \(appState.deleteQueue.count) application(s)..."
+        )
     }
 
     private func refreshLockButton() {
@@ -48,7 +50,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
         // tìm nút lock theo tag
         if let lockButton = stack.subviews.first(where: { $0.tag == 100 }) as? NSButton {
-            lockButton.title = "Lock (%d)".localized(with: self.appState.selectedToLock.count)
+            lockButton.title = String(localized: "Lock (\(appState.selectedToLock.count))")
             lockButton.isEnabled = !appState.selectedToLock.isEmpty && !appState.isLocking
         }
     }
@@ -122,7 +124,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
     private func configureAddAppPopupTouchBar(_ touchBar: NSTouchBar) {
         registerOrUpdateItem(id: .addAppOther) {
-            NSButton(title: "Others…".localized,
+            NSButton(title: String(localized: "Others…"),
                      target: TouchBarActionProxy.shared,
                      action: #selector(TouchBarActionProxy.shared.addAnotherApp))
         }
@@ -131,7 +133,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             guard let self = self else { return NSView() }
 
             let lockButton = NSButton(
-                title: "Lock (%d)".localized(with: self.appState.selectedToLock.count),
+                title: String(localized: "Lock (\(appState.selectedToLock.count))"),
                 target: TouchBarActionProxy.shared,
                 action: #selector(TouchBarActionProxy.shared.lockApp)
             )
@@ -141,7 +143,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             lockButton.tag = 100
 
             let closeButton = NSButton(
-                title: "Close".localized,
+                title: String(localized: "Close"),
                 target: TouchBarActionProxy.shared,
                 action: #selector(TouchBarActionProxy.shared.closeAddAppPopup)
             )
@@ -170,14 +172,15 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
     private func configureDeleteQueuePopupTouchBar(_ touchBar: NSTouchBar) {
         registerOrUpdateItem(id: .deleteQueueButtons) {
-            let unlockButton = NSButton(title: "Unlock".localized,
+            let unlockButton = NSButton(title: String(localized: "Unlock"),
                                         target: TouchBarActionProxy.shared,
                                         action: #selector(TouchBarActionProxy.shared.unlockApp))
             unlockButton.isBordered = true
             unlockButton.bezelStyle = .rounded
             unlockButton.keyEquivalent = "\r"
 
-            let clearButton = NSButton(title: "Delete all from the waiting list".localized,
+            let clearButton = NSButton(title:
+                                        String(localized: "Delete all from the waiting list"),
                                        target: TouchBarActionProxy.shared,
                                        action: #selector(TouchBarActionProxy.shared.clearWaitingList))
             clearButton.isBordered = true
@@ -207,7 +210,9 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     private func createDeleteQueueProminentButton() -> NSView {
         let container = NSView()
         let button = NSButton(
-            title: "Waiting to unlock %d application(s)...".localized(with: self.appState.deleteQueue.count),
+            title: String(
+                localized: "Waiting to unlock \(appState.deleteQueue.count) application(s)..."
+            ),
             target: TouchBarActionProxy.shared,
             action: #selector(TouchBarActionProxy.shared.showDeleteQueuePopup)
         )

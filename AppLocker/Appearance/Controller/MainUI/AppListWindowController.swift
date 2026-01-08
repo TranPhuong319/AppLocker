@@ -84,7 +84,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         )
 
         window.center()
-        window.title = "Manage the application list".localized
+        window.title = String(localized: "Manage the application list")
         window.contentViewController = contentVC
         window.setContentSize(size)
         window.minSize = size

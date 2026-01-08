@@ -51,7 +51,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
         )
 
         AuthenticationManager.authenticate(
-            reason: "verify that you are opening the %@ app".localized(with: name)
+            reason: String(localized: "verify that you are opening the \(name) app")
         ) { [weak self] success, _ in
 
             defer {

@@ -145,8 +145,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
 
         lockingMessage = locking
-            ? "Locking %d apps...".localized(with: apps.count)
-            : "Unlocking %d apps...".localized(with: apps.count)
+        ? String(localized: "Locking \(apps.count) apps...")
+        : String(localized: "Unlocking \(apps.count) apps...")
         showingLockingPopup = true
 
         DispatchQueue.global(qos: .userInitiated).async {
