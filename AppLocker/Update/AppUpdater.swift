@@ -8,132 +8,196 @@
 import Foundation
 import Sparkle
 
+// MARK: - Enums
+
+enum Channel {
+    case stable
+    case beta
+}
+
+enum UpdateDownloadState {
+    case notDownloaded
+    case downloaded
+}
+
+// MARK: - Bridge
+
 protocol AppUpdaterBridgeDelegate: AnyObject {
     func didFindUpdate(_ item: SUAppcastItem)
     func didNotFindUpdate()
 }
 
-class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
+// MARK: - Notification Action
+
+enum UpdateNotificationAction {
+    static let more = "UPDATE_MORE"
+}
+
+// MARK: - UpdaterDelegate (SINGLE INSTANCE, NO SINGLETON)
+
+final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
+
     var betaFeedURL: String?
-    var useBeta: Bool = false
+    var channel: Channel = .stable
+    var downloadState: UpdateDownloadState = .notDownloaded
+
     weak var bridgeDelegate: AppUpdaterBridgeDelegate?
 
-    // feed URL override
+    // Feed URL override
     func feedURLString(for updater: SPUUpdater) -> String? {
-        if useBeta {
-            return betaFeedURL
-        } else {
-            return nil
+        channel == .beta ? betaFeedURL : nil
+    }
+
+    // MARK: Sparkle callbacks
+
+    func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+        DispatchQueue.main.async {
+            self.downloadState = .notDownloaded
+            self.bridgeDelegate?.didFindUpdate(item)
         }
     }
 
-    // Callback khi có update hợp lệ
-    func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
-        bridgeDelegate?.didFindUpdate(item)
+    func updater(_ updater: SPUUpdater, didDownloadUpdate item: SUAppcastItem) {
+        DispatchQueue.main.async {
+            self.downloadState = .downloaded
+        }
     }
 
     func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
-        bridgeDelegate?.didNotFindUpdate()
+        DispatchQueue.main.async {
+            self.bridgeDelegate?.didNotFindUpdate()
+        }
     }
 }
 
-class AppUpdater: NSObject {
-    static let shared = AppUpdater()
-    private var updateTimer: Timer?
+// MARK: - AppUpdater (OWNER OF DELEGATE)
 
-    private let delegate = UpdaterDelegate()
+final class AppUpdater: NSObject {
+
+    static let shared = AppUpdater()
+
+    private var updateTimer: Timer?
+    let delegate: UpdaterDelegate
     let updaterController: SPUStandardUpdaterController
 
     private override init() {
+        let delegate = UpdaterDelegate()
+        self.delegate = delegate
+
         self.updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: delegate,
-            userDriverDelegate: nil // AppDelegate sẽ handle riêng cho manual check
+            userDriverDelegate: nil
         )
+
         super.init()
+        syncChannelFromDefaults()
+        observeUserDefaults()
     }
-    // Cho AppDelegate đăng ký nhận sự kiện
+
+    // MARK: - Bridge
+
     func setBridgeDelegate(_ bridgeDelegate: AppUpdaterBridgeDelegate) {
         delegate.bridgeDelegate = bridgeDelegate
     }
 
-    func startAutoCheck(interval: TimeInterval = 6*60*60) {
+    // MARK: - Channel sync (SOURCE OF TRUTH = UserDefaults)
+
+    private func syncChannelFromDefaults() {
+        let saved = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
+        delegate.channel = (saved == "Beta") ? .beta : .stable
+    }
+
+    private func observeUserDefaults() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(userDefaultsDidChange),
+            name: UserDefaults.didChangeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func userDefaultsDidChange() {
+        syncChannelFromDefaults()
+    }
+
+    // MARK: - Auto check
+
+    func startAutoCheck(interval: TimeInterval = 6 * 60 * 60) {
         updateTimer?.invalidate()
-        DispatchQueue.main.async { [self] in
-            updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [self] _ in
-                let savedChannel = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
-                let useBeta = (savedChannel == "Beta")
-                silentCheckForUpdates(useBeta: useBeta)
-                Logfile.core.info("Run silent check update")
-            }
+        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            self?.silentCheckForUpdates()
         }
         updateTimer?.tolerance = 10
     }
 
     func startTestAutoCheck() {
-        #if DEBUG
-            startAutoCheck(interval: 600)
-        #else
-            startAutoCheck()
-        #endif
+#if DEBUG
+        startAutoCheck(interval: 60)
+#else
+        startAutoCheck()
+#endif
     }
-    // Silent check
-    func silentCheckForUpdates(useBeta: Bool) {
-        delegate.useBeta = useBeta
-        if useBeta {
-            fetchLatestBeta { _ in
+
+    // MARK: - Update checks
+
+    func silentCheckForUpdates() {
+        if delegate.channel == .beta {
+            fetchLatestBeta { [weak self] _ in
                 DispatchQueue.main.async {
-                    self.updaterController.updater.checkForUpdateInformation()
+                    self?.updaterController.updater.checkForUpdateInformation()
                 }
             }
         } else {
             updaterController.updater.checkForUpdateInformation()
         }
     }
-    // Manual check
-    func manualCheckForUpdates(useBeta: Bool) {
-        delegate.useBeta = useBeta
-        if useBeta {
-            fetchLatestBeta { _ in
+
+    func manualCheckForUpdates() {
+        if delegate.channel == .beta {
+            fetchLatestBeta { [weak self] _ in
                 DispatchQueue.main.async {
-                    self.updaterController.checkForUpdates(nil)
+                    self?.updaterController.checkForUpdates(nil)
                 }
             }
         } else {
-            DispatchQueue.main.async {
-                self.updaterController.checkForUpdates(nil)
-            }
+            updaterController.checkForUpdates(nil)
         }
     }
-    // GitHub API để lấy appcast beta
+
+    // MARK: - Beta appcast fetch
+
     private func fetchLatestBeta(completion: @escaping (Bool) -> Void) {
         let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases")!
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else {
-                Logfile.core.error("GitHub API error: \(String(describing: error), privacy: .public)")
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+            guard let data, error == nil else {
                 completion(false)
                 return
             }
 
             do {
                 let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
-                if let latestBeta = releases.first(where: { $0.isPrerelease }),
-                   let appcast = latestBeta.assets.first(where: { $0.name == "appcast.xml" }) {
-                    self.delegate.betaFeedURL = appcast.browserDownloadUrl
+                if let beta = releases.first(where: { $0.isPrerelease }),
+                   let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
+                    self?.delegate.betaFeedURL = appcast.browserDownloadUrl
                     completion(true)
                 } else {
-                    Logfile.core.info("No beta release found")
                     completion(false)
                 }
             } catch {
-                Logfile.core.error("Decode error: \(error, privacy: .public)")
                 completion(false)
             }
         }.resume()
     }
+
+    // MARK: - Exposed state (READ ONLY)
+
+    var currentChannel: Channel { delegate.channel }
+    var downloadState: UpdateDownloadState { delegate.downloadState }
 }
 
 // MARK: - GitHub API Models
+
 struct BetaGitHubRelease: Decodable {
     let isPrerelease: Bool
     let assets: [BetaGitHubAsset]
