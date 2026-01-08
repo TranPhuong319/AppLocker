@@ -21,8 +21,6 @@ struct LockedAppConfig: Codable, Hashable {
 }
 
 extension LockedAppConfig {
-    // EN: Convert to a simple dictionary for XPC transfer.
-    // VI: Chuyển sang dictionary đơn giản để truyền qua XPC.
     func toDict() -> [String: String] {
         return ["bundleID": bundleID, "path": path, "sha256": sha256]
     }
