@@ -6,7 +6,21 @@
 
 # AppLocker
 
+[![CI](https://github.com/TranPhuong319/AppLocker/actions/workflows/main.yml/badge.svg)](https://github.com/TranPhuong319/AppLocker/actions/workflows/main.yml)
+![Version](https://img.shields.io/github/v/release/TranPhuong319/AppLocker)
+[![Download from https://github.com/TranPhuong319/AppLocker/releases](https://img.shields.io/github/v/release/TranPhuong319/AppLocker?include_prereleases&label=alpha)](https://github.com/TranPhuong319/AppLocker/releases)
+![Downloads](https://img.shields.io/github/downloads/TranPhuong319/AppLocker/total)
+![GitHub issues](https://img.shields.io/github/issues/TranPhuong319/AppLocker)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/TranPhuong319/AppLocker)
+![Last Commit](https://img.shields.io/github/last-commit/TranPhuong319/AppLocker)
+
 </div>
+
+## Ngôn ngữ Khả dụng
+
+- [English](/README.md)
+
+- Tiếng Việt
 
 **AppLocker** là công cụ bảo mật cho macOS giúp khóa ứng dụng và yêu cầu xác thực trước khi chạy.
 
