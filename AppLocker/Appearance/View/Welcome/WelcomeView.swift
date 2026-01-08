@@ -24,7 +24,7 @@ struct WelcomeView: View {
                         AppDelegate.shared.restartApp(mode: AppMode(rawValue: selectedMode))
                     }
             } else {
-                Spacer().frame(height: 20)
+                Spacer(minLength: 20)
 
                 if let icon = NSApplication.shared.applicationIconImage {
                     Image(nsImage: icon)
@@ -48,7 +48,6 @@ struct WelcomeView: View {
                         shouldRestart = true
                     }
 
-                    // VI: Sử dụng AppMode.launcher.rawValue thay vì "Launcher"
                     LabelButtonView(label: "Launcher",
                                     symbol: "lock.rectangle.fill") {
                         selectedMode = AppMode.launcher.rawValue
@@ -57,24 +56,24 @@ struct WelcomeView: View {
                 }
                 .padding(.horizontal, 20)
 
-                Spacer().frame(height: 1)
-
-                Text(copyright)
-                    .font(.footnote)
-                    .foregroundColor(.gray)
-                    .padding(.bottom, 30)
+                Spacer() // đẩy nội dung lên trên
             }
         }
-        .frame(width: 350, height: 450)
+        .safeAreaInset(edge: .bottom) {
+            Text(copyright)
+                .font(.footnote)
+                .foregroundColor(.gray)
+                .padding(.bottom, 16)
+        }
+        .frame(minWidth: 350, minHeight: 450)
         .background(Color(NSColor.windowBackgroundColor))
-        .cornerRadius(10)
-        .shadow(radius: 5)
+        .ignoresSafeArea(.container, edges: .top)
     }
 }
 
 // Component cho 1 label có icon nhỏ + text
 struct LabelButtonView: View {
-    let label: String
+    let label: LocalizedStringKey
     let symbol: String
     let action: () -> Void
 

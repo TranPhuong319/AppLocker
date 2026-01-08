@@ -21,11 +21,18 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: contentView)
 
         let window = NSWindow(contentViewController: hostingController)
-        window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+        window.styleMask = [
+            .titled,
+            .closable,
+            .miniaturizable,
+            .fullSizeContentView
+        ]
         window.backingType = .buffered
-        window.title = "Welcome to AppLocker".localized
-        window.titlebarAppearsTransparent = true // Làm thanh tiêu đề trong suốt
+        window.title = String(localized: "Welcome to AppLocker")
         window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.toolbar = nil
+        window.contentView?.wantsLayer = true
 
         // 3. Thiết lập kích thước cố định
         let fixedSize = NSSize(width: 350, height: 450)
