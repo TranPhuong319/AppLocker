@@ -5,8 +5,8 @@
 //  Created by Doe Phương on 5/9/25.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     static let shared = AppState()
@@ -75,8 +75,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
         return apps.filter { app in
             fuzzyMatch(query: query, target: app.name)
-            || fuzzyMatch(query: query, target: app.bundleID)
-            || fuzzyMatch(query: query, target: app.path)
+                || fuzzyMatch(query: query, target: app.bundleID)
+                || fuzzyMatch(query: query, target: app.path)
         }
     }
 
@@ -96,7 +96,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
         let allAppsFromManager: [InstalledApp] = manager.allApps
 
-        let unlockable: [InstalledApp] = allAppsFromManager
+        let unlockable: [InstalledApp] =
+            allAppsFromManager
             .filter { (app: InstalledApp) -> Bool in
 
                 return !manager.lockedApps.keys.contains(app.path)
@@ -122,8 +123,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    let setWidth = 450 // Chiều ngang
-    let setHeight = 470 // chiều cao
+    let setWidth = 450  // Chiều ngang
+    let setHeight = 470  // chiều cao
 
     var appsToUnlock: [String] {
         Array(deleteQueue)
@@ -144,9 +145,10 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             showingDeleteQueue = false
         }
 
-        lockingMessage = locking
-        ? String(localized: "Locking \(apps.count) apps...")
-        : String(localized: "Unlocking \(apps.count) apps...")
+        lockingMessage =
+            locking
+            ? String(localized: "Locking \(apps.count) apps...")
+            : String(localized: "Unlocking \(apps.count) apps...")
         showingLockingPopup = true
 
         DispatchQueue.global(qos: .userInitiated).async {
@@ -187,18 +189,30 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         searchTextLockApps = ""
     }
 
-    func addOthersApp() {
+    func addOthersApp(over window: NSWindow? = nil) {
         let panel = NSOpenPanel()
         panel.delegate = self
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowedContentTypes = [.applicationBundle]
 
-        if panel.runModal() == .OK {
-            let paths = Set(panel.urls.map { $0.path })
-            if !paths.isEmpty {
-                toggleLockPopup(for: paths, locking: true)
+        if let window = window {
+            panel.beginSheetModal(for: window) { response in
+                if response == .OK {
+                    self.processSelectedPaths(panel.urls.map { $0.path })
+                }
             }
+        } else {
+            if panel.runModal() == .OK {
+                processSelectedPaths(panel.urls.map { $0.path })
+            }
+        }
+    }
+
+    private func processSelectedPaths(_ paths: [String]) {
+        let pathsSet = Set(paths)
+        if !pathsSet.isEmpty {
+            toggleLockPopup(for: pathsSet, locking: true)
         }
     }
 

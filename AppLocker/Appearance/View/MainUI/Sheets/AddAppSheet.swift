@@ -95,7 +95,7 @@ struct AddAppSheet: View {
 
                 ToolbarItem(placement: .automatic) {
                     Button("Others…") {
-                        appState.addOthersApp()
+                        appState.addOthersApp(over: NSApp.keyWindow)
                     }
                     .controlSize(.large)
                 }

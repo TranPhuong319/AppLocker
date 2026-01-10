@@ -23,7 +23,7 @@ class TouchBarActionProxy: NSObject {
     }
 
     @objc func addAnotherApp() {
-        AppState.shared.addOthersApp()
+        AppState.shared.addOthersApp(over: NSApp.keyWindow)
     }
 
     @objc func unlockApp() {
