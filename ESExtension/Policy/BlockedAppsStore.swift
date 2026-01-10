@@ -18,7 +18,8 @@ extension ESManager {
             }
 
             if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.es.error("XPC notify (async) error: \(String(describing: error), privacy: .public)")
+                Logfile.es.error(
+                    "XPC notify (async) error: \(String(describing: error), privacy: .public)")
             }) as? ESXPCProtocol {
                 proxy.notifyBlockedExec(name: name, path: path, sha: sha)
                 Logfile.es.log("Notified app (async) about blocked exec: \(path, privacy: .public)")
@@ -26,10 +27,12 @@ extension ESManager {
             }
 
             if let syncProxy = conn.synchronousRemoteObjectProxyWithErrorHandler({ error in
-                Logfile.es.error("XPC notify (sync) error: \(String(describing: error), privacy: .public)")
+                Logfile.es.error(
+                    "XPC notify (sync) error: \(String(describing: error), privacy: .public)")
             }) as? ESXPCProtocol {
                 syncProxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.log("Notified app (sync fallback) about blocked exec: \(path, privacy: .public)")
+                Logfile.es.log(
+                    "Notified app (sync fallback) about blocked exec: \(path, privacy: .public)")
                 return
             }
         }
@@ -46,7 +49,8 @@ extension ESManager {
         var newPathToSha: [String: String] = [:]
 
         for item in apps {
-            guard let dict = item as? [String: Any] ?? item as? NSDictionary as? [String: Any] else { continue }
+            guard let dict = item as? [String: Any] ?? item as? NSDictionary as? [String: Any]
+            else { continue }
 
             if let sha = dict["sha256"] as? String {
                 newShas.insert(sha)

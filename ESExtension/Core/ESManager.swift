@@ -5,12 +5,12 @@
 //  Created by Doe Phương on 29/12/25.
 //
 
-import Foundation
-import EndpointSecurity
-import os
-import Darwin
-import SystemConfiguration
 import Combine
+import Darwin
+import EndpointSecurity
+import Foundation
+import SystemConfiguration
+import os
 
 @objcMembers
 final class ESManager: NSObject {
@@ -28,12 +28,12 @@ final class ESManager: NSObject {
     let stateLock = FastLock()
 
     // Block lists / mappings.
-    var blockedSHAs: Set<String> = []              // Blocked SHA-256 digests.
-    var blockedPathToSHA: [String: String] = [:]   // Path -> SHA cache map.
+    var blockedSHAs: Set<String> = []  // Blocked SHA-256 digests.
+    var blockedPathToSHA: [String: String] = [:]  // Path -> SHA cache map.
 
     // Temporary allow windows.
-    var tempAllowedSHAs: [String: Date] = [:]     // SHA with expiry.
-    let allowWindowSeconds: TimeInterval = 10     // Duration for one-time allow.
+    var tempAllowedSHAs: [String: Date] = [:]  // SHA with expiry.
+    let allowWindowSeconds: TimeInterval = 10  // Duration for one-time allow.
 
     // Allowed PIDs for config access.
     let allowedPIDWindowSeconds: TimeInterval = 5.0
@@ -45,10 +45,10 @@ final class ESManager: NSObject {
     var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
 
     // MARK: - XPC connections / Kết nối XPC
-    let xpcLock = FastLock()                        // Lock for connection list.
-    var listener: NSXPCListener?                    // Mach service listener.
-    var activeConnections: [NSXPCConnection] = []   // Active client connections.
-    var authenticatedConnections: Set<ObjectIdentifier> = [] // Authenticated connections.
+    let xpcLock = FastLock()  // Lock for connection list.
+    var listener: NSXPCListener?  // Mach service listener.
+    var activeConnections: [NSXPCConnection] = []  // Active client connections.
+    var authenticatedConnections: Set<ObjectIdentifier> = []  // Authenticated connections.
 
     // Check if current connection is authenticated
     func isCurrentConnectionAuthenticated() -> Bool {
@@ -57,8 +57,11 @@ final class ESManager: NSObject {
     }
 
     // Background queue for heavy I/O and hashing (not for locking state).
-    let bgQueue = DispatchQueue(label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg", qos: .utility, attributes: .concurrent)
-    let allowedPIDsQueue = DispatchQueue(label: "com.TranPhuong319.AppLocker.allowedPIDs", attributes: .concurrent)
+    let bgQueue = DispatchQueue(
+        label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg", qos: .utility,
+        attributes: .concurrent)
+    let allowedPIDsQueue = DispatchQueue(
+        label: "com.TranPhuong319.AppLocker.allowedPIDs", attributes: .concurrent)
     var _allowedPIDs: [pid_t: Date] = [:]
 
     // Dùng accessor để truy xuất thread-safe
@@ -71,13 +74,14 @@ final class ESManager: NSObject {
         super.init()
         // Ensure "Shared" keychain access
         if #available(macOS 12.0, *) {
-             // Just logging for verification
-             Logfile.es.log("ESManager initialized. Ready for XPC.")
+            // Just logging for verification
+            Logfile.es.log("ESManager initialized. Ready for XPC.")
         }
         do {
             try ESManager.start(clientOwner: self)
         } catch {
-            Logfile.es.error("ESManager failed start: \(error.localizedDescription, privacy: .public)")
+            Logfile.es.error(
+                "ESManager failed start: \(error.localizedDescription, privacy: .public)")
         }
     }
 

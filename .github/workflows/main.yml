@@ -11,7 +11,8 @@ jobs:
     runs-on: macos-26
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -117,9 +118,9 @@ jobs:
     - name: Create Disk Image
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
-        XCBUILD_PATH="build/AppLocker.xcarchive/Products/Applications/AppLocker.app"
+        XCBUILD_PATH="build/AppLocker.xcarchive/Products/Applications"
         cp LICENSE $XCBUILD_PATH
-        cd $XCBUILD_PATH        
+        cd $XCBUILD_PATH
         curl -sLO https://openintelwireless.github.io/HeliPort/dmg/dmg-background.tiff
         create-dmg \
           --volname "AppLocker" \
@@ -176,16 +177,12 @@ jobs:
     - name: Generate Sparkle Appcast
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
-        APPCAST_VER="${GITHUB_RUN_NUMBER}"
+        SHORTSTRING="${VER}"
         if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
           # push → pre-release alpha
-          VERSION_TYPE="alpha"
-          SHORTSTRING="${VER}-beta" 
           DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/download/${REL_TAG}/AppLocker.dmg"
         else
           # workflow_dispatch → stable
-          VERSION_TYPE="stable"
-          SHORTSTRING="${VER}"
           DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg"
         fi
       

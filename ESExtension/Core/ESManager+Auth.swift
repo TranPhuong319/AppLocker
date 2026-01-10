@@ -71,9 +71,9 @@ extension ESManager: ESAppProtocol {
 
         // 2b. Export Server Public Key
         guard let serverPubKeyData = KeychainHelper.shared.exportPublicKey(tag: serverTag) else {
-             Logfile.es.error("Auth: Failed to export server public key.")
-             reply(nil, nil, nil, false)
-             return
+            Logfile.es.error("Auth: Failed to export server public key.")
+            reply(nil, nil, nil, false)
+            return
         }
 
         // 3. Mark as Authenticated

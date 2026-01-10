@@ -5,14 +5,15 @@
 //  Created by Doe Phương on 2/1/26.
 //
 
-import Foundation
 import EndpointSecurity
+import Foundation
 import os
 
 extension ESManager {
     static func handleAuthExec(
         client: OpaquePointer,
-        message: UnsafePointer<es_message_t>) {
+        message: UnsafePointer<es_message_t>
+    ) {
         let msg = message.pointee
 
         guard let path = safePath(fromFilePointer: msg.event.exec.target.pointee.executable) else {
@@ -36,7 +37,8 @@ extension ESManager {
         func sendNotifications(sha: String, decision: ExecDecision) {
             if decision == .deny {
                 DispatchQueue.global(qos: .userInteractive).async {
-                    TTYNotifier.notify(parentPid: parentPid, blockedPath: path, sha: sha, identifier: signingID)
+                    TTYNotifier.notify(
+                        parentPid: parentPid, blockedPath: path, sha: sha, identifier: signingID)
                 }
                 DispatchQueue.global(qos: .utility).async {
                     let name = mgr.computeAppName(forExecPath: path)
@@ -67,7 +69,9 @@ extension ESManager {
 
             if decision == .deny {
                 Logfile.es.log("Denied by FastPath (Cache/Map): \(path, privacy: .public)")
-                let shaForNotify = mgr.stateLock.sync { mgr.blockedPathToSHA[path] ?? "Cached-No-SHA" }
+                let shaForNotify = mgr.stateLock.sync {
+                    mgr.blockedPathToSHA[path] ?? "Cached-No-SHA"
+                }
                 sendNotifications(sha: shaForNotify, decision: .deny)
             }
             return

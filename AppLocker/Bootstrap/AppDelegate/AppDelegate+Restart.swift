@@ -51,7 +51,8 @@ extension AppDelegate {
 
         do {
             if fileManager.fileExists(atPath: ConfigStore.shared.configURL.path()) {
-                try fileManager.removeItem(at: ConfigStore.shared.configURL)
+                try fileManager.removeItem(
+                    at: ConfigStore.shared.configURL.deletingLastPathComponent())
                 Logfile.core.info("The configuration folder has been successfully deleted.")
 
                 let domain = Bundle.main.bundleIdentifier!

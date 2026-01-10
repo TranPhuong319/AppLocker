@@ -20,7 +20,8 @@ final class ESXPCClient {
 
     private init() {
         // tiny delay to avoid race but keep it short
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) {
+            [weak self] in
             self?.connect()
         }
     }
@@ -70,12 +71,15 @@ final class ESXPCClient {
                         }
                     }
 
-                    if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
-                       let primary = langs.first {
+                    if let langs = UserDefaults.standard.array(forKey: "AppleLanguages")
+                        as? [String],
+                        let primary = langs.first
+                    {
                         self.updateLanguage(primary)
                     }
                 } else {
-                    Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                    Logfile.core.error(
+                        "[ESXPCClient] Authentication failed. Invalidating connection.")
                     conn.invalidate()
                     // Reconnect logic will trigger via invalidationHandler
                 }
@@ -115,16 +119,22 @@ final class ESXPCClient {
         }
 
         // 3. Send to Server
-        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-             Logfile.core.error("[ESXPCClient] Auth XPC error: \(error.localizedDescription)")
-             completion(false)
-        }) as? ESAppProtocol else {
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error("[ESXPCClient] Auth XPC error: \(error.localizedDescription)")
+                completion(false)
+            }) as? ESAppProtocol
+        else {
             completion(false)
             return
         }
 
-        proxy.authenticate(clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData) { serverNonce, serverSig, serverPubKey, success in
-            guard success, let serverNonce = serverNonce, let serverSig = serverSig, let serverPubKey = serverPubKey else {
+        proxy.authenticate(
+            clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData
+        ) { serverNonce, serverSig, serverPubKey, success in
+            guard success, let serverNonce = serverNonce, let serverSig = serverSig,
+                let serverPubKey = serverPubKey
+            else {
                 Logfile.core.error("[ESXPCClient] Server rejected auth or invalid response")
                 completion(false)
                 return
@@ -136,12 +146,14 @@ final class ESXPCClient {
 
             // Import Server Key
             guard let serverKey = KeychainHelper.shared.createPublicKey(from: serverPubKey) else {
-                 Logfile.core.error("[ESXPCClient] Failed to import server public key.")
-                 completion(false)
-                 return
+                Logfile.core.error("[ESXPCClient] Failed to import server public key.")
+                completion(false)
+                return
             }
 
-            if KeychainHelper.shared.verify(signature: serverSig, originalData: combined, publicKey: serverKey) {
+            if KeychainHelper.shared.verify(
+                signature: serverSig, originalData: combined, publicKey: serverKey)
+            {
                 completion(true)
             } else {
                 Logfile.core.error("[ESXPCClient] Server signature verification failed!")
@@ -162,13 +174,16 @@ final class ESXPCClient {
 
         let delay: Double
         if immediate {
-            delay = 0.05 // try quickly
+            delay = 0.05  // try quickly
         } else {
-            delay = min(0.5 * Double(retryCount), 1.0) // gentle backoff but small cap
+            delay = min(0.5 * Double(retryCount), 1.0)  // gentle backoff but small cap
         }
 
-        Logfile.core.log("[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))")
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) { [weak self] in
+        Logfile.core.log(
+            "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
+        )
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+            [weak self] in
             self?.connect()
         }
     }
@@ -182,9 +197,12 @@ final class ESXPCClient {
             return
         }
 
-        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("updateBlockedApps failed: \(String(describing: error), privacy: .public)")
-        }) as? ESAppProtocol else {
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error(
+                    "updateBlockedApps failed: \(String(describing: error), privacy: .public)")
+            }) as? ESAppProtocol
+        else {
             Logfile.core.error("[ESXPCClient] No valid proxy to send update")
             return
         }
@@ -213,10 +231,13 @@ final class ESXPCClient {
             return
         }
 
-        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("allowSHAOnce failed: \(String(describing: error), privacy: .public)")
-            completion(false)
-        }) as? ESAppProtocol else {
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error(
+                    "allowSHAOnce failed: \(String(describing: error), privacy: .public)")
+                completion(false)
+            }) as? ESAppProtocol
+        else {
             completion(false)
             return
         }
@@ -232,9 +253,12 @@ final class ESXPCClient {
             return
         }
 
-        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("updateLanguage failed: \(String(describing: error), privacy: .public)")
-        }) as? ESAppProtocol else {
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error(
+                    "updateLanguage failed: \(String(describing: error), privacy: .public)")
+            }) as? ESAppProtocol
+        else {
             Logfile.core.error("[ESXPCClient] No valid proxy to send language update")
             return
         }
@@ -253,17 +277,21 @@ final class ESXPCClient {
             return
         }
 
-        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("allowConfigAccess failed: \(String(describing: error), privacy: .public)")
-            completion(false)
-        }) as? ESAppProtocol else {
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error(
+                    "allowConfigAccess failed: \(String(describing: error), privacy: .public)")
+                completion(false)
+            }) as? ESAppProtocol
+        else {
             Logfile.core.error("[ESXPCClient] No valid proxy to send allowConfigAccess")
             completion(false)
             return
         }
 
         proxy.allowConfigAccess(pid) { success in
-            Logfile.core.log("allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(pid)")
+            Logfile.core.log(
+                "allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(pid)")
             completion(success)
         }
     }

@@ -5,10 +5,10 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
+import AppKit
+import Combine
 import Foundation
 import os
-import Combine
-import AppKit
 
 final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     static let shared = XPCServer()
