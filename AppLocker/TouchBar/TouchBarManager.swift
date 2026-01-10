@@ -12,55 +12,23 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     static let shared = TouchBarManager()
     var appState = AppState.shared
     private var cancellables = Set<AnyCancellable>()
-    private var deleteQueueButton: NSButton?
 
     private var items: [NSTouchBarItem.Identifier: () -> NSView] = [:]
 
     override init() {
         super.init()
-        appState.$deleteQueue
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.refreshDeleteQueueButton()
-            }
-            .store(in: &cancellables)
-
-        appState.$selectedToLock
-            .combineLatest(appState.$isLocking)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _, _ in
-                self?.refreshLockButton()
-            }
-            .store(in: &cancellables)
 
         appState.$activeTouchBar
             .receive(on: RunLoop.main)
             .sink { [weak self] type in
-                self?.apply(to: NSApp.keyWindow, type: type)
+                guard let self = self else { return }
+                // Áp dụng cho tất cả các window đang hiển thị để đảm bảo không bị sót
+                let windows = NSApp.windows.filter { $0.isVisible }
+                for window in windows {
+                    self.apply(to: window, type: type)
+                }
             }
             .store(in: &cancellables)
-    }
-
-    private func refreshDeleteQueueButton() {
-        guard let button = self.deleteQueueButton else { return }
-        button.isHidden = self.appState.deleteQueue.isEmpty
-        button.title = String(
-            localized: "Waiting to unlock \(appState.deleteQueue.count) application(s)..."
-        )
-    }
-
-    private func refreshLockButton() {
-        guard let window = NSApp.keyWindow,
-            let touchBar = window.touchBar,
-            let item = touchBar.item(forIdentifier: .centerButtonsLock) as? NSCustomTouchBarItem,
-            let stack = item.view as? NSStackView
-        else { return }
-
-        // tìm nút lock theo tag
-        if let lockButton = stack.subviews.first(where: { $0.tag == 100 }) as? NSButton {
-            lockButton.title = String(localized: "Lock (\(appState.selectedToLock.count))")
-            lockButton.isEnabled = !appState.selectedToLock.isEmpty && !appState.isLocking
-        }
     }
 
     func touchBar(
@@ -143,14 +111,13 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         registerOrUpdateItem(id: .centerButtonsLock) { [weak self] in
             guard let self = self else { return NSView() }
 
-            let lockButton = NSButton(
-                title: String(localized: "Lock (\(appState.selectedToLock.count))"),
+            let lockButton = LockTouchBarButton(
+                title: "",
                 target: TouchBarActionProxy.shared,
                 action: #selector(TouchBarActionProxy.shared.lockApp)
             )
             lockButton.bezelStyle = .rounded
             lockButton.keyEquivalent = "\r"
-            lockButton.isEnabled = !self.appState.selectedToLock.isEmpty && !self.appState.isLocking
             lockButton.tag = 100
 
             let closeButton = NSButton(
@@ -222,10 +189,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     // MARK: - UI Component Factories
     private func createDeleteQueueProminentButton() -> NSView {
         let container = NSView()
-        let button = NSButton(
-            title: String(
-                localized: "Waiting to unlock \(appState.deleteQueue.count) application(s)..."
-            ),
+        let button = DeleteQueueTouchBarButton(
+            title: "",
             target: TouchBarActionProxy.shared,
             action: #selector(TouchBarActionProxy.shared.showDeleteQueuePopup)
         )
@@ -246,9 +211,60 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             button.heightAnchor.constraint(equalToConstant: 30),
         ])
 
-        self.deleteQueueButton = button
-        button.isHidden = self.appState.deleteQueue.isEmpty
         return container
+    }
+}
+
+// MARK: - Self-Updating TouchBar Components
+
+class DeleteQueueTouchBarButton: NSButton {
+    private var cancellables = Set<AnyCancellable>()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupObservation()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupObservation()
+    }
+
+    private func setupObservation() {
+        AppState.shared.$deleteQueue
+            .receive(on: RunLoop.main)
+            .sink { [weak self] queue in
+                self?.isHidden = queue.isEmpty
+                self?.title = String(
+                    localized: "Waiting to unlock \(queue.count) application(s)..."
+                )
+            }
+            .store(in: &cancellables)
+    }
+}
+
+class LockTouchBarButton: NSButton {
+    private var cancellables = Set<AnyCancellable>()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupObservation()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupObservation()
+    }
+
+    private func setupObservation() {
+        AppState.shared.$selectedToLock
+            .combineLatest(AppState.shared.$isLocking)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] selected, isLocking in
+                self?.title = String(localized: "Lock (\(selected.count))")
+                self?.isEnabled = !selected.isEmpty && !isLocking
+            }
+            .store(in: &cancellables)
     }
 }
 

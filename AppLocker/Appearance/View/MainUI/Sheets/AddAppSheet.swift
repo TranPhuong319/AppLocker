@@ -26,10 +26,11 @@ struct AddAppSheet: View {
                         .padding(.leading, 4)
 
                     TextField(
-                        "Search apps...", text: $appState.searchTextUnlockaleApps)
-                        .textFieldStyle(.plain)
-                        .focused($isSearchFocused)
-                        .onSubmit { unfocus() }
+                        "Search apps...", text: $appState.searchTextUnlockaleApps
+                    )
+                    .textFieldStyle(.plain)
+                    .focused($isSearchFocused)
+                    .onSubmit { unfocus() }
                 }
                 .padding(7)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
@@ -53,7 +54,9 @@ struct AddAppSheet: View {
                             }
                         }
 
-                        let systemApps = appState.filteredUnlockableApps.filter { $0.source == .system }
+                        let systemApps = appState.filteredUnlockableApps.filter {
+                            $0.source == .system
+                        }
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications")
                                 .padding(.top, 10)
@@ -106,18 +109,15 @@ struct AddAppSheet: View {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 NSApp.keyWindow?.makeFirstResponder(nil)
-
-                let tb = TouchBarManager.shared.makeTouchBar(for: .addAppPopup)
-                NSApp.keyWindow?.touchBar = tb
+                appState.activeTouchBar = .addAppPopup
             }
         }
 
         .onDisappear {
-            DispatchQueue.main.async {
+            // Thêm độ trễ nhỏ để đảm bảo window chính đã trở thành key trước khi apply lại Touch Bar
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 appState.searchTextUnlockaleApps = ""
-                if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
-                    TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
-                }
+                appState.activeTouchBar = .mainWindow
             }
         }
     }

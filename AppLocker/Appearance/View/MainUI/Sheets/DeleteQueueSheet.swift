@@ -19,7 +19,9 @@ struct DeleteQueueSheet: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
-                    let appsInQueue = appState.lockedAppObjects.filter { appState.deleteQueue.contains($0.path) }
+                    let appsInQueue = appState.lockedAppObjects.filter {
+                        appState.deleteQueue.contains($0.path)
+                    }
 
                     let userApps = appsInQueue.filter { $0.source == .user }
                     if !userApps.isEmpty {
@@ -65,15 +67,12 @@ struct DeleteQueueSheet: View {
         .frame(minWidth: 350, minHeight: 370)
         .onAppear {
             DispatchQueue.main.async {
-                let touchBar = TouchBarManager.shared.makeTouchBar(for: .deleteQueuePopup)
-                NSApp.keyWindow?.touchBar = touchBar
+                appState.activeTouchBar = .deleteQueuePopup
             }
         }
         .onDisappear {
-            DispatchQueue.main.async {
-                if let mainWindow = NSApp.windows.first(where: { $0.isVisible && !$0.isSheet }) {
-                    TouchBarManager.shared.apply(to: mainWindow, type: .mainWindow)
-                }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                appState.activeTouchBar = .mainWindow
                 appState.searchTextLockApps = ""
             }
         }

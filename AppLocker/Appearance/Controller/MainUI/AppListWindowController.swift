@@ -9,11 +9,8 @@ import AppKit
 import SwiftUI
 
 class TouchBarHostingController<Content: View>: NSHostingController<Content> {
-    var touchBarType: AppState.TouchBarType?
-
     override func makeTouchBar() -> NSTouchBar? {
-        guard let type = touchBarType else { return nil }
-        return TouchBarManager.shared.makeTouchBar(for: type)
+        return TouchBarManager.shared.makeTouchBar(for: AppState.shared.activeTouchBar)
     }
 }
 
@@ -66,7 +63,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
 
     private static func createHostingController() -> TouchBarHostingController<ContentView> {
         let hostingController = TouchBarHostingController(rootView: ContentView())
-        hostingController.touchBarType = .mainWindow
 
         let size = NSSize(width: AppState.shared.setWidth, height: AppState.shared.setHeight)
         hostingController.view.setFrameSize(size)
