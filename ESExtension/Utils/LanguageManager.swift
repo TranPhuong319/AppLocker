@@ -11,6 +11,10 @@ import os
 extension ESManager {
     // Force the extension process to use a specific language.
     @objc func updateLanguage(to code: String) {
+        guard isCurrentConnectionAuthenticated() else {
+            Logfile.es.error("Unauthorized call to updateLanguage")
+            return
+        }
         stateLock.perform {
             self.currentLanguage = code
             UserDefaults.standard.set([code], forKey: "AppleLanguages")

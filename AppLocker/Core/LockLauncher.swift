@@ -329,7 +329,7 @@ class LockLauncher: LockManagerProtocol {
         ])
     }
 
-    // helper to send work to privileged helper via XPC (unchanged)
+    // helper to send work to privileged helper via XPC (authenticated)
     func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
         let conn = NSXPCConnection(
             machServiceName: "com.TranPhuong319.AppLocker.Helper",
@@ -347,15 +347,69 @@ class LockLauncher: LockManagerProtocol {
             semaphore.signal()
         } as? AppLockerHelperProtocol
 
-        proxy?.sendBatch(commandList) { success, message in
-            if success {
-                Logfile.core.info("Success: \(message, privacy: .public)")
-            } else {
-                Logfile.core.error("Failure: \(message, privacy: .public)")
+        // ---------------------------------------------------------
+        // AUTH Handshake before sending commands
+        // ---------------------------------------------------------
+        func doAuth(completion: @escaping (Bool) -> Void) {
+            let appTag = KeychainHelper.Keys.appPublic
+
+            // 1. Ensure Client Keys
+            if !KeychainHelper.shared.hasKey(tag: appTag) {
+                 try? KeychainHelper.shared.generateKeys(tag: appTag)
             }
-            result = success
-            semaphore.signal()
+
+            // 2. Prepare Auth Data
+            let clientNonce = Data.random(count: 32)
+            guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appTag),
+                  let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: appTag) else {
+                Logfile.core.error("Helper Auth: Failed to sign/export client data")
+                completion(false)
+                return
+            }
+
+            proxy?.authenticate(clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData) { serverNonce, serverSig, serverPubKey, success in
+                 guard success, let sNonce = serverNonce, let sSig = serverSig, let sKeyData = serverPubKey else {
+                     Logfile.core.error("Helper Auth: Server rejected or invalid response")
+                     completion(false)
+                     return
+                 }
+
+                 // 3. Verify Server
+                 let combined = clientNonce + sNonce
+                 guard let serverKey = KeychainHelper.shared.createPublicKey(from: sKeyData) else {
+                     Logfile.core.error("Helper Auth: Failed to import server key")
+                     completion(false)
+                     return
+                 }
+
+                 if KeychainHelper.shared.verify(signature: sSig, originalData: combined, publicKey: serverKey) {
+                     Logfile.core.info("Helper Auth: Success")
+                     completion(true)
+                 } else {
+                     Logfile.core.error("Helper Auth: Server signature verification failed")
+                     completion(false)
+                 }
+            }
         }
+
+        // Execute Auth then Batch
+        doAuth { authSuccess in
+            if authSuccess {
+                proxy?.sendBatch(commandList) { success, message in
+                    if success {
+                        Logfile.core.info("Success: \(message, privacy: .public)")
+                    } else {
+                        Logfile.core.error("Failure: \(message, privacy: .public)")
+                    }
+                    result = success
+                    semaphore.signal()
+                }
+            } else {
+                result = false
+                semaphore.signal()
+            }
+        }
+
         semaphore.wait()
         conn.invalidate()
         return result

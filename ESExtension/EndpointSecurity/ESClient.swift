@@ -42,12 +42,13 @@ extension ESManager {
         }
 
         ESManager.sharedInstanceForCallbacks = clientOwner
-        
+
         clientOwner.setupMachListener()
         clientOwner.scheduleTempCleanup()
 
         let events: [es_event_type_t] = [
-            ES_EVENT_TYPE_AUTH_EXEC,
+            ES_EVENT_TYPE_AUTH_EXEC
+//            ES_EVENT_TYPE_AUTH_OPEN,
         ]
 
         let sub = es_subscribe(client, events, UInt32(events.count))

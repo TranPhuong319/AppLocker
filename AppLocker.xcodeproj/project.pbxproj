@@ -12,6 +12,10 @@
 		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E090EB522F11E947002EF366 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E090EB512F11E947002EF366 /* KeychainAccess */; };
+		E090EB542F11E97B002EF366 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E090EB532F11E97B002EF366 /* KeychainAccess */; };
+		E090EB582F120B54002EF366 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E090EB572F120B54002EF366 /* KeychainAccess */; };
+		E090EB5B2F120B5F002EF366 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E090EB5A2F120B5F002EF366 /* KeychainAccess */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 		E0EA0E7E2F012CA10039033D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0EA0E7D2F012CA10039033D /* Sparkle */; };
@@ -148,6 +152,13 @@
 			);
 			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
 		};
+		E090EB5D2F120B83002EF366 /* Exceptions for "Extensions" folder in "AppLockerHelper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Log.swift,
+			);
+			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
+		};
 		E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -187,6 +198,7 @@
 		E01ADC7E2E7D936700BE719D /* Extensions */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				E090EB5D2F120B83002EF366 /* Exceptions for "Extensions" folder in "AppLockerHelper" target */,
 				E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */,
 			);
 			path = Extensions;
@@ -246,6 +258,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E090EB522F11E947002EF366 /* KeychainAccess in Frameworks */,
 				E0EA0E7E2F012CA10039033D /* Sparkle in Frameworks */,
 				E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */,
 				E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */,
@@ -258,6 +271,15 @@
 			files = (
 				E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */,
 				E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */,
+				E090EB542F11E97B002EF366 /* KeychainAccess in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E090EB592F120B59002EF366 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E090EB5B2F120B5F002EF366 /* KeychainAccess in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,6 +287,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E090EB582F120B54002EF366 /* KeychainAccess in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +350,7 @@
 			);
 			name = ESExtension;
 			packageProductDependencies = (
+				E090EB532F11E97B002EF366 /* KeychainAccess */,
 			);
 			productName = AppLockerEndpointSecurity;
 			productReference = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */;
@@ -338,6 +362,7 @@
 			buildPhases = (
 				E07075922E38BA97001C7950 /* Sources */,
 				E07075942E38BA97001C7950 /* Resources */,
+				E090EB592F120B59002EF366 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -350,6 +375,7 @@
 			);
 			name = Launcher;
 			packageProductDependencies = (
+				E090EB5A2F120B5F002EF366 /* KeychainAccess */,
 			);
 			productName = Launcher;
 			productReference = E07075962E38BA97001C7950 /* Launcher.app */;
@@ -372,6 +398,7 @@
 			);
 			name = AppLockerHelper;
 			packageProductDependencies = (
+				E090EB572F120B54002EF366 /* KeychainAccess */,
 			);
 			productName = AppLockerHelper;
 			productReference = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */;
@@ -405,6 +432,7 @@
 				E0DC1DD82E5DBADF002B454C /* Sparkle */,
 				E04FC7982E5DBE570016518D /* Sparkle */,
 				E0EA0E7D2F012CA10039033D /* Sparkle */,
+				E090EB512F11E947002EF366 /* KeychainAccess */,
 			);
 			productName = AppLocker;
 			productReference = E0EF51AA2E31558900161CAB /* AppLocker.app */;
@@ -446,6 +474,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E0EA0E7C2F012CA00039033D /* XCRemoteSwiftPackageReference "Sparkle" */,
+				E090EB502F11E947002EF366 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0EF51AB2E31558900161CAB /* Products */;
@@ -1037,6 +1066,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		E090EB502F11E947002EF366 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		E0EA0E7C2F012CA00039033D /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/TranPhuong319/Sparkle.git";
@@ -1051,6 +1088,26 @@
 		E04FC7982E5DBE570016518D /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Sparkle;
+		};
+		E090EB512F11E947002EF366 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E090EB502F11E947002EF366 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+		E090EB532F11E97B002EF366 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E090EB502F11E947002EF366 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+		E090EB572F120B54002EF366 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E090EB502F11E947002EF366 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+		E090EB5A2F120B5F002EF366 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E090EB502F11E947002EF366 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
 		};
 		E0DC1DD82E5DBADF002B454C /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;

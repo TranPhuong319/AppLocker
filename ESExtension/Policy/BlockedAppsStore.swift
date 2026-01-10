@@ -37,6 +37,11 @@ extension ESManager {
 
     // Replace blocked app data with new mapping from the host app.
     @objc func updateBlockedApps(_ apps: NSArray) {
+        guard isCurrentConnectionAuthenticated() else {
+            Logfile.es.error("Unauthorized call to updateBlockedApps")
+            return
+        }
+
         var newShas = Set<String>()
         var newPathToSha: [String: String] = [:]
 

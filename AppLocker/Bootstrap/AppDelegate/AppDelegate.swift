@@ -63,8 +63,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 
     func applicationExactlyOneInstance() {
-        // EN: macOS typically enforces single instance via NSApplication.
-        // VI: macOS thường đảm bảo một instance qua NSApplication.
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
         if apps.count > 1 {
             NSApp.terminate(nil)

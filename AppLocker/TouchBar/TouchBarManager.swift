@@ -32,6 +32,13 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
                 self?.refreshLockButton()
             }
             .store(in: &cancellables)
+
+        appState.$activeTouchBar
+            .receive(on: RunLoop.main)
+            .sink { [weak self] type in
+                self?.apply(to: NSApp.keyWindow, type: type)
+            }
+            .store(in: &cancellables)
     }
 
     private func refreshDeleteQueueButton() {
@@ -44,9 +51,10 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
     private func refreshLockButton() {
         guard let window = NSApp.keyWindow,
-              let touchBar = window.touchBar,
-              let item = touchBar.item(forIdentifier: .centerButtonsLock) as? NSCustomTouchBarItem,
-              let stack = item.view as? NSStackView else { return }
+            let touchBar = window.touchBar,
+            let item = touchBar.item(forIdentifier: .centerButtonsLock) as? NSCustomTouchBarItem,
+            let stack = item.view as? NSStackView
+        else { return }
 
         // tìm nút lock theo tag
         if let lockButton = stack.subviews.first(where: { $0.tag == 100 }) as? NSButton {
@@ -55,8 +63,10 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         }
     }
 
-    func touchBar(_ touchBar: NSTouchBar,
-                  makeItemForIdentifier identifier: NSTouchBarItem.Identifier) -> NSTouchBarItem? {
+    func touchBar(
+        _ touchBar: NSTouchBar,
+        makeItemForIdentifier identifier: NSTouchBarItem.Identifier
+    ) -> NSTouchBarItem? {
         guard let viewBuilder = items[identifier] else { return nil }
         let item = NSCustomTouchBarItem(identifier: identifier)
         item.view = viewBuilder()
@@ -124,9 +134,10 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
     private func configureAddAppPopupTouchBar(_ touchBar: NSTouchBar) {
         registerOrUpdateItem(id: .addAppOther) {
-            NSButton(title: String(localized: "Others…"),
-                     target: TouchBarActionProxy.shared,
-                     action: #selector(TouchBarActionProxy.shared.addAnotherApp))
+            NSButton(
+                title: String(localized: "Others…"),
+                target: TouchBarActionProxy.shared,
+                action: #selector(TouchBarActionProxy.shared.addAnotherApp))
         }
 
         registerOrUpdateItem(id: .centerButtonsLock) { [weak self] in
@@ -166,23 +177,25 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             .addAppOther,
             .flexibleSpace,
             .centerButtonsLock,
-            .flexibleSpace
+            .flexibleSpace,
         ]
     }
 
     private func configureDeleteQueuePopupTouchBar(_ touchBar: NSTouchBar) {
         registerOrUpdateItem(id: .deleteQueueButtons) {
-            let unlockButton = NSButton(title: String(localized: "Unlock"),
-                                        target: TouchBarActionProxy.shared,
-                                        action: #selector(TouchBarActionProxy.shared.unlockApp))
+            let unlockButton = NSButton(
+                title: String(localized: "Unlock"),
+                target: TouchBarActionProxy.shared,
+                action: #selector(TouchBarActionProxy.shared.unlockApp))
             unlockButton.isBordered = true
             unlockButton.bezelStyle = .rounded
             unlockButton.keyEquivalent = "\r"
 
-            let clearButton = NSButton(title:
-                                        String(localized: "Delete all from the waiting list"),
-                                       target: TouchBarActionProxy.shared,
-                                       action: #selector(TouchBarActionProxy.shared.clearWaitingList))
+            let clearButton = NSButton(
+                title:
+                    String(localized: "Delete all from the waiting list"),
+                target: TouchBarActionProxy.shared,
+                action: #selector(TouchBarActionProxy.shared.clearWaitingList))
             clearButton.isBordered = true
             clearButton.bezelStyle = .rounded
 
@@ -202,7 +215,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         touchBar.defaultItemIdentifiers = [
             .flexibleSpace,
             .deleteQueueButtons,
-            .flexibleSpace
+            .flexibleSpace,
         ]
     }
 
@@ -230,13 +243,14 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             button.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             button.topAnchor.constraint(equalTo: container.topAnchor),
             button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            button.heightAnchor.constraint(equalToConstant: 30)
+            button.heightAnchor.constraint(equalToConstant: 30),
         ])
 
         self.deleteQueueButton = button
         button.isHidden = self.appState.deleteQueue.isEmpty
         return container
-    }}
+    }
+}
 
 extension NSTouchBarItem.Identifier {
     static let addAppOther = NSTouchBarItem.Identifier(

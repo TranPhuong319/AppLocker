@@ -51,6 +51,11 @@ extension ESManager {
     }
 
     @objc func allowSHAOnce(_ sha: String, withReply reply: @escaping (Bool) -> Void) {
+        guard isCurrentConnectionAuthenticated() else {
+            Logfile.es.error("Unauthorized call to allowSHAOnce")
+            reply(false)
+            return
+        }
         allowTempSHA(sha)
         reply(true)
     }

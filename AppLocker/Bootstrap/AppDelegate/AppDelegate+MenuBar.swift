@@ -101,8 +101,6 @@ extension AppDelegate: NSMenuDelegate {
                                    keyEquivalent: "")
         resetItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)
 
-        // EN: Alternate item (Option+Shift) to replace Uninstall.
-        // VI: Mục thay thế (Option+Shift) để thay thế Uninstall.
         resetItem.keyEquivalentModifierMask = NSEvent.ModifierFlags([.option, .shift])
         resetItem.isAlternate = true
 

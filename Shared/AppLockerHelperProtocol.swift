@@ -12,4 +12,11 @@ public protocol AppLockerHelperProtocol {
     @objc func sendBatch(_ commands: [[String: Any]], withReply reply: @escaping (Bool, String) -> Void)
 
     @objc func uninstallHelper(withReply reply: @escaping (Bool, String) -> Void)
+
+    @objc func authenticate(
+        clientNonce: Data,
+        clientSig: Data,
+        clientPublicKey: Data,
+        withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void
+    )
 }

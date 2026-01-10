@@ -11,11 +11,151 @@ import ServiceManagement
 
 class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol {
 
+    // MARK: - Auth State
+    private static var authenticatedConnections: Set<ObjectIdentifier> = []
+    private static let authLock = NSLock()
+
+    private func isCurrentConnectionAuthenticated() -> Bool {
+        guard let conn = NSXPCConnection.current() else { return false }
+        var isAuthenticated = false
+        AppLockerHelper.authLock.lock()
+        isAuthenticated = AppLockerHelper.authenticatedConnections.contains(ObjectIdentifier(conn))
+        AppLockerHelper.authLock.unlock()
+        return isAuthenticated
+    }
+
+    // MARK: - Bundle ID Check (Ad-hoc Relaxed)
+    private func verifyConnectionDetails() -> Bool {
+        guard let conn = NSXPCConnection.current() else { return false }
+
+        // Fallback: Use processIdentifier (PID) to get SecCode.
+        // Note: PID is less secure than Audit Token (PID reuse), but acceptable here for Ad-hoc relaxed check.
+
+        let msg = "Connection request from pid: \(conn.processIdentifier)"
+        os_log("%{public}@", log: .default, type: .debug, msg)
+
+        var secCode: SecCode?
+        let pid = conn.processIdentifier
+        let dict: [String: Any] = [kSecGuestAttributePid as String: Int(pid)]
+
+        let status = SecCodeCopyGuestWithAttributes(nil, dict as CFDictionary, [], &secCode)
+
+        guard status == errSecSuccess, let code = secCode else {
+            os_log("Failed to get SecCode from PID", log: .default, type: .error)
+            return false
+        }
+
+        // Convert SecCode -> SecStaticCode
+        var staticCode: SecStaticCode?
+        let staticStatus = SecCodeCopyStaticCode(code, [], &staticCode)
+        guard staticStatus == errSecSuccess, let statCode = staticCode else {
+            os_log("Failed to get Static Code from SecCode", log: .default, type: .error)
+            return false
+        }
+
+        // Get Info Dictionary to check Bundle ID
+        var info: CFDictionary?
+        // We use kSecCodeInfoSigningInformation to verify headers
+        let infoStatus = SecCodeCopySigningInformation(statCode, [], &info)
+        guard infoStatus == errSecSuccess, let infoDict = info as? [String: Any] else {
+             os_log("Failed to get signing info", log: .default, type: .error)
+             return false
+        }
+
+        // Check Bundle ID (kSecCodeInfoIdentifier)
+        if let bundleID = infoDict[kSecCodeInfoIdentifier as String] as? String {
+             os_log("Client Bundle ID: %{public}@", log: .default, type: .info, bundleID)
+
+             let allowedIDs = [
+                "com.TranPhuong319.AppLocker",
+                "com.TranPhuong319.AppLocker.Launcher"
+             ]
+
+             if allowedIDs.contains(where: { bundleID == $0 || bundleID.hasPrefix($0) }) {
+                 return true
+             }
+        }
+
+        os_log("Client Bundle ID rejected", log: .default, type: .error)
+        return false
+    }
+
     func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
         newConnection.exportedInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
         newConnection.exportedObject = self
         newConnection.resume()
         return true
+    }
+
+    // MARK: - AppLockerHelperProtocol Auth
+    func authenticate(clientNonce: Data, clientSig: Data, clientPublicKey: Data, withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void) {
+        guard let conn = NSXPCConnection.current() else {
+            reply(nil, nil, nil, false)
+            return
+        }
+
+        // 1. First, check Code Signing (Bundle ID)
+        if !verifyConnectionDetails() {
+            os_log("Auth: Bundle ID verification failed.", log: .default, type: .error)
+            reply(nil, nil, nil, false)
+            return
+        }
+
+        // 2. RSA Verification
+        os_log("Auth: Verifying RSA signature...", log: .default, type: .info)
+
+        // Import Client Public Key
+        guard let clientKey = KeychainHelper.shared.createPublicKey(from: clientPublicKey) else {
+            os_log("Auth: Failed to create client public key", log: .default, type: .error)
+            reply(nil, nil, nil, false)
+            return
+        }
+
+        // Verify Signature
+        if !KeychainHelper.shared.verify(signature: clientSig, originalData: clientNonce, publicKey: clientKey) {
+             os_log("Auth: RSA signature verification failed!", log: .default, type: .error)
+             reply(nil, nil, nil, false)
+             return
+        }
+
+        // 3. Generate Server Keys & Response
+        let serverNonce = Data.random(count: 32)
+        let combinedData = clientNonce + serverNonce
+        let serverTag = KeychainHelper.Keys.helperPublic // Use Helper Key
+
+        // Ensure Server Keys Exist
+        if !KeychainHelper.shared.hasKey(tag: serverTag) {
+            os_log("Auth: Generating new Helper keys...", log: .default, type: .info)
+            try? KeychainHelper.shared.generateKeys(tag: serverTag)
+        }
+
+        // Sign Response
+        guard let serverSig = KeychainHelper.shared.sign(data: combinedData, tag: serverTag) else {
+            os_log("Auth: Failed to sign server response", log: .default, type: .error)
+            reply(nil, nil, nil, false)
+            return
+        }
+
+        // Export Server Public Key
+        guard let serverPubKeyData = KeychainHelper.shared.exportPublicKey(tag: serverTag) else {
+             os_log("Auth: Failed to export server public key", log: .default, type: .error)
+             reply(nil, nil, nil, false)
+             return
+        }
+
+        // 4. Mark Authenticated
+        AppLockerHelper.authLock.lock()
+        AppLockerHelper.authenticatedConnections.insert(ObjectIdentifier(conn))
+        AppLockerHelper.authLock.unlock()
+
+        conn.invalidationHandler = {
+            AppLockerHelper.authLock.lock()
+            AppLockerHelper.authenticatedConnections.remove(ObjectIdentifier(conn))
+            AppLockerHelper.authLock.unlock()
+        }
+
+         os_log("Auth: Successful!", log: .default, type: .info)
+        reply(serverNonce, serverSig, serverPubKeyData, true)
     }
 
     // MARK: - Run a single command
@@ -69,6 +209,13 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
 
     // MARK: - Batch with rollback
     func sendBatch(_ commands: [[String: Any]], withReply reply: @escaping (Bool, String) -> Void) {
+        // Enforce Authentication
+        guard isCurrentConnectionAuthenticated() else {
+             os_log("Access Denied: Connection not authenticated.", log: .default, type: .error)
+             reply(false, "Access Denied: Unauthorized client.")
+             return
+        }
+
         var messages: [String] = []
 
         for (index, cmdPair) in commands.enumerated() {
@@ -118,6 +265,12 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
     }
 
     func uninstallHelper(withReply reply: @escaping (Bool, String) -> Void) {
+        // Enforce Auth
+        guard isCurrentConnectionAuthenticated() else {
+             reply(false, "Access Denied: Unauthorized client.")
+             return
+        }
+
         var logs: [String] = []
 
         func run(_ cmd: String, args: [String]) -> Bool {
@@ -155,5 +308,15 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         _ = run("/usr/bin/killall", args: ["com.TranPhuong319.AppLocker.Helper"])
 
         reply(true, logs.joined(separator: "\n"))
+    }
+}
+
+extension Data {
+    static func random(count: Int) -> Data {
+        var data = Data(count: count)
+        _ = data.withUnsafeMutableBytes {
+            SecRandomCopyBytes(kSecRandomDefault, count, $0.baseAddress!)
+        }
+        return data
     }
 }

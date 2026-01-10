@@ -18,7 +18,7 @@ extension ESManager {
         let type = message.pointee.event_type
 
         switch type {
-            
+
         case ES_EVENT_TYPE_AUTH_EXEC:
             handleAuthExec(client: client, message: message)
 

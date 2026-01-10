@@ -54,19 +54,98 @@ final class ESXPCClient {
             }
 
             conn.resume()
-            self.connection = conn
-            self.retryCount = 0
 
-            if !self.lastKnownBlockedApps.isEmpty {
-                let copy = self.lastKnownBlockedApps
-                self.xpcQueue.async {
-                    self.updateBlockedApps(copy)
+            // Perform Authentication Handshake
+            self.performAuth(conn: conn) { [weak self] success in
+                guard let self = self else { return }
+                if success {
+                    Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
+                    self.connection = conn
+                    self.retryCount = 0
+
+                    if !self.lastKnownBlockedApps.isEmpty {
+                        let copy = self.lastKnownBlockedApps
+                        self.xpcQueue.async {
+                            self.updateBlockedApps(copy)
+                        }
+                    }
+
+                    if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
+                       let primary = langs.first {
+                        self.updateLanguage(primary)
+                    }
+                } else {
+                    Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                    conn.invalidate()
+                    // Reconnect logic will trigger via invalidationHandler
                 }
             }
+        }
+    }
 
-            if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
-               let primary = langs.first {
-                self.updateLanguage(primary)
+    private func performAuth(conn: NSXPCConnection, completion: @escaping (Bool) -> Void) {
+        let appTag = KeychainHelper.Keys.appPublic
+        let extTag = KeychainHelper.Keys.extensionPublic
+
+        // 1. Ensure Client Keys
+        if !KeychainHelper.shared.hasKey(tag: appTag) {
+            Logfile.core.log("[ESXPCClient] Client keys missing, generating...")
+            do {
+                try KeychainHelper.shared.generateKeys(tag: appTag)
+            } catch {
+                Logfile.core.error("[ESXPCClient] Key gen failed: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+        }
+
+        // 2. Prepare Auth Data
+        let clientNonce = Data.random(count: 32)
+        guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appTag) else {
+            Logfile.core.error("[ESXPCClient] Failed to sign client nonce")
+            completion(false)
+            return
+        }
+
+        // 2b. Export Public Key
+        guard let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: appTag) else {
+            Logfile.core.error("[ESXPCClient] Failed to export public key")
+            completion(false)
+            return
+        }
+
+        // 3. Send to Server
+        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+             Logfile.core.error("[ESXPCClient] Auth XPC error: \(error.localizedDescription)")
+             completion(false)
+        }) as? ESAppProtocol else {
+            completion(false)
+            return
+        }
+
+        proxy.authenticate(clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData) { serverNonce, serverSig, serverPubKey, success in
+            guard success, let serverNonce = serverNonce, let serverSig = serverSig, let serverPubKey = serverPubKey else {
+                Logfile.core.error("[ESXPCClient] Server rejected auth or invalid response")
+                completion(false)
+                return
+            }
+
+            // 4. Verify Server
+            let combined = clientNonce + serverNonce
+            // Note: We use the Extension's PROVIDED PUBLIC key to verify.
+
+            // Import Server Key
+            guard let serverKey = KeychainHelper.shared.createPublicKey(from: serverPubKey) else {
+                 Logfile.core.error("[ESXPCClient] Failed to import server public key.")
+                 completion(false)
+                 return
+            }
+
+            if KeychainHelper.shared.verify(signature: serverSig, originalData: combined, publicKey: serverKey) {
+                completion(true)
+            } else {
+                Logfile.core.error("[ESXPCClient] Server signature verification failed!")
+                completion(false)
             }
         }
     }
@@ -188,5 +267,14 @@ final class ESXPCClient {
             completion(success)
         }
     }
+}
 
+extension Data {
+    static func random(count: Int) -> Data {
+        var data = Data(count: count)
+        _ = data.withUnsafeMutableBytes {
+            SecRandomCopyBytes(kSecRandomDefault, count, $0.baseAddress!)
+        }
+        return data
+    }
 }

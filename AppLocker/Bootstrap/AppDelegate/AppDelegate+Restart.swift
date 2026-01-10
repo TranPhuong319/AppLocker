@@ -18,18 +18,13 @@ extension AppDelegate {
         conn.resume()
 
         if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            // EN: Ignore errors because helper will terminate itself after uninstall.
-            // VI: Bỏ qua lỗi vì helper sẽ tự thoát sau khi gỡ cài đặt.
             Logfile.core.debug("XPC connection closed (expected): \(error.localizedDescription)")
         }) as? AppLockerHelperProtocol {
             proxy.uninstallHelper { _, _ in
-                // EN: Fire-and-forget.
-                // VI: Gửi và quên.
+                // Fire-and-forget.
             }
         }
 
-        // EN: Close connection immediately to avoid holding references.
-        // VI: Đóng kết nối ngay để tránh giữ tham chiếu thừa.
         conn.invalidate()
     }
 

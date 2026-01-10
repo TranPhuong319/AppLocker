@@ -48,6 +48,7 @@ extension ESManager {
     func removeIncomingConnection(_ conn: NSXPCConnection) {
         xpcLock.perform {
             self.activeConnections.removeAll { $0 === conn }
+            self.authenticatedConnections.remove(ObjectIdentifier(conn))
             Logfile.es.log("Removed XPC connection — total=\(self.activeConnections.count, privacy: .public)")
         }
     }

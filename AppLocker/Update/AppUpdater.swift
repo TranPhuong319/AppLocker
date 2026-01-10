@@ -133,7 +133,7 @@ final class AppUpdater: NSObject {
 
     func startTestAutoCheck() {
 #if DEBUG
-        startAutoCheck(interval: 60)
+        startAutoCheck(interval: 300)
 #else
         startAutoCheck()
 #endif
