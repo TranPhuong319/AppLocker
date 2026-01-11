@@ -73,8 +73,7 @@ final class ESXPCClient {
 
                     if let langs = UserDefaults.standard.array(forKey: "AppleLanguages")
                         as? [String],
-                        let primary = langs.first
-                    {
+                        let primary = langs.first {
                         self.updateLanguage(primary)
                     }
                 } else {
@@ -89,7 +88,6 @@ final class ESXPCClient {
 
     private func performAuth(conn: NSXPCConnection, completion: @escaping (Bool) -> Void) {
         let appTag = KeychainHelper.Keys.appPublic
-        let extTag = KeychainHelper.Keys.extensionPublic
 
         // 1. Ensure Client Keys
         if !KeychainHelper.shared.hasKey(tag: appTag) {
@@ -152,8 +150,7 @@ final class ESXPCClient {
             }
 
             if KeychainHelper.shared.verify(
-                signature: serverSig, originalData: combined, publicKey: serverKey)
-            {
+                signature: serverSig, originalData: combined, publicKey: serverKey) {
                 completion(true)
             } else {
                 Logfile.core.error("[ESXPCClient] Server signature verification failed!")

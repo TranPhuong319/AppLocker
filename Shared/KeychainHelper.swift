@@ -41,7 +41,7 @@ final class KeychainHelper {
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
             kSecAttrKeySizeInBits as String: 2048,
-            kSecAttrIsPermanent as String: false,  // DO NOT save to Keychain
+            kSecAttrIsPermanent as String: false  // DO NOT save to Keychain
         ]
 
         var error: Unmanaged<CFError>?
@@ -164,7 +164,7 @@ final class KeychainHelper {
         let options: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
             kSecAttrKeyClass as String: keyClass,
-            kSecAttrKeySizeInBits as String: 2048,
+            kSecAttrKeySizeInBits as String: 2048
         ]
 
         var error: Unmanaged<CFError>?

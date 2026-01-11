@@ -109,7 +109,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         }
 
         registerOrUpdateItem(id: .centerButtonsLock) { [weak self] in
-            guard let self = self else { return NSView() }
+            guard self != nil else { return NSView() }
 
             let lockButton = LockTouchBarButton(
                 title: "",
@@ -144,7 +144,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             .addAppOther,
             .flexibleSpace,
             .centerButtonsLock,
-            .flexibleSpace,
+            .flexibleSpace
         ]
     }
 
@@ -182,7 +182,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         touchBar.defaultItemIdentifiers = [
             .flexibleSpace,
             .deleteQueueButtons,
-            .flexibleSpace,
+            .flexibleSpace
         ]
     }
 
@@ -208,7 +208,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             button.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             button.topAnchor.constraint(equalTo: container.topAnchor),
             button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            button.heightAnchor.constraint(equalToConstant: 30),
+            button.heightAnchor.constraint(equalToConstant: 30)
         ])
 
         return container

@@ -5,24 +5,26 @@
 //  Created by Doe Phương on 28/12/25.
 //
 
+import AppKit
 import Sparkle
 import UserNotifications
-import AppKit
 
 extension AppDelegate: AppUpdaterBridgeDelegate {
-    var supportsGentleScheduledUpdateReminders: Bool { true }
+    var supportsGentleScheduledUpdateReminders: Bool { false }
 
     func didFindUpdate(_ item: SUAppcastItem) {
-        guard let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-              item.displayVersionString.compare(current, options: .numeric) == .orderedDescending
-        else {
-            let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
-            Logfile.core.debug("Update \(item.displayVersionString) is not newer than current \(currentVersion)")
-            return
-        }
-
         pendingUpdate = item
 
+        // Only notify immediately if we are NOT automatically downloading updates in the background.
+        // If we are auto-downloading, we wait for didDownloadUpdate to show the "Ready to Install" notification.
+        if !AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates {
+            Logfile.core.debug("New update found! (silent check)")
+            let request = buildUpdateNotification()
+            UNUserNotificationCenter.current().add(request)
+        }
+    }
+
+    func didDownloadUpdate() {
         let request = buildUpdateNotification()
         UNUserNotificationCenter.current().add(request)
     }
@@ -32,6 +34,8 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
         pendingUpdate = nil
         NSApp.dockTile.badgeLabel = nil
         UNUserNotificationCenter.current().setBadgeCount(0)
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [notificationIndentifiers])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [
+            notificationIndentifiers
+        ])
     }
 }

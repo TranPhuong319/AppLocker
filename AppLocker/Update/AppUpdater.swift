@@ -24,6 +24,7 @@ enum UpdateDownloadState {
 
 protocol AppUpdaterBridgeDelegate: AnyObject {
     func didFindUpdate(_ item: SUAppcastItem)
+    func didDownloadUpdate()
     func didNotFindUpdate()
 }
 
@@ -34,7 +35,6 @@ enum UpdateNotificationAction {
 }
 
 // MARK: - UpdaterDelegate (SINGLE INSTANCE, NO SINGLETON)
-
 final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 
     var betaFeedURL: String?
@@ -60,6 +60,7 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
     func updater(_ updater: SPUUpdater, didDownloadUpdate item: SUAppcastItem) {
         DispatchQueue.main.async {
             self.downloadState = .downloaded
+            self.bridgeDelegate?.didDownloadUpdate()
         }
     }
 
@@ -71,7 +72,6 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 }
 
 // MARK: - AppUpdater (OWNER OF DELEGATE)
-
 final class AppUpdater: NSObject {
 
     static let shared = AppUpdater()
@@ -125,45 +125,96 @@ final class AppUpdater: NSObject {
 
     func startAutoCheck(interval: TimeInterval = 6 * 60 * 60) {
         updateTimer?.invalidate()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) {
+            [weak self] _ in
             self?.silentCheckForUpdates()
         }
         updateTimer?.tolerance = 10
     }
 
-    func startTestAutoCheck() {
-#if DEBUG
-        startAutoCheck(interval: 300)
-#else
-        startAutoCheck()
-#endif
+    func startTestAutoCheck(interval: TimeInterval? = nil) {
+        #if DEBUG
+            startAutoCheck(interval: interval ?? 60)
+        #else
+            // In Release, we rely on Sparkle's default internal scheduler.
+            // If we are on Beta channel, we need to fetch the feed URL once at startup.
+            if delegate.channel == .beta {
+                fetchLatestBeta { _ in }
+            }
+        #endif
     }
 
     // MARK: - Update checks
 
     func silentCheckForUpdates() {
+        let updater = updaterController.updater
+
+        guard updater.automaticallyChecksForUpdates else { return }
+        guard !updater.sessionInProgress else { return }
+
         if delegate.channel == .beta {
-            fetchLatestBeta { [weak self] _ in
+            fetchLatestBeta { [weak self] success in
+                guard success, let self else { return }
                 DispatchQueue.main.async {
-                    self?.updaterController.updater.checkForUpdateInformation()
+                    self.guardedCheck { updater in
+                        if updater.automaticallyDownloadsUpdates {
+                            updater.checkForUpdatesInBackground()
+                        } else {
+                            updater.checkForUpdateInformation()
+                        }
+                    }
                 }
             }
         } else {
-            updaterController.updater.checkForUpdateInformation()
+            guardedCheck { updater in
+                if updater.automaticallyDownloadsUpdates {
+                    updater.checkForUpdatesInBackground()
+                } else {
+                    updater.checkForUpdateInformation()
+                }
+            }
         }
     }
 
+    private func guardedCheck(_ block: (SPUUpdater) -> Void) {
+        let updater = updaterController.updater
+        guard !updater.sessionInProgress else {
+            return
+        }
+        block(updater)
+    }
+
     func manualCheckForUpdates() {
-        if delegate.channel == .beta {
-            fetchLatestBeta { [weak self] _ in
-                DispatchQueue.main.async {
-                    self?.updaterController.checkForUpdates(nil)
+        guardedCheck { _ in
+            if delegate.channel == .beta {
+                fetchLatestBeta { [weak self] success in
+                    guard success else { return }
+                    DispatchQueue.main.async {
+                        self?.updaterController.checkForUpdates(nil)
+                    }
                 }
+            } else {
+                updaterController.checkForUpdates(nil)
             }
-        } else {
-            updaterController.checkForUpdates(nil)
         }
     }
+
+#if DEBUG
+    func debugForceCheckIfPossible() {
+        let updater = updaterController.updater
+
+        // Sparkle đang bận → bỏ qua
+        if updater.sessionInProgress {
+            return
+        }
+
+        if updater.automaticallyDownloadsUpdates {
+            updater.checkForUpdatesInBackground()
+        } else {
+            updater.checkForUpdateInformation()
+        }
+    }
+#endif
 
     // MARK: - Beta appcast fetch
 
@@ -178,7 +229,7 @@ final class AppUpdater: NSObject {
             do {
                 let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
                 if let beta = releases.first(where: { $0.isPrerelease }),
-                   let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
+                    let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
                     self?.delegate.betaFeedURL = appcast.browserDownloadUrl
                     completion(true)
                 } else {

@@ -1,8 +1,15 @@
+//
+//  SettingsView.swift
+//  AppLocker
+//
+//  Created by Doe Phương on 18/8/25.
+//
+
 import SwiftUI
 import Sparkle
 
 enum UpdateChannel: String, CaseIterable, Identifiable {
-    case stable = "Stable"   // giá trị cố định cho code / lưu UserDefaults
+    case stable = "Stable"  // giá trị cố định cho code / lưu UserDefaults
     case beta = "Beta"
 
     var id: String { self.rawValue }
@@ -20,9 +27,9 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
             return "Get official, stable updates."
         case .beta:
             return """
-            Get experimental updates.
-            Note: Experimental updates are often unstable.
-            """
+                Get experimental updates.
+                Note: Experimental updates are often unstable.
+                """
         }
     }
 }
@@ -33,7 +40,8 @@ struct SettingsView: View {
 
     // Lấy giá trị từ UserDefaults hoặc mặc định là Stable
     @State private var selectedChannel: UpdateChannel = {
-        let saved = UserDefaults.standard.string(forKey: "updateChannel") ?? UpdateChannel.stable.rawValue
+        let saved =
+            UserDefaults.standard.string(forKey: "updateChannel") ?? UpdateChannel.stable.rawValue
         return UpdateChannel(rawValue: saved) ?? .stable
     }()
 
@@ -44,12 +52,32 @@ struct SettingsView: View {
                     Group {
                         Toggle("Automatically check for updates.", isOn: $autoCheck)
                             .onChange(of: autoCheck) { newValue in
-                                AppUpdater.shared.updaterController.updater.automaticallyChecksForUpdates = newValue
+                                let updater = AppUpdater.shared.updaterController.updater
+                                updater.automaticallyChecksForUpdates = newValue
+
+                                if !newValue {
+                                    updater.automaticallyDownloadsUpdates = false
+                                    autoDownload = false
+                                }
+
+                                #if DEBUG
+                                if newValue {
+                                    AppUpdater.shared.debugForceCheckIfPossible()
+                                }
+                                #endif
                             }
 
                         Toggle("Automatically download new updates.", isOn: $autoDownload)
+                            .disabled(!autoCheck)
                             .onChange(of: autoDownload) { newValue in
-                                AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = newValue
+                                let updater = AppUpdater.shared.updaterController.updater
+                                updater.automaticallyDownloadsUpdates = newValue
+
+                                #if DEBUG
+                                if newValue {
+                                    AppUpdater.shared.debugForceCheckIfPossible()
+                                }
+                                #endif
                             }
                     }
                     Picker("Update Channel", selection: $selectedChannel) {
