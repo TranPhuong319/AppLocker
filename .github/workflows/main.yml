@@ -1,9 +1,18 @@
 name: Build
 
 on:
-  - push
-  - pull_request
-  - workflow_dispatch
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      critical:
+        description: 'Mark this release as a critical update (Sparkle)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
 
@@ -173,7 +182,23 @@ jobs:
         chmod 600 sparkle_key.pem
       env:
         SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
-    
+        
+    - name: Setup Critical Update Flag
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        if [[ "${{ inputs.critical }}" == "true" ]]; then
+          echo "SPARKLE_CRITICAL=true" >> $GITHUB_ENV
+        else
+          echo "SPARKLE_CRITICAL=false" >> $GITHUB_ENV
+        fi
+        if [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
+          SPARKLE_CRITICAL=false
+        fi
+
+    - name: Default Critical Flag (push)
+      if: github.event_name == 'push'
+      run: echo "SPARKLE_CRITICAL=false" >> $GITHUB_ENV
+        
     - name: Generate Sparkle Appcast
       if: (github.event_name == 'push' && github.ref_name == 'main') || github.event_name == 'workflow_dispatch'
       run: |
@@ -201,6 +226,14 @@ jobs:
         PUBDATE="$(date +"%a, %d %b %Y %T %z")"
         SPARKLE_BIN='./build/SourcePackages/artifacts/sparkle/Sparkle/bin'
         SIGNED_ATTR=$($SPARKLE_BIN/sign_update --ed-key-file sparkle_key.pem ./Artifacts/AppLocker.dmg)
+        CRITICAL_ATTR=""
+        if [[ "$SPARKLE_CRITICAL" == "true" ]]; then
+          CRITICAL_ATTR="sparkle:criticalUpdate=\"true\""
+        fi
+        CHANNEL_ATTR=""
+        if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+          CHANNEL_ATTR='sparkle:channel="beta"'
+        fi
 
         APPCAST=(
             '<?xml version="1.0" standalone="yes"?>'
@@ -232,7 +265,7 @@ jobs:
             '            ]]>'
             '            </description>'
             '            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>'
-            "            <enclosure url='${DMG_URL}' sparkle:version='${APPCAST_VER}' sparkle:shortVersionString='${SHORTSTRING}' type='application/octet-stream' ${SIGNED_ATTR}/>"
+            "            <enclosure url='${DMG_URL}' sparkle:version='${APPCAST_VER}' sparkle:shortVersionString='${SHORTSTRING}' type='application/octet-stream' ${CHANNEL_ATTR} ${CRITICAL_ATTR} ${SIGNED_ATTR}/>"
             '        </item>'
             '    </channel>'
             '</rss>'

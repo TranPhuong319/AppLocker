@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E01814A02F12CA2E0093583F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E018149F2F12CA2E0093583F /* Sparkle */; };
+		E01814A32F1322240093583F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E01814A22F1322240093583F /* Sparkle */; };
 		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
 		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
 		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -254,7 +254,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E01814A02F12CA2E0093583F /* Sparkle in Frameworks */,
+				E01814A32F1322240093583F /* Sparkle in Frameworks */,
 				E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */,
 				E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */,
 			);
@@ -420,7 +420,7 @@
 			packageProductDependencies = (
 				E0DC1DD82E5DBADF002B454C /* Sparkle */,
 				E04FC7982E5DBE570016518D /* Sparkle */,
-				E018149F2F12CA2E0093583F /* Sparkle */,
+				E01814A22F1322240093583F /* Sparkle */,
 			);
 			productName = AppLocker;
 			productReference = E0EF51AA2E31558900161CAB /* AppLocker.app */;
@@ -461,7 +461,7 @@
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E018149E2F12CA2E0093583F /* XCRemoteSwiftPackageReference "Sparkle" */,
+				E01814A12F1322240093583F /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0EF51AB2E31558900161CAB /* Products */;
@@ -1053,20 +1053,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E018149E2F12CA2E0093583F /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+		E01814A12F1322240093583F /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/TranPhuong319/Sparkle/";
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.8.2;
+				minimumVersion = "2.9.0-beta.1";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E018149F2F12CA2E0093583F /* Sparkle */ = {
+		E01814A22F1322240093583F /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E018149E2F12CA2E0093583F /* XCRemoteSwiftPackageReference "Sparkle" */;
+			package = E01814A12F1322240093583F /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
 		};
 		E04FC7982E5DBE570016518D /* Sparkle */ = {
