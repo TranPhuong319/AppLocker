@@ -26,16 +26,7 @@ struct AppRow: View {
             }
         } label: {
             HStack(spacing: 12) {
-                if let icon = app.icon {
-                    Image(nsImage: icon)
-                        .resizable()
-                        .frame(width: 32, height: 32)
-                        .cornerRadius(6)
-                } else {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(width: 32, height: 32)
-                }
+                AppIconView(path: app.path, size: 32)
 
                 Text(app.name)
                     .font(.body)

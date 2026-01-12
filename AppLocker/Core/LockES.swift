@@ -6,17 +6,16 @@
 //
 
 import AppKit
-import Foundation
 import CryptoKit
+import Foundation
 
 class LockES: LockManagerProtocol {
-    @Published var lockedApps: [String: LockedAppConfig] = [:] // keyed by path
+    @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     @Published var allApps: [InstalledApp] = []
     private var periodicTimer: Timer?
 
     init() {
         self.lockedApps = ConfigStore.shared.load()
-        self.allApps = self.getInstalledApps()
         Logfile.core.info("Initial scanning started in background...")
 
         // Quét lần đầu ngay lập tức ở background
@@ -28,61 +27,7 @@ class LockES: LockManagerProtocol {
         self.startPeriodicRescan()
     }
 
-    // MARK: - Installed apps discovery (unchanged)
-    func getInstalledApps() -> [InstalledApp] {
-        let appsPaths: [String: AppSource] = [
-            "/Applications": .user,
-            "/System/Applications": .system
-        ]
-
-        let selfBundlePath = Bundle.main.bundleURL.path
-
-        var allApps: [InstalledApp] = []
-        let fileManager = FileManager.default
-
-        for (dir, source) in appsPaths {
-            let dirURL = URL(fileURLWithPath: dir)
-
-            guard let enumerator = fileManager.enumerator(
-                at: dirURL,
-                includingPropertiesForKeys: nil,
-                options: [.skipsHiddenFiles, .skipsPackageDescendants]
-            ) else { continue }
-
-            for case let fileURL as URL in enumerator {
-                guard fileURL.pathExtension == "app",
-                      !fileURL.lastPathComponent.hasPrefix("."),
-                      let bundle = Bundle(url: fileURL),
-                      let bundleID = bundle.bundleIdentifier else {
-                    continue
-                }
-
-                if fileURL.path == selfBundlePath {
-                    continue
-                }
-
-                let displayName = fileManager.displayName(atPath: fileURL.path)
-                    .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-
-                let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
-                icon.size = NSSize(width: 32, height: 32)
-
-                allApps.append(
-                    InstalledApp(
-                        name: displayName,
-                        bundleID: bundleID,
-                        icon: icon,
-                        path: fileURL.path,
-                        source: source
-                    )
-                )
-            }
-        }
-
-        return allApps.sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-        }
-    }
+    // MARK: - Installed apps discovery (Removed in favor of Spotlight)
 
     // MARK: - Persistence helper
     func save() {
@@ -98,7 +43,8 @@ class LockES: LockManagerProtocol {
                 didChange = true
             } else {
                 guard let bundle = Bundle(url: URL(fileURLWithPath: path)),
-                      let execName = bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+                    let execName = bundle.object(forInfoDictionaryKey: "CFBundleExecutable")
+                        as? String
                 else {
                     Logfile.core.error("Cannot read Info.plist for \(path)")
                     continue
@@ -141,12 +87,7 @@ class LockES: LockManagerProtocol {
     }
 
     func reloadAllApps() {
-        DispatchQueue.global(qos: .background).async {
-            let apps = self.getInstalledApps()
-            DispatchQueue.main.async {
-                self.allApps = apps
-            }
-        }
+        // Spotlight updates automatically
     }
 
     func isLocked(path: String) -> Bool {
@@ -160,7 +101,8 @@ extension LockES {
         if periodicTimer != nil { return }
 
         // Create a timer on the Main RunLoop but do the heavy lifting in the Background
-        periodicTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+        periodicTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) {
+            [weak self] _ in
             // Đẩy việc quét SHA sang thread khác ngay lập tức
             DispatchQueue.global(qos: .utility).async {
                 self?.rescanLockedApps()
@@ -181,7 +123,7 @@ extension LockES {
         // Run the heavy SHA calculation on the current thread (usually background)
         Logfile.core.info("Re-scanning the SHA of locked apps...")
         var changed = false
-        var updatedMap = self.lockedApps // Copy locally for processing
+        var updatedMap = self.lockedApps  // Copy locally for processing
 
         for (path, cfg) in updatedMap {
             let exeFile = cfg.execFile ?? "Unknown"
@@ -194,7 +136,8 @@ extension LockES {
 
             if cfg.sha256 != newSHA {
                 let name = cfg.name ?? "Unknown"
-                Logfile.core.warning("SHA changes for \(name): \(cfg.sha256.prefix(8)) → \(newSHA.prefix(8))")
+                Logfile.core.warning(
+                    "SHA changes for \(name): \(cfg.sha256.prefix(8)) → \(newSHA.prefix(8))")
 
                 let updatedCfg = LockedAppConfig(
                     bundleID: cfg.bundleID,

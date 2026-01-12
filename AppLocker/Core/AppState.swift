@@ -6,10 +6,14 @@
 //
 
 import Combine
+import CoreServices
+import Foundation
 import SwiftUI
 
 class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     static let shared = AppState()
+
+    private var query: NSMetadataQuery?
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
     @Published var showingDeleteQueue = false
@@ -47,7 +51,51 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         super.init()
 
         setupSearchPipeline()
+        setupSpotlightQuery()
         refreshAppLists()
+    }
+
+    private func setupSpotlightQuery() {
+        query = NSMetadataQuery()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidFinishGathering,
+            object: query)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidUpdate,
+            object: query)
+
+        query?.predicate = NSPredicate(
+            format:
+                "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
+        )
+        query?.searchScopes = ["/Applications", "/System/Applications"]
+        query?.start()
+    }
+
+    @objc private func queryDidUpdate(_ notification: Notification) {
+        let results = query?.results as? [NSMetadataItem] ?? []
+        let selfPath = Bundle.main.bundleURL.path
+
+        let apps: [InstalledApp] = results.compactMap { item in
+            guard let path = item.value(forAttribute: "kMDItemPath") as? String,
+                path != selfPath,
+                !path.contains(".app/"),
+                let rawName = item.value(forAttribute: "kMDItemDisplayName") as? String
+            else { return nil }
+
+            let name = rawName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+
+            let bundleID =
+                item.value(forAttribute: "kMDItemBundleIdentifier") as? String ?? ""
+            let source: AppSource = path.hasPrefix("/System") ? .system : .user
+
+            return InstalledApp(name: name, bundleID: bundleID, path: path, source: source)
+        }
+
+        DispatchQueue.main.async {
+            self.manager.allApps = apps
+            self.refreshAppLists()
+        }
     }
 
     private func setupSearchPipeline() {
@@ -70,7 +118,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
-        let query = text.normalized
+        let query = text.alNormalized
         guard !query.isEmpty else { return apps }
 
         return apps.filter { app in
@@ -84,36 +132,21 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         let locked: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard manager.lockedApps[path] != nil else { return nil }
 
-            let icon = NSWorkspace.shared.icon(forFile: path)
             let name = FileManager.default.displayName(atPath: path)
                 .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
 
             let source: AppSource = path.hasPrefix("/System") ? .system : .user
 
-            return InstalledApp(name: name, bundleID: "", icon: icon, path: path, source: source)
+            return InstalledApp(name: name, bundleID: "", path: path, source: source)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
         let allAppsFromManager: [InstalledApp] = manager.allApps
 
-        let unlockable: [InstalledApp] =
+        let unlockable =
             allAppsFromManager
             .filter { (app: InstalledApp) -> Bool in
-
                 return !manager.lockedApps.keys.contains(app.path)
-            }
-            .map { app in
-                if app.source == nil {
-                    let src: AppSource = app.path.hasPrefix("/System") ? .system : .user
-                    return InstalledApp(
-                        name: app.name,
-                        bundleID: app.bundleID,
-                        icon: app.icon,
-                        path: app.path,
-                        source: src
-                    )
-                }
-                return app
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
@@ -121,6 +154,23 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             self.lockedAppObjects = locked
             self.unlockableApps = unlockable
         }
+    }
+
+    private func fuzzyMatch(query: String, target: String) -> Bool {
+        let t = target.alNormalized
+        if t.contains(query) { return true }
+        var searchIndex = t.startIndex
+        for char in query {
+            guard
+                let range = t.range(
+                    of: String(char), options: String.CompareOptions.caseInsensitive,
+                    range: searchIndex..<t.endIndex)
+            else {
+                return false
+            }
+            searchIndex = range.upperBound
+        }
+        return true
     }
 
     let setWidth = 450  // Chiều ngang

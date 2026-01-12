@@ -13,9 +13,7 @@ struct DeleteQueueRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let icon = app.icon {
-                Image(nsImage: icon).resizable().frame(width: 32, height: 32).cornerRadius(6)
-            }
+            AppIconView(path: app.path, size: 32)
             Text(app.name)
             Spacer()
             Button {
