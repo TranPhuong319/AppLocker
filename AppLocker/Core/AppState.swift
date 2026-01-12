@@ -13,6 +13,8 @@ import SwiftUI
 class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     static let shared = AppState()
 
+    private let selfBundlePath = Bundle.main.bundleURL.path
+    private let selfBundleName = Bundle.main.bundleURL.lastPathComponent
     private var query: NSMetadataQuery?
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
@@ -245,6 +247,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowedContentTypes = [.applicationBundle]
+        panel.message = String(localized: "Select the application to lock")
+        panel.prompt = String(localized: "Lock")
 
         if let window = window {
             panel.beginSheetModal(for: window) { response in
@@ -279,22 +283,22 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
         let path = url.path
 
-        // Chặn chính app đang chạy
-        if path == Bundle.main.bundleURL.path {
+        // 1. Chặn chính app đang chạy (Dùng cache O(1))
+        if path == selfBundlePath || url.lastPathComponent == selfBundleName {
             return false
         }
 
-        // Hoặc chặn theo bundle name (ít chính xác hơn path)
-        if url.lastPathComponent == Bundle.main.bundleURL.lastPathComponent {
+        // 2. Kiểm tra danh sách đã khóa (O(1) thay vì O(n))
+        if manager.lockedApps[path] != nil {
             return false
         }
 
-        if manager.lockedApps.keys.contains(path) {
-            return false
-        }
-
-        if path.hasPrefix("/System/") && !path.hasPrefix("/System/Applications/") {
-            return false
+        // 3. Chặn các thư mục hệ thống nhạy cảm (Tối ưu hóa string prefix)
+        if path.hasPrefix("/System/") {
+            // Chỉ cho phép duyệt trong /System/Applications/
+            if !path.hasPrefix("/System/Applications/") {
+                return false
+            }
         }
 
         return true

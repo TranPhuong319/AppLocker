@@ -231,6 +231,16 @@
         }
       }
     },
+    "Lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá"
+          }
+        }
+      }
+    },
     "Lock (%lld)" : {
       "localizations" : {
         "vi" : {
