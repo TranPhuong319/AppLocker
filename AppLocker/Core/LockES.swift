@@ -12,7 +12,7 @@ import Foundation
 class LockES: LockManagerProtocol {
     @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     @Published var allApps: [InstalledApp] = []
-    private var periodicTimer: Timer?
+    private var fsWatcher: FSEventsMonitoringService?
 
     init() {
         self.lockedApps = ConfigStore.shared.load()
@@ -23,8 +23,15 @@ class LockES: LockManagerProtocol {
             self?.rescanLockedApps()
         }
 
-        // Bắt đầu chu kỳ lặp lại
-        self.startPeriodicRescan()
+        // Thay thế Timer bằng FSEvents
+        setupFSEvents()
+    }
+
+    private func setupFSEvents() {
+        fsWatcher = FSEventsMonitoringService(paths: ["/Applications", "/System/Applications"])
+        fsWatcher?.delegate = self
+        fsWatcher?.start()
+        Logfile.core.info("FSEvents monitoring started for applications directories")
     }
 
     // MARK: - Installed apps discovery (Removed in favor of Spotlight)
@@ -96,27 +103,74 @@ class LockES: LockManagerProtocol {
 }
 
 // MARK: - Auto SHA Rescan
-extension LockES {
-    func startPeriodicRescan(interval: TimeInterval = 300) {
-        if periodicTimer != nil { return }
+extension LockES: FSEventsDelegate {
+    func fileSystemChanged(at paths: [String]) {
+        // Lọc các đường dẫn thuộc các app đang bị khóa
+        let lockedPaths = lockedApps.keys
+        var appsToUpdate: [String] = []
 
-        // Create a timer on the Main RunLoop but do the heavy lifting in the Background
-        periodicTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) {
-            [weak self] _ in
-            // Đẩy việc quét SHA sang thread khác ngay lập tức
-            DispatchQueue.global(qos: .utility).async {
-                self?.rescanLockedApps()
+        for changedPath in paths {
+            for lockedPath in lockedPaths {
+                if changedPath.hasPrefix(lockedPath) {
+                    appsToUpdate.append(lockedPath)
+                }
             }
         }
 
-        // Make sure the timer still runs when the user scrolls or uses the UI
-        RunLoop.main.add(periodicTimer!, forMode: .common)
-        Logfile.core.info("Start periodic SHA scanning every \(Int(interval)) seconds")
+        guard !appsToUpdate.isEmpty else { return }
+
+        // Loại bỏ trùng lặp và update SHA
+        let uniqueApps = Set(appsToUpdate)
+        Logfile.core.info(
+            "FSEvents detected changes in \(uniqueApps.count) locked apps. Updating SHAs...")
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.updateSHAs(for: Array(uniqueApps))
+        }
+    }
+
+    private func updateSHAs(for paths: [String]) {
+        var changed = false
+        var updatedMap = self.lockedApps
+
+        for path in paths {
+            guard let cfg = updatedMap[path] else { continue }
+            let exeFile = cfg.execFile ?? "Unknown"
+            let execPath = "\(path)/Contents/MacOS/\(exeFile)"
+
+            guard FileManager.default.fileExists(atPath: execPath) else { continue }
+            guard let newSHA = computeSHA(forPath: execPath), !newSHA.isEmpty else { continue }
+
+            if cfg.sha256 != newSHA {
+                Logfile.core.warning(
+                    "SHA auto-updated for \(cfg.name ?? "Unknown"): \(cfg.sha256.prefix(8)) → \(newSHA.prefix(8))"
+                )
+                let updatedCfg = LockedAppConfig(
+                    bundleID: cfg.bundleID,
+                    path: cfg.path,
+                    sha256: newSHA,
+                    blockMode: cfg.blockMode,
+                    execFile: cfg.execFile,
+                    name: cfg.name
+                )
+                updatedMap[path] = updatedCfg
+                changed = true
+            }
+        }
+
+        if changed {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.lockedApps = updatedMap
+                self.save()
+                self.publishToExtension()
+            }
+        }
     }
 
     func stopPeriodicRescan() {
-        periodicTimer?.invalidate()
-        periodicTimer = nil
+        fsWatcher?.stop()
+        fsWatcher = nil
     }
 
     @objc func rescanLockedApps() {
