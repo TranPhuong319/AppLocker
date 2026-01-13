@@ -28,5 +28,6 @@ struct DeleteQueueRow: View {
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
+        .focusable(false)
     }
 }
