@@ -246,6 +246,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         panel.delegate = self
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = true
         panel.allowedContentTypes = [.applicationBundle]
         panel.message = String(localized: "Select the application to lock")
         panel.prompt = String(localized: "Lock")
