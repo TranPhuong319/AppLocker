@@ -21,7 +21,7 @@ struct WelcomeView: View {
             if shouldRestart {
                 Color.clear
                     .onAppear {
-                        AppDelegate.shared.restartApp(mode: AppMode(rawValue: selectedMode))
+                        NSApp.appDelegate?.restartApp(mode: AppMode(rawValue: selectedMode))
                     }
             } else {
                 Spacer(minLength: 20)

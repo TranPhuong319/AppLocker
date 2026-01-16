@@ -44,8 +44,7 @@ class HotKeyManager {
                               &id)
 
             if id.id == 1 {
-                // Xử lý khi nhấn Cmd + Shift + L
-                AppDelegate.shared.openListApp()
+                NSApp.appDelegate?.openListApp()
             }
             return noErr
         }, 1, &eventType, nil, nil)

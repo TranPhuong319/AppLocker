@@ -10,11 +10,11 @@ import Foundation
 extension ESManager {
     func isPIDAllowed(_ pid: pid_t) -> Bool {
         let now = Date()
-        // Nếu không lấy được lock ngay lập tức, trả về false để tránh block
-        return stateLock.trySync(default: false) {
-            guard let expiry = allowedPIDs[pid] else { return false }
+        // Use regular sync - stateLock is fast enough for this critical path
+        return stateLock.sync {
+            guard let expiry = _allowedPIDs[pid] else { return false }
             if expiry > now { return true }
-            allowedPIDs.removeValue(forKey: pid)
+            _allowedPIDs.removeValue(forKey: pid)
             return false
         }
     }

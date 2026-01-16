@@ -14,6 +14,7 @@
 		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
+		E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */ = {isa = PBXBuildFile; fileRef = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 /* End PBXBuildFile section */
 
@@ -81,6 +82,17 @@
 			name = "Launch Agents";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E0B6A16D2F191BBA00EAE136 /* Login Items */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */,
+			);
+			name = "Login Items";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +100,7 @@
 		E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.ESExtension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
 		E07075962E38BA97001C7950 /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AppLocker Launcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.Helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -226,6 +239,11 @@
 			path = Launcher;
 			sourceTree = "<group>";
 		};
+		E08AAFD92F17FBAC008C97FC /* AppLocker Launcher */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "AppLocker Launcher";
+			sourceTree = "<group>";
+		};
 		E0D4C0662E419DAD003C40E3 /* AppLockerHelper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -269,6 +287,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E08AAFD52F17FBAC008C97FC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E090EB592F120B59002EF366 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -303,6 +328,7 @@
 				E01ADC7E2E7D936700BE719D /* Extensions */,
 				E07075972E38BA97001C7950 /* Launcher */,
 				E050B4432E86FB34003AEA49 /* ESExtension */,
+				E08AAFD92F17FBAC008C97FC /* AppLocker Launcher */,
 				E0EF51AB2E31558900161CAB /* Products */,
 				E01ADC8A2E7D93A000BE719D /* Shared */,
 				E0B2790A2E7FB16C004BC47F /* Frameworks */,
@@ -317,6 +343,7 @@
 				E07075962E38BA97001C7950 /* Launcher.app */,
 				E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */,
 				E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */,
+				E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -371,6 +398,28 @@
 			productReference = E07075962E38BA97001C7950 /* Launcher.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E08AAFD72F17FBAC008C97FC /* AppLocker Launcher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E08AAFE22F17FBBA008C97FC /* Build configuration list for PBXNativeTarget "AppLocker Launcher" */;
+			buildPhases = (
+				E08AAFD42F17FBAC008C97FC /* Sources */,
+				E08AAFD52F17FBAC008C97FC /* Frameworks */,
+				E08AAFD62F17FBAC008C97FC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E08AAFD92F17FBAC008C97FC /* AppLocker Launcher */,
+			);
+			name = "AppLocker Launcher";
+			packageProductDependencies = (
+			);
+			productName = "AppLocker Launcher";
+			productReference = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */;
+			productType = "com.apple.product-type.application";
+		};
 		E0D4C0642E419DAD003C40E3 /* AppLockerHelper */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E0D4C0692E419DAD003C40E3 /* Build configuration list for PBXNativeTarget "AppLockerHelper" */;
@@ -405,6 +454,7 @@
 				E050B44B2E86FB35003AEA49 /* Embed System Extensions */,
 				E0749BE32E96D7AB003CD67D /* Copy Launcher */,
 				E0749BE62E96D8BE003CD67D /* Launch Agents */,
+				E0B6A16D2F191BBA00EAE136 /* Login Items */,
 			);
 			buildRules = (
 			);
@@ -433,7 +483,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					E050B43F2E86FB33003AEA49 = {
@@ -441,6 +491,9 @@
 					};
 					E07075952E38BA97001C7950 = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					E08AAFD72F17FBAC008C97FC = {
+						CreatedOnToolsVersion = 26.2;
 					};
 					E0D4C0642E419DAD003C40E3 = {
 						CreatedOnToolsVersion = 16.4;
@@ -472,6 +525,7 @@
 				E07075952E38BA97001C7950 /* Launcher */,
 				E0D4C0642E419DAD003C40E3 /* AppLockerHelper */,
 				E050B43F2E86FB33003AEA49 /* ESExtension */,
+				E08AAFD72F17FBAC008C97FC /* AppLocker Launcher */,
 			);
 		};
 /* End PBXProject section */
@@ -485,6 +539,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E076EEFD2E883E48009F465F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E08AAFD62F17FBAC008C97FC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -509,6 +570,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E07075922E38BA97001C7950 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E08AAFD42F17FBAC008C97FC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -710,6 +778,74 @@
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E08AAFE02F17FBBA008C97FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.LoginItems;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E08AAFE12F17FBBA008C97FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.LoginItems;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -1019,6 +1155,15 @@
 			buildConfigurations = (
 				E07075A02E38BA9E001C7950 /* Debug */,
 				E07075A12E38BA9E001C7950 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E08AAFE22F17FBBA008C97FC /* Build configuration list for PBXNativeTarget "AppLocker Launcher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E08AAFE02F17FBBA008C97FC /* Debug */,
+				E08AAFE12F17FBBA008C97FC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

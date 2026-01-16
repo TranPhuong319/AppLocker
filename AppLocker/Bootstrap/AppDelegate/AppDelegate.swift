@@ -6,13 +6,14 @@
 //
 
 import AppKit
+import Darwin
+import Foundation
 import LocalAuthentication
 import Security
 import ServiceManagement
-import Foundation
+import Sparkle
 import SwiftUI
 import UserNotifications
-import Sparkle
 
 enum AgentAction {
     case install
@@ -33,9 +34,9 @@ var modeLock: AppMode? = {
 }()
 
 let plistName = "com.TranPhuong319.AppLocker.agent"
+let loginItem = "com.TranPhuong319.AppLocker.LoginItems"
 
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
-    static let shared = AppDelegate()
     var statusItem: NSStatusItem?
     let helperIdentifier = "com.TranPhuong319.AppLocker.Helper"
     var pendingUpdate: SUAppcastItem?
@@ -43,6 +44,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Build-in Relaunch Wait: Check for -waitForPID argument
+        let args = CommandLine.arguments
+        Logfile.core.info("Launch Arguments: \(args)")
+
+        if let index = args.firstIndex(of: "-waitForPID"),
+            index + 1 < args.count,
+            let pidString = args[index + 1] as String?,
+            let pid = Int32(pidString)
+        {
+
+            Logfile.core.info("Waiting for PID: \(pid) to exit...")
+
+            // Wait for parent process to exit
+            // kill(pid, 0) returns 0 if process exists/is reachable
+            var attempts = 0
+            while kill(pid, 0) == 0 && attempts < 30 {  // Check for 3s (30 * 0.1s)
+                usleep(100000)  // 0.1s
+                attempts += 1
+            }
+            if attempts >= 30 {
+                Logfile.core.warning("Wait timed out after 3 seconds. Proceeding anyway.")
+            } else {
+                Logfile.core.info("Parent process exited.")
+            }
+
+            applicationExactlyOneInstance(ignoringPID: pid)
+        } else {
+            applicationExactlyOneInstance()
+        }
+
         Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
 
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
@@ -59,12 +90,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 launchConfig(config: .launcher)
             }
         }
-
     }
 
-    func applicationExactlyOneInstance() {
-        let apps = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
-        if apps.count > 1 {
+    func applicationExactlyOneInstance(ignoringPID: Int32? = nil) {
+        guard let bundleID = Bundle.main.bundleIdentifier else { return }
+
+        let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+
+        // Filter out the current process and the ignored PID
+        let otherApps = apps.filter { app in
+            return app.processIdentifier != ProcessInfo.processInfo.processIdentifier
+                && app.processIdentifier != ignoringPID
+        }
+
+        if !otherApps.isEmpty && !launchedByLaunchd() {
+            Logfile.core.info(
+                "Another instance is running (PIDs: \(otherApps.map { $0.processIdentifier })). Terminating."
+            )
             NSApp.terminate(nil)
         }
     }
@@ -93,5 +135,11 @@ extension SMAppService.Status {
         case .notFound: return "notFound"
         default: return "unknown(\(rawValue))"
         }
+    }
+}
+
+extension NSApplication {
+    var appDelegate: AppDelegate? {
+        delegate as? AppDelegate
     }
 }

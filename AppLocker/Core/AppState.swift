@@ -25,7 +25,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     @Published var isLocking = false
     @Published var lastUnlockableApps: [InstalledApp] = []
     @Published var showingMenu = false
-    @Published var isDisabled = false
     @Published var showingLockingPopup = false
     @Published var lockingMessage = ""
     @Published var searchTextLockApps = ""

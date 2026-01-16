@@ -44,7 +44,6 @@ struct ContentView: View {
             Spacer()
             Button { appState.openAddApp() } label: { Image(systemName: "plus") }
             .help("Add application to lock")
-            .disabled(appState.isDisabled)
         }
         .padding(.horizontal, 8)
     }
