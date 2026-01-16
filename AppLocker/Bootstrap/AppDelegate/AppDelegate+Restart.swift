@@ -5,8 +5,8 @@
 //  Created by Doe Phương on 28/12/25.
 //
 
-import Foundation
 import AppKit
+import Foundation
 
 extension AppDelegate {
     func callUninstallHelper() {
@@ -29,39 +29,40 @@ extension AppDelegate {
     }
 
     func selfRemoveApp() {
-        let bundlePath = Bundle.main.bundlePath
-        let script = """
-        rm -rf "\(bundlePath)"
-        """
-
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/bin/sh")
-        task.arguments = ["-c", script]
+        let bundleURL = Bundle.main.bundleURL
 
         do {
-            try task.run()
-            Logfile.core.info("App will remove itself at path: \(bundlePath)")
+            try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
+            Logfile.core.info("App successfully moved to Trash")
         } catch {
-            Logfile.core.error("Failed to start self-removal: \(error.localizedDescription)")
+            Logfile.core.error("Failed to move app to Trash: \(error.localizedDescription)")
         }
     }
 
     func removeConfig() {
         let fileManager = FileManager.default
 
+        // Always remove UserDefaults regardless of whether config file exists
+        if let domain = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: domain)
+            UserDefaults.standard.synchronize()
+            Logfile.core.info("UserDefaults cleared for domain: \(domain)")
+        }
+
         do {
+            // Check if config file exists before trying to delete the folder
+            /*
+               ConfigStore.shared.configURL points to .../AppLocker/config.plist
+               deletingLastPathComponent() points to .../AppLocker/
+            */
             if fileManager.fileExists(atPath: ConfigStore.shared.configURL.path()) {
                 try fileManager.removeItem(
                     at: ConfigStore.shared.configURL.deletingLastPathComponent())
                 Logfile.core.info("The configuration folder has been successfully deleted.")
-
-                let domain = Bundle.main.bundleIdentifier!
-                UserDefaults.standard.removePersistentDomain(forName: domain)
-                UserDefaults.standard.synchronize()
-
             }
         } catch {
-            Logfile.core.error("Error deleting folder: \(error.localizedDescription, privacy: .public)")
+            Logfile.core.error(
+                "Error deleting folder: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -77,16 +78,32 @@ extension AppDelegate {
         }
     }
 
-    func restartApp(mode: AppMode?) {
+    func restartApp(mode: AppMode?, completion: (() -> Void)? = nil) {
         if mode == .es {
             manageAgent(plistName: plistName, action: .install)
+            manageHelperLoginItem(
+                helperBundleID: loginItem,
+                action: .install
+            )
+            NSApp.terminate(nil)
         } else {
-            let path = Bundle.main.bundlePath
-            let task = Process()
-            task.launchPath = "/usr/bin/open"
-            task.arguments = ["-n", path]
-            try? task.run()
+            let bundleURL = Bundle.main.bundleURL
+            let pid = ProcessInfo.processInfo.processIdentifier
+
+            let config = NSWorkspace.OpenConfiguration()
+            config.createsNewApplicationInstance = true
+            config.arguments = ["-waitForPID", String(pid)]
+
+            NSWorkspace.shared.openApplication(at: bundleURL, configuration: config) { _, error in
+                if let error = error {
+                    Logfile.core.error("Relaunch failed: \(error.localizedDescription)")
+                }
+
+                DispatchQueue.main.async {
+                    completion?()
+                    NSApp.terminate(nil)
+                }
+            }
         }
-        NSApp.terminate(nil)
     }
 }

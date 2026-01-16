@@ -5,8 +5,8 @@
 //  Created by Doe Phương on 28/12/25.
 //
 
-import Foundation
 import AppKit
+import Foundation
 import ServiceManagement
 
 extension AppDelegate {
@@ -41,26 +41,31 @@ extension AppDelegate {
             let confirm = AlertShow.show(
                 title: String(localized: "Uninstall Applocker?"),
                 message:
-                    String(localized: """
-                    You are about to uninstall AppLocker. \
-                    Please make sure that all apps are unlocked!
+                    String(
+                        localized: """
+                            You are about to uninstall AppLocker. \
+                            Please make sure that all apps are unlocked!
 
-                    Your Mac will restart after Successful Uninstall
-                    """),
+                            Your Mac will restart after Successful Uninstall
+                            """),
                 style: .critical,
                 buttons: [
+                    String(localized: "Uninstall"),
                     String(localized: "Cancel"),
-                    String(localized: "Uninstall")
                 ],
-                cancelIndex: 0
+                cancelIndex: 1
             )
 
             switch confirm {
-            case .button(index: 1, title: String(localized: "Uninstall")):
+            case .button(index: 0, title: String(localized: "Uninstall")):
                 switch modeLock {
                 case .es:
                     ExtensionInstaller.shared.onUninstalled = {
                         self.manageAgent(plistName: plistName, action: .uninstall)
+                        self.manageHelperLoginItem(
+                            helperBundleID: loginItem,
+                            action: .uninstall
+                        )
                         self.removeConfig()
                         self.selfRemoveApp()
                         self.showRestartSheet()
@@ -115,22 +120,23 @@ extension AppDelegate {
         let confirm = AlertShow.show(
             title: String(localized: "Reset AppLocker"),
             message:
-            String(localized: """
-            This operation will delete all settings including the list of locked applications. \
-            After successful reset, the application will be reopened.
+                String(
+                    localized: """
+                        This operation will delete all settings including the list of locked applications. \
+                        After successful reset, the application will be reopened.
 
-            Do you want to continue?
-            """),
+                        Do you want to continue?
+                        """),
             style: .critical,
             buttons: [
+                String(localized: "Reset"),
                 String(localized: "Cancel"),
-                String(localized: "Reset")
             ],
-            cancelIndex: 0
+            cancelIndex: 1
         )
 
         switch confirm {
-        case .button(index: 1, title: String(localized: "Reset")):
+        case .button(index: 0, title: String(localized: "Reset")):
             switch modeLock {
             case .launcher:
                 let loginItem = SMAppService.mainApp
@@ -146,9 +152,15 @@ extension AppDelegate {
             case .es:
                 ExtensionInstaller.shared.onUninstalled = {
                     self.removeConfig()
-                    self.manageAgent(plistName: plistName, action: .uninstall)
-                    modeLock = nil
-                    self.restartApp(mode: modeLock)
+                    self.manageHelperLoginItem(
+                        helperBundleID: loginItem,
+                        action: .uninstall
+                    )
+                    // Call restartApp first, then uninstall agent in the completion handler
+                    // This ensures the new app is launched before the current one is killed by agent uninstallation
+                    self.restartApp(mode: nil) {
+                        self.manageAgent(plistName: plistName, action: .uninstall)
+                    }
                 }
                 ExtensionInstaller.shared.uninstall()
             case nil:
