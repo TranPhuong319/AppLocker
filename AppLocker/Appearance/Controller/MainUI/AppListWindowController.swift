@@ -64,14 +64,20 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     private static func createHostingController() -> TouchBarHostingController<ContentView> {
         let hostingController = TouchBarHostingController(rootView: ContentView())
 
-        let size = NSSize(width: AppState.shared.setWidth, height: AppState.shared.setHeight)
+        let size = NSSize(
+            width: AppState.shared.preferredWindowWidth,
+            height: AppState.shared.preferredWindowHeight
+        )
         hostingController.view.setFrameSize(size)
         hostingController.view.layoutSubtreeIfNeeded()
         return hostingController
     }
 
     private static func createMainAppWindow(with contentVC: NSViewController) -> NSWindow {
-        let size = NSSize(width: AppState.shared.setWidth, height: AppState.shared.setHeight)
+        let size = NSSize(
+            width: AppState.shared.preferredWindowWidth,
+            height: AppState.shared.preferredWindowHeight
+        )
         let window = NSWindow(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.titled, .closable, .fullSizeContentView],
@@ -86,7 +92,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         window.minSize = size
         window.maxSize = size
         window.isReleasedWhenClosed = false
-        window.level = .floating
+        window.level = NSWindow.Level.floating
 
         return window
     }

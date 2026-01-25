@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Xcode user data
+*.xcuserstate
+*.xcuserdata/
+AppLocker.xcodeproj/xcuserdata/
+AppLocker.xcodeproj/project.xcworkspace/xcuserdata/
+
+# VSCode
+.vscode/

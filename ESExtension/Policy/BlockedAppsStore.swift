@@ -18,21 +18,21 @@ extension ESManager {
             }
 
             if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.es.error(
-                    "XPC notify (async) error: \(String(describing: error), privacy: .public)")
+                Logfile.es.pError(
+                    "XPC notify (async) error: \(String(describing: error))")
             }) as? ESXPCProtocol {
                 proxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.log("Notified app (async) about blocked exec: \(path, privacy: .public)")
+                Logfile.es.pLog("Notified app (async) about blocked exec: \(path)")
                 return
             }
 
             if let syncProxy = conn.synchronousRemoteObjectProxyWithErrorHandler({ error in
-                Logfile.es.error(
-                    "XPC notify (sync) error: \(String(describing: error), privacy: .public)")
+                Logfile.es.pError(
+                    "XPC notify (sync) error: \(String(describing: error))")
             }) as? ESXPCProtocol {
                 syncProxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.log(
-                    "Notified app (sync fallback) about blocked exec: \(path, privacy: .public)")
+                Logfile.es.pLog(
+                    "Notified app (sync fallback) about blocked exec: \(path)")
                 return
             }
         }
@@ -57,7 +57,6 @@ extension ESManager {
                 if let path = dict["path"] as? String {
                     newPathToSha[path] = sha
                 }
-                Logfile.es.log("Processing update for SHA: \(sha, privacy: .public)")
             }
         }
 
@@ -65,9 +64,10 @@ extension ESManager {
             guard let self = self else { return }
             self.blockedSHAs = newShas
             self.blockedPathToSHA.merge(newPathToSha) { (_, new) in new }
-            Logfile.es.log(
-                "updateBlockedApps applied: \(newShas.count) SHAs, \(newPathToSha.count) paths"
-            )
         }
+
+        Logfile.es.log(
+            "updateBlockedApps applied: \(newShas.count) SHAs, \(newPathToSha.count) paths"
+        )
     }
 }

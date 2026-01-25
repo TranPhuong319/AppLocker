@@ -12,7 +12,7 @@ import Foundation
 
     func updateBlockedApps(_ apps: NSArray)
 
-    func allowConfigAccess(_ pid: Int32, withReply reply: @escaping (Bool) -> Void)
+    func allowConfigAccess(_ processID: Int32, withReply reply: @escaping (Bool) -> Void)
 
     func updateLanguage(to code: String)
 

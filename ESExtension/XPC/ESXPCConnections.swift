@@ -17,13 +17,15 @@ extension ESManager {
     ) {
         func attempt(_ idx: Int) {
             if let conn = self.pickAppConnection() {
-                Logfile.es.log("Got active XPC connection on attempt #\(idx + 1, privacy: .public)")
+                Logfile.es.pLog("Got active XPC connection on attempt #\(idx + 1)")
                 completion(conn)
                 return
             }
 
             if idx >= min(maxRetries - 1, delays.count - 1) {
-                Logfile.es.log("No XPC connection after quick retries (attempts=\(idx + 1, privacy: .public), giving up)")
+                Logfile.es.pLog(
+                    "No XPC connection after quick retries (attempts=\(idx + 1), giving up)"
+                )
                 completion(nil)
                 return
             }
@@ -38,24 +40,28 @@ extension ESManager {
 
     // Store an incoming connection (thread-safe).
     func storeIncomingConnection(_ conn: NSXPCConnection) {
-        xpcLock.perform {
+        var count = 0
+        xpcConnectionLock.perform {
             self.activeConnections.append(conn)
-            Logfile.es.log("Stored incoming XPC connection — total=\(self.activeConnections.count, privacy: .public)")
+            count = self.activeConnections.count
         }
+        Logfile.es.pLog("Stored incoming XPC connection — total=\(count)")
     }
 
     // Remove a connection when it goes away.
     func removeIncomingConnection(_ conn: NSXPCConnection) {
-        xpcLock.perform {
+        var count = 0
+        xpcConnectionLock.perform {
             self.activeConnections.removeAll { $0 === conn }
             self.authenticatedConnections.remove(ObjectIdentifier(conn))
-            Logfile.es.log("Removed XPC connection — total=\(self.activeConnections.count, privacy: .public)")
+            count = self.activeConnections.count
         }
+        Logfile.es.pLog("Removed XPC connection — total=\(count)")
     }
 
     // Pick the first available active connection.
     func pickAppConnection() -> NSXPCConnection? {
-        return xpcLock.sync {
+        return xpcConnectionLock.sync {
             return self.activeConnections.first
         }
     }

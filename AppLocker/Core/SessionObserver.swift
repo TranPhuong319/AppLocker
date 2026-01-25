@@ -22,9 +22,9 @@ final class SessionObserver {
         }
 
         func handleActive() {
-            let arr = manager.lockedApps.values.map { $0.toDict() }
+            let lockedAppsList = manager.lockedApps.values.map { $0.toDict() }
             DispatchQueue.global().async {
-                ESXPCClient.shared.updateBlockedApps(arr)
+                ESXPCClient.shared.updateBlockedApps(lockedAppsList)
             }
         }
 

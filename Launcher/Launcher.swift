@@ -25,7 +25,7 @@ class Launcher {
 
     func run() {
         Logfile.launcher.info("Launcher started")
-        Logfile.launcher.info("CommandLine args: \(CommandLine.arguments, privacy: .public)")
+        Logfile.launcher.pInfo("CommandLine args: \(CommandLine.arguments)")
 
         let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
         guard checkResourcesFolder(resourcesURL) else { exit(1) }
@@ -53,7 +53,7 @@ class Launcher {
     // MARK: - Helpers / Trợ giúp
     private func checkResourcesFolder(_ url: URL) -> Bool {
         if !FileManager.default.fileExists(atPath: url.path) {
-            Logfile.launcher.error("Folder not found: \(url.path, privacy: .public)")
+            Logfile.launcher.pError("Folder not found: \(url.path)")
             return false
         }
         return true
@@ -152,7 +152,7 @@ class Launcher {
                 )
             } else {
                 let message = error?.localizedDescription ?? "Unknown error"
-                Logfile.launcher.error("Failure authenticity: \(message, privacy: .public)")
+                Logfile.launcher.pError("Failure authenticity: \(message)")
                 exit(1)
             }
         }
@@ -331,9 +331,9 @@ class Launcher {
             if authSuccess {
                 proxy?.sendBatch(commandList) { success, message in
                     if success {
-                        Logfile.launcher.info("Success: \(message, privacy: .public)")
+                        Logfile.launcher.pInfo("Success: \(message)")
                     } else {
-                        Logfile.launcher.error("Failure: \(message, privacy: .public)")
+                        Logfile.launcher.pError("Failure: \(message)")
                     }
                     result = success
                     semaphore.signal()

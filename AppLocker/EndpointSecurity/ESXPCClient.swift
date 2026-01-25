@@ -14,6 +14,7 @@ final class ESXPCClient {
     private let serviceName = "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc"
     private let maxRetries = 10
     private var retryCount = 0
+    private var isConnecting = false  // Prevent parallel connection attempts
 
     // pending queue if updateBlockedApps called before connection ready
     private var lastKnownBlockedApps: [[String: String]] = []
@@ -35,9 +36,11 @@ final class ESXPCClient {
         xpcQueue.async { [weak self] in
             guard let self = self else { return }
 
-            guard self.connection == nil else {
+            // Prevent multiple concurrent connection attempts
+            guard self.connection == nil, !self.isConnecting else {
                 return
             }
+            self.isConnecting = true
 
             Logfile.core.log("[ESXPCClient] Connecting to MachService")
 
@@ -63,6 +66,7 @@ final class ESXPCClient {
                     Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
                     self.connection = conn
                     self.retryCount = 0
+                    self.isConnecting = false  // Clear flag on success
 
                     if !self.lastKnownBlockedApps.isEmpty {
                         let copy = self.lastKnownBlockedApps
@@ -79,6 +83,7 @@ final class ESXPCClient {
                 } else {
                     Logfile.core.error(
                         "[ESXPCClient] Authentication failed. Invalidating connection.")
+                    self.isConnecting = false  // Clear flag on failure
                     conn.invalidate()
                     // Reconnect logic will trigger via invalidationHandler
                 }
@@ -138,19 +143,11 @@ final class ESXPCClient {
                 return
             }
 
-            // 4. Verify Server
+            // 4. Verify Server (Curve25519)
             let combined = clientNonce + serverNonce
-            // Note: We use the Extension's PROVIDED PUBLIC key to verify.
-
-            // Import Server Key
-            guard let serverKey = KeychainHelper.shared.createPublicKey(from: serverPubKey) else {
-                Logfile.core.error("[ESXPCClient] Failed to import server public key.")
-                completion(false)
-                return
-            }
 
             if KeychainHelper.shared.verify(
-                signature: serverSig, originalData: combined, publicKey: serverKey) {
+                signature: serverSig, originalData: combined, publicKeyData: serverPubKey) {
                 completion(true)
             } else {
                 Logfile.core.error("[ESXPCClient] Server signature verification failed!")
@@ -160,28 +157,34 @@ final class ESXPCClient {
     }
 
     private func scheduleReconnect(immediate: Bool) {
-        connection?.invalidate()
-        connection = nil
+        xpcQueue.async { [weak self] in
+            guard let self = self else { return }
 
-        guard retryCount < maxRetries else {
-            Logfile.core.error("[ESXPCClient] Max retries reached (\(self.maxRetries))")
-            return
-        }
-        retryCount += 1
+            // Clean up existing connection
+            self.connection?.invalidate()
+            self.connection = nil
+            self.isConnecting = false  // Allow new connection attempt
 
-        let delay: Double
-        if immediate {
-            delay = 0.05  // try quickly
-        } else {
-            delay = min(0.5 * Double(retryCount), 1.0)  // gentle backoff but small cap
-        }
+            guard self.retryCount < self.maxRetries else {
+                Logfile.core.error("[ESXPCClient] Max retries reached (\(self.maxRetries))")
+                return
+            }
+            self.retryCount += 1
 
-        Logfile.core.log(
-            "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
-        )
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
-            [weak self] in
-            self?.connect()
+            let delay: Double
+            if immediate {
+                delay = 0.05  // try quickly
+            } else {
+                delay = min(0.5 * Double(self.retryCount), 1.0)  // gentle backoff but small cap
+            }
+
+            Logfile.core.log(
+                "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
+            )
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+                [weak self] in
+                self?.connect()
+            }
         }
     }
 
@@ -196,8 +199,8 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "updateBlockedApps failed: \(String(describing: error), privacy: .public)")
+                Logfile.core.pError(
+                    "updateBlockedApps failed: \(String(describing: error))")
             }) as? ESAppProtocol
         else {
             Logfile.core.error("[ESXPCClient] No valid proxy to send update")
@@ -206,7 +209,7 @@ final class ESXPCClient {
 
         let ns = apps.map { NSDictionary(dictionary: $0) } as NSArray
         proxy.updateBlockedApps(ns)
-        Logfile.core.log("updateBlockedApps sent (\(apps.count, privacy: .public) items)")
+        Logfile.core.pLog("updateBlockedApps sent (\(apps.count) items)")
     }
 
     // App requests extension to allow SHA once (with reply ack)
@@ -230,8 +233,8 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "allowSHAOnce failed: \(String(describing: error), privacy: .public)")
+                Logfile.core.pError(
+                    "allowSHAOnce failed: \(String(describing: error))")
                 completion(false)
             }) as? ESAppProtocol
         else {
@@ -252,8 +255,8 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "updateLanguage failed: \(String(describing: error), privacy: .public)")
+                Logfile.core.pError(
+                    "updateLanguage failed: \(String(describing: error))")
             }) as? ESAppProtocol
         else {
             Logfile.core.error("[ESXPCClient] No valid proxy to send language update")
@@ -261,23 +264,23 @@ final class ESXPCClient {
         }
 
         proxy.updateLanguage(to: langCode)
-        Logfile.core.log("updateLanguage sent: \(langCode, privacy: .public)")
+        Logfile.core.pLog("updateLanguage sent: \(langCode)")
     }
 
     // App requests extension to allow config access once (with reply ack)
-    func allowConfigAccess(_ pid: Int32, completion: @escaping (Bool) -> Void) {
+    func allowConfigAccess(_ processID: Int32, completion: @escaping (Bool) -> Void) {
         guard let conn = connection else {
             // quick retry once after 50ms
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) {
-                self.allowConfigAccess(pid, completion: completion)
+                self.allowConfigAccess(processID, completion: completion)
             }
             return
         }
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "allowConfigAccess failed: \(String(describing: error), privacy: .public)")
+                Logfile.core.pError(
+                    "allowConfigAccess failed: \(String(describing: error))")
                 completion(false)
             }) as? ESAppProtocol
         else {
@@ -286,9 +289,9 @@ final class ESXPCClient {
             return
         }
 
-        proxy.allowConfigAccess(pid) { success in
+        proxy.allowConfigAccess(processID) { success in
             Logfile.core.log(
-                "allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(pid)")
+                "allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(processID)")
             completion(success)
         }
     }

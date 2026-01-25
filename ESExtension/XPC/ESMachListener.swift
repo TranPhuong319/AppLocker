@@ -9,9 +9,8 @@ import Foundation
 import os
 
 extension ESManager: NSXPCListenerDelegate {
-
     func setupMachListener() {
-        xpcLock.perform {
+        xpcConnectionLock.perform {
             if listener != nil {
                 return
             }
@@ -36,10 +35,10 @@ extension ESManager: NSXPCListenerDelegate {
         shouldAcceptNewConnection newConnection: NSXPCConnection
     ) -> Bool {
 
-        Logfile.es.log(
+        Logfile.es.pLog(
             """
             Incoming XPC connection attempt \
-            (pid=\(newConnection.processIdentifier, privacy: .public))
+            (pid=\(newConnection.processIdentifier))
             """
         )
 
@@ -53,6 +52,16 @@ extension ESManager: NSXPCListenerDelegate {
         newConnection.invalidationHandler = { [weak self, weak newConnection] in
             guard let self, let conn = newConnection else { return }
             Logfile.es.log("Incoming XPC connection invalidated")
+
+            // Clear main app PID if this was the main app connection
+            let processID = conn.processIdentifier
+            self.processIDLock.perform {
+                if let mainPID = self.authenticatedMainAppPID, pid_t(processID) == mainPID {
+                    self.authenticatedMainAppPID = nil
+                    Logfile.es.log("Cleared authenticated main app PID on connection invalidation")
+                }
+            }
+
             self.removeIncomingConnection(conn)
         }
 

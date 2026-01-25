@@ -18,15 +18,15 @@ struct DeleteQueueSheet: View {
                     .font(.headline)
                     .padding([.horizontal, .top])
                     .padding(.bottom)
-                
+
                 Divider()
-                
+
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         let appsInQueue = appState.lockedAppObjects.filter {
                             appState.deleteQueue.contains($0.path)
                         }
-                        
+
                         let userApps = appsInQueue.filter { $0.source == .user }
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications")
@@ -34,7 +34,7 @@ struct DeleteQueueSheet: View {
                                 DeleteQueueRow(app: app, appState: appState)
                             }
                         }
-                        
+
                         let systemApps = appsInQueue.filter { $0.source == .system }
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications")
@@ -47,8 +47,6 @@ struct DeleteQueueSheet: View {
                 }
                 .scrollIndicators(.hidden)
                 .padding(.horizontal)
-                .frame(maxWidth: .infinity)
-                .frame(maxHeight: .infinity)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -57,7 +55,7 @@ struct DeleteQueueSheet: View {
                     }
                     .controlSize(.large)
                 }
-                
+
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Unlock") {
                         appState.unlockApp()

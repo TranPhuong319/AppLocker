@@ -15,7 +15,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     private let selfBundlePath = Bundle.main.bundleURL.path
     private let selfBundleName = Bundle.main.bundleURL.lastPathComponent
-    private var query: NSMetadataQuery?
+    private var metadataQuery: NSMetadataQuery?
+    private var cancellables = Set<AnyCancellable>()
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
     @Published var showingDeleteQueue = false
@@ -51,33 +52,46 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
         super.init()
 
+        // After super.init, it's safe to use 'self' and access instance properties like 'cancellables'
+        if let esManager = self.manager as? LockES {
+            esManager.bootstrap()
+            
+            // AppState must observe changes because LockES loads asynchronously
+            esManager.$lockedApps
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    self?.refreshAppLists()
+                }
+                .store(in: &cancellables)
+        }
+
         setupSearchPipeline()
         setupSpotlightQuery()
         refreshAppLists()
     }
 
     private func setupSpotlightQuery() {
-        query = NSMetadataQuery()
+        metadataQuery = NSMetadataQuery()
         NotificationCenter.default.addObserver(
             self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidFinishGathering,
-            object: query)
+            object: metadataQuery)
         NotificationCenter.default.addObserver(
             self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidUpdate,
-            object: query)
+            object: metadataQuery)
 
-        query?.predicate = NSPredicate(
+        metadataQuery?.predicate = NSPredicate(
             format:
                 "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
         )
-        query?.searchScopes = ["/Applications", "/System/Applications"]
-        query?.start()
+        metadataQuery?.searchScopes = ["/Applications", "/System/Applications"]
+        metadataQuery?.start()
     }
 
     @objc private func queryDidUpdate(_ notification: Notification) {
-        let results = query?.results as? [NSMetadataItem] ?? []
+        let results = metadataQuery?.results as? [NSMetadataItem] ?? []
         let selfPath = Bundle.main.bundleURL.path
 
-        let apps: [InstalledApp] = results.compactMap { item in
+        let installedAppsList: [InstalledApp] = results.compactMap { item in
             guard let path = item.value(forAttribute: "kMDItemPath") as? String,
                 path != selfPath,
                 !path.contains(".app/"),
@@ -94,7 +108,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
 
         DispatchQueue.main.async {
-            self.manager.allApps = apps
+            self.manager.allApps = installedAppsList
             self.refreshAppLists()
         }
     }
@@ -130,7 +144,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     private func refreshAppLists() {
-        let locked: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
+        let lockedAppsList: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard manager.lockedApps[path] != nil else { return nil }
 
             let name = FileManager.default.displayName(atPath: path)
@@ -142,30 +156,30 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        let allAppsFromManager: [InstalledApp] = manager.allApps
+        let allInstalledAppsFromManager: [InstalledApp] = manager.allApps
 
         let unlockable =
-            allAppsFromManager
-            .filter { (app: InstalledApp) -> Bool in
-                return !manager.lockedApps.keys.contains(app.path)
+            allInstalledAppsFromManager
+            .filter { (installedApp: InstalledApp) -> Bool in
+                return !manager.lockedApps.keys.contains(installedApp.path)
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
         DispatchQueue.main.async {
-            self.lockedAppObjects = locked
+            self.lockedAppObjects = lockedAppsList
             self.unlockableApps = unlockable
         }
     }
 
     private func fuzzyMatch(query: String, target: String) -> Bool {
-        let t = target.alNormalized
-        if t.contains(query) { return true }
-        var searchIndex = t.startIndex
-        for char in query {
+        let targetNormalized = target.alNormalized
+        if targetNormalized.contains(query) { return true }
+        var searchIndex = targetNormalized.startIndex
+        for searchCharacter in query {
             guard
-                let range = t.range(
-                    of: String(char), options: String.CompareOptions.caseInsensitive,
-                    range: searchIndex..<t.endIndex)
+                let range = targetNormalized.range(
+                    of: String(searchCharacter), options: String.CompareOptions.caseInsensitive,
+                    range: searchIndex..<targetNormalized.endIndex)
             else {
                 return false
             }
@@ -174,8 +188,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         return true
     }
 
-    let setWidth = 450  // Chiều ngang
-    let setHeight = 470  // chiều cao
+    let preferredWindowWidth = 450  // Chiều ngang
+    let preferredWindowHeight = 470  // chiều cao
 
     var appsToUnlock: [String] {
         Array(deleteQueue)

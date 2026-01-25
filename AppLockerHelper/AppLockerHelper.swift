@@ -16,29 +16,29 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
     private static let authLock = NSLock()
 
     private func isCurrentConnectionAuthenticated() -> Bool {
-        guard let conn = NSXPCConnection.current() else { return false }
+        guard let xpcConnection = NSXPCConnection.current() else { return false }
         var isAuthenticated = false
         AppLockerHelper.authLock.lock()
-        isAuthenticated = AppLockerHelper.authenticatedConnections.contains(ObjectIdentifier(conn))
+        isAuthenticated = AppLockerHelper.authenticatedConnections.contains(ObjectIdentifier(xpcConnection))
         AppLockerHelper.authLock.unlock()
         return isAuthenticated
     }
 
     // MARK: - Bundle ID Check (Ad-hoc Relaxed)
     private func verifyConnectionDetails() -> Bool {
-        guard let conn = NSXPCConnection.current() else { return false }
+        guard let xpcConnection = NSXPCConnection.current() else { return false }
 
         // Fallback: Use processIdentifier (PID) to get SecCode.
         // Note: PID is less secure than Audit Token (PID reuse), but acceptable here for Ad-hoc relaxed check.
 
-        let msg = "Connection request from pid: \(conn.processIdentifier)"
-        os_log("%{public}@", log: .default, type: .debug, msg)
+        let logMessage = "Connection request from pid: \(xpcConnection.processIdentifier)"
+        os_log("%{public}@", log: .default, type: .debug, logMessage)
 
         var secCode: SecCode?
-        let pid = conn.processIdentifier
-        let dict: [String: Any] = [kSecGuestAttributePid as String: Int(pid)]
+        let processID = xpcConnection.processIdentifier
+        let guestAttributesDictionary: [String: Any] = [kSecGuestAttributePid as String: Int(processID)]
 
-        let status = SecCodeCopyGuestWithAttributes(nil, dict as CFDictionary, [], &secCode)
+        let status = SecCodeCopyGuestWithAttributes(nil, guestAttributesDictionary as CFDictionary, [], &secCode)
 
         guard status == errSecSuccess, let code = secCode else {
             os_log("Failed to get SecCode from PID", log: .default, type: .error)
@@ -48,7 +48,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         // Convert SecCode -> SecStaticCode
         var staticCode: SecStaticCode?
         let staticStatus = SecCodeCopyStaticCode(code, [], &staticCode)
-        guard staticStatus == errSecSuccess, let statCode = staticCode else {
+        guard staticStatus == errSecSuccess, let staticCodeReference = staticCode else {
             os_log("Failed to get Static Code from SecCode", log: .default, type: .error)
             return false
         }
@@ -56,14 +56,14 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         // Get Info Dictionary to check Bundle ID
         var info: CFDictionary?
         // We use kSecCodeInfoSigningInformation to verify headers
-        let infoStatus = SecCodeCopySigningInformation(statCode, [], &info)
-        guard infoStatus == errSecSuccess, let infoDict = info as? [String: Any] else {
+        let infoStatus = SecCodeCopySigningInformation(staticCodeReference, [], &info)
+        guard infoStatus == errSecSuccess, let signingInformationDictionary = info as? [String: Any] else {
              os_log("Failed to get signing info", log: .default, type: .error)
              return false
         }
 
         // Check Bundle ID (kSecCodeInfoIdentifier)
-        if let bundleID = infoDict[kSecCodeInfoIdentifier as String] as? String {
+        if let bundleID = signingInformationDictionary[kSecCodeInfoIdentifier as String] as? String {
              os_log("Client Bundle ID: %{public}@", log: .default, type: .info, bundleID)
 
              let allowedIDs = [
@@ -89,7 +89,7 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
 
     // MARK: - AppLockerHelperProtocol Auth
     func authenticate(clientNonce: Data, clientSig: Data, clientPublicKey: Data, withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void) {
-        guard let conn = NSXPCConnection.current() else {
+        guard let xpcConnection = NSXPCConnection.current() else {
             reply(nil, nil, nil, false)
             return
         }
@@ -145,12 +145,12 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
 
         // 4. Mark Authenticated
         AppLockerHelper.authLock.lock()
-        AppLockerHelper.authenticatedConnections.insert(ObjectIdentifier(conn))
+        AppLockerHelper.authenticatedConnections.insert(ObjectIdentifier(xpcConnection))
         AppLockerHelper.authLock.unlock()
 
-        conn.invalidationHandler = {
+        xpcConnection.invalidationHandler = {
             AppLockerHelper.authLock.lock()
-            AppLockerHelper.authenticatedConnections.remove(ObjectIdentifier(conn))
+            AppLockerHelper.authenticatedConnections.remove(ObjectIdentifier(xpcConnection))
             AppLockerHelper.authLock.unlock()
         }
 
@@ -202,9 +202,9 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
     }
 
     // MARK: - Parse args safely
-    private func parseArgs(_ obj: Any?) -> [String]? {
-        guard let arr = obj as? [Any] else { return nil }
-        return arr.map { "\($0)" } // convert mọi thứ sang string
+    private func parseArgs(_ object: Any?) -> [String]? {
+        guard let argumentsList = object as? [Any] else { return nil }
+        return argumentsList.map { "\($0)" } // convert mọi thứ sang string
     }
 
     // MARK: - Batch with rollback
@@ -222,38 +222,38 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
             // Parse DO
             guard let doCmd = cmdPair["do"] as? [String: Any],
                   let command = doCmd["command"] as? String,
-                  let args = parseArgs(doCmd["args"]) else {
+                  let argumentsList = parseArgs(doCmd["args"]) else {
                 messages.append("Invalid 'do' command at index \(index)")
                 reply(false, messages.joined(separator: "\n"))
                 return
             }
 
             // Run DO
-            let sem = DispatchSemaphore(value: 0)
-            var doSuccess = false
-            var outputMsg = ""
-            sendCommand(command, args: args) { ok, out in
-                doSuccess = ok
-                outputMsg = out
-                sem.signal()
+            let stepSemaphore = DispatchSemaphore(value: 0)
+            var isDoSuccess = false
+            var stepOutputMessage = ""
+            sendCommand(command, args: argumentsList) { isSuccess, output in
+                isDoSuccess = isSuccess
+                stepOutputMessage = output
+                stepSemaphore.signal()
             }
-            sem.wait()
-            messages.append("Step \(index) do: \(outputMsg)")
+            stepSemaphore.wait()
+            messages.append("Step \(index) do: \(stepOutputMessage)")
 
             // Nếu fail → chạy UNDO của chính lệnh đó
-            if !doSuccess, let undoCmd = cmdPair["undo"] as? [String: Any],
+            if !isDoSuccess, let undoCmd = cmdPair["undo"] as? [String: Any],
                let undoCommand = undoCmd["command"] as? String,
-               let undoArgs = parseArgs(undoCmd["args"]) {
+               let undoArguments = parseArgs(undoCmd["args"]) {
                 messages.append("Step \(index) FAILED, running UNDO...")
-                let undoSem = DispatchSemaphore(value: 0)
-                sendCommand(undoCommand, args: undoArgs) { success, out in
-                    messages.append(success ? "UNDO OK: \(out)" : "UNDO FAIL: \(out)")
-                    undoSem.signal()
+                let undoStepSemaphore = DispatchSemaphore(value: 0)
+                sendCommand(undoCommand, args: undoArguments) { isUndoSuccess, output in
+                    messages.append(isUndoSuccess ? "UNDO OK: \(output)" : "UNDO FAIL: \(output)")
+                    undoStepSemaphore.signal()
                 }
-                undoSem.wait()
+                undoStepSemaphore.wait()
                 reply(false, messages.joined(separator: "\n"))
                 return
-            } else if !doSuccess {
+            } else if !isDoSuccess {
                 messages.append("Step \(index) FAILED, no UNDO available")
                 reply(false, messages.joined(separator: "\n"))
                 return

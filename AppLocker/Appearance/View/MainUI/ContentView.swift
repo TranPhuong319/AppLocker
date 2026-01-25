@@ -160,7 +160,7 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .frame(width: CGFloat(AppState.shared.setWidth),
-               height: CGFloat(AppState.shared.setHeight))
+        .frame(width: CGFloat(AppState.shared.preferredWindowWidth),
+               height: CGFloat(AppState.shared.preferredWindowHeight))
         .environmentObject(AppState.shared)
 }

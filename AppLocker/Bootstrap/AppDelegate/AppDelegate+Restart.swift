@@ -10,14 +10,14 @@ import Foundation
 
 extension AppDelegate {
     func callUninstallHelper() {
-        let conn = NSXPCConnection(
+        let xpcConnection = NSXPCConnection(
             machServiceName: "com.TranPhuong319.AppLocker.Helper",
             options: .privileged
         )
-        conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
-        conn.resume()
+        xpcConnection.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
+        xpcConnection.resume()
 
-        if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+        if let proxy = xpcConnection.remoteObjectProxyWithErrorHandler({ error in
             Logfile.core.debug("XPC connection closed (expected): \(error.localizedDescription)")
         }) as? AppLockerHelperProtocol {
             proxy.uninstallHelper { _, _ in
@@ -25,7 +25,7 @@ extension AppDelegate {
             }
         }
 
-        conn.invalidate()
+        xpcConnection.invalidate()
     }
 
     func selfRemoveApp() {
@@ -40,13 +40,13 @@ extension AppDelegate {
     }
 
     func removeConfig() {
-        let fileManager = FileManager.default
+        let sharedFileManager = FileManager.default
 
         // Always remove UserDefaults regardless of whether config file exists
-        if let domain = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: domain)
+        if let bundleIdentifierDomain = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleIdentifierDomain)
             UserDefaults.standard.synchronize()
-            Logfile.core.info("UserDefaults cleared for domain: \(domain)")
+            Logfile.core.info("UserDefaults cleared for domain: \(bundleIdentifierDomain)")
         }
 
         do {
@@ -55,26 +55,26 @@ extension AppDelegate {
                ConfigStore.shared.configURL points to .../AppLocker/config.plist
                deletingLastPathComponent() points to .../AppLocker/
             */
-            if fileManager.fileExists(atPath: ConfigStore.shared.configURL.path()) {
-                try fileManager.removeItem(
+            if sharedFileManager.fileExists(atPath: ConfigStore.shared.configURL.path()) {
+                try sharedFileManager.removeItem(
                     at: ConfigStore.shared.configURL.deletingLastPathComponent())
                 Logfile.core.info("The configuration folder has been successfully deleted.")
             }
         } catch {
-            Logfile.core.error(
-                "Error deleting folder: \(error.localizedDescription, privacy: .public)")
+            Logfile.core.pError(
+                "Error deleting folder: \(error.localizedDescription)")
         }
     }
 
     func showRestartSheet() {
-        let script = "tell application \"loginwindow\" to «event aevtrrst»"
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        task.arguments = ["-e", script]
+        let appleScriptSource = "tell application \"loginwindow\" to «event aevtrrst»"
+        let restartProcess = Process()
+        restartProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        restartProcess.arguments = ["-e", appleScriptSource]
         do {
-            try task.run()
+            try restartProcess.run()
         } catch {
-            print("Lỗi chạy osascript: \(error)")
+            Logfile.core.error("Lỗi chạy osascript: \(error.localizedDescription)")
         }
     }
 
@@ -88,13 +88,13 @@ extension AppDelegate {
             NSApp.terminate(nil)
         } else {
             let bundleURL = Bundle.main.bundleURL
-            let pid = ProcessInfo.processInfo.processIdentifier
+            let currentProcessPID = ProcessInfo.processInfo.processIdentifier
 
-            let config = NSWorkspace.OpenConfiguration()
-            config.createsNewApplicationInstance = true
-            config.arguments = ["-waitForPID", String(pid)]
+            let openConfiguration = NSWorkspace.OpenConfiguration()
+            openConfiguration.createsNewApplicationInstance = true
+            openConfiguration.arguments = ["-waitForPID", String(currentProcessPID)]
 
-            NSWorkspace.shared.openApplication(at: bundleURL, configuration: config) { _, error in
+            NSWorkspace.shared.openApplication(at: bundleURL, configuration: openConfiguration) { _, error in
                 if let error = error {
                     Logfile.core.error("Relaunch failed: \(error.localizedDescription)")
                 }

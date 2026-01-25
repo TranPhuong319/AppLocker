@@ -27,19 +27,19 @@ extension AppDelegate {
         helperBundleID: String,
         action: LoginItemAction
     ) -> LoginItemManageResult {
-        
+
         let service = SMAppService.loginItem(identifier: helperBundleID)
-        
+
         do {
             switch action {
-                
+
             case .install:
                 if service.status == .enabled {
                     return .alreadyInstalled
                 }
                 try service.register()
                 return .installed
-                
+
             case .uninstall:
                 if service.status != .enabled {
                     return .alreadyUninstalled
@@ -47,7 +47,7 @@ extension AppDelegate {
                 try service.unregister()
                 return .uninstalled
             }
-            
+
         } catch {
             return .failed(error)
         }

@@ -35,75 +35,75 @@ final class KeychainHelper {
 
     // MARK: - Key Generation
 
-    /// Generates RSA keys and stores them in memory cache
+    /// Generates EC P-256 keys and stores them in memory cache
     func generateKeys(tag: String) throws {
-        // 1. Generate SecKey Pair
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
-            kSecAttrKeySizeInBits as String: 2048,
+        // 1. Generate SecKey Pair (EC P-256)
+        let keyAttributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeySizeInBits as String: 256,
             kSecAttrIsPermanent as String: false  // DO NOT save to Keychain
         ]
 
-        var error: Unmanaged<CFError>?
-        guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
-            throw error!.takeRetainedValue() as Error
+        var keyError: Unmanaged<CFError>?
+        guard let privateSecKey = SecKeyCreateRandomKey(keyAttributes as CFDictionary, &keyError) else {
+            throw keyError!.takeRetainedValue() as Error
         }
 
-        guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
+        guard let publicSecKey = SecKeyCopyPublicKey(privateSecKey) else {
             throw NSError(
                 domain: "KeychainHelper", code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "Failed to copy public key"])
         }
 
         // 2. Export to Data
-        guard let privateData = SecKeyCopyExternalRepresentation(privateKey, &error) as Data?,
-            let publicData = SecKeyCopyExternalRepresentation(publicKey, &error) as Data?
+        guard let privateKeyData = SecKeyCopyExternalRepresentation(privateSecKey, &keyError) as Data?,
+            let publicKeyData = SecKeyCopyExternalRepresentation(publicSecKey, &keyError) as Data?
         else {
-            throw error!.takeRetainedValue() as Error
+            throw keyError!.takeRetainedValue() as Error
         }
 
         // 3. Store in Memory Cache
-        let privateTag = derivePrivateTag(from: tag)
+        let privateKeyTag = derivePrivateTag(from: tag)
 
         cacheLock.lock()
-        keyCache[privateTag] = privateData
-        keyCache[tag] = publicData
+        keyCache[privateKeyTag] = privateKeyData
+        keyCache[tag] = publicKeyData
         cacheLock.unlock()
 
-        Logfile.keychain.log("KeychainHelper: Generated and cached ephemeral keys for \(tag)")
+        Logfile.keychain.pLog("KeychainHelper: Generated and cached ephemeral EC keys for \(tag)")
     }
 
     // MARK: - Sign & Verify
 
     func sign(data: Data, tag: String) -> Data? {
-        let privateTag = derivePrivateTag(from: tag)
+        let privateKeyTag = derivePrivateTag(from: tag)
 
         // 1. Retrieve Private Key Data from Cache
         cacheLock.lock()
-        let privateData = keyCache[privateTag]
+        let privateKeyData = keyCache[privateKeyTag]
         cacheLock.unlock()
 
-        guard let pData = privateData else {
-            Logfile.keychain.error(
-                "KeychainHelper: Private key not found in cache for: \(privateTag)")
+        guard let pData = privateKeyData else {
+            Logfile.keychain.pError(
+                "KeychainHelper: Private key not found in cache for: \(privateKeyTag)")
             return nil
         }
 
         // 2. Create SecKey from Data
-        guard let privateKey = createKey(from: pData, isPrivate: true) else { return nil }
+        guard let privateSecKey = createKey(from: pData, isPrivate: true) else { return nil }
 
-        // 3. Sign
-        var error: Unmanaged<CFError>?
+        // 3. Sign using ECDSA SHA256
+        var keyError: Unmanaged<CFError>?
         guard
             let signature = SecKeyCreateSignature(
-                privateKey,
-                .rsaSignatureMessagePKCS1v15SHA256,
+                privateSecKey,
+                .ecdsaSignatureMessageX962SHA256,
                 data as CFData,
-                &error
+                &keyError
             ) as Data?
         else {
             Logfile.keychain.error(
-                "KeychainHelper: Signing failed: \(error!.takeRetainedValue() as Error)")
+                "KeychainHelper: Signing failed: \(keyError!.takeRetainedValue() as Error)")
             return nil
         }
 
@@ -117,28 +117,28 @@ final class KeychainHelper {
 
     func verify(signature: Data, originalData: Data, pubKeyTag: String) -> Bool {
         cacheLock.lock()
-        let pubData = keyCache[pubKeyTag]
+        let publicKeyData = keyCache[pubKeyTag]
         cacheLock.unlock()
 
-        guard let data = pubData else {
-            Logfile.keychain.error("KeychainHelper: Public key not found in cache: \(pubKeyTag)")
+        guard let data = publicKeyData else {
+            Logfile.keychain.pError("KeychainHelper: Public key not found in cache: \(pubKeyTag)")
             return false
         }
         return verify(signature: signature, originalData: originalData, publicKeyData: data)
     }
 
     func verify(signature: Data, originalData: Data, publicKey: SecKey) -> Bool {
-        var error: Unmanaged<CFError>?
+        var keyError: Unmanaged<CFError>?
         let result = SecKeyVerifySignature(
             publicKey,
-            .rsaSignatureMessagePKCS1v15SHA256,
+            .ecdsaSignatureMessageX962SHA256,
             originalData as CFData,
             signature as CFData,
-            &error
+            &keyError
         )
-        if let error = error {
+        if let keyError = keyError {
             Logfile.keychain.error(
-                "KeychainHelper: Verify error: \(error.takeRetainedValue() as Error)")
+                "KeychainHelper: Verify error: \(keyError.takeRetainedValue() as Error)")
         }
         return result
     }
@@ -162,15 +162,15 @@ final class KeychainHelper {
     private func createKey(from data: Data, isPrivate: Bool) -> SecKey? {
         let keyClass = isPrivate ? kSecAttrKeyClassPrivate : kSecAttrKeyClassPublic
         let options: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeyClass as String: keyClass,
-            kSecAttrKeySizeInBits as String: 2048
+            kSecAttrKeySizeInBits as String: 256
         ]
 
-        var error: Unmanaged<CFError>?
-        guard let key = SecKeyCreateWithData(data as CFData, options as CFDictionary, &error) else {
+        var keyError: Unmanaged<CFError>?
+        guard let key = SecKeyCreateWithData(data as CFData, options as CFDictionary, &keyError) else {
             Logfile.keychain.error(
-                "KeychainHelper: Failed to create key from data (private=\(isPrivate)): \(error!.takeRetainedValue() as Error)"
+                "KeychainHelper: Failed to create key from data (private=\(isPrivate)): \(keyError!.takeRetainedValue() as Error)"
             )
             return nil
         }

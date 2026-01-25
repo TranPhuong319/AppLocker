@@ -7,7 +7,10 @@
 
 import Foundation
 
+// Keep a strong global reference to prevent deallocation
+private var manager: ESManager?
+
 autoreleasepool {
-    _ = ESManager()
-    RunLoop.current.run()
+    manager = ESManager()
+    dispatchMain()
 }

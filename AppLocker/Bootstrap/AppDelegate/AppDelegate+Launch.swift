@@ -35,7 +35,7 @@ extension AppDelegate {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.badge, .sound, .alert]) { _, error in
                 if let error = error {
-                    Logfile.core.error("Notification error: \(error, privacy: .public)")
+                    Logfile.core.pError("Notification error: \(error)")
                 }
             }
 

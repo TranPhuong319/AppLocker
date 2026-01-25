@@ -18,9 +18,9 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
 
     func start() {
         Logfile.core.log("XPCServer start (app side exported object)")
-        let arr = AppState.shared.manager.lockedApps.values.map { $0.toDict() }
+        let lockedAppsList = AppState.shared.manager.lockedApps.values.map { $0.toDict() }
         DispatchQueue.global().async {
-            ESXPCClient.shared.updateBlockedApps(arr)
+            ESXPCClient.shared.updateBlockedApps(lockedAppsList)
         }
     }
 
@@ -41,12 +41,12 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
             return
         }
 
-        Logfile.core.log(
+        Logfile.core.pLog(
             """
             Endpoint Security Blocked Apps
-            Name:   \(name, privacy: .public)
-            Path:   \(path, privacy: .public)
-            SHA256: \(sha.prefix(8), privacy: .public)
+            Name:   \(name)
+            Path:   \(path)
+            SHA256: \(sha.prefix(8))
             """
         )
 

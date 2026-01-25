@@ -93,7 +93,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         touchBar.defaultItemIdentifiers = [
             .flexibleSpace,
             .addAppButtons,
-            .flexibleSpace,
+            .flexibleSpace
         ]
     }
 
@@ -108,7 +108,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         touchBar.defaultItemIdentifiers = [
             .flexibleSpace,
             .deleteQueueButtons,
-            .flexibleSpace,
+            .flexibleSpace
         ]
     }
 
@@ -170,7 +170,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         mainStack.orientation = .horizontal
         mainStack.spacing = 50
         mainStack.alignment = .centerY
-        
+
         NSLayoutConstraint.activate([
             lockButton.widthAnchor.constraint(equalTo: otherButton.widthAnchor),
             closeButton.widthAnchor.constraint(equalTo: otherButton.widthAnchor)
@@ -231,7 +231,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             button.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             button.topAnchor.constraint(equalTo: container.topAnchor),
             button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            button.heightAnchor.constraint(equalToConstant: 30),
+            button.heightAnchor.constraint(equalToConstant: 30)
         ])
 
         return container

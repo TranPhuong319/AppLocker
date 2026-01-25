@@ -51,15 +51,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         if let index = args.firstIndex(of: "-waitForPID"),
             index + 1 < args.count,
             let pidString = args[index + 1] as String?,
-            let pid = Int32(pidString)
-        {
+            let parentProcessID = Int32(pidString) {
 
-            Logfile.core.info("Waiting for PID: \(pid) to exit...")
+            Logfile.core.info("Waiting for PID: \(parentProcessID) to exit...")
 
             // Wait for parent process to exit
             // kill(pid, 0) returns 0 if process exists/is reachable
             var attempts = 0
-            while kill(pid, 0) == 0 && attempts < 30 {  // Check for 3s (30 * 0.1s)
+            while kill(parentProcessID, 0) == 0 && attempts < 30 {  // Check for 3s (30 * 0.1s)
                 usleep(100000)  // 0.1s
                 attempts += 1
             }
@@ -69,7 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 Logfile.core.info("Parent process exited.")
             }
 
-            applicationExactlyOneInstance(ignoringPID: pid)
+            applicationExactlyOneInstance(ignoringPID: parentProcessID)
         } else {
             applicationExactlyOneInstance()
         }

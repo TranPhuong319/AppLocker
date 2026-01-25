@@ -19,7 +19,7 @@ extension ESManager {
             self.currentLanguage = code
             UserDefaults.standard.set([code], forKey: "AppleLanguages")
             UserDefaults.standard.synchronize()
-            Logfile.es.log("ES Process language forced to: \(code, privacy: .public)")
+            Logfile.es.pLog("ES Process language forced to: \(code)")
         }
     }
 

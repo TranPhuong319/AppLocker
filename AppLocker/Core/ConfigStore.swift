@@ -18,27 +18,27 @@ final class ConfigStore {
                 for: .applicationSupportDirectory,
                 in: .userDomainMask
             ).first!
-            let dir = appSupport.appendingPathComponent("AppLocker", isDirectory: true)
-            try? ensureDirectoryExists(dir)
-            return dir.appendingPathComponent("config.plist")
+            let configDirectory = appSupport.appendingPathComponent("AppLocker", isDirectory: true)
+            try? ensureDirectoryExists(configDirectory)
+            return configDirectory.appendingPathComponent("config.plist")
 
         case .es:
-            let dir = URL(
+            let configDirectory = URL(
                 fileURLWithPath: "/Users/Shared/AppLocker",
                 isDirectory: true
             )
-            try? ensureDirectoryExists(dir)
-            return dir.appendingPathComponent("config.plist")
+            try? ensureDirectoryExists(configDirectory)
+            return configDirectory.appendingPathComponent("config.plist")
 
         case .none:
             fatalError()
         }
     }
 
-    private func ensureDirectoryExists(_ dir: URL) throws {
-        if !FileManager.default.fileExists(atPath: dir.path) {
+    private func ensureDirectoryExists(_ directory: URL) throws {
+        if !FileManager.default.fileExists(atPath: directory.path) {
             try FileManager.default.createDirectory(
-                at: dir,
+                at: directory,
                 withIntermediateDirectories: true,
                 attributes: [
                     .posixPermissions: 0o755
@@ -51,13 +51,13 @@ final class ConfigStore {
         return modeLock != AppMode.launcher
     }
 
-    private func requestAccessIfNeeded(completion: @escaping (Bool) -> Void) {
+    func performHandshake(completion: @escaping (Bool) -> Void) {
         guard shouldRequestES() else {
             completion(true) // skip request nếu Launcher
             return
         }
-        let pid = getpid()
-        ESXPCClient.shared.allowConfigAccess(pid) { success in
+        let currentProcessID = getpid()
+        ESXPCClient.shared.allowConfigAccess(currentProcessID) { success in
             completion(success)
         }
     }
@@ -65,15 +65,11 @@ final class ConfigStore {
     func load() -> [String: LockedAppConfig] {
         var result: [String: LockedAppConfig] = [:]
 
-        let group = DispatchGroup()
-        group.enter()
-        requestAccessIfNeeded { _ in
-            group.leave()
-        }
-        group.wait()
+        // NOTE: Handshake is already done by LockES.bootstrap() BEFORE calling load().
+        // DO NOT call requestAccessIfNeeded here to avoid double XPC calls and timeouts.
 
         guard FileManager.default.fileExists(atPath: configURL.path),
-              let data = try? Data(contentsOf: configURL) else {
+              let plistData = try? Data(contentsOf: configURL) else {
             return [:]
         }
 
@@ -81,21 +77,27 @@ final class ConfigStore {
 
         switch modeLock {
         case .launcher:
-            if let container = try? decoder.decode([String: [LockedAppConfig]].self, from: data),
-               let arr = container["BlockedApps"] {
-                for item in arr {
+            if let container = try? decoder.decode(
+                [String: [LockedAppConfig]].self,
+                from: plistData
+            ),
+               let blockedAppsList = container["BlockedApps"] {
+                for item in blockedAppsList {
                     result[item.path] = item
                 }
-            } else if let arr = try? decoder.decode([LockedAppConfig].self, from: data) {
-                for item in arr {
+            } else if let blockedAppsList = try? decoder.decode(
+                [LockedAppConfig].self,
+                from: plistData
+            ) {
+                for item in blockedAppsList {
                     result[item.path] = item
                 }
             }
 
         case .es:
             let uid = String(getuid())
-            if let userMap = try? decoder.decode([String: [LockedAppConfig]].self, from: data),
-               let apps = userMap[uid] {
+            if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
+               let apps = userBlockedAppsMap[uid] {
                 for app in apps {
                     result[app.path] = app
                 }
@@ -109,33 +111,26 @@ final class ConfigStore {
     }
 
     func save(_ map: [String: LockedAppConfig]) {
-        let group = DispatchGroup()
-        group.enter()
-        requestAccessIfNeeded { _ in
-            group.leave()
-        }
-        group.wait()
-
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
 
         do {
             switch modeLock {
             case .launcher:
-                let arr = Array(map.values)
-                let dict: [String: [LockedAppConfig]] = ["BlockedApps": arr]
-                let data = try encoder.encode(dict)
-                try data.write(to: configURL, options: .atomic)
-                Logfile.core.info("ConfigStore.save launcher: wrote \(arr.count) apps")
+                let blockedAppsList = Array(map.values)
+                let configDictionary: [String: [LockedAppConfig]] = ["BlockedApps": blockedAppsList]
+                let plistData = try encoder.encode(configDictionary)
+                try plistData.write(to: configURL, options: .atomic)
+                Logfile.core.info("ConfigStore.save launcher: wrote \(blockedAppsList.count) apps")
 
             case .es:
-                let uid = String(getuid())   // uid hiện tại
-                let userDict: [String: [LockedAppConfig]] = [
-                    uid: Array(map.values)
+                let userID = String(getuid())   // uid hiện tại
+                let userConfigDictionary: [String: [LockedAppConfig]] = [
+                    userID: Array(map.values)
                 ]
-                let data = try encoder.encode(userDict)
-                try data.write(to: configURL, options: .atomic)
-                Logfile.core.info("ConfigStore.save ES: wrote \(map.count) apps for uid \(uid)")
+                let plistData = try encoder.encode(userConfigDictionary)
+                try plistData.write(to: configURL, options: .atomic)
+                Logfile.core.pInfo("ConfigStore.save ES: wrote \(map.count) apps for uid \(userID)")
 
             case .none:
                 return

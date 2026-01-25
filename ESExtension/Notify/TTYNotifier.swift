@@ -9,15 +9,15 @@ import Foundation
 
 final class TTYNotifier {
     // Find the TTY path of a process (e.g., /dev/ttys001).
-    static func getTTYPath(for pid: pid_t) -> String? {
-        let bufferSize = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, nil, 0)
+    static func getTTYPath(for processID: pid_t) -> String? {
+        let bufferSize = proc_pidinfo(processID, PROC_PIDLISTFDS, 0, nil, 0)
         guard bufferSize > 0 else { return nil }
 
         let fdInfoSize = MemoryLayout<proc_fdinfo>.stride
         let numFDs = Int(bufferSize) / fdInfoSize
         var fdInfos = [proc_fdinfo](repeating: proc_fdinfo(), count: numFDs)
 
-        let result = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, &fdInfos, bufferSize)
+        let result = proc_pidinfo(processID, PROC_PIDLISTFDS, 0, &fdInfos, bufferSize)
         guard result > 0 else { return nil }
 
         for fileDescriptorInfo in fdInfos {
@@ -26,7 +26,7 @@ final class TTYNotifier {
                 let infoSize = Int32(MemoryLayout<vnode_fdinfowithpath>.stride)
 
                 let bytesReturned = proc_pidfdinfo(
-                    pid,
+                    processID,
                     fileDescriptorInfo.proc_fd,
                     PROC_PIDFDVNODEPATHINFO,
                     &vnodeInfo,

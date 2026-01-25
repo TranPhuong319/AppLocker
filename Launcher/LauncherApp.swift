@@ -16,7 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        Logfile.launcher.info("AppDelegate got files: \(urls.map { $0.path }, privacy: .public)")
+        let filePaths = urls.map { $0.path }
+        Logfile.launcher.pInfo("AppDelegate got files: \(filePaths)")
 
         let lockedApps = Launcher.shared.loadLockedAppInfos()
 

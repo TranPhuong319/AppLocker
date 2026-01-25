@@ -19,9 +19,8 @@ extension AppDelegate {
                     AppListWindowController.show()
                     Logfile.core.debug("Opened AppList")
                 } else {
-                    Logfile.core.error(
-                        "Error opening list app: \(error as NSObject?, privacy: .public)"
-                    )
+                    Logfile.core.pError(
+                        "Error opening list app: \(error as NSObject?)")
                 }
             }
         }
@@ -34,11 +33,11 @@ extension AppDelegate {
 
     @objc func uninstall() {
         Logfile.core.info("Uninstall Clicked")
-        let manager = AppState.shared.manager
+        let lockManager = AppState.shared.manager
         NSApp.activate(ignoringOtherApps: true)
 
-        if manager.lockedApps.isEmpty || modeLock == .es {
-            let confirm = AlertShow.show(
+        if lockManager.lockedApps.isEmpty || modeLock == .es {
+            let uninstallConfirmation = AlertShow.show(
                 title: String(localized: "Uninstall Applocker?"),
                 message:
                     String(
@@ -51,12 +50,12 @@ extension AppDelegate {
                 style: .critical,
                 buttons: [
                     String(localized: "Uninstall"),
-                    String(localized: "Cancel"),
+                    String(localized: "Cancel")
                 ],
                 cancelIndex: 1
             )
 
-            switch confirm {
+            switch uninstallConfirmation {
             case .button(index: 0, title: String(localized: "Uninstall")):
                 switch modeLock {
                 case .es:
@@ -117,7 +116,7 @@ extension AppDelegate {
     @objc func resetApp() {
         Logfile.core.info("Reset App Clicked")
         NSApp.activate(ignoringOtherApps: true)
-        let confirm = AlertShow.show(
+        let resetConfirmation = AlertShow.show(
             title: String(localized: "Reset AppLocker"),
             message:
                 String(
@@ -130,12 +129,12 @@ extension AppDelegate {
             style: .critical,
             buttons: [
                 String(localized: "Reset"),
-                String(localized: "Cancel"),
+                String(localized: "Cancel")
             ],
             cancelIndex: 1
         )
 
-        switch confirm {
+        switch resetConfirmation {
         case .button(index: 0, title: String(localized: "Reset")):
             switch modeLock {
             case .launcher:
@@ -179,8 +178,8 @@ extension AppDelegate {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             for window in NSApp.windows {
-                let cls = String(describing: type(of: window))
-                if cls.contains("SU") || cls.contains("SPU") {
+                let windowClassName = String(describing: type(of: window))
+                if windowClassName.contains("SU") || windowClassName.contains("SPU") {
                     window.makeKeyAndOrderFront(nil)
                     window.orderFrontRegardless()
                 }
@@ -207,8 +206,8 @@ extension AppDelegate {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             for window in NSApp.windows {
-                let cls = String(describing: type(of: window))
-                if cls.contains("About") {
+                let windowClassName = String(describing: type(of: window))
+                if windowClassName.contains("About") {
                     window.makeKey()
                     window.makeKeyAndOrderFront(nil)
                     window.orderFrontRegardless()
