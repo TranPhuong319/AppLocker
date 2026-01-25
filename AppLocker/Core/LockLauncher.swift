@@ -44,23 +44,23 @@ class LockLauncher: LockManagerProtocol {
 
     // MARK: - Core toggle logic (paths are the paths passed from UI)
     func toggleLock(for paths: [String]) {
-        var didChange = false
-        let uid = getuid()
-        let gid = getgid()
+        var hasConfigChanged = false
+        let userUID = getuid()
+        let groupGID = getgid()
 
         for path in paths {
-            if let lockedInfo = lockedApps[path] {
-                if performUnlock(path: path, info: lockedInfo, uid: uid, gid: gid) {
-                    didChange = true
+            if let lockedAppConfig = lockedApps[path] {
+                if performUnlock(path: path, info: lockedAppConfig, uid: userUID, gid: groupGID) {
+                    hasConfigChanged = true
                 }
             } else {
                 if performLock(path: path) {
-                    didChange = true
+                    hasConfigChanged = true
                 }
             }
         }
 
-        if didChange { save() }
+        if hasConfigChanged { save() }
     }
 
     // MARK: - Private Actions
@@ -70,14 +70,14 @@ class LockLauncher: LockManagerProtocol {
         uid: uid_t,
         gid: gid_t
     ) -> Bool {
-        guard let ctx = AppPathContext(path: path) else { return false }
-        let execFile = info.execFile ?? ""
-        let execPath = "\(ctx.hiddenAppPath)/Contents/MacOS/\(execFile)"
+        guard let pathContext = AppPathContext(path: path) else { return false }
+        let executableFileName = info.execFile ?? ""
+        let execPath = "\(pathContext.hiddenAppPath)/Contents/MacOS/\(executableFileName)"
 
-        let unlockCommands: [[String: Any]] = [
+        let helperUnlockCommands: [[String: Any]] = [
             [
-                "do": ["command": "chflags", "args": ["nouchg", ctx.hiddenAppPath]],
-                "undo": ["command": "chflags", "args": ["uchg", ctx.hiddenAppPath]]
+                "do": ["command": "chflags", "args": ["nouchg", pathContext.hiddenAppPath]],
+                "undo": ["command": "chflags", "args": ["uchg", pathContext.hiddenAppPath]]
             ],
             [
                 "do": ["command": "chflags", "args": ["nouchg", execPath]],
@@ -88,45 +88,45 @@ class LockLauncher: LockManagerProtocol {
                 "undo": ["command": "chown", "args": ["root:wheel", execPath]]
             ],
             [
-                "do": ["command": "rm", "args": ["-rf", ctx.disguisedAppPath]],
+                "do": ["command": "rm", "args": ["-rf", pathContext.disguisedAppPath]],
                 "undo": [
                     "command": "cp",
                     "args":
-                        ["-Rf", "\(ctx.backupDir)/\(ctx.appName).app", ctx.baseDir]
+                        ["-Rf", "\(pathContext.backupDir)/\(pathContext.appName).app", pathContext.baseDir]
                 ]
             ],
             [
-                "do": ["command": "mv", "args": [ctx.hiddenAppPath, ctx.disguisedAppPath]],
-                "undo": ["command": "mv", "args": [ctx.disguisedAppPath, ctx.hiddenAppPath]]
+                "do": ["command": "mv", "args": [pathContext.hiddenAppPath, pathContext.disguisedAppPath]],
+                "undo": ["command": "mv", "args": [pathContext.disguisedAppPath, pathContext.hiddenAppPath]]
             ],
             [
-                "do": ["command": "touch", "args": [ctx.disguisedAppPath]],
+                "do": ["command": "touch", "args": [pathContext.disguisedAppPath]],
                 "undo": [:]
             ],
             [
-                "do": ["command": "chflags", "args": ["nohidden", ctx.disguisedAppPath]],
-                "undo": ["command": "chflags", "args": ["hidden", ctx.disguisedAppPath]]
+                "do": ["command": "chflags", "args": ["nohidden", pathContext.disguisedAppPath]],
+                "undo": ["command": "chflags", "args": ["hidden", pathContext.disguisedAppPath]]
             ],
             [
                 "do": [
                     "command": "chmod",
                     "args": [
-                        "755", "\(ctx.disguisedAppPath)/Contents/MacOS/\(execFile)"
+                        "755", "\(pathContext.disguisedAppPath)/Contents/MacOS/\(executableFileName)"
                     ]
                 ],
                 "undo": [
                     "command": "chmod",
                     "args": [
-                        "000", "\(ctx.disguisedAppPath)/Contents/MacOS/\(execFile)"
+                        "000", "\(pathContext.disguisedAppPath)/Contents/MacOS/\(executableFileName)"
                     ]
                 ]
             ],
             [
-                "do": ["command": "rm", "args": ["-rf", ctx.backupDir]]
+                "do": ["command": "rm", "args": ["-rf", pathContext.backupDir]]
             ]
         ]
 
-        if sendToHelperBatch(unlockCommands) {
+        if sendToHelperBatch(helperUnlockCommands) {
             DispatchQueue.main.async { self.lockedApps.removeValue(forKey: path) }
             return true
         }
@@ -135,36 +135,52 @@ class LockLauncher: LockManagerProtocol {
 
     private func performLock(path: String) -> Bool {
         let appURL = URL(fileURLWithPath: path)
-        guard
-            let infoPlist = NSDictionary(
-                contentsOf: appURL.appendingPathComponent("Contents/Info.plist")) as? [String: Any],
-            let execName = infoPlist["CFBundleExecutable"] as? String,
-            let ctx = AppPathContext(path: path, execName: execName)
-        else { return false }
+        guard let bundle = Bundle(url: appURL) else { return false }
+        
+        let infoPlist = (bundle.infoDictionary ?? [:]) as [String: Any]
+        
+        // Robust Executable Resolution
+        var resolvedExecPath = bundle.executablePath
+        if resolvedExecPath == nil {
+            let appName = appURL.deletingPathExtension().lastPathComponent
+            let potentialPath = appURL.appendingPathComponent("Contents/MacOS/\(appName)").path
+            if FileManager.default.fileExists(atPath: potentialPath) {
+                resolvedExecPath = potentialPath
+            }
+        }
+        
+        guard let finalExecPath = resolvedExecPath else {
+            Logfile.core.error("Cannot resolve executable path for \(path)")
+            return false
+        }
+        
+        let execName = URL(fileURLWithPath: finalExecPath).lastPathComponent
+        
+        guard let pathContext = AppPathContext(path: path, execName: execName) else { return false }
 
-        createBackupDirectory(at: ctx.backupDir)
+        createBackupDirectory(at: pathContext.backupDir)
 
-        guard let sha = computeSHA(forPath: ctx.originalExecPath) else { return false }
+        guard let sha = computeSHA(forPath: pathContext.originalExecPath) else { return false }
         let launcherURL = Bundle.main.url(forResource: "Launcher", withExtension: "app")!
 
-        var lockCommands: [[String: Any]] = [
+        var helperLockCommands: [[String: Any]] = [
             [
-                "do": ["command": "cp", "args": ["-Rf", launcherURL.path, ctx.baseDir]],
-                "undo": ["command": "rm", "args": ["-rf", "\(ctx.baseDir)/Launcher.app"]]
+                "do": ["command": "cp", "args": ["-Rf", launcherURL.path, pathContext.baseDir]],
+                "undo": ["command": "rm", "args": ["-rf", "\(pathContext.baseDir)/Launcher.app"]]
             ],
             [
-                "do": ["command": "mkdir", "args": ["-p", ctx.launcherResources]],
-                "undo": ["command": "rm", "args": ["-rf", ctx.launcherResources]]
+                "do": ["command": "mkdir", "args": ["-p", pathContext.launcherResources]],
+                "undo": ["command": "rm", "args": ["-rf", pathContext.launcherResources]]
             ],
             [
-                "do": ["command": "mv", "args": [appURL.path, ctx.hiddenAppPath]],
-                "undo": ["command": "mv", "args": [ctx.hiddenAppPath, appURL.path]]
+                "do": ["command": "mv", "args": [appURL.path, pathContext.hiddenAppPath]],
+                "undo": ["command": "mv", "args": [pathContext.hiddenAppPath, appURL.path]]
             ],
             [
                 "do": [
                     "command": "chmod",
                     "args": [
-                        "000", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"
+                        "000", "\(pathContext.hiddenAppPath)/Contents/MacOS/\(execName)"
                     ]
                 ]
             ],
@@ -172,18 +188,18 @@ class LockLauncher: LockManagerProtocol {
                 "do": [
                     "command": "chown",
                     "args": [
-                        "root:wheel", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"
+                        "root:wheel", "\(pathContext.hiddenAppPath)/Contents/MacOS/\(execName)"
                     ]
                 ]
             ],
             [
-                "do": ["command": "chflags", "args": ["hidden", ctx.hiddenAppPath]]
+                "do": ["command": "chflags", "args": ["hidden", pathContext.hiddenAppPath]]
             ],
             [
                 "do": [
                     "command": "mv",
                     "args": [
-                        "\(ctx.baseDir)/Launcher.app", ctx.disguisedAppPath
+                        "\(pathContext.baseDir)/Launcher.app", pathContext.disguisedAppPath
                     ]
                 ]
             ],
@@ -191,7 +207,7 @@ class LockLauncher: LockManagerProtocol {
                 "do": [
                     "command": "chflags",
                     "args": [
-                        "uchg", "\(ctx.hiddenAppPath)/Contents/MacOS/\(execName)"
+                        "uchg", "\(pathContext.hiddenAppPath)/Contents/MacOS/\(execName)"
                     ]
                 ]
             ],
@@ -200,8 +216,8 @@ class LockLauncher: LockManagerProtocol {
                     "command": "PlistBuddy",
                     "args": [
                         "-c",
-                        "Set :CFBundleIdentifier com.TranPhuong319.AppLocker.Launcher-\(ctx.appName)",
-                        "\(ctx.disguisedAppPath)/Contents/Info.plist"
+                        "Set :CFBundleIdentifier com.TranPhuong319.AppLocker.Launcher-\(pathContext.appName)",
+                        "\(pathContext.disguisedAppPath)/Contents/Info.plist"
                     ]
                 ]
             ],
@@ -209,8 +225,8 @@ class LockLauncher: LockManagerProtocol {
                 "do": [
                     "command": "PlistBuddy",
                     "args": [
-                        "-c", "Set :CFBundleName \(ctx.appName)",
-                        "\(ctx.disguisedAppPath)/Contents/Info.plist"
+                        "-c", "Set :CFBundleName \(pathContext.appName)",
+                        "\(pathContext.disguisedAppPath)/Contents/Info.plist"
                     ]
                 ]
             ],
@@ -218,8 +234,8 @@ class LockLauncher: LockManagerProtocol {
                 "do": [
                     "command": "PlistBuddy",
                     "args": [
-                        "-c", "Set :CFBundleExecutable \(ctx.appName)",
-                        "\(ctx.disguisedAppPath)/Contents/Info.plist"
+                        "-c", "Set :CFBundleExecutable \(pathContext.appName)",
+                        "\(pathContext.disguisedAppPath)/Contents/Info.plist"
                     ]
                 ]
             ],
@@ -227,22 +243,22 @@ class LockLauncher: LockManagerProtocol {
                 "do": [
                     "command": "mv",
                     "args": [
-                        "\(ctx.disguisedAppPath)/Contents/MacOS/Launcher",
-                        "\(ctx.disguisedAppPath)/Contents/MacOS/\(ctx.appName)"
+                        "\(pathContext.disguisedAppPath)/Contents/MacOS/Launcher",
+                        "\(pathContext.disguisedAppPath)/Contents/MacOS/\(pathContext.appName)"
                     ]
                 ]
             ]
         ]
 
-        appendIconCommands(to: &lockCommands, ctx: ctx, infoPlist: infoPlist)
+        appendIconCommands(to: &helperLockCommands, pathContext: pathContext, infoPlist: infoPlist)
 
-        lockCommands.append(["do": ["command": "chflags", "args": ["uchg", ctx.hiddenAppPath]]])
-        lockCommands.append(
-            ["do": ["command": "cp", "args": ["-Rf", ctx.disguisedAppPath, ctx.backupDir]]]
+        helperLockCommands.append(["do": ["command": "chflags", "args": ["uchg", pathContext.hiddenAppPath]]])
+        helperLockCommands.append(
+            ["do": ["command": "cp", "args": ["-Rf", pathContext.disguisedAppPath, pathContext.backupDir]]]
         )
 
-        if sendToHelperBatch(lockCommands) {
-            updateLockedState(path: path, ctx: ctx, sha: sha, execName: execName)
+        if sendToHelperBatch(helperLockCommands) {
+            updateLockedState(path: path, pathContext: pathContext, sha: sha, execName: execName)
             return true
         }
         return false
@@ -255,25 +271,25 @@ class LockLauncher: LockManagerProtocol {
 
     private func updateLockedState(
         path: String,
-        ctx: AppPathContext,
+        pathContext: AppPathContext,
         sha: String,
         execName: String
     ) {
-        let bundleID = Bundle(url: ctx.appURL)?.bundleIdentifier ?? ""
+        let bundleID = Bundle(url: pathContext.appURL)?.bundleIdentifier ?? ""
         let mode = modeLock?.rawValue ?? AppMode.launcher.rawValue
-        let cfg = LockedAppConfig(
+        let appConfig = LockedAppConfig(
             bundleID: bundleID,
             path: path,
             sha256: sha,
             blockMode: mode,
             execFile: execName,
-            name: ctx.appName
+            name: pathContext.appName
         )
-        DispatchQueue.main.async { self.lockedApps[path] = cfg }
+        DispatchQueue.main.async { self.lockedApps[path] = appConfig }
     }
 
     private func appendIconCommands(
-        to commands: inout [[String: Any]], ctx: AppPathContext, infoPlist: [String: Any]
+        to commands: inout [[String: Any]], pathContext: AppPathContext, infoPlist: [String: Any]
     ) {
         var iconName: String?
         if let icon = infoPlist["CFBundleIconFile"] as? String {
@@ -281,15 +297,15 @@ class LockLauncher: LockManagerProtocol {
         }
 
         if let name = iconName {
-            let sourceIcon = ctx.appURL.appendingPathComponent(
+            let sourceIcon = pathContext.appURL.appendingPathComponent(
                 "Contents/Resources/\(name).icns"
             ).path
-            let destIcon = "\(ctx.baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"
+            let destIcon = "\(pathContext.baseDir)/Launcher.app/Contents/Resources/AppIcon.icns"
 
             commands.insert(
                 [
                     "do": ["command": "cp", "args": [sourceIcon, destIcon]],
-                    "undo": ["command": "rm", "args": ["-f", destIcon]]
+                    "undo": ["command": "rm", "args": ["f", destIcon]]
                 ], at: 1)
 
             commands.append([
@@ -297,28 +313,28 @@ class LockLauncher: LockManagerProtocol {
                     "command": "PlistBuddy",
                     "args": [
                         "-c", "Delete :CFBundleIconName",
-                        "\(ctx.disguisedAppPath)/Contents/Info.plist"
+                        "\(pathContext.disguisedAppPath)/Contents/Info.plist"
                     ]
                 ],
                 "undo": [
                     "command": "PlistBuddy",
                     "args": [
                         "-c", "Add :CFBundleIconName string \(name)",
-                        "\(ctx.disguisedAppPath)/Contents/Info.plist"
+                        "\(pathContext.disguisedAppPath)/Contents/Info.plist"
                     ]
                 ]
             ])
         } else {
-            appendFallbackIconCommands(to: &commands, ctx: ctx)
+            appendFallbackIconCommands(to: &commands, pathContext: pathContext)
         }
     }
 
     private func appendFallbackIconCommands(
         to commands: inout [[String: Any]],
-        ctx: AppPathContext
+        pathContext: AppPathContext
     ) {
-        let plistPath = "\(ctx.disguisedAppPath)/Contents/Info.plist"
-        let iconPath = "\(ctx.disguisedAppPath)/Contents/Resources/AppIcon.icns"
+        let plistPath = "\(pathContext.disguisedAppPath)/Contents/Info.plist"
+        let iconPath = "\(pathContext.disguisedAppPath)/Contents/Resources/AppIcon.icns"
 
         commands.append(contentsOf: [
             [
@@ -346,19 +362,19 @@ class LockLauncher: LockManagerProtocol {
 
     // helper to send work to privileged helper via XPC (authenticated)
     func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
-        let conn = NSXPCConnection(
+        let xpcConnection = NSXPCConnection(
             machServiceName: "com.TranPhuong319.AppLocker.Helper",
             options: .privileged
         )
-        conn.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
-        conn.resume()
+        xpcConnection.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
+        xpcConnection.resume()
 
         let semaphore = DispatchSemaphore(value: 0)
         var result: Bool = false
 
         let proxy =
-            conn.remoteObjectProxyWithErrorHandler { error in
-                Logfile.core.error("XPC error: \(error, privacy: .public)")
+            xpcConnection.remoteObjectProxyWithErrorHandler { error in
+                Logfile.core.pError("XPC error: \(error)")
                 result = false
                 semaphore.signal()
             } as? AppLockerHelperProtocol
@@ -367,17 +383,17 @@ class LockLauncher: LockManagerProtocol {
         // AUTH Handshake before sending commands
         // ---------------------------------------------------------
         func doAuth(completion: @escaping (Bool) -> Void) {
-            let appTag = KeychainHelper.Keys.appPublic
+            let appPublicKeyTag = KeychainHelper.Keys.appPublic
 
             // 1. Ensure Client Keys
-            if !KeychainHelper.shared.hasKey(tag: appTag) {
-                try? KeychainHelper.shared.generateKeys(tag: appTag)
+            if !KeychainHelper.shared.hasKey(tag: appPublicKeyTag) {
+                try? KeychainHelper.shared.generateKeys(tag: appPublicKeyTag)
             }
 
             // 2. Prepare Auth Data
             let clientNonce = Data.random(count: 32)
-            guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appTag),
-                let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: appTag)
+            guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appPublicKeyTag),
+                let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: appPublicKeyTag)
             else {
                 Logfile.core.error("Helper Auth: Failed to sign/export client data")
                 completion(false)
@@ -395,17 +411,12 @@ class LockLauncher: LockManagerProtocol {
                     return
                 }
 
-                // 3. Verify Server
+                // 3. Verify Server (Curve25519)
                 let combined = clientNonce + sNonce
-                guard let serverKey = KeychainHelper.shared.createPublicKey(from: sKeyData) else {
-                    Logfile.core.error("Helper Auth: Failed to import server key")
-                    completion(false)
-                    return
-                }
 
                 if KeychainHelper.shared.verify(
-                    signature: sSig, originalData: combined, publicKey: serverKey) {
-                    Logfile.core.info("Helper Auth: Success")
+                    signature: sSig, originalData: combined, publicKeyData: sKeyData) {
+                    Logfile.core.log("Helper Auth: Success")
                     completion(true)
                 } else {
                     Logfile.core.error("Helper Auth: Server signature verification failed")
@@ -419,9 +430,9 @@ class LockLauncher: LockManagerProtocol {
             if authSuccess {
                 proxy?.sendBatch(commandList) { success, message in
                     if success {
-                        Logfile.core.info("Success: \(message, privacy: .public)")
+                        Logfile.core.pInfo("Success: \(message)")
                     } else {
-                        Logfile.core.error("Failure: \(message, privacy: .public)")
+                        Logfile.core.pError("Failure: \(message)")
                     }
                     result = success
                     semaphore.signal()
@@ -433,7 +444,7 @@ class LockLauncher: LockManagerProtocol {
         }
 
         semaphore.wait()
-        conn.invalidate()
+        xpcConnection.invalidate()
         return result
     }
 
