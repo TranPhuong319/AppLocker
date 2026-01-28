@@ -1,4 +1,3 @@
-
 import EndpointSecurity
 import Foundation
 import os
@@ -12,31 +11,31 @@ final class ESSafetyValve {
     private let message: ESMessage
     private let manager: ESManager
     private var isResponded = false
-    
+
     init(message: ESMessage, manager: ESManager) {
         self.message = message
         self.manager = manager
-        
+
         // Track the count of active messages in the system
         OSAtomicIncrement32(&manager.activeMessageCount)
     }
-    
+
     /// Thread-safe response method.
     /// - Returns: `true` if this call was the one that actually responded.
     @discardableResult
     func respond(_ result: es_auth_result_t, cache: Bool) -> Bool {
         var shouldRespond = false
-        
+
         os_unfair_lock_lock(&lock)
         if !isResponded {
             isResponded = true
             shouldRespond = true
         }
         os_unfair_lock_unlock(&lock)
-        
+
         if shouldRespond {
             let status: es_respond_result_t
-            
+
             // CRITICAL FIX: AUTH_OPEN requires es_respond_flags_result
             if message.pointee.event_type == ES_EVENT_TYPE_AUTH_OPEN {
                 let allowedFlags: UInt32 = (result == ES_AUTH_RESULT_ALLOW)
@@ -55,22 +54,22 @@ final class ESSafetyValve {
                     cache
                 )
             }
-            
+
             if status != ES_RESPOND_RESULT_SUCCESS {
                 let path = ESSafetyValve.getPath(message)
                 Logfile.es.pError("es_respond failed [\(status.rawValue)] for \(path) (Type: \(self.message.pointee.event_type.rawValue))")
             }
-            
+
             // Decrement active message counter
             OSAtomicDecrement32(&manager.activeMessageCount)
-            
+
             // Signal that we are done to any waiting threads (usually the worker cleanup)
             deadlineExpiredSema.signal()
             return true
         }
         return false
     }
-    
+
     /// Called when the deadline timer expires (Panic Mode).
     func fireEmergencyResponse() {
         // Santa-style: We usually fail-open (ALLOW) in emergency to prevent system freeze.
@@ -79,7 +78,7 @@ final class ESSafetyValve {
              Logfile.es.pError("SAFETY VALVE: Deadline reached for [\(path)]! Forced ALLOW to prevent SIGKILL.")
         }
     }
-    
+
     /// Helper to extract path for logging.
     static func getPath(_ message: ESMessage) -> String {
         let type = message.pointee.event_type
@@ -98,13 +97,13 @@ final class ESSafetyValve {
         default: return "Event-\(type.rawValue)"
         }
     }
-    
+
     /// Wait until a response has been sent (to ensure object stays alive until timer finishes).
     func waitForResponse() {
         deadlineExpiredSema.wait()
         deadlineExpiredSema.signal()
     }
-    
+
     deinit {
         // Fallback: If for some reason respond was NEVER called, do it now.
         if !isResponded {

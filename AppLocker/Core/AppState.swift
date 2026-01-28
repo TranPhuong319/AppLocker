@@ -55,7 +55,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         // After super.init, it's safe to use 'self' and access instance properties like 'cancellables'
         if let esManager = self.manager as? LockES {
             esManager.bootstrap()
-            
+
             // AppState must observe changes because LockES loads asynchronously
             esManager.$lockedApps
                 .receive(on: DispatchQueue.main)

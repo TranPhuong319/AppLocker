@@ -136,9 +136,9 @@ class LockLauncher: LockManagerProtocol {
     private func performLock(path: String) -> Bool {
         let appURL = URL(fileURLWithPath: path)
         guard let bundle = Bundle(url: appURL) else { return false }
-        
+
         let infoPlist = (bundle.infoDictionary ?? [:]) as [String: Any]
-        
+
         // Robust Executable Resolution
         var resolvedExecPath = bundle.executablePath
         if resolvedExecPath == nil {
@@ -148,14 +148,14 @@ class LockLauncher: LockManagerProtocol {
                 resolvedExecPath = potentialPath
             }
         }
-        
+
         guard let finalExecPath = resolvedExecPath else {
             Logfile.core.error("Cannot resolve executable path for \(path)")
             return false
         }
-        
+
         let execName = URL(fileURLWithPath: finalExecPath).lastPathComponent
-        
+
         guard let pathContext = AppPathContext(path: path, execName: execName) else { return false }
 
         createBackupDirectory(at: pathContext.backupDir)

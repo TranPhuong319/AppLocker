@@ -32,14 +32,14 @@ func computeSHA(forPath path: String) -> String? {
         // Calculate remaining bytes to reach 1MB limit
         let remaining = maxReadSize - totalRead
         let bytesToRead = min(bufferSize, remaining)
-        
+
         let bytesRead = read(fileDescriptor, buffer, bytesToRead)
         if bytesRead < 0 { return nil }
         if bytesRead == 0 { break }
 
         let rawBuffer = UnsafeRawBufferPointer(start: buffer, count: bytesRead)
         hasher.update(bufferPointer: rawBuffer)
-        
+
         totalRead += bytesRead
     }
 

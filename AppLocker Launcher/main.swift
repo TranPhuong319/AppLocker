@@ -47,7 +47,7 @@ func kickstartAgent(label: String) {
     task.arguments = [
         "kickstart",
         "-k",
-        "gui/\(getuid())/\(label)",
+        "gui/\(getuid())/\(label)"
     ]
     try? task.run()
 }

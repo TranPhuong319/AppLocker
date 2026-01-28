@@ -25,7 +25,7 @@ extension ESManager: ESAppProtocol {
         // 0. Wait for Async KeyGen (Start-up race protection)
         // If keys are generating (<100ms), this will block this specific request briefly.
         _ = keyGenGroup.wait(timeout: .now() + 5) // 5s timeout safety
-        
+
         guard let conn = NSXPCConnection.current() else {
             Logfile.es.error("Auth: No current XPC connection")
             reply(nil, nil, nil, false)
@@ -49,7 +49,7 @@ extension ESManager: ESAppProtocol {
         let needsKeyGen = !KeychainHelper.shared.hasKey(tag: serverTag)
 
         if needsKeyGen {
-            // ⚠️ CRITICAL: Generate keys OFF XPC thread to avoid blocking
+            // CRITICAL: Generate keys OFF XPC thread to avoid blocking
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 guard let self = self else {
                     Logfile.es.error("Auth: ESManager deallocated during async key gen")
@@ -125,15 +125,5 @@ extension ESManager: ESAppProtocol {
 
         Logfile.es.log("Auth: Connection authenticated.")
         reply(serverNonce, serverSig, serverPubKeyData, true)
-    }
-}
-
-extension Data {
-    static func random(count: Int) -> Data {
-        var data = Data(count: count)
-        _ = data.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, count, $0.baseAddress!)
-        }
-        return data
     }
 }

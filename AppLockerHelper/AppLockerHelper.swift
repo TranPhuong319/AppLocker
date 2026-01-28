@@ -310,13 +310,3 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         reply(true, logs.joined(separator: "\n"))
     }
 }
-
-extension Data {
-    static func random(count: Int) -> Data {
-        var data = Data(count: count)
-        _ = data.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, count, $0.baseAddress!)
-        }
-        return data
-    }
-}

@@ -52,7 +52,7 @@ final class ESManager: NSObject {
     let emergencyTimerQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.emergency",
         qos: .userInteractive)
-    
+
     /// Group to coordinate Async Key Generation
     let keyGenGroup = DispatchGroup()
 
@@ -79,10 +79,10 @@ final class ESManager: NSObject {
         // 1. Setup Clients
         let authorizer = ESAuthorizer()
         let tamper = ESTamper()
-        
+
         authorizer.manager = self
         tamper.manager = self
-        
+
         self.authorizer = authorizer
         self.tamper = tamper
 
@@ -97,7 +97,7 @@ final class ESManager: NSObject {
                 self?.prepareAuthenticationKeys()
                 self?.keyGenGroup.leave()
             }
-            
+
             scheduleTempCleanup()
 
             // 4. Setup Listener (Ready for connections)
@@ -109,7 +109,7 @@ final class ESManager: NSObject {
             tamper.enable()
 
             Logfile.es.pLog("Modular ES Clients enabled and active.")
-            
+
         } else {
             Logfile.es.pError("Failed to start modular ES Clients.")
         }
@@ -181,14 +181,14 @@ final class ESManager: NSObject {
 
     func muteAppLockerProcess(_ token: UnsafePointer<audit_token_t>) {
         guard let client = authorizer?.client else { return }
-        
+
         // Mute for Authorizer
         if es_mute_process(client, token) == ES_RETURN_SUCCESS {
             Logfile.es.pLog("Muted AppLocker PID (Authorizer): Success")
         } else {
             Logfile.es.pError("Mute AppLocker PID (Authorizer): Failed")
         }
-        
+
         // Mute for Tamper too if needed (though Tamper usually monitors only config writes)
         if let tamperClient = tamper?.client {
             if es_mute_process(tamperClient, token) == ES_RETURN_SUCCESS {
@@ -200,13 +200,13 @@ final class ESManager: NSObject {
     private func getMyAuditToken() -> audit_token_t? {
         var token = audit_token_t()
         var size = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
-        
+
         let kernResult = withUnsafeMutablePointer(to: &token) { tokenPtr in
             tokenPtr.withMemoryRebound(to: integer_t.self, capacity: Int(size)) { intPtr in
                 task_info(mach_task_self_, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &size)
             }
         }
-        
+
         if kernResult == KERN_SUCCESS {
             return token
         }

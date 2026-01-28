@@ -40,10 +40,10 @@ class ESClientObject {
                 }
                 return
             }
-            
+
             // 2. Wrap Message & Valve
             let message = ESMessage(client: esClient, message: esMessage)
-            
+
             // Non-AUTH messages don't need deadline logic
             if esMessage.pointee.action_type != ES_ACTION_TYPE_AUTH {
                 if let manager = self.manager {
@@ -57,57 +57,57 @@ class ESClientObject {
             // 3. AUTH Handling - Santa Semaphore Logic
             if let currentManager = self.manager {
                 let valve = ESSafetyValve(message: message, manager: currentManager)
-                
+
                 // --- CALC BUDGET ---
                 let deadline = message.pointee.deadline
                 let now = mach_absolute_time()
                 let timeUntilDeadline = (deadline > now) ? (deadline - now) : 0
                 let nanosUntilDeadline = ESManager.machTimeToNanos(timeUntilDeadline)
-                
+
                 // Default Budget: 80% (Santa)
                 let budget = Double(nanosUntilDeadline) * 0.8
-                
+
                 // Headroom: Time reserved for the deadline block to execute response
                 let headroom = Int64(nanosUntilDeadline) - Int64(budget)
-                
+
                 // Clamp Headroom (Min 1s, Max 5s) - Santa Logic [1s, 5s]
                 let minHeadroom: Int64 = 1_000_000_000  // 1 second
                 let maxHeadroom: Int64 = 5_000_000_000  // 5 seconds
                 let finalHeadroom = min(maxHeadroom, max(minHeadroom, headroom))
-                
+
                 let finalProcessingBudget = max(0, Int64(nanosUntilDeadline) - finalHeadroom)
-                
+
                 // --- SEMAPHORES ---
                 let processingSema = DispatchSemaphore(value: 0)
                 processingSema.signal() // Init value to 1 (Santa pattern)
-                
+
                 let deadlineExpiredSema = DispatchSemaphore(value: 0)
-                
+
                 // --- DEADLINE TASK (Fail-Closed Deny) ---
                 currentManager.emergencyTimerQueue.asyncAfter(
                     deadline: .now() + .nanoseconds(Int(finalProcessingBudget))) {
-                        
+
                     // Try to acquire token. If success (0), it means Processing hasn't finished.
                     if processingSema.wait(timeout: .now()) == .success {
                         // Timeout Reached! Fail Closed.
                         // Exception: Allow if it is AppLocker itself (already muted/handled? No, mute removes AUTH events generally)
                         // But if for some reason we get an event, DENY to be safe.
-                        
+
                         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                        
+
                         let path = ESSafetyValve.getPath(message)
                         Logfile.es.error("DEADLINE REACHED [DENY]: \(path) (Budget: \(finalProcessingBudget)ns)")
-                        
+
                         // Signal that we are done responding
                         deadlineExpiredSema.signal()
                     }
                 }
-                
+
                 // --- PROCESSING TASK ---
                 currentManager.authorizationProcessingQueue.async {
                     // Do the work (calls valve.respond internally)
                     handler(esClient, message, valve)
-                    
+
                     // Try to acquire token.
                     if processingSema.wait(timeout: .now()) == .success {
                         // We finished in time! Code flow normal.
@@ -117,7 +117,7 @@ class ESClientObject {
                         deadlineExpiredSema.wait()
                     }
                 }
-                
+
             } else {
                 // No Manager (Deallocated?) - Fail Safe
                 es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
@@ -128,13 +128,13 @@ class ESClientObject {
             Logfile.es.pLog("[\(self.name)] Failed to create client: \(result.rawValue)")
             return false
         }
-        
+
         Logfile.es.pLog("[\(self.name)] Client created at Addr: \(String(format: "%p", Int(bitPattern: self.client!)))")
-        
+
         // 4. Early Mute (Self Protection)
         // Must mute immediately to prevent self-lockout/generation storms
         self.muteSelf()
-        
+
         return true
     }
 
@@ -194,8 +194,7 @@ class ESAuthorizer: ESClientObject {
         _ = self.subscribe([ES_EVENT_TYPE_AUTH_EXEC])
     }
 
-    private func handleAuthExec(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve)
-    {
+    private func handleAuthExec(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve) {
         ESManager.handleAuthExec(client: client, message: message, valve: valve)
     }
 }
@@ -231,7 +230,7 @@ class ESTamper: ESClientObject {
             ES_EVENT_TYPE_AUTH_TRUNCATE,
             ES_EVENT_TYPE_AUTH_EXCHANGEDATA,
             ES_EVENT_TYPE_AUTH_CLONE,
-            ES_EVENT_TYPE_AUTH_LINK,
+            ES_EVENT_TYPE_AUTH_LINK
         ])
     }
 
@@ -241,6 +240,7 @@ class ESTamper: ESClientObject {
         let paths: [(path: String, type: es_mute_path_type_t)] = [
             ("/Users/Shared/AppLocker/config.plist", ES_MUTE_PATH_TYPE_TARGET_LITERAL),
             ("/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
+            ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
         ]
 
         for item in paths {
@@ -255,10 +255,8 @@ class ESTamper: ESClientObject {
         valve: ESSafetyValve
     ) {
         let type = message.pointee.event_type
-        let path = ESSafetyValve.getPath(message)
 
-        // Log protected path access
-        Logfile.es.pLog("FILE_EVENT_PROTECTED [\(type.rawValue)] Path:[\(path)]")
+        // Analysis will be logged inside specific handlers in ESManager (Allow/Deny)
 
         switch type {
         case ES_EVENT_TYPE_AUTH_OPEN:
