@@ -8,7 +8,16 @@
 import CryptoKit
 import Foundation
 
+// SHARED CONSTANT: Both App & ES must read exactly the same amount to produce the same Hash.
+// 5MB is a safe balance: Harder to bypass than 1MB, but fast enough for ES (<50ms).
+public let SHA_READ_LIMIT = 5 * 1024 * 1024
+
 func computeSHA(forPath path: String) -> String? {
+    // Default to SHA_READ_LIMIT for consistency across the entire system
+    return computeSHA(forPath: path, maxBytes: SHA_READ_LIMIT)
+}
+
+func computeSHA(forPath path: String, maxBytes: Int) -> String? {
     // Check file size first - skip if too large to avoid ES timeout
     var fileStat = stat()
     guard stat(path, &fileStat) == 0 else { return nil }
@@ -24,13 +33,13 @@ func computeSHA(forPath path: String) -> String? {
         byteCount: bufferSize, alignment: MemoryLayout<UInt8>.alignment)
     defer { buffer.deallocate() }
 
-    // Optimization: Only hash first 1MB to avoid ES Timeouts
-    let maxReadSize = 1 * 1024 * 1024
+    // Optimization limit
+    let limit = maxBytes
     var totalRead = 0
 
-    while totalRead < maxReadSize {
-        // Calculate remaining bytes to reach 1MB limit
-        let remaining = maxReadSize - totalRead
+    while totalRead < limit {
+        // Calculate remaining bytes to reach limit
+        let remaining = limit - totalRead
         let bytesToRead = min(bufferSize, remaining)
 
         let bytesRead = read(fileDescriptor, buffer, bytesToRead)

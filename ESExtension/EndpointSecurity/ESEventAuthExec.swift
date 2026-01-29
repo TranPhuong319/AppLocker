@@ -7,6 +7,7 @@
 
 import EndpointSecurity
 import Foundation
+import Darwin
 import os
 
 extension ESManager {
@@ -17,7 +18,7 @@ extension ESManager {
     ) {
         let arrivalTime = Date()
         let messagePtr = message.pointee
-
+        
         guard let path = safePath(fromFilePointer: messagePtr.event.exec.target.pointee.executable) else {
             Logfile.es.log("Missing exec path in AUTH_EXEC. Denying by default.")
             _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
@@ -67,6 +68,37 @@ extension ESManager {
 
         if let decision = decisionResult {
             let authResult = (decision == .allow) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
+            
+            // Dynamic Delay Calculation (Budget-Aware)
+            // Goal: Add ~200ms delay for Deny to prevent Finder error, but respect Deadline.
+            if decision == .deny {
+                let deadline = messagePtr.deadline
+                let now = mach_absolute_time()
+                
+                if deadline > now {
+                    var info = mach_timebase_info()
+                    mach_timebase_info(&info)
+                    
+                    let remainingTicks = deadline - now
+                    let remainingNanos = remainingTicks * UInt64(info.numer) / UInt64(info.denom)
+                    let remainingSeconds = TimeInterval(remainingNanos) / 1_000_000_000
+                    
+                    // Configuration
+                    let targetDelay: TimeInterval = 0.2 // 200ms optimal for Finder
+                    let safetyBuffer: TimeInterval = 1.0 // Reserve 1s for overhead/safety
+                    
+                    // Logic: Take targetDelay ONLY if we have (target + buffer) time left.
+                    // Otherwise, take whatever is left minus buffer.
+                    // If remaining < buffer, do not sleep at all.
+                    let availableSleep = max(0, remainingSeconds - safetyBuffer)
+                    let actualDelay = min(targetDelay, availableSleep)
+                    
+                    if actualDelay > 0.01 { // Only sleep if meaningful
+                        Thread.sleep(forTimeInterval: actualDelay)
+                    }
+                }
+            }
+            
             // Use valve to safely respond
             _ = valve.respond(authResult, cache: false)  // NEVER cache to ensure locks work immediately
 
@@ -82,9 +114,39 @@ extension ESManager {
 
         // Slow path — compute SHA outside the lock.
         // Limit concurrency to avoid CPU thrashing
-        manager.shaSemaphore.wait()
-        let sha = computeSHA(forPath: path)
-        manager.shaSemaphore.signal()
+        // CONSISTENCY CHECK:
+        // We must calculate SHA exactly like the Main App (using SHA_READ_LIMIT).
+        // Check if we have enough budget to perform the STANDARD hash.
+        // We do NOT adjust the size dynamically anymore, as that breaks consistency.
+        
+        let deadline = messagePtr.deadline
+        let now = mach_absolute_time()
+        var shouldHash = true
+        
+        if deadline > now {
+            var info = mach_timebase_info()
+            mach_timebase_info(&info)
+            let remainingTicks = deadline - now
+            let remainingNanos = remainingTicks * UInt64(info.numer) / UInt64(info.denom)
+            let remainingSeconds = TimeInterval(remainingNanos) / 1_000_000_000
+            
+            // Standard Requirement: 5MB at 50MB/s = 0.1s processing time.
+            // Safety Buffer: 1.0s.
+            // Required Time = 1.1s.
+            let requiredTime = 1.1 
+            
+            if remainingSeconds < requiredTime {
+                shouldHash = false
+                Logfile.es.log("Skipping SHA calc: Not enough budget for consistent hash (Has: \(String(format: "%.2f", remainingSeconds))s, Need: \(requiredTime)s)")
+            }
+        }
+        
+        var sha: String? = nil
+        if shouldHash {
+            manager.shaSemaphore.wait()
+            sha = computeSHA(forPath: path) // Uses default SHA_READ_LIMIT (5MB)
+            manager.shaSemaphore.signal()
+        }
 
         if let sha = sha {
             let finalDecision: ExecDecision = manager.stateLock.sync {
@@ -100,6 +162,32 @@ extension ESManager {
             }
 
             let authResult = (finalDecision == .allow) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
+            
+            // Dynamic Delay for Slow Path (Small files might be hashed too fast)
+            if finalDecision == .deny {
+                let deadline = messagePtr.deadline
+                let now = mach_absolute_time()
+                
+                if deadline > now {
+                    var info = mach_timebase_info()
+                    mach_timebase_info(&info)
+                    
+                    let remainingTicks = deadline - now
+                    let remainingNanos = remainingTicks * UInt64(info.numer) / UInt64(info.denom)
+                    let remainingSeconds = TimeInterval(remainingNanos) / 1_000_000_000
+                    
+                    let targetDelay: TimeInterval = 0.2
+                    let safetyBuffer: TimeInterval = 1.0
+                    
+                    let availableSleep = max(0, remainingSeconds - safetyBuffer)
+                    let actualDelay = min(targetDelay, availableSleep)
+                    
+                    if actualDelay > 0.01 {
+                        Thread.sleep(forTimeInterval: actualDelay)
+                    }
+                }
+            }
+
             // Use valve to safely respond
             let elapsed = Date().timeIntervalSince(arrivalTime)
             if valve.respond(authResult, cache: false) { // NEVER cache ALLOW to ensure locks work immediately
