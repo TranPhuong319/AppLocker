@@ -56,8 +56,9 @@ final class ESSafetyValve {
             }
 
             if status != ES_RESPOND_RESULT_SUCCESS {
-                let path = ESSafetyValve.getPath(message)
-                Logfile.es.pError("es_respond failed [\(status.rawValue)] for \(path) (Type: \(self.message.pointee.event_type.rawValue))")
+                let path = ESSafetyValve.getPath(self.message)
+                // swiftlint:disable:next line_length
+                Logfile.endpointSecurity.error("es_respond failed [\(status.rawValue)] for \(path) (Type: \(self.message.pointee.event_type.rawValue))")
             }
 
             // Decrement active message counter
@@ -75,7 +76,7 @@ final class ESSafetyValve {
         // Santa-style: We usually fail-open (ALLOW) in emergency to prevent system freeze.
         if respond(ES_AUTH_RESULT_ALLOW, cache: true) {
              let path = ESSafetyValve.getPath(message)
-             Logfile.es.pError("SAFETY VALVE: Deadline reached for [\(path)]! Forced ALLOW to prevent SIGKILL.")
+             Logfile.endpointSecurity.error("SAFETY VALVE: Deadline reached for [\(path)]! Forced ALLOW to prevent SIGKILL.")
         }
     }
 

@@ -13,25 +13,25 @@ extension ESManager {
     func sendBlockedNotificationToApp(name: String, path: String, sha: String) {
         withRetryPickAppConnection { conn in
             guard let conn = conn else {
-                Logfile.es.log("No XPC connection available after retries — cannot notify app")
+                Logfile.endpointSecurity.log("No XPC connection available after retries — cannot notify app")
                 return
             }
 
             if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.es.pError(
+                Logfile.endpointSecurity.error(
                     "XPC notify (async) error: \(String(describing: error))")
             }) as? ESXPCProtocol {
                 proxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.pLog("Notified app (async) about blocked exec: \(path)")
+                Logfile.endpointSecurity.log("Notified app (async) about blocked exec: \(path)")
                 return
             }
 
             if let syncProxy = conn.synchronousRemoteObjectProxyWithErrorHandler({ error in
-                Logfile.es.pError(
+                Logfile.endpointSecurity.error(
                     "XPC notify (sync) error: \(String(describing: error))")
             }) as? ESXPCProtocol {
                 syncProxy.notifyBlockedExec(name: name, path: path, sha: sha)
-                Logfile.es.pLog(
+                Logfile.endpointSecurity.log(
                     "Notified app (sync fallback) about blocked exec: \(path)")
                 return
             }
@@ -41,7 +41,7 @@ extension ESManager {
     // Replace blocked app data with new mapping from the host app.
     @objc func updateBlockedApps(_ apps: NSArray) {
         guard isCurrentConnectionAuthenticated() else {
-            Logfile.es.error("Unauthorized call to updateBlockedApps")
+            Logfile.endpointSecurity.error("Unauthorized call to updateBlockedApps")
             return
         }
 
@@ -66,7 +66,7 @@ extension ESManager {
             self.blockedPathToSHA.merge(newPathToSha) { (_, new) in new }
         }
 
-        Logfile.es.log(
+        Logfile.endpointSecurity.log(
             "updateBlockedApps applied: \(newShas.count) SHAs, \(newPathToSha.count) paths"
         )
     }

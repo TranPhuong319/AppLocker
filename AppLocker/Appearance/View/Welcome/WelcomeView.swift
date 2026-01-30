@@ -44,7 +44,7 @@ struct WelcomeView: View {
                 VStack(spacing: 20) {
                     LabelButtonView(label: "ES (EndpointSecurity)",
                                     symbol: "lock.shield.fill") {
-                        selectedMode = AppMode.es.rawValue
+                        selectedMode = AppMode.esMode.rawValue
                         shouldRestart = true
                     }
 

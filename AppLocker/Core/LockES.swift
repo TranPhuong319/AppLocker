@@ -22,21 +22,21 @@ class LockES: LockManagerProtocol {
         ConfigStore.shared.performHandshake { [weak self] success in
             guard let self = self else { return }
             Logfile.core.info("ES Handshake finished (success=\(success)). Proceeeding to load config.")
-            
+
             // Safe to load config now (we are Muted or Launcher mode)
             let loaded = ConfigStore.shared.load()
-            
+
             DispatchQueue.main.async {
                 self.lockedApps = loaded
                 // Update Extension with loaded apps immediately
                 self.publishToExtension()
             }
-            
+
             Logfile.core.info("Initial scanning started in background...")
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 self?.rescanLockedApps()
             }
-            
+
             self.setupFSEvents()
         }
     }
@@ -84,7 +84,7 @@ class LockES: LockManagerProtocol {
                     Logfile.core.error("Cannot resolve executable path for \(path)")
                     continue
                 }
-                
+
                 // Get filename for config
                 let execName = URL(fileURLWithPath: execPath).lastPathComponent
 
@@ -95,7 +95,7 @@ class LockES: LockManagerProtocol {
                 }
                 let bundleID = bundle.bundleIdentifier ?? ""
 
-                let mode = modeLock?.rawValue ?? AppMode.es.rawValue
+                let mode = modeLock?.rawValue ?? AppMode.esMode.rawValue
                 let lockedAppConfig = LockedAppConfig(
                     bundleID: bundleID,
                     path: path,
@@ -140,10 +140,8 @@ extension LockES: FSEventsDelegate {
         var appsToUpdate: [String] = []
 
         for changedPath in paths {
-            for lockedPath in lockedPaths {
-                if changedPath.hasPrefix(lockedPath) {
-                    appsToUpdate.append(lockedPath)
-                }
+            for lockedPath in lockedPaths where changedPath.hasPrefix(lockedPath) {
+                appsToUpdate.append(lockedPath)
             }
         }
 

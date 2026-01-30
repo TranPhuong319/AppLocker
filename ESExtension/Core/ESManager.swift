@@ -57,7 +57,6 @@ final class ESManager: NSObject {
     let keyGenGroup = DispatchGroup()
 
     var activeMessageCount: Int32 = 0
-    let MaxInFlightMessages: Int32 = 100
     let shaSemaphore = DispatchSemaphore(value: 12)
 
     // Key generation lock to prevent concurrent RSA generation spikes
@@ -72,7 +71,7 @@ final class ESManager: NSObject {
 
     override init() {
         super.init()
-        Logfile.es.pLog("ESManager initializing...")
+        Logfile.endpointSecurity.log("ESManager initializing...")
 
         ESManager.sharedInstanceForCallbacks = self
 
@@ -88,7 +87,7 @@ final class ESManager: NSObject {
 
         // 2. Start Clients (Calls createClient -> MuteSelf internally)
         if authorizer.start() && tamper.start() {
-            Logfile.es.pLog("Modular ES Clients created and self-muted.")
+            Logfile.endpointSecurity.log("Modular ES Clients created and self-muted.")
 
             // 3. Async Key Generation (Optimized EC P-256)
             // Move off main thread to prevent init blocking, but guard via Group
@@ -108,10 +107,10 @@ final class ESManager: NSObject {
             authorizer.enable()
             tamper.enable()
 
-            Logfile.es.pLog("Modular ES Clients enabled and active.")
+            Logfile.endpointSecurity.log("Modular ES Clients enabled and active.")
 
         } else {
-            Logfile.es.pError("Failed to start modular ES Clients.")
+            Logfile.endpointSecurity.error("Failed to start modular ES Clients.")
         }
     }
 
@@ -130,7 +129,7 @@ final class ESManager: NSObject {
             decisionCache.removeValue(forKey: path)
             blockedPathToSHA.removeValue(forKey: path)
         }
-        Logfile.es.pLog("Cache invalidated for: \(path)")
+        Logfile.endpointSecurity.log("Cache invalidated for: \(path)")
     }
 
     func isCurrentConnectionAuthenticated() -> Bool {
@@ -147,7 +146,7 @@ final class ESManager: NSObject {
             reply(false)
             return
         }
-        Logfile.es.pLog("Handshake/ConfigAccess requested (Muted via AuditToken) for pid=\(processID)")
+        Logfile.endpointSecurity.log("Handshake/ConfigAccess requested (Muted via AuditToken) for pid=\(processID)")
         reply(true)
     }
 
@@ -172,9 +171,9 @@ final class ESManager: NSObject {
         if let token = getMyAuditToken() {
              var mutableToken = token
              if es_mute_process(client, &mutableToken) == ES_RETURN_SUCCESS {
-                 Logfile.es.pLog("Mute self result: Success")
+                 Logfile.endpointSecurity.log("Mute self result: Success")
              } else {
-                 Logfile.es.pError("Mute self result: Failed")
+                 Logfile.endpointSecurity.error("Mute self result: Failed")
              }
         }
     }
@@ -184,15 +183,15 @@ final class ESManager: NSObject {
 
         // Mute for Authorizer
         if es_mute_process(client, token) == ES_RETURN_SUCCESS {
-            Logfile.es.pLog("Muted AppLocker PID (Authorizer): Success")
+            Logfile.endpointSecurity.log("Muted AppLocker PID (Authorizer): Success")
         } else {
-            Logfile.es.pError("Mute AppLocker PID (Authorizer): Failed")
+            Logfile.endpointSecurity.error("Mute AppLocker PID (Authorizer): Failed")
         }
 
         // Mute for Tamper too if needed (though Tamper usually monitors only config writes)
         if let tamperClient = tamper?.client {
             if es_mute_process(tamperClient, token) == ES_RETURN_SUCCESS {
-                Logfile.es.pLog("Muted AppLocker PID (Tamper): Success")
+                Logfile.endpointSecurity.log("Muted AppLocker PID (Tamper): Success")
             }
         }
     }
@@ -217,7 +216,7 @@ final class ESManager: NSObject {
         let serverTag = KeychainHelper.Keys.extensionPublic
 
         if !KeychainHelper.shared.hasKey(tag: serverTag) {
-            Logfile.es.pLog("Auth: Pre-generating server keys at startup...")
+            Logfile.endpointSecurity.log("Auth: Pre-generating server keys at startup...")
             let startTime = mach_absolute_time()
 
             do {
@@ -229,12 +228,12 @@ final class ESManager: NSObject {
                     Double(mach_absolute_time() - startTime) * Double(timebaseInfo.numer) / Double(timebaseInfo.denom)
                     / 1_000_000.0
 
-                Logfile.es.pLog("Auth: Keys generated in \(String(format: "%.1f", elapsed))ms")
+                Logfile.endpointSecurity.log("Auth: Keys generated in \(String(format: "%.1f", elapsed))ms")
             } catch {
-                Logfile.es.pError("Auth: Pre-generation failed: \(error)")
+                Logfile.endpointSecurity.error("Auth: Pre-generation failed: \(error)")
             }
         } else {
-            Logfile.es.pLog("Auth: Server keys already exist")
+            Logfile.endpointSecurity.log("Auth: Server keys already exist")
         }
     }
 

@@ -42,7 +42,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         switch modeLock {
         case .launcher:
             initialManager = LockLauncher()
-        case .es:
+        case .esMode:
             initialManager = LockES()
         case .none:
             Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")

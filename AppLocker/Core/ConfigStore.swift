@@ -22,7 +22,7 @@ final class ConfigStore {
             try? ensureDirectoryExists(configDirectory)
             return configDirectory.appendingPathComponent("config.plist")
 
-        case .es:
+        case .esMode:
             let configDirectory = URL(
                 fileURLWithPath: "/Users/Shared/AppLocker",
                 isDirectory: true
@@ -94,7 +94,7 @@ final class ConfigStore {
                 }
             }
 
-        case .es:
+        case .esMode:
             let uid = String(getuid())
             if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
                let apps = userBlockedAppsMap[uid] {
@@ -123,14 +123,14 @@ final class ConfigStore {
                 try plistData.write(to: configURL, options: .atomic)
                 Logfile.core.info("ConfigStore.save launcher: wrote \(blockedAppsList.count) apps")
 
-            case .es:
+            case .esMode:
                 let userID = String(getuid())   // uid hiện tại
                 let userConfigDictionary: [String: [LockedAppConfig]] = [
                     userID: Array(map.values)
                 ]
                 let plistData = try encoder.encode(userConfigDictionary)
                 try plistData.write(to: configURL, options: .atomic)
-                Logfile.core.pInfo("ConfigStore.save ES: wrote \(map.count) apps for uid \(userID)")
+                Logfile.core.info("ConfigStore.save ES: wrote \(map.count) apps for uid \(userID)")
 
             case .none:
                 return

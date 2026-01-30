@@ -10,11 +10,11 @@ import Foundation
 
 // SHARED CONSTANT: Both App & ES must read exactly the same amount to produce the same Hash.
 // 5MB is a safe balance: Harder to bypass than 1MB, but fast enough for ES (<50ms).
-public let SHA_READ_LIMIT = 5 * 1024 * 1024
+public let shaReadLimit = 5 * 1024 * 1024
 
 func computeSHA(forPath path: String) -> String? {
     // Default to SHA_READ_LIMIT for consistency across the entire system
-    return computeSHA(forPath: path, maxBytes: SHA_READ_LIMIT)
+    return computeSHA(forPath: path, maxBytes: shaReadLimit)
 }
 
 func computeSHA(forPath path: String, maxBytes: Int) -> String? {

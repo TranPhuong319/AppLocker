@@ -20,8 +20,7 @@ final class TTYNotifier {
         let result = proc_pidinfo(processID, PROC_PIDLISTFDS, 0, &fdInfos, bufferSize)
         guard result > 0 else { return nil }
 
-        for fileDescriptorInfo in fdInfos {
-            if fileDescriptorInfo.proc_fdtype == PROX_FDTYPE_VNODE {
+        for fileDescriptorInfo in fdInfos where fileDescriptorInfo.proc_fdtype == PROX_FDTYPE_VNODE {
                 var vnodeInfo = vnode_fdinfowithpath()
                 let infoSize = Int32(MemoryLayout<vnode_fdinfowithpath>.stride)
 
@@ -44,7 +43,6 @@ final class TTYNotifier {
                         return path
                     }
                 }
-            }
         }
         return nil
     }

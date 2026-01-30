@@ -25,8 +25,7 @@ class FSEventsMonitoringService {
             version: 0, info: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()),
             retain: nil, release: nil, copyDescription: nil)
 
-        let callback: FSEventStreamCallback = {
-            (_, clientCallBackInfo, numEvents, eventPaths, _, _) in
+        let callback: FSEventStreamCallback = { (_, clientCallBackInfo, numEvents, eventPaths, _, _) in
             let watcher = Unmanaged<FSEventsMonitoringService>.fromOpaque(clientCallBackInfo!)
                 .takeUnretainedValue()
             let paths = UnsafeBufferPointer(
@@ -34,8 +33,8 @@ class FSEventsMonitoringService {
                 count: numEvents)
 
             var changedPaths: [String] = []
-            for i in 0..<numEvents {
-                let path = String(cString: paths[i])
+            for index in 0..<numEvents {
+                let path = String(cString: paths[index])
                 changedPaths.append(path)
             }
 

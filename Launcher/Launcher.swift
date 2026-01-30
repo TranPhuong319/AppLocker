@@ -14,8 +14,7 @@ struct LockedAppInfo: Codable {
     let execFile: String
 
     enum CodingKeys: String, CodingKey {
-        case name = "name"
-        case execFile = "execFile"
+        case name, execFile
     }
 }
 
@@ -25,7 +24,7 @@ class Launcher {
 
     func run() {
         Logfile.launcher.info("Launcher started")
-        Logfile.launcher.pInfo("CommandLine args: \(CommandLine.arguments)")
+        Logfile.launcher.info("CommandLine args: \(CommandLine.arguments)")
 
         let resourcesURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
         guard checkResourcesFolder(resourcesURL) else { exit(1) }
@@ -49,11 +48,13 @@ class Launcher {
             exit(1)
         }
     }
+}
 
-    // MARK: - Helpers / Trợ giúp
+// MARK: - Core Logic & Helpers
+extension Launcher {
     private func checkResourcesFolder(_ url: URL) -> Bool {
         if !FileManager.default.fileExists(atPath: url.path) {
-            Logfile.launcher.pError("Folder not found: \(url.path)")
+            Logfile.launcher.error("Folder not found: \(url.path)")
             return false
         }
         return true
@@ -132,131 +133,50 @@ class Launcher {
         ]
     }
 
-    private func authenticateAndOpenApp(lockedInfo: LockedAppInfo,
-                                        hiddenAppRealURL: URL,
-                                        execPath: String,
-                                        unlockCmds: [[String: Any]],
-                                        lockCmds: [[String: Any]]) {
+    private func authenticateAndOpenApp(
+        lockedInfo: LockedAppInfo,
+        hiddenAppRealURL: URL,
+        execPath: String,
+        unlockCmds: [[String: Any]],
+        lockCmds: [[String: Any]]
+    ) {
         guard sendToHelperBatch(unlockCmds) else {
-            Logfile.launcher.error("Cannot unlock the Exec file")
+            Logfile.launcher.error("Authentication or Unlock failed")
             exit(1)
         }
-        AuthenticationManager.authenticate(
-            reason: String(localized: "authentication to open")
-        ) { success, error in
-            if success {
-                self.openApplication(
-                    lockedInfo: lockedInfo,
-                    hiddenAppRealURL: hiddenAppRealURL,
-                    lockCmds: lockCmds
-                )
-            } else {
-                let message = error?.localizedDescription ?? "Unknown error"
-                Logfile.launcher.pError("Failure authenticity: \(message)")
-                exit(1)
-            }
-        }
-    }
-
-    private func openApplication(lockedInfo: LockedAppInfo,
-                                 hiddenAppRealURL: URL,
-                                 lockCmds: [[String: Any]]) {
-        Logfile.launcher.info("Successful authentication, opening application...")
 
         let config = NSWorkspace.OpenConfiguration()
-        let fileURLToOpen = resolveFileToOpen()
+        config.arguments = CommandLine.arguments.dropFirst().map { String($0) }
 
-        let openHandler: (NSRunningApplication?, Error?) -> Void = { runningApp, err in
-            if let err = err {
-                Logfile.launcher.error("Can't open the app: \(err)")
+        NSWorkspace.shared.open(hiddenAppRealURL, configuration: config) { [weak self] app, error in
+            if let error = error {
+                Logfile.launcher.error("Failed to open app: \(error.localizedDescription)")
+                _ = self?.sendToHelperBatch(lockCmds)
                 exit(1)
             }
-            guard let runningApp = runningApp else {
-                Logfile.launcher.error("Can't get the application process")
+
+            guard let app = app else {
+                Logfile.launcher.error("No app returned from workspace open")
+                _ = self?.sendToHelperBatch(lockCmds)
                 exit(1)
             }
-            self.monitorAppTermination(runningApp, lockCmds: lockCmds)
-        }
 
-        if !Launcher.shared.pendingOpenFileURLs.isEmpty {
-            Logfile.launcher.info("Open with pending files: \(Launcher.shared.pendingOpenFileURLs.map(\.path))")
-            NSWorkspace.shared.open(Launcher.shared.pendingOpenFileURLs,
-                                    withApplicationAt: hiddenAppRealURL,
-                                    configuration: config,
-                                    completionHandler: openHandler)
-        } else if let fileURLToOpen = fileURLToOpen {
-            NSWorkspace.shared.open([fileURLToOpen],
-                                    withApplicationAt: hiddenAppRealURL,
-                                    configuration: config,
-                                    completionHandler: openHandler)
-        } else {
-            NSWorkspace.shared.openApplication(at: hiddenAppRealURL,
-                                               configuration: config,
-                                               completionHandler: openHandler)
+            Logfile.launcher.info("App opened: \(app.bundleIdentifier ?? "Unknown")")
+            self?.waitForAppTermination(app: app, lockCmds: lockCmds)
         }
     }
 
-    private func resolveFileToOpen() -> URL? {
-        if let fromDelegate = Launcher.shared.pendingOpenFileURLs.first {
-            Logfile.launcher.info("Open with file \(fromDelegate.path)")
-            return fromDelegate
-        }
-        let args = CommandLine.arguments
-        if args.count > 1 {
-            let arg = args[1]
-            if FileManager.default.fileExists(atPath: arg) {
-                let url = URL(fileURLWithPath: arg)
-                Logfile.launcher.info("Open with file: \(url.path)")
-                return url
-            } else if let url = URL(string: arg), url.scheme != nil {
-                Logfile.launcher.info("Open with URL: \(url.absoluteString)")
-                return url
-            }
-        }
-        return nil
-    }
-
-    private func monitorAppTermination(_ runningApp: NSRunningApplication,
-                                       lockCmds: [[String: Any]]) {
-        DispatchQueue.global().async {
-            while !runningApp.isTerminated { sleep(1) }
-            Logfile.launcher.info("App closed. Locking the file ...")
-            if self.sendToHelperBatch(lockCmds) {
-                Logfile.launcher.info("Lock the Exec file")
+    private func waitForAppTermination(app: NSRunningApplication, lockCmds: [[String: Any]]) {
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            if app.isTerminated {
+                Logfile.launcher.info("App terminated, locking back...")
+                _ = self?.sendToHelperBatch(lockCmds)
+                timer.invalidate()
                 exit(0)
-            } else {
-                Logfile.launcher.error("Can't lock the file")
-                exit(1)
             }
         }
-    }
-
-    private func handleOpenResult(runningApp: NSRunningApplication?, err: Error?, lockCmds: [[String: Any]]) {
-        if let err = err {
-            Logfile.launcher.error("Can't open the app: \(err.localizedDescription)")
-            exit(1)
-        }
-
-        guard let runningApp = runningApp else {
-            Logfile.launcher.error("Can't get the application process")
-            exit(1)
-        }
-
-        DispatchQueue.global().async {
-            while !runningApp.isTerminated {
-                sleep(1)
-            }
-
-            Logfile.launcher.info("App escaped. Locking the file ...")
-
-            if self.sendToHelperBatch(lockCmds) {
-                Logfile.launcher.info("Lock the Exec file")
-                exit(0)
-            } else {
-                Logfile.launcher.error("Can't lock the file")
-                exit(1)
-            }
-        }
+        RunLoop.main.add(timer, forMode: .common)
+        RunLoop.main.run()
     }
 
     private func sendToHelperBatch(_ commandList: [[String: Any]]) -> Bool {
@@ -273,67 +193,19 @@ class Launcher {
             semaphore.signal()
         } as? AppLockerHelperProtocol
 
-        // ---------------------------------------------------------
-        // AUTH Handshake before sending commands
-        // ---------------------------------------------------------
-        func doAuth(completion: @escaping (Bool) -> Void) {
-            // Launcher uses its own key or shares App key?
-            // Ideally Launcher should have its own key or share keychain group.
-            // Since we use isolated keychains (Bundle ID), Launcher needs its own key pair.
-            // Tag: com.TranPhuong319.AppLocker.Launcher.public
-            // BUT "KeychainHelper.Keys.appPublic" is constant string "com.TranPhuong319.AppLocker.public"
-            // If Launcher has different Bundle ID, it stores in different keychain area.
-            // We can reuse the same Tag string because the Service Name (Bundle ID) isolates them.
-
-            let clientTag = KeychainHelper.Keys.appPublic // Reusing constant, context isolated by service name
-
-            // 1. Ensure Client Keys
-            if !KeychainHelper.shared.hasKey(tag: clientTag) {
-                 try? KeychainHelper.shared.generateKeys(tag: clientTag)
-            }
-
-            // 2. Prepare Auth Data
-            let clientNonce = Data.random(count: 32)
-            guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: clientTag),
-                  let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: clientTag) else {
-                Logfile.launcher.error("Helper Auth: Failed to sign/export client data")
-                completion(false)
-                return
-            }
-
-            proxy?.authenticate(clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData) { serverNonce, serverSig, serverPubKey, success in
-                 guard success, let sNonce = serverNonce, let sSig = serverSig, let sKeyData = serverPubKey else {
-                     Logfile.launcher.error("Helper Auth: Server rejected or invalid response")
-                     completion(false)
-                     return
-                 }
-
-                 // 3. Verify Server
-                 let combined = clientNonce + sNonce
-                 guard let serverKey = KeychainHelper.shared.createPublicKey(from: sKeyData) else {
-                     Logfile.launcher.error("Helper Auth: Failed to import server key")
-                     completion(false)
-                     return
-                 }
-
-                 if KeychainHelper.shared.verify(signature: sSig, originalData: combined, publicKey: serverKey) {
-                     Logfile.launcher.info("Helper Auth: Success")
-                     completion(true)
-                 } else {
-                     Logfile.launcher.error("Helper Auth: Server signature verification failed")
-                     completion(false)
-                 }
-            }
+        guard let helperProxy = proxy else {
+            Logfile.launcher.error("Failed to get helper proxy.")
+            semaphore.signal()
+            return false
         }
 
-        // Execute Auth then Batch
-        doAuth { authSuccess in
+        performHelperAuthentication(proxy: helperProxy) { authSuccess in
             if authSuccess {
-                proxy?.sendBatch(commandList) { success, message in
+                helperProxy.sendBatch(commandList) { success, message in
                     if success {
-                        Logfile.launcher.pInfo("Success: \(message)")
+                        Logfile.launcher.info("Success: \(message)")
                     } else {
-                        Logfile.launcher.pError("Failure: \(message)")
+                        Logfile.launcher.error("Failure: \(message)")
                     }
                     result = success
                     semaphore.signal()
@@ -349,6 +221,41 @@ class Launcher {
         return result
     }
 
+    private func performHelperAuthentication(proxy: AppLockerHelperProtocol, completion: @escaping (Bool) -> Void) {
+        let clientTag = KeychainHelper.Keys.appPublic
+        if !KeychainHelper.shared.hasKey(tag: clientTag) {
+            try? KeychainHelper.shared.generateKeys(tag: clientTag)
+        }
+        let clientNonce = Data.random(count: 32)
+        guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: clientTag),
+              let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: clientTag) else {
+            Logfile.launcher.error("Helper Auth: Failed to sign/export client data")
+            completion(false)
+            return
+        }
+
+        proxy.authenticate(clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData) { sN, sS, sK, ok in
+            guard ok, let sNonce = sN, let sSig = sS, let sKeyData = sK else {
+                Logfile.launcher.error("Helper Auth: Server rejected or invalid response")
+                completion(false)
+                return
+            }
+            let combined = clientNonce + sNonce
+            guard let serverKey = KeychainHelper.shared.createPublicKey(from: sKeyData) else {
+                Logfile.launcher.error("Helper Auth: Failed to import server key")
+                completion(false)
+                return
+            }
+            if KeychainHelper.shared.verify(signature: sSig, originalData: combined, publicKey: serverKey) {
+                Logfile.launcher.info("Helper Auth: Success")
+                completion(true)
+            } else {
+                Logfile.launcher.error("Helper Auth: Server signature verification failed")
+                completion(false)
+            }
+        }
+    }
+
     func loadLockedAppInfos() -> [String: LockedAppInfo] {
         let configURL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/AppLocker/config.plist")
@@ -360,12 +267,6 @@ class Launcher {
 
         do {
             let data = try Data(contentsOf: configURL)
-            Logfile.launcher.info("Raw data size: \(data.count)")
-
-            if let plistStr = String(data: data, encoding: .utf8) {
-                Logfile.launcher.info("Config.plist content:\n\(plistStr)")
-            }
-
             let decoded = try PropertyListDecoder().decode([String: LockedAppInfo].self, from: data)
             return decoded
         } catch {

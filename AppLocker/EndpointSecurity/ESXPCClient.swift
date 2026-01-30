@@ -21,8 +21,7 @@ final class ESXPCClient {
 
     private init() {
         // tiny delay to avoid race but keep it short
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) {
-            [weak self] in
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
             self?.connect()
         }
     }
@@ -181,8 +180,7 @@ final class ESXPCClient {
             Logfile.core.log(
                 "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
             )
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
-                [weak self] in
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) { [weak self] in
                 self?.connect()
             }
         }
@@ -199,7 +197,7 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.pError(
+                Logfile.core.error(
                     "updateBlockedApps failed: \(String(describing: error))")
             }) as? ESAppProtocol
         else {
@@ -207,9 +205,9 @@ final class ESXPCClient {
             return
         }
 
-        let ns = apps.map { NSDictionary(dictionary: $0) } as NSArray
-        proxy.updateBlockedApps(ns)
-        Logfile.core.pLog("updateBlockedApps sent (\(apps.count) items)")
+        let nsDictionaryApps = apps.map { NSDictionary(dictionary: $0) } as NSArray
+        proxy.updateBlockedApps(nsDictionaryApps)
+        Logfile.core.log("updateBlockedApps sent (\(apps.count) items)")
     }
 
     // App requests extension to allow SHA once (with reply ack)
@@ -233,7 +231,7 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.pError(
+                Logfile.core.error(
                     "allowSHAOnce failed: \(String(describing: error))")
                 completion(false)
             }) as? ESAppProtocol
@@ -255,7 +253,7 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.pError(
+                Logfile.core.error(
                     "updateLanguage failed: \(String(describing: error))")
             }) as? ESAppProtocol
         else {
@@ -264,7 +262,7 @@ final class ESXPCClient {
         }
 
         proxy.updateLanguage(to: langCode)
-        Logfile.core.pLog("updateLanguage sent: \(langCode)")
+        Logfile.core.log("updateLanguage sent: \(langCode)")
     }
 
     // App requests extension to allow config access once (with reply ack)
@@ -279,7 +277,7 @@ final class ESXPCClient {
 
         guard
             let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.pError(
+                Logfile.core.error(
                     "allowConfigAccess failed: \(String(describing: error))")
                 completion(false)
             }) as? ESAppProtocol

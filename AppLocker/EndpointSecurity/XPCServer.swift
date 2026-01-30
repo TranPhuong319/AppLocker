@@ -41,11 +41,11 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
             return
         }
 
-        Logfile.core.pLog(
+        Logfile.core.log(
             """
             Endpoint Security Blocked Apps
             Name:   \(name)
-            Path:   \(path)
+            Path:   \(path)b
             SHA256: \(sha.prefix(8))
             """
         )

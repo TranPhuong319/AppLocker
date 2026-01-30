@@ -125,8 +125,7 @@ final class AppUpdater: NSObject {
 
     func startAutoCheck(interval: TimeInterval = 6 * 60 * 60) {
         updateTimer?.invalidate()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) {
-            [weak self] _ in
+        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             self?.silentCheckForUpdates()
         }
         updateTimer?.tolerance = 10

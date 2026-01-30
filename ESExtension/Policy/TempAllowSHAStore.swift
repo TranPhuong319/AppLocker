@@ -28,7 +28,7 @@ extension ESManager {
         }
 
         if removedCount > 0 {
-            Logfile.es.pLog("Temp allowed SHAs expired: \(removedCount)")
+            Logfile.endpointSecurity.log("Temp allowed SHAs expired: \(removedCount)")
         }
     }
 
@@ -49,13 +49,13 @@ extension ESManager {
             guard let self = self else { return }
             self.tempAllowedSHAs[sha] = expiry
         }
-        Logfile.es.pLog(
+        Logfile.endpointSecurity.log(
             "Temp allowed SHA: \(sha) until \(expiry)")
     }
 
     @objc func allowSHAOnce(_ sha: String, withReply reply: @escaping (Bool) -> Void) {
         guard isCurrentConnectionAuthenticated() else {
-            Logfile.es.error("Unauthorized call to allowSHAOnce")
+            Logfile.endpointSecurity.error("Unauthorized call to allowSHAOnce")
             reply(false)
             return
         }

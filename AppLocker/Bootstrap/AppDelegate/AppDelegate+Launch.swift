@@ -13,7 +13,7 @@ extension AppDelegate {
         if config == .launcher {
             HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
             setupUIComponents()
-        } else if config == .es {
+        } else if config == .esMode {
             ExtensionInstaller.shared.onInstalled = {
                 Logfile.core.info("[App] Starting XPC server after extension install")
                 XPCServer.shared.start()
@@ -35,7 +35,7 @@ extension AppDelegate {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.badge, .sound, .alert]) { _, error in
                 if let error = error {
-                    Logfile.core.pError("Notification error: \(error)")
+                    Logfile.core.error("Notification error: \(error)")
                 }
             }
 

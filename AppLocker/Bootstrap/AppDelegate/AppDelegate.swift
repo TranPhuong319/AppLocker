@@ -22,7 +22,7 @@ enum AgentAction {
 }
 
 enum AppMode: String {
-    case es = "ES"
+    case esMode = "ES"
     case launcher = "Launcher"
 }
 
@@ -53,7 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             let pidString = args[index + 1] as String?,
             let parentProcessID = Int32(pidString) {
 
-            Logfile.core.info("Waiting for PID: \(parentProcessID) to exit...")
+            Logfile.core.info("Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
 
             // Wait for parent process to exit
             // kill(pid, 0) returns 0 if process exists/is reachable
@@ -73,10 +73,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             applicationExactlyOneInstance()
         }
 
-        Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
+        Logfile.core.info("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
-        Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None")")
+        Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None", privacy: .public)")
 
         if let mode = modeLock {
             launchConfig(config: mode)
@@ -104,7 +104,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         if !otherApps.isEmpty && !launchedByLaunchd() {
             Logfile.core.info(
-                "Another instance is running (PIDs: \(otherApps.map { $0.processIdentifier })). Terminating."
+                """
+                Another instance is running \
+                (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
+                Terminating.
+                """
             )
             NSApp.terminate(nil)
         }

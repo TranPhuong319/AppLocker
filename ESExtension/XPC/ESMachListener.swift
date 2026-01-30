@@ -21,7 +21,7 @@ extension ESManager: NSXPCListenerDelegate {
             listen.delegate = self
             listen.resume()
             listener = listen
-            Logfile.es.log(
+            Logfile.endpointSecurity.log(
                 """
                 MachService XPC listener resumed: \
                 endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc
@@ -35,7 +35,7 @@ extension ESManager: NSXPCListenerDelegate {
         shouldAcceptNewConnection newConnection: NSXPCConnection
     ) -> Bool {
 
-        Logfile.es.pLog(
+        Logfile.endpointSecurity.log(
             """
             Incoming XPC connection attempt \
             (pid=\(newConnection.processIdentifier))
@@ -51,14 +51,14 @@ extension ESManager: NSXPCListenerDelegate {
 
         newConnection.invalidationHandler = { [weak self, weak newConnection] in
             guard let self, let conn = newConnection else { return }
-            Logfile.es.log("Incoming XPC connection invalidated")
+            Logfile.endpointSecurity.log("Incoming XPC connection invalidated")
 
             // Clear main app PID if this was the main app connection
             let processID = conn.processIdentifier
             self.processIDLock.perform {
                 if let mainPID = self.authenticatedMainAppPID, pid_t(processID) == mainPID {
                     self.authenticatedMainAppPID = nil
-                    Logfile.es.log("Cleared authenticated main app PID on connection invalidation")
+                    Logfile.endpointSecurity.log("Cleared authenticated main app PID on connection invalidation")
                 }
             }
 
@@ -66,13 +66,13 @@ extension ESManager: NSXPCListenerDelegate {
         }
 
         newConnection.interruptionHandler = {
-            Logfile.es.log("Incoming XPC connection interrupted")
+            Logfile.endpointSecurity.log("Incoming XPC connection interrupted")
         }
 
         storeIncomingConnection(newConnection)
         newConnection.resume()
 
-        Logfile.es.log("Accepted new XPC connection from client")
+        Logfile.endpointSecurity.log("Accepted new XPC connection from client")
         return true
     }
 }

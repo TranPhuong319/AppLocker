@@ -17,13 +17,13 @@ extension ESManager {
     ) {
         func attempt(_ idx: Int) {
             if let conn = self.pickAppConnection() {
-                Logfile.es.pLog("Got active XPC connection on attempt #\(idx + 1)")
+                Logfile.endpointSecurity.log("Got active XPC connection on attempt #\(idx + 1)")
                 completion(conn)
                 return
             }
 
             if idx >= min(maxRetries - 1, delays.count - 1) {
-                Logfile.es.pLog(
+                Logfile.endpointSecurity.log(
                     "No XPC connection after quick retries (attempts=\(idx + 1), giving up)"
                 )
                 completion(nil)
@@ -45,7 +45,7 @@ extension ESManager {
             self.activeConnections.append(conn)
             count = self.activeConnections.count
         }
-        Logfile.es.pLog("Stored incoming XPC connection — total=\(count)")
+        Logfile.endpointSecurity.log("Stored incoming XPC connection — total=\(count)")
     }
 
     // Remove a connection when it goes away.
@@ -56,7 +56,7 @@ extension ESManager {
             self.authenticatedConnections.remove(ObjectIdentifier(conn))
             count = self.activeConnections.count
         }
-        Logfile.es.pLog("Removed XPC connection — total=\(count)")
+        Logfile.endpointSecurity.log("Removed XPC connection — total=\(count)")
     }
 
     // Pick the first available active connection.

@@ -78,9 +78,9 @@ struct AddAppSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: {
                         appState.lockButton()
-                    }) {
+                    }, label: {
                         Text("Lock (\(appState.selectedToLock.count))")
-                    }
+                    })
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)
                     .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
