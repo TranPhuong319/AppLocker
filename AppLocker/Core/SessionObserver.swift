@@ -15,13 +15,13 @@ final class SessionObserver {
 
     func start() {
 
-        func handleDeactive() {
+        func clearBlockedApps() {
             DispatchQueue.global().async {
                 ESXPCClient.shared.updateBlockedApps([])
             }
         }
 
-        func handleActive() {
+        func restoreBlockedApps() {
             let lockedAppsList = manager.lockedApps.values.map { $0.toDict() }
             DispatchQueue.global().async {
                 ESXPCClient.shared.updateBlockedApps(lockedAppsList)
@@ -35,7 +35,7 @@ final class SessionObserver {
                 object: nil,
                 queue: .main
             ) { _ in
-                handleActive()
+                restoreBlockedApps()
             }
         )
 
@@ -46,29 +46,7 @@ final class SessionObserver {
                 object: nil,
                 queue: .main
             ) { _ in
-                handleDeactive()
-            }
-        )
-
-        // Screen locked → deactive
-        observers.append(
-            DistributedNotificationCenter.default().addObserver(
-                forName: NSNotification.Name("com.apple.screenIsLocked"),
-                object: nil,
-                queue: .main
-            ) { _ in
-                handleDeactive()
-            }
-        )
-
-        // Screen unlocked → active
-        observers.append(
-            DistributedNotificationCenter.default().addObserver(
-                forName: NSNotification.Name("com.apple.screenIsUnlocked"),
-                object: nil,
-                queue: .main
-            ) { _ in
-                handleActive()
+                clearBlockedApps()
             }
         )
     }
