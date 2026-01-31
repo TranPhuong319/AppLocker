@@ -133,7 +133,7 @@ jobs:
         id: changelog
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))) || github.event_name == 'workflow_dispatch'
         run: |
-          python .github/scripts/generate_changelog.py --to-ref HEAD
+          python .github/scripts/generate_changelog.py --to-ref HEAD --current-tag "$REL_TAG"
 
       - name: Delete Old Prerelease
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/')) && steps.changelog.outputs.HAS_CHANGES == 'true') || github.event_name == 'workflow_dispatch'
@@ -217,10 +217,7 @@ jobs:
               '                }'
               '                </style>'
               '                <div class="markdown-body">'
-              '                  <h3>The latest updates are:</h3>'
-              '                  <ul>'
               "${CHANGELOG}"
-              '                  </ul>'
               '                </div>'
               '            ]]>'
               '            </description>'

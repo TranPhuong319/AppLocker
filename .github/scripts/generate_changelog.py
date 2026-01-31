@@ -92,7 +92,7 @@ def generate_markdown(groups):
             # (sha commit) **type(<scope>):** (<user-facing summary>)
             short_sha = c["sha"][:7]
             scope_str = f"({c['scope']})" if c['scope'] else ""
-            lines.append(f"- ({short_sha}) **{c['type']}{scope_str}:** ({c['summary']})")
+            lines.append(f"- {short_sha} **{c['type']}{scope_str}:** {c['summary']}")
         
         lines.append("\n---\n")
 
@@ -158,6 +158,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--from-ref", dest="from_ref", help="Start commit/tag")
     parser.add_argument("--to-ref", dest="to_ref", default="HEAD", help="End commit/tag")
+    parser.add_argument("--current-tag", dest="current_tag", help="Current release tag for display (e.g., v1.6.1)")
     args = parser.parse_args()
     
     from_ref = args.from_ref
@@ -194,10 +195,11 @@ def main():
     # Comparison link
     # from_ref could be a sha or tag. to_ref could be HEAD or tag.
     base_url = "https://github.com/TranPhuong319/AppLocker/compare/"
-    # Clean from_ref/to_ref if they are SHAs (optional but nice)
+    
+    # For display: use stable tag as from, current tag as to
     display_from = from_ref[:7] if len(from_ref) > 20 else from_ref
-    display_to = args.to_ref[:7] if len(args.to_ref) > 20 else args.to_ref
-    compare_link = f"{base_url}{from_ref}...{args.to_ref}"
+    display_to = args.current_tag if args.current_tag else (args.to_ref[:7] if len(args.to_ref) > 20 else args.to_ref)
+    compare_link = f"{base_url}{from_ref}...{args.current_tag if args.current_tag else args.to_ref}"
     
     md_footer = f"\n\n**See more changes: [{display_from}...{display_to}]({compare_link})**"
     html_footer = f'<p><b>See more changes: <a href="{compare_link}">{display_from}...{display_to}</a></b></p>'
@@ -209,7 +211,7 @@ def main():
     with open("ReleaseNotes.md", "a") as f:
         # User requested specific header in MD?
         # "Latest Updates"
-        f.write("## Latest Updates\n\n")
+        f.write("# Latest Updates\n\n")
         f.write("---\n\n")
         if has_changes:
             f.write(md_output)
