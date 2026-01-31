@@ -4,9 +4,9 @@ import re
 import sys
 import os
 
-def run_command(cmd):
+def run_command(shell_command):
     try:
-        return subprocess.check_output(cmd, shell=True, text=True).strip()
+        return subprocess.check_output(shell_command, shell=True, text=True).strip()
     except subprocess.CalledProcessError:
         return None
 
@@ -15,7 +15,7 @@ def get_last_stable_tag():
     tags = run_command("git tag -l")
     if not tags:
         return None
-    stable_tags = [t for t in tags.splitlines() if 'alpha' not in t.lower()]
+    stable_tags = [tag for tag in tags.splitlines() if 'alpha' not in tag.lower()]
     if not stable_tags:
         return None
     # Assuming tags are sorted or we rely on tail logic. 
@@ -26,8 +26,8 @@ def get_commits(from_ref, to_ref):
     print(f"Fetching commits from {from_ref} to {to_ref}...")
     # format: hash subject
     # We use %s (subject) to avoid body for now as per requirement summary.
-    cmd = f"git log {from_ref}..{to_ref} --format='%H %s'"
-    output = run_command(cmd)
+    shell_command = f"git log {from_ref}..{to_ref} --format='%H %s'"
+    output = run_command(shell_command)
     if not output:
         return []
     return output.splitlines()
@@ -54,26 +54,26 @@ def parse_commits(lines):
         
         match = re.search(regex, full_msg)
         if match:
-            c_type = match.group(1)
-            c_scope = match.group(2)
-            c_summary = match.group(3)
+            commit_type = match.group(1)
+            commit_scope = match.group(2)
+            commit_summary = match.group(3)
             
             commit_data = {
                 "sha": sha,
-                "type": c_type,
-                "scope": c_scope,
-                "summary": c_summary,
+                "type": commit_type,
+                "scope": commit_scope,
+                "summary": commit_summary,
                 "full_msg": full_msg
             }
             
-            if c_type == "feat":
+            if commit_type == "feat":
                 groups["feat"].append(commit_data)
-            elif c_type == "fix":
-                if c_scope and c_scope.lower() == "ui":
+            elif commit_type == "fix":
+                if commit_scope and commit_scope.lower() == "ui":
                     groups["fix_ui"].append(commit_data)
                 else:
                     groups["fix"].append(commit_data)
-            elif c_type == "perf":
+            elif commit_type == "perf":
                 groups["perf"].append(commit_data)
             # Ignore other types (chore, refactor, etc) as requested
             
@@ -88,11 +88,11 @@ def generate_markdown(groups):
             return
         
         lines.append(header)
-        for c in commits:
+        for commit_data in commits:
             # (sha commit) **type(<scope>):** (<user-facing summary>)
-            short_sha = c["sha"][:7]
-            scope_str = f"({c['scope']})" if c['scope'] else ""
-            lines.append(f"- {short_sha} **{c['type']}{scope_str}:** {c['summary']}")
+            short_sha = commit_data["sha"][:7]
+            scope_str = f"({commit_data['scope']})" if commit_data['scope'] else ""
+            lines.append(f"- {short_sha} **{commit_data['type']}{scope_str}:** {commit_data['summary']}")
         
         lines.append("\n---\n")
 
@@ -128,16 +128,16 @@ def generate_html(groups):
         lines.append(f"<{tag}>{clean_header}</{tag}>")
         lines.append("<ul>")
         
-        for c in commits:
-            short_sha = c["sha"][:7]
-            scope_str = f"({c['scope']})" if c['scope'] else ""
+        for commit_data in commits:
+            short_sha = commit_data["sha"][:7]
+            scope_str = f"({commit_data['scope']})" if commit_data['scope'] else ""
             
             # Link
-            link = f'<a href="{repo_url}{c["sha"]}"><tt>{short_sha}</tt></a>'
+            link = f'<a href="{repo_url}{commit_data["sha"]}"><tt>{short_sha}</tt></a>'
             # **type(scope):**
-            bold_prefix = f"<b>{c['type']}{scope_str}:</b>"
+            bold_prefix = f"<b>{commit_data['type']}{scope_str}:</b>"
             
-            lines.append(f"<li>{link} {bold_prefix} ({c['summary']})</li>")
+            lines.append(f"<li>{link} {bold_prefix} ({commit_data['summary']})</li>")
             
         lines.append("</ul>")
 
@@ -187,8 +187,8 @@ def main():
     
     # Output to GITHUB_OUTPUT for workflow conditional
     if 'GITHUB_OUTPUT' in os.environ:
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write(f"HAS_CHANGES={'true' if has_changes else 'false'}\n")
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
+            output_file.write(f"HAS_CHANGES={'true' if has_changes else 'false'}\n")
     else:
         print(f"Total significant changes: {total_changes}")
 
@@ -208,24 +208,24 @@ def main():
     html_output = generate_html(groups)
     
     print("Writing ReleaseNotes.md...")
-    with open("ReleaseNotes.md", "a") as f:
+    with open("ReleaseNotes.md", "a") as changelog:
         # User requested specific header in MD?
         # "Latest Updates"
-        f.write("# Latest Updates\n\n")
-        f.write("---\n\n")
+        changelog.write("# Latest Updates\n\n")
+        changelog.write("---\n\n")
         if has_changes:
-            f.write(md_output)
+            changelog.write(md_output)
         else:
-            f.write("*No significant changes in this version.*\n")
-        f.write(md_footer)
+            changelog.write("*No significant changes in this version.*\n")
+        changelog.write(md_footer)
         
     print("Writing changelog_body.html...")
-    with open("changelog_body.html", "w") as f:
+    with open("changelog_body.html", "w") as changelog:
         if has_changes:
-            f.write(html_output)
+            changelog.write(html_output)
         else:
-            f.write("<p><i>No significant changes in this version.</i></p>")
-        f.write(html_footer)
+            changelog.write("<p><i>No significant changes in this version.</i></p>")
+        changelog.write(html_footer)
 
 if __name__ == "__main__":
     main()
