@@ -137,7 +137,7 @@ def generate_html(groups):
             # **type(scope):**
             bold_prefix = f"<b>{commit_data['type']}{scope_str}:</b>"
             
-            lines.append(f"<li>{link} {bold_prefix} ({commit_data['summary']})</li>")
+            lines.append(f"<li>{link} {bold_prefix} {commit_data['summary']}</li>")
             
         lines.append("</ul>")
 
