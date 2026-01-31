@@ -81,13 +81,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         if let mode = modeLock {
             launchConfig(config: mode)
         } else {
-            Logfile.core.info("Checking kext signing status...")
-            if isKextSigningDisabled() {
-                WelcomeWindowController.show()
-                return
-            } else {
-                launchConfig(config: .launcher)
-            }
+            WelcomeWindowController.show()
+            return
         }
     }
 

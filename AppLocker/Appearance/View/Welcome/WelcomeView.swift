@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    // VI: Sử dụng rawValue của enum để lưu vào AppStorage
     @AppStorage("selectedMode") private var selectedMode: String = ""
     @State private var shouldRestart = false
 
@@ -42,11 +41,16 @@ struct WelcomeView: View {
                     .foregroundColor(.gray)
 
                 VStack(spacing: 20) {
+                    let isESEnabled = isKextSigningDisabled()
+
                     LabelButtonView(label: "ES (EndpointSecurity)",
-                                    symbol: "lock.shield.fill") {
+                                    symbol: "lock.shield.fill",
+                                    isDisabled: !isESEnabled) {
                         selectedMode = AppMode.esMode.rawValue
                         shouldRestart = true
                     }
+                    .disabled(!isESEnabled)
+                    .help(isESEnabled ? "" : "SIP must be disabled to use this mode")
 
                     LabelButtonView(label: "Launcher",
                                     symbol: "lock.rectangle.fill") {
@@ -75,6 +79,7 @@ struct WelcomeView: View {
 struct LabelButtonView: View {
     let label: LocalizedStringKey
     let symbol: String
+    var isDisabled: Bool = false
     let action: () -> Void
 
     @State private var isHovering = false
@@ -95,19 +100,22 @@ struct LabelButtonView: View {
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color(NSColor.windowBackgroundColor))
-                    .brightness(isHovering ? 0.1 : 0)  // Tăng độ sáng 10% khi hover
+                    .brightness(isHovering && !isDisabled ? 0.1 : 0)  // Tăng độ sáng 10% khi hover
             )
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                    .stroke(Color.gray.opacity(isDisabled ? 0.2 : 0.5), lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+            .shadow(color: Color.black.opacity(isDisabled ? 0 : 0.1), radius: 2, x: 0, y: 1)
+            .opacity(isDisabled ? 0.5 : 1.0)
             .animation(.easeInOut(duration: 0.2), value: isHovering)
         }
         .buttonStyle(PlainButtonStyle())
         .onHover { hovering in
-            isHovering = hovering
+            if !isDisabled {
+                isHovering = hovering
+            }
         }
     }
 }
