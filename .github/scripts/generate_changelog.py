@@ -193,13 +193,18 @@ def main():
         print(f"Total significant changes: {total_changes}")
 
     # Comparison link
-    # from_ref could be a sha or tag. to_ref could be HEAD or tag.
+    # Always use last stable tag for compare link (tag...tag format)
     base_url = "https://github.com/TranPhuong319/AppLocker/compare/"
     
-    # For display: use stable tag as from, current tag as to
-    display_from = from_ref[:7] if len(from_ref) > 20 else from_ref
+    # Get last stable tag for display (e.g., v1.6.0)
+    previous_stable_tag = get_last_stable_tag()
+    display_from = previous_stable_tag if previous_stable_tag else (from_ref[:7] if len(from_ref) > 20 else from_ref)
     display_to = args.current_tag if args.current_tag else (args.to_ref[:7] if len(args.to_ref) > 20 else args.to_ref)
-    compare_link = f"{base_url}{from_ref}...{args.current_tag if args.current_tag else args.to_ref}"
+    
+    # Build compare link: prefer tag...tag format
+    link_from = previous_stable_tag if previous_stable_tag else from_ref
+    link_to = args.current_tag if args.current_tag else args.to_ref
+    compare_link = f"{base_url}{link_from}...{link_to}"
     
     md_footer = f"\n\n**See more changes: [{display_from}...{display_to}]({compare_link})**"
     html_footer = f'<p><b>See more changes: <a href="{compare_link}">{display_from}...{display_to}</a></b></p>'
