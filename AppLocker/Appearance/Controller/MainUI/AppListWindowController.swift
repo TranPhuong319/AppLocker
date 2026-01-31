@@ -2,7 +2,7 @@
 //  AppListWindowController.swift
 //  AppLocker
 //
-//  Copyright © 2025 TranPhuong319. All rights reserved.
+//  Created by Doe Phương on 24/7/25.
 //
 
 import AppKit
