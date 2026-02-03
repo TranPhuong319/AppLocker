@@ -22,7 +22,9 @@ extension ESManager {
         let prefix: [UInt8] = [
             0x2f, 0x55, 0x73, 0x65, 0x72, 0x73, 0x2f, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64
         ]
-        return memcmp(data, prefix, prefixLen) == 0
+        if memcmp(data, prefix, prefixLen) != 0 { return false }
+        if len == prefixLen { return true }
+        return data.advanced(by: prefixLen).pointee == 0x2f
     }
 
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker
@@ -57,14 +59,14 @@ extension ESManager {
     ) -> Bool {
         guard let data = esPath.data else { return false }
         let len = Int(esPath.length)
-        let suffix: [UInt8] = [
-            0x2f, 0x41, 0x70, 0x70, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x2f, 0x63, 0x6f, 0x6e,
-            0x66, 0x69, 0x67, 0x2e, 0x70, 0x6c, 0x69, 0x73, 0x74
-        ]  // "/AppLocker/config.plist"
-        let suffixLen = 23
-        if len < suffixLen { return false }
-        let ptr = data.advanced(by: len - suffixLen)
-        return memcmp(ptr, suffix, suffixLen) == 0
+        let path: [UInt8] = [
+            0x2f, 0x55, 0x73, 0x65, 0x72, 0x73, 0x2f, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64, 0x2f,
+            0x41, 0x70, 0x70, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x2f, 0x63, 0x6f, 0x6e, 0x66,
+            0x69, 0x67, 0x2e, 0x70, 0x6c, 0x69, 0x73, 0x74
+        ]  // "/Users/Shared/AppLocker/config.plist"
+        let pathLen = 36
+        if len != pathLen { return false }
+        return memcmp(data, path, pathLen) == 0
     }
 
     static func isAppBundlePath(
@@ -241,7 +243,7 @@ extension ESManager {
         }
 
         // 3. System Folder Safety Check (Muting redundant folders)
-        if isProtectedFolderPath(esPath) {
+        if isInsideProtectedFolder(esPath) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
         }
@@ -258,7 +260,7 @@ extension ESManager {
 
         // Check if Folder OR File is protected
         let isFileProtected = isProtectedConfigPath(targetPathToken)
-        let isFolderProtected = isProtectedFolderPath(targetPathToken)
+        let isFolderProtected = isInsideProtectedFolder(targetPathToken)
         let isAppProtected = isAppBundlePath(targetPathToken)
 
         if isFileProtected || isFolderProtected || isAppProtected {
@@ -299,20 +301,24 @@ extension ESManager {
 
         // Check Protection on Source
         let srcIsFileProtected = isProtectedConfigPath(srcPathToken)
-        let srcIsFolderProtected = isProtectedFolderPath(srcPathToken)
+        let srcIsFolderProtected = isInsideProtectedFolder(srcPathToken)
         let srcIsAppProtected = isAppBundlePath(srcPathToken)
 
         // Check Protection on Destination
         var dstIsProtected = false
         if renameEvent.destination_type == ES_DESTINATION_TYPE_EXISTING_FILE {
             let dstToken = renameEvent.destination.existing_file.pointee.path
-            dstIsProtected = isProtectedConfigPath(dstToken) || isProtectedFolderPath(dstToken) || isAppBundlePath(dstToken)
+            dstIsProtected = isProtectedConfigPath(dstToken)
+                || isInsideProtectedFolder(dstToken)
+                || isAppBundlePath(dstToken)
         } else if renameEvent.destination_type == ES_DESTINATION_TYPE_NEW_PATH {
             // Check if we are renaming SOMETHING to "config.plist" or "AppLocker.app"
             let filename = renameEvent.destination.new_path.filename
             if let data = filename.data {
                 let nameStr = String(data: Data(bytes: data, count: Int(filename.length)), encoding: .utf8) ?? ""
-                if nameStr == "config.plist" && isProtectedFolderPath(renameEvent.destination.new_path.dir.pointee.path) {
+                if nameStr == "config.plist"
+                    && isInsideProtectedFolder(renameEvent.destination.new_path.dir.pointee.path)
+                {
                     dstIsProtected = true
                 } else if nameStr == "AppLocker.app" {
                     // Check if parent dir is /Applications
@@ -356,7 +362,10 @@ extension ESManager {
     ) {
         let targetToken = message.pointee.event.truncate.target.pointee.path
 
-        if isProtectedConfigPath(targetToken) || isProtectedFolderPath(targetToken) || isAppBundlePath(targetToken) {
+        if isProtectedConfigPath(targetToken)
+            || isInsideProtectedFolder(targetToken)
+            || isAppBundlePath(targetToken)
+        {
             guard let manager = ESManager.sharedInstanceForCallbacks else {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
                 return
