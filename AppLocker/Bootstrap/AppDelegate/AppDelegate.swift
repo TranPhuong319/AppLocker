@@ -46,14 +46,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Build-in Relaunch Wait: Check for -waitForPID argument
         let args = CommandLine.arguments
-        Logfile.core.info("Launch Arguments: \(args)")
+        Logfile.core.debug("Launch Arguments: \(args)")
 
         if let index = args.firstIndex(of: "-waitForPID"),
             index + 1 < args.count,
             let pidString = args[index + 1] as String?,
             let parentProcessID = Int32(pidString) {
 
-            Logfile.core.info("Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
+            Logfile.core.log("Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
 
             // Wait for parent process to exit
             // kill(pid, 0) returns 0 if process exists/is reachable
@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             if attempts >= 30 {
                 Logfile.core.warning("Wait timed out after 3 seconds. Proceeding anyway.")
             } else {
-                Logfile.core.info("Parent process exited.")
+                Logfile.core.log("Parent process exited.")
             }
 
             applicationExactlyOneInstance(ignoringPID: parentProcessID)
@@ -73,7 +73,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             applicationExactlyOneInstance()
         }
 
-        Logfile.core.info("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
+        Logfile.core.log("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
         Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None", privacy: .public)")
@@ -98,7 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
 
         if !otherApps.isEmpty && !launchedByLaunchd() {
-            Logfile.core.info(
+            Logfile.core.warning(
                 """
                 Another instance is running \
                 (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \

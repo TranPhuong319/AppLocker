@@ -32,7 +32,7 @@ extension AppDelegate {
     }
 
     @objc func uninstall() {
-        Logfile.core.info("Uninstall Clicked")
+        Logfile.core.debug("Uninstall Clicked")
         let lockManager = AppState.shared.manager
         NSApp.activate(ignoringOtherApps: true)
 
@@ -63,7 +63,7 @@ extension AppDelegate {
     }
 
     @objc func resetApp() {
-        Logfile.core.info("Reset App Clicked")
+        Logfile.core.debug("Reset App Clicked")
         NSApp.activate(ignoringOtherApps: true)
         let resetConfirmation = AlertShow.show(
             title: String(localized: "Reset AppLocker"),

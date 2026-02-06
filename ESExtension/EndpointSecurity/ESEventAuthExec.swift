@@ -32,13 +32,15 @@ extension ESManager {
         }
 
         let parentPid = messagePtr.process.pointee.ppid
+        let uid = audit_token_to_euid(messagePtr.process.pointee.audit_token)
+        
         var signingID = "Unsigned/Unknown"
         if let signingToken = messagePtr.event.exec.target.pointee.signing_id.data {
             signingID = String(cString: signingToken)
         }
 
         // 1. Fast path check
-        if let decision = manager.getFastPathDecision(path: path) {
+        if let decision = manager.getFastPathDecision(path: path, uid: uid) {
             let authResult = (decision == .allow) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
 
             if decision == .deny {
@@ -60,19 +62,19 @@ extension ESManager {
             path: path,
             message: message,
             valve: valve,
-            context: SlowPathContext(arrivalTime: arrivalTime, parentPid: parentPid, signingID: signingID)
+            context: SlowPathContext(arrivalTime: arrivalTime, parentPid: parentPid, uid: uid, signingID: signingID)
         )
     }
 
     // MARK: - Helper Methods
 
-    private func getFastPathDecision(path: String) -> ExecDecision? {
+    private func getFastPathDecision(path: String, uid: uid_t) -> ExecDecision? {
         return stateLock.sync {
             if let mappedSHA = blockedPathToSHA[path] {
                 if let expiry = tempAllowedSHAs[mappedSHA], expiry > Date() {
                     return .allow
                 }
-                if blockedSHAs.contains(mappedSHA) {
+                if let userBlockedSHAs = blockedSHAs[uid], userBlockedSHAs.contains(mappedSHA) {
                     return .deny
                 }
             }
@@ -83,6 +85,7 @@ extension ESManager {
     private struct SlowPathContext {
         let arrivalTime: Date
         let parentPid: pid_t
+        let uid: uid_t
         let signingID: String
     }
 
@@ -118,7 +121,10 @@ extension ESManager {
             if let expiry = tempAllowedSHAs[finalSHA], expiry > Date() {
                 return .allow
             }
-            return blockedSHAs.contains(finalSHA) ? .deny : .allow
+            if let userBlockedSHAs = blockedSHAs[context.uid], userBlockedSHAs.contains(finalSHA) {
+                return .deny
+            }
+            return .allow
         }
 
         stateLock.perform {

@@ -15,11 +15,10 @@ extension AppDelegate {
             setupUIComponents()
         } else if config == .esMode {
             ExtensionInstaller.shared.onInstalled = {
-                Logfile.core.info("[App] Starting XPC server after extension install")
-                XPCServer.shared.start()
+                Logfile.core.log("[App] Setting up UI after extension install")
                 self.setupUIComponents()
             }
-            Logfile.core.info("Installing Endpoint Security extension...")
+            Logfile.core.log("Installing Endpoint Security extension...")
             ExtensionInstaller.shared.install()
         }
     }
@@ -39,13 +38,11 @@ extension AppDelegate {
                 }
             }
 
-        Logfile.core.info("Starting User state")
-        SessionObserver.shared.start()
 
-        Logfile.core.info("Setting up hotkey manager...")
+        Logfile.core.log("Setting up hotkey manager...")
         self.hotkey = HotKeyManager()
 
-        Logfile.core.info("Setting up Touch Bar...")
+        Logfile.core.log("Setting up Touch Bar...")
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }

@@ -37,37 +37,4 @@ extension ESManager {
             }
         }
     }
-
-    // Replace blocked app data with new mapping from the host app.
-    @objc func updateBlockedApps(_ apps: NSArray) {
-        guard isCurrentConnectionAuthenticated() else {
-            Logfile.endpointSecurity.error("Unauthorized call to updateBlockedApps")
-            return
-        }
-
-        var newShas = Set<String>()
-        var newPathToSha: [String: String] = [:]
-
-        for item in apps {
-            guard let dict = item as? [String: Any] ?? item as? NSDictionary as? [String: Any]
-            else { continue }
-
-            if let sha = dict["sha256"] as? String {
-                newShas.insert(sha)
-                if let path = dict["path"] as? String {
-                    newPathToSha[path] = sha
-                }
-            }
-        }
-
-        stateLock.perform { [weak self] in
-            guard let self = self else { return }
-            self.blockedSHAs = newShas
-            self.blockedPathToSHA.merge(newPathToSha) { (_, new) in new }
-        }
-
-        Logfile.endpointSecurity.log(
-            "updateBlockedApps applied: \(newShas.count) SHAs, \(newPathToSha.count) paths"
-        )
-    }
 }

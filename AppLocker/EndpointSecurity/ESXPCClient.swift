@@ -16,9 +16,6 @@ final class ESXPCClient {
     private var retryCount = 0
     private var isConnecting = false  // Prevent parallel connection attempts
 
-    // pending queue if updateBlockedApps called before connection ready
-    private var lastKnownBlockedApps: [[String: String]] = []
-
     private init() {
         // tiny delay to avoid race but keep it short
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
@@ -61,20 +58,13 @@ final class ESXPCClient {
             // Perform Authentication Handshake
             self.performAuth(conn: conn) { [weak self] success in
                 guard let self = self else { return }
-                if success {
-                    Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
-                    self.connection = conn
-                    self.retryCount = 0
-                    self.isConnecting = false  // Clear flag on success
+                    if success {
+                        Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
+                        self.connection = conn
+                        self.retryCount = 0
+                        self.isConnecting = false  // Clear flag on success
 
-                    if !self.lastKnownBlockedApps.isEmpty {
-                        let copy = self.lastKnownBlockedApps
-                        self.xpcQueue.async {
-                            self.updateBlockedApps(copy)
-                        }
-                    }
-
-                    if let langs = UserDefaults.standard.array(forKey: "AppleLanguages")
+                        if let langs = UserDefaults.standard.array(forKey: "AppleLanguages")
                         as? [String],
                         let primary = langs.first {
                         self.updateLanguage(primary)
@@ -184,30 +174,6 @@ final class ESXPCClient {
                 self?.connect()
             }
         }
-    }
-
-    // Public API
-    // Accepts Swift array of dicts, converts to NSArray for XPC
-    func updateBlockedApps(_ apps: [[String: String]]) {
-        guard let conn = connection else {
-            Logfile.core.log("[ESXPCClient] Connection not ready, queueing updateBlockedApps")
-            lastKnownBlockedApps = apps
-            return
-        }
-
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "updateBlockedApps failed: \(String(describing: error))")
-            }) as? ESAppProtocol
-        else {
-            Logfile.core.error("[ESXPCClient] No valid proxy to send update")
-            return
-        }
-
-        let nsDictionaryApps = apps.map { NSDictionary(dictionary: $0) } as NSArray
-        proxy.updateBlockedApps(nsDictionaryApps)
-        Logfile.core.log("updateBlockedApps sent (\(apps.count) items)")
     }
 
     // App requests extension to allow SHA once (with reply ack)

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "A new beta version is available. Do you want to update?" : {
       "localizations" : {
         "vi" : {
@@ -390,6 +393,9 @@
           }
         }
       }
+    },
+    "SIP must be disabled to use this mode" : {
+
     },
     "Stable" : {
       "localizations" : {

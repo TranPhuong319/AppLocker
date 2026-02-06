@@ -24,7 +24,7 @@ final class ESManager: NSObject {
 
     // MARK: - State
     let stateLock = FastLock()
-    var blockedSHAs: Set<String> = []
+    var blockedSHAs: [uid_t: Set<String>] = [:]
     var blockedPathToSHA: [String: String] = [:]
     var tempAllowedSHAs: [String: Date] = [:]
     let allowWindowSeconds: TimeInterval = 10
@@ -102,7 +102,11 @@ final class ESManager: NSObject {
             // 4. Setup Listener (Ready for connections)
             setupMachListener()
 
-            // 5. Enable (Subscribe)
+            // 5. Initial Config & Monitoring
+            loadInitialConfig()
+            startConfigMonitoring()
+
+            // 6. Enable (Subscribe)
             // Now safe to receive events
             authorizer.enable()
             tamper.enable()

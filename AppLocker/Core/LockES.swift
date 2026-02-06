@@ -28,8 +28,6 @@ class LockES: LockManagerProtocol {
 
             DispatchQueue.main.async {
                 self.lockedApps = loaded
-                // Update Extension with loaded apps immediately
-                self.publishToExtension()
             }
 
             Logfile.core.info("Initial scanning started in background...")
@@ -111,15 +109,6 @@ class LockES: LockManagerProtocol {
 
         if hasConfigChanged {
             save()
-            publishToExtension()
-        }
-    }
-
-    // MARK: - Send config to ES Extension
-    func publishToExtension() {
-        let blockedAppsDictList = lockedApps.values.map { $0.toDict() }
-        DispatchQueue.global().async {
-            ESXPCClient.shared.updateBlockedApps(blockedAppsDictList)
         }
     }
 
@@ -191,7 +180,6 @@ extension LockES: FSEventsDelegate {
                 guard let self = self else { return }
                 self.lockedApps = updatedLockedAppsMap
                 self.save()
-                self.publishToExtension()
             }
         }
     }
@@ -240,8 +228,7 @@ extension LockES: FSEventsDelegate {
                 guard let self = self else { return }
                 self.lockedApps = updatedLockedAppsMap
                 self.save()
-                self.publishToExtension()
-                Logfile.core.info("New SHA updated and published")
+                Logfile.core.info("New SHA updated")
             }
         } else {
             Logfile.core.info("No SHA changes")

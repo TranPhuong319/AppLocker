@@ -16,14 +16,6 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     private var pendingAuthSHAs = Set<String>()
     private let authQueue = DispatchQueue(label: "com.TranPhuong319.AppLocker.auth.sha.queue")
 
-    func start() {
-        Logfile.core.log("XPCServer start (app side exported object)")
-        let lockedAppsList = AppState.shared.manager.lockedApps.values.map { $0.toDict() }
-        DispatchQueue.global().async {
-            ESXPCClient.shared.updateBlockedApps(lockedAppsList)
-        }
-    }
-
     // Extension -> App notification when exec attempted and extension denied
     func notifyBlockedExec(name: String, path: String, sha: String) {
 
@@ -45,7 +37,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
             """
             Endpoint Security Blocked Apps
             Name:   \(name)
-            Path:   \(path)b
+            Path:   \(path)
             SHA256: \(sha.prefix(8))
             """
         )

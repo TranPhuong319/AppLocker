@@ -10,8 +10,6 @@ import Foundation
 @objc public protocol ESAppProtocol {
     func allowSHAOnce(_ sha: String, withReply reply: @escaping (Bool) -> Void)
 
-    func updateBlockedApps(_ apps: NSArray)
-
     func allowConfigAccess(_ processID: Int32, withReply reply: @escaping (Bool) -> Void)
 
     func updateLanguage(to code: String)

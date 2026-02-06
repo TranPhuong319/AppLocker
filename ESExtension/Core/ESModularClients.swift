@@ -242,6 +242,9 @@ class ESTamper: ESClientObject {
     }
 
     func enable() {
+        #if DEBUG
+        Logfile.endpointSecurity.log("Skip enable ESTamper (Debug mode)")
+        #else
         self.muteSelf()
 
         // Santa Pattern: Inverted Muting for target paths
@@ -263,6 +266,7 @@ class ESTamper: ESClientObject {
             ES_EVENT_TYPE_AUTH_CLONE,
             ES_EVENT_TYPE_AUTH_LINK
         ])
+        #endif
     }
 
     private func setupAllowlist() {
