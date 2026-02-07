@@ -130,6 +130,10 @@ extension ESManager: ESAppProtocol {
         cacheMainAppPID(from: conn)
 
         Logfile.endpointSecurity.log("Auth: Connection authenticated.")
+        
+        // Critical: Flush pending notifications NOW that the connection is fully authenticated and ready.
+        flushPendingNotifications(to: conn)
+        
         reply(serverNonce, serverSig, serverPubKeyData, true)
     }
 }

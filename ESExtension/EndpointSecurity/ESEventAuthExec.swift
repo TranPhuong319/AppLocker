@@ -52,7 +52,7 @@ extension ESManager {
             if decision == .deny {
                 Logfile.endpointSecurity.log("Denied by FastPath (Cache/Map): \(path)")
                 let shaForNotify = manager.stateLock.sync { manager.blockedPathToSHA[path] ?? "Cached-No-SHA" }
-                manager.sendBlockedNotifications(path: path, sha: shaForNotify, parentPid: parentPid, signingID: signingID)
+                manager.sendBlockedNotifications(path: path, sha: shaForNotify, parentPid: parentPid, uid: uid, signingID: signingID)
             }
             return
         }
@@ -112,7 +112,7 @@ extension ESManager {
             Logfile.endpointSecurity.log("Failed to compute SHA -> Denying: \(path)")
             sendBlockedNotifications(
                 path: path, sha: "Read-Error",
-                parentPid: context.parentPid, signingID: context.signingID
+                parentPid: context.parentPid, uid: context.uid, signingID: context.signingID
             )
             return
         }
@@ -140,7 +140,7 @@ extension ESManager {
                 Logfile.endpointSecurity.log("Denied by SlowPath (SHA) in \(String(format: "%.2fs", elapsed)): \(path)")
                 sendBlockedNotifications(
                     path: path, sha: finalSHA,
-                    parentPid: context.parentPid, signingID: context.signingID
+                    parentPid: context.parentPid, uid: context.uid, signingID: context.signingID
                 )
             }
         } else {
@@ -161,14 +161,14 @@ extension ESManager {
         }
     }
 
-    private func sendBlockedNotifications(path: String, sha: String, parentPid: pid_t, signingID: String) {
+    private func sendBlockedNotifications(path: String, sha: String, parentPid: pid_t, uid: uid_t, signingID: String) {
         DispatchQueue.global(qos: .userInteractive).async {
             TTYNotifier.notify(parentPid: parentPid, blockedPath: path, sha: sha, identifier: signingID)
         }
         DispatchQueue.global(qos: .utility).async { [weak self] in
             guard let self = self else { return }
             let name = self.computeAppName(forExecPath: path)
-            self.sendBlockedNotificationToApp(name: name, path: path, sha: sha)
+            self.sendBlockedNotificationToApp(name: name, path: path, sha: sha, uid: uid)
         }
     }
 

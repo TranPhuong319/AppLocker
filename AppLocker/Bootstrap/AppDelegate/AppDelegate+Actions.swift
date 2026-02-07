@@ -118,12 +118,14 @@ extension AppDelegate {
         switch mode {
         case .esMode:
             ExtensionInstaller.shared.onUninstalled = {
-                self.manageAgent(plistName: plistName, action: .uninstall)
-                self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
-                self.removeConfig()
-                self.selfRemoveApp()
-                self.showRestartSheet()
-                NSApp.terminate(nil)
+                ESXPCClient.shared.authorizeShutdown(true) { _ in
+                    self.manageAgent(plistName: plistName, action: .uninstall)
+                    self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
+                    self.removeConfig()
+                    self.selfRemoveApp()
+                    self.showRestartSheet()
+                    NSApp.terminate(nil)
+                }
             }
             ExtensionInstaller.shared.uninstall()
         case .launcher:
@@ -161,10 +163,12 @@ extension AppDelegate {
             restartApp(mode: nil)
         case .esMode:
             ExtensionInstaller.shared.onUninstalled = {
-                self.removeConfig()
-                self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
-                self.restartApp(mode: nil) {
-                    self.manageAgent(plistName: plistName, action: .uninstall)
+                ESXPCClient.shared.authorizeShutdown(true) { _ in
+                    self.removeConfig()
+                    self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
+                    self.restartApp(mode: nil) {
+                        self.manageAgent(plistName: plistName, action: .uninstall)
+                    }
                 }
             }
             ExtensionInstaller.shared.uninstall()

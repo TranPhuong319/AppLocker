@@ -55,17 +55,27 @@ class ESClientObject {
             }
 
             // 3. AUTH Handling - Santa Semaphore Logic
-            if let currentManager = self.manager {
-                let handler = self.makeAuthHandler(for: message)
-                self.handleMessageWithDeadline(
-                    esClient: esClient,
-                    message: message,
-                    manager: currentManager,
-                    handler: handler
-                )
+            // CRITICAL FIX: Only AUTH events need deadline logic. NOTIFY events (like EXIT) must skip this.
+            if esMessage.pointee.action_type == ES_ACTION_TYPE_AUTH {
+                if let currentManager = self.manager {
+                    let handler = self.makeAuthHandler(for: message)
+                    self.handleMessageWithDeadline(
+                        esClient: esClient,
+                        message: message,
+                        manager: currentManager,
+                        handler: handler
+                    )
+                } else {
+                    // No Manager (Deallocated?) - Fail Safe
+                    es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
+                }
             } else {
-                // No Manager (Deallocated?) - Fail Safe
-                es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
+                // NOTIFY EVents (like EXIT)
+                if let manager = self.manager {
+                     manager.authorizationProcessingQueue.async {
+                         ESManager.handleNotifyExit(client: esClient, message: message)
+                     }
+                }
             }
         }
 
@@ -105,8 +115,12 @@ class ESClientObject {
                 ESManager.handleAuthClone(client: client, message: msg, valve: valve)
             case ES_EVENT_TYPE_AUTH_LINK:
                 ESManager.handleAuthLink(client: client, message: msg, valve: valve)
+            case ES_EVENT_TYPE_NOTIFY_EXIT:
+                ESManager.handleNotifyExit(client: client, message: msg)
             default:
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+                if msg.pointee.action_type == ES_ACTION_TYPE_AUTH {
+                    _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+                }
             }
         }
     }
@@ -142,8 +156,6 @@ class ESClientObject {
         let processingSema = DispatchSemaphore(value: 0)
         processingSema.signal() // Init value to 1 (Santa pattern)
 
-        let deadlineExpiredSema = DispatchSemaphore(value: 0)
-
         // --- DEADLINE TASK (Fail-Closed Deny) ---
         manager.emergencyTimerQueue.asyncAfter(
             deadline: .now() + .nanoseconds(Int(finalProcessingBudget))) {
@@ -155,9 +167,9 @@ class ESClientObject {
 
                 let path = ESSafetyValve.getPath(message)
                 Logfile.endpointSecurity.error("DEADLINE REACHED [DENY]: \(path) (Budget: \(finalProcessingBudget)ns)")
-
+                
                 // Signal that we are done responding
-                deadlineExpiredSema.signal()
+                // The valve itself handles the signal internally when respond() is called.
             }
         }
 
@@ -172,7 +184,7 @@ class ESClientObject {
             } else {
                 // Deadline task stole the token. We were too slow.
                 // Wait for deadline task to finish its log/signal to ensure clean exit.
-                deadlineExpiredSema.wait()
+                valve.wait()
             }
         }
     }
@@ -228,7 +240,10 @@ class ESAuthorizer: ESClientObject {
     func enable() {
         // MuteSelf moved to createClient, but calling it again here is harmless and safe checks
         _ = self.muteSelf()
-        _ = self.subscribe([ES_EVENT_TYPE_AUTH_EXEC])
+        _ = self.subscribe([
+            ES_EVENT_TYPE_AUTH_EXEC,
+            ES_EVENT_TYPE_NOTIFY_EXIT
+        ])
     }
 }
 

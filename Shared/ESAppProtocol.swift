@@ -14,11 +14,12 @@ import Foundation
 
     func updateLanguage(to code: String)
 
-    // Reply: (ServerNonce?, ServerSignature?, Success)
     func authenticate(
         clientNonce: Data,
         clientSig: Data,
         clientPublicKey: Data,
         withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void
     )
+
+    func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void)
 }

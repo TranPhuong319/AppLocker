@@ -259,4 +259,27 @@ final class ESXPCClient {
             completion(success)
         }
     }
+
+    func authorizeShutdown(_ authorized: Bool, completion: @escaping (Bool) -> Void) {
+        guard let conn = connection else {
+            completion(false)
+            return
+        }
+
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error(
+                    "authorizeShutdown failed: \(String(describing: error))")
+                completion(false)
+            }) as? ESAppProtocol
+        else {
+            completion(false)
+            return
+        }
+
+        proxy.authorizeShutdown(authorized) { success in
+            Logfile.core.log("authorizeShutdown reply: \(success)")
+            completion(success)
+        }
+    }
 }

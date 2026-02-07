@@ -21,7 +21,7 @@ extension ESManager {
                 completion(conn)
                 return
             }
-
+            
             if idx >= min(maxRetries - 1, delays.count - 1) {
                 Logfile.endpointSecurity.log(
                     "No XPC connection after quick retries (attempts=\(idx + 1), giving up)"
@@ -29,7 +29,7 @@ extension ESManager {
                 completion(nil)
                 return
             }
-
+            
             let delay = delays[min(idx + 1, delays.count - 1)]
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
                 attempt(idx + 1)
@@ -37,15 +37,37 @@ extension ESManager {
         }
         attempt(0)
     }
-
+    
     // Store an incoming connection (thread-safe).
     func storeIncomingConnection(_ conn: NSXPCConnection) {
         var count = 0
+        
         xpcConnectionLock.perform {
             self.activeConnections.append(conn)
             count = self.activeConnections.count
         }
+        
         Logfile.endpointSecurity.log("Stored incoming XPC connection — total=\(count)")
+    }
+    
+    // Flush pending notifications to a specific connection (called after Auth)
+    func flushPendingNotifications(to conn: NSXPCConnection) {
+        var pendingToFlush: [BlockedNotification] = []
+        
+        xpcConnectionLock.perform {
+            // Lấy các thông báo đang chờ để gửi đi
+            pendingToFlush = self.pendingNotifications
+            self.pendingNotifications.removeAll()
+        }
+
+        if !pendingToFlush.isEmpty {
+            Logfile.endpointSecurity.log("Auth complete. Flushing \(pendingToFlush.count) pending notifications...")
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                for item in pendingToFlush {
+                    self?.performNotifyBlockRequest(conn: conn, name: item.name, path: item.path, sha: item.sha)
+                }
+            }
+        }
     }
 
     // Remove a connection when it goes away.

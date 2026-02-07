@@ -31,12 +31,22 @@ final class ESManager: NSObject {
     var decisionCache: [String: ExecDecision] = [:]
     var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
 
+    struct BlockedNotification {
+        let name: String
+        let path: String
+        let sha: String
+        let uid: uid_t
+    }
+    var pendingNotifications: [BlockedNotification] = []
+
     // MARK: - Locks and Queues
     let xpcConnectionLock = FastLock()
     var listener: NSXPCListener?
     var activeConnections: [NSXPCConnection] = []
     var authenticatedConnections: Set<ObjectIdentifier> = []
     var authenticatedMainAppPID: pid_t?
+    var activeUserUID: uid_t?
+    var isShutdownAuthorized: Bool = false
     let processIDLock = FastLock()
     let backgroundProcessingQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg", qos: .userInitiated,
@@ -154,6 +164,18 @@ final class ESManager: NSObject {
         reply(true)
     }
 
+    func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void) {
+        guard isCurrentConnectionAuthenticated() else {
+            reply(false)
+            return
+        }
+        stateLock.perform {
+            self.isShutdownAuthorized = authorized
+        }
+        Logfile.endpointSecurity.log("Authorized shutdown status updated to: \(authorized)")
+        reply(true)
+    }
+
     func isMainAppProcess(_ process: UnsafePointer<es_process_t>) -> Bool {
         let processPid = audit_token_to_pid(process.pointee.audit_token)
         return processIDLock.sync { processPid == authenticatedMainAppPID }
@@ -164,6 +186,10 @@ final class ESManager: NSObject {
         processIDLock.perform { self.authenticatedMainAppPID = pid_t(processID) }
 
         var auditToken = connection.esAuditToken
+        stateLock.perform {
+            self.activeUserUID = audit_token_to_euid(auditToken)
+        }
+        
         // Critical: Mute AppLocker immediately to prevent deadlock on Config IO
         muteAppLockerProcess(&auditToken)
     }
