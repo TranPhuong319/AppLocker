@@ -14,7 +14,6 @@ extension AppDelegate {
         AuthenticationManager.authenticate(
             reason: String(localized: "authenticate to open the application list")
         ) { success, error in
-            DispatchQueue.main.async {
                 if success {
                     AppListWindowController.show()
                     Logfile.core.debug("Opened AppList")
@@ -22,7 +21,6 @@ extension AppDelegate {
                     Logfile.core.error(
                         "Error opening list app: \(error as NSObject?)")
                 }
-            }
         }
     }
 

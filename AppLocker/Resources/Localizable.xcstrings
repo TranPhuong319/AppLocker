@@ -395,7 +395,14 @@
       }
     },
     "SIP must be disabled to use this mode" : {
-
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu tắt SIP để có thể dùng tính năng này"
+          }
+        }
+      }
     },
     "Stable" : {
       "localizations" : {
