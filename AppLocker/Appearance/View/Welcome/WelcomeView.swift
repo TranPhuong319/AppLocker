@@ -69,7 +69,7 @@ struct WelcomeView: View {
                 .foregroundColor(.gray)
                 .padding(.bottom, 16)
         }
-        .frame(minWidth: 350, minHeight: 450)
+        .frame(minWidth: WindowLayout.Welcome.size.width, minHeight: WindowLayout.Welcome.size.height)
         .background(Color(NSColor.windowBackgroundColor))
         .ignoresSafeArea(.container, edges: .top)
     }

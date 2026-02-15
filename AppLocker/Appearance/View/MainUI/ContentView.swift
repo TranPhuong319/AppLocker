@@ -62,7 +62,7 @@ struct ContentView: View {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                    .padding(.leading, 4)
+                    .padding(.leading, 8)
 
                 TextField("Search apps...", text: $appState.searchTextLockApps)
                     .textFieldStyle(.plain)
@@ -70,11 +70,13 @@ struct ContentView: View {
                     .onSubmit { unfocus() }
             }
             .padding(7)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-            .cornerRadius(8)
+            .background {
+                Capsule()
+                    .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+            }
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.secondary.opacity(0.2))
+                Capsule()
+                    .stroke(Color.secondary.opacity(0.15))
             )
             .padding(.horizontal, 8)
 
@@ -148,7 +150,9 @@ struct ContentView: View {
                     .bold()
             }
             .frame(maxWidth: .infinity, maxHeight: 35)
-            .background(Color.red.opacity(0.8))
+            .background {
+                Capsule().fill(Color.red.opacity(0.6))
+            }
             .foregroundColor(.white)
             .cornerRadius(8)
             .shadow(radius: 4)
@@ -160,7 +164,7 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .frame(width: CGFloat(AppState.shared.preferredWindowWidth),
-               height: CGFloat(AppState.shared.preferredWindowHeight))
+        .frame(width: WindowLayout.Main.size.width,
+               height: WindowLayout.Main.size.height)
         .environmentObject(AppState.shared)
 }
