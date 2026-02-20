@@ -144,23 +144,50 @@ struct ContentView: View {
     @ViewBuilder
     private var deleteQueueNotificationBar: some View {
         Button { appState.showingDeleteQueue = true } label: {
-            HStack {
-                Image(systemName: "tray.full")
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.red.opacity(0.15))
+                        .frame(width: 26, height: 26)
+                    Image(systemName: "tray.full.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.red)
+                }
+
                 Text("Waiting to unlock \(appState.deleteQueue.count) application(s)...")
-                    .bold()
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.secondary.opacity(0.6))
             }
-            .frame(maxWidth: .infinity, maxHeight: 35)
-            .background {
-                Capsule().fill(Color.red.opacity(0.6))
+            .padding(.horizontal, 8)
+            .padding(.leading, 4)
+            .frame(maxWidth: .infinity, maxHeight: 42)
+            .contentShape(Capsule())
+            .liquidGlass(in: Capsule()) {
+                ZStack {
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                    Capsule()
+                        .stroke(Color.secondary.opacity(0.15), lineWidth: 0.5)
+                }
             }
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .shadow(radius: 4)
+            .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
         }
-        .buttonStyle(PlainButtonStyle()).padding(.horizontal, 16).padding(.bottom, 12)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 20)
+        .transition(.asymmetric(
+            insertion: .move(edge: .bottom).combined(with: .opacity),
+            removal: .move(edge: .bottom).combined(with: .opacity)
+        ))
     }
 }
+
 
 #Preview {
     ContentView()
