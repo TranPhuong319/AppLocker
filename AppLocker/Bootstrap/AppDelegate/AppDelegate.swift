@@ -79,6 +79,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None", privacy: .public)")
 
         if let mode = modeLock {
+            if mode == .esMode && !launchedByLaunchd() {
+                let agent = SMAppService.agent(plistName: "\(plistName).plist")
+                if agent.status == .enabled {
+                    Logfile.core.log("App launched manually in esMode. Restarting via launchctl...")
+                    let process = Process()
+                    process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                    process.arguments = ["start", plistName]
+                    try? process.run()
+                    NSApp.terminate(nil)
+                    return
+                }
+            }
+            
             launchConfig(config: mode)
         } else {
             WelcomeWindowController.show()
