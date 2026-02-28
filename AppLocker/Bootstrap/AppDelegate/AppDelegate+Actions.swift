@@ -44,7 +44,7 @@ extension AppDelegate {
         }
 
         let uninstallConfirmation = AlertShow.show(
-            title: String(localized: "Uninstall Applocker") + "?",
+            title: String(localized: "Uninstall AppLocker") + "?",
             message: String(localized: """
                 You are about to uninstall AppLocker. Please make sure that all apps are unlocked!
 

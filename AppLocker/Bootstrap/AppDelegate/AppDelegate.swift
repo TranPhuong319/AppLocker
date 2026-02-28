@@ -73,6 +73,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             applicationExactlyOneInstance()
         }
 
+        #if !DEBUG
+        checkAndMoveToApplications()
+        #endif
+
         Logfile.core.log("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
@@ -96,6 +100,72 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         } else {
             WelcomeWindowController.show()
             return
+        }
+    }
+
+    private func moveToApplicationsAndRelaunch() {
+        let bundleURL = Bundle.main.bundleURL
+        
+        // Cố gắng tìm thư mục Applications phù hợp nhất (User trước, System sau)
+        var targetApplicationsURL: URL?
+        
+        let userApplicationsURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Applications")
+        let systemApplicationsURL = URL(fileURLWithPath: "/Applications")
+        
+        // Nếu thư mục User/Applications tồn tại, ưu tiên dùng nó (không cần xin quyền root)
+        if FileManager.default.fileExists(atPath: userApplicationsURL.path) {
+            targetApplicationsURL = userApplicationsURL
+        } else if FileManager.default.isWritableFile(atPath: systemApplicationsURL.path) {
+            // Còn nếu System/Applications cho phép ghi, thì dùng system
+            targetApplicationsURL = systemApplicationsURL
+        } else {
+            // Nếu cả 2 đều không có/không ghi được, tạo User/Applications
+            do {
+                try FileManager.default.createDirectory(at: userApplicationsURL, withIntermediateDirectories: true)
+                targetApplicationsURL = userApplicationsURL
+            } catch {
+                Logfile.core.warning("Không thể tạo ~/Applications, fallback về /Applications")
+                targetApplicationsURL = systemApplicationsURL
+            }
+        }
+        
+        guard let finalTargetURL = targetApplicationsURL else { return }
+        let destinationURL = finalTargetURL.appendingPathComponent(bundleURL.lastPathComponent)
+        
+        do {
+            if FileManager.default.fileExists(atPath: destinationURL.path) {
+                try FileManager.default.removeItem(at: destinationURL)
+            }
+            try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
+            
+            do {
+                try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
+            } catch {
+                Logfile.core.warning("Lỗi xóa file gốc: \(error.localizedDescription)")
+            }
+            
+            Logfile.core.log("Đã di chuyển ứng dụng vào \(finalTargetURL.path). Đang khởi động lại...")
+            
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.createsNewApplicationInstance = true
+            let pid = ProcessInfo.processInfo.processIdentifier
+            configuration.arguments = ["-waitForPID", "\(pid)"]
+            
+            NSWorkspace.shared.openApplication(at: destinationURL, configuration: configuration) { app, error in
+                if let error = error {
+                    Logfile.core.error("Lỗi khởi động thư mục mới: \(error.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    NSApp.terminate(nil)
+                }
+            }
+        } catch {
+            Logfile.core.error("Lỗi khi di chuyển vào Applications: \(error.localizedDescription)")
+            let errorAlert = NSAlert()
+            errorAlert.alertStyle = .critical
+            errorAlert.messageText = "Lỗi di chuyển ứng dụng"
+            errorAlert.informativeText = "Không thể tự động di chuyển do thiếu quyền truy cập.\n\nVui lòng kéo thả thủ công ứng dụng vào thư mục Applications. Chi tiết lỗi: \(error.localizedDescription)"
+            errorAlert.runModal()
         }
     }
 

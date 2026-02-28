@@ -2,7 +2,9 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "extractionState" : "manual",
+      "generatesSymbol" : false,
+      "shouldTranslate" : false
     },
     "A new beta version is available. Do you want to update?" : {
       "localizations" : {
@@ -154,6 +156,16 @@
         }
       }
     },
+    "Could not move the application to /Applications automatically. Please move it manually to continue." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tự động di chuyển ứng dụng đến /Applications. Vui lòng di chuyển nó theo cách thủ công để tiếp tục."
+          }
+        }
+      }
+    },
     "Delete all from the waiting list" : {
       "localizations" : {
         "vi" : {
@@ -170,6 +182,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ES (EndpointSecurity)"
+          }
+        }
+      }
+    },
+    "Failed to Move Application" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể chuyển đến thư mục Ứng dụng"
           }
         }
       }
@@ -294,6 +316,16 @@
         }
       }
     },
+    "Move to Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển đến thư mục Ứng dụng"
+          }
+        }
+      }
+    },
     "Others…" : {
       "localizations" : {
         "vi" : {
@@ -314,6 +346,16 @@
         }
       }
     },
+    "Quit" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoát"
+          }
+        }
+      }
+    },
     "Quit AppLocker" : {
       "localizations" : {
         "vi" : {
@@ -330,6 +372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sẵn sàng để Cài đặt"
+          }
+        }
+      }
+    },
+    "Requires running in the Applications folder" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu chạy ứng dụng trong thư mục Ứng dụng"
           }
         }
       }
@@ -434,6 +486,16 @@
         }
       }
     },
+    "The currently running application is at %@.\n\nAppLocker must be moved to the /Applications folder to function correctly." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng hiện đang chạy ở %@.\n\nAppLocker phải được chuyển đến thư mục /Applications để hoạt động chính xác."
+          }
+        }
+      }
+    },
     "The update has been downloaded. Install now?" : {
       "generatesSymbol" : false,
       "localizations" : {
@@ -484,9 +546,6 @@
           }
         }
       }
-    },
-    "Uninstall Applocker" : {
-
     },
     "Uninstall AppLocker" : {
       "localizations" : {
