@@ -134,12 +134,12 @@
         }
       }
     },
-    "Check for Updates..." : {
+    "Check for Updates…" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kiểm tra cập nhật..."
+            "value" : "Kiểm tra cập nhật…"
           }
         }
       }
@@ -485,22 +485,15 @@
         }
       }
     },
+    "Uninstall Applocker" : {
+
+    },
     "Uninstall AppLocker" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gỡ cài đặt AppLocker"
-          }
-        }
-      }
-    },
-    "Uninstall Applocker?" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gỡ cài đặt AppLocker?"
           }
         }
       }
