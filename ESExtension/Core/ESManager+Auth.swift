@@ -27,66 +27,72 @@ extension ESManager: ESAppProtocol {
         _ = keyGenGroup.wait(timeout: .now() + 5) // 5s timeout safety
 
         guard let conn = NSXPCConnection.current() else {
-            Logfile.es.error("Auth: No current XPC connection")
+            Logfile.endpointSecurity.error("Auth: No current XPC connection")
             reply(nil, nil, nil, false)
             return
         }
 
-        Logfile.es.log("Auth: Received authentication request from pid=\(conn.processIdentifier)")
+        Logfile.endpointSecurity.log("Auth: Received authentication request from pid=\(conn.processIdentifier)")
 
         // 1. Verify Client Signature (Fast - no I/O)
         if !KeychainHelper.shared.verify(
             signature: clientSig, originalData: clientNonce, publicKeyData: clientPublicKey
         ) {
-            Logfile.es.error("Auth: Client signature verification failed!")
+            Logfile.endpointSecurity.error("Auth: Client signature verification failed!")
             reply(nil, nil, nil, false)
             return
         }
 
         let serverTag = KeychainHelper.Keys.extensionPublic
 
-        // 2. Check if keys exist WITHOUT blocking
-        let needsKeyGen = !KeychainHelper.shared.hasKey(tag: serverTag)
-
-        if needsKeyGen {
-            // CRITICAL: Generate keys OFF XPC thread to avoid blocking
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                guard let self = self else {
-                    Logfile.es.error("Auth: ESManager deallocated during async key gen")
-                    reply(nil, nil, nil, false)
-                    return
-                }
-
-                // Use atomic flag to ensure single generation
-                var shouldGenerate = false
-                self.xpcConnectionLock.perform {
-                    if !KeychainHelper.shared.hasKey(tag: serverTag) {
-                        shouldGenerate = true
-                    }
-                }
-
-                if shouldGenerate {
-                    Logfile.es.log("Auth: Generating server keys (async)...")
-                    do {
-                        try KeychainHelper.shared.generateKeys(tag: serverTag)
-                    } catch {
-                        Logfile.es.error("Auth: Key generation failed: \(error)")
-                        reply(nil, nil, nil, false)
-                        return
-                    }
-                }
-
-                // Continue authentication after key gen - this method MUST call reply
-                self.completeAuthentication(
-                    conn: conn,
-                    clientNonce: clientNonce,
-                    serverTag: serverTag,
-                    reply: reply
-                )
-            }
+        if !KeychainHelper.shared.hasKey(tag: serverTag) {
+            checkAndGenerateKeys(serverTag: serverTag, clientNonce: clientNonce, conn: conn, reply: reply)
         } else {
             // Keys exist - authenticate immediately
             completeAuthentication(
+                conn: conn,
+                clientNonce: clientNonce,
+                serverTag: serverTag,
+                reply: reply
+            )
+        }
+    }
+
+    private func checkAndGenerateKeys(
+        serverTag: String,
+        clientNonce: Data,
+        conn: NSXPCConnection,
+        reply: @escaping (Data?, Data?, Data?, Bool) -> Void
+    ) {
+        // CRITICAL: Generate keys OFF XPC thread to avoid blocking
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else {
+                Logfile.endpointSecurity.error("Auth: ESManager deallocated during async key gen")
+                reply(nil, nil, nil, false)
+                return
+            }
+
+            // Use atomic flag to ensure single generation
+            var shouldGenerate = false
+            self.xpcConnectionLock.perform {
+                if !KeychainHelper.shared.hasKey(tag: serverTag) {
+                    shouldGenerate = true
+                }
+            }
+
+            if shouldGenerate {
+                Logfile.endpointSecurity.log("Auth: Generating server keys (async)...")
+                do {
+                    try KeychainHelper.shared.generateKeys(tag: serverTag)
+                } catch {
+                    Logfile.endpointSecurity.error("Auth: Key generation failed: \(error)")
+                    reply(nil, nil, nil, false)
+                    return
+                }
+            }
+
+            // Continue authentication after key gen - this method MUST call reply
+            self.completeAuthentication(
                 conn: conn,
                 clientNonce: clientNonce,
                 serverTag: serverTag,
@@ -105,13 +111,13 @@ extension ESManager: ESAppProtocol {
         let combinedData = clientNonce + serverNonce
 
         guard let serverSig = KeychainHelper.shared.sign(data: combinedData, tag: serverTag) else {
-            Logfile.es.error("Auth: Failed to sign server response.")
+            Logfile.endpointSecurity.error("Auth: Failed to sign server response.")
             reply(nil, nil, nil, false)
             return
         }
 
         guard let serverPubKeyData = KeychainHelper.shared.exportPublicKey(tag: serverTag) else {
-            Logfile.es.error("Auth: Failed to export server public key.")
+            Logfile.endpointSecurity.error("Auth: Failed to export server public key.")
             reply(nil, nil, nil, false)
             return
         }
@@ -123,7 +129,11 @@ extension ESManager: ESAppProtocol {
 
         cacheMainAppPID(from: conn)
 
-        Logfile.es.log("Auth: Connection authenticated.")
+        Logfile.endpointSecurity.log("Auth: Connection authenticated.")
+        
+        // Critical: Flush pending notifications NOW that the connection is fully authenticated and ready.
+        flushPendingNotifications(to: conn)
+        
         reply(serverNonce, serverSig, serverPubKeyData, true)
     }
 }

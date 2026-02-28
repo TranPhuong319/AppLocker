@@ -2,7 +2,7 @@
 //  AppListWindowController.swift
 //  AppLocker
 //
-//  Copyright © 2025 TranPhuong319. All rights reserved.
+//  Created by Doe Phương on 24/7/25.
 //
 
 import AppKit
@@ -16,18 +16,16 @@ class TouchBarHostingController<Content: View>: NSHostingController<Content> {
 
 class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
-    private static var invisibleKeyWindow: NSWindow?
 
     static func show() {
+        NSApp.activate(ignoringOtherApps: true)
+
         if let controller = shared {
             activateExistingWindow(controller)
             return
         }
 
-        ensureInvisibleKeyWindow()
-
         let hostingController = createHostingController()
-
         let window = createMainAppWindow(with: hostingController)
 
         let controller = AppListWindowController(window: window)
@@ -37,7 +35,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         window.makeFirstResponder(hostingController)
-        NSApp.activate(ignoringOtherApps: true)
     }
 
     // MARK: - Helper Methods
@@ -47,37 +44,17 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private static func ensureInvisibleKeyWindow() {
-        guard invisibleKeyWindow == nil else { return }
-        let keyWin = NSWindow(
-            contentRect: .zero,
-            styleMask: [],
-            backing: .buffered,
-            defer: false
-        )
-        keyWin.alphaValue = 0
-        keyWin.isOpaque = false
-        keyWin.makeKeyAndOrderFront(nil)
-        invisibleKeyWindow = keyWin
-    }
 
     private static func createHostingController() -> TouchBarHostingController<ContentView> {
         let hostingController = TouchBarHostingController(rootView: ContentView())
 
-        let size = NSSize(
-            width: AppState.shared.preferredWindowWidth,
-            height: AppState.shared.preferredWindowHeight
-        )
-        hostingController.view.setFrameSize(size)
+        hostingController.view.setFrameSize(WindowLayout.Main.size)
         hostingController.view.layoutSubtreeIfNeeded()
         return hostingController
     }
 
     private static func createMainAppWindow(with contentVC: NSViewController) -> NSWindow {
-        let size = NSSize(
-            width: AppState.shared.preferredWindowWidth,
-            height: AppState.shared.preferredWindowHeight
-        )
+        let size = WindowLayout.Main.size
         let window = NSWindow(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.titled, .closable, .fullSizeContentView],

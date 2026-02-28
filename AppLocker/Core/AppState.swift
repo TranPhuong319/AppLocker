@@ -42,7 +42,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         switch modeLock {
         case .launcher:
             initialManager = LockLauncher()
-        case .es:
+        case .esMode:
             initialManager = LockES()
         case .none:
             Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")
@@ -188,8 +188,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         return true
     }
 
-    let preferredWindowWidth = 450  // Chiều ngang
-    let preferredWindowHeight = 470  // chiều cao
+    // Kích thước window/sheet đã chuyển sang WindowLayout.swift
 
     var appsToUnlock: [String] {
         Array(deleteQueue)

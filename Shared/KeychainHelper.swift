@@ -70,7 +70,7 @@ final class KeychainHelper {
         keyCache[tag] = publicKeyData
         cacheLock.unlock()
 
-        Logfile.keychain.pLog("KeychainHelper: Generated and cached ephemeral EC keys for \(tag)")
+        Logfile.keychain.log("KeychainHelper: Generated and cached ephemeral EC keys for \(tag)")
     }
 
     // MARK: - Sign & Verify
@@ -84,7 +84,7 @@ final class KeychainHelper {
         cacheLock.unlock()
 
         guard let pData = privateKeyData else {
-            Logfile.keychain.pError(
+            Logfile.keychain.error(
                 "KeychainHelper: Private key not found in cache for: \(privateKeyTag)")
             return nil
         }
@@ -121,7 +121,7 @@ final class KeychainHelper {
         cacheLock.unlock()
 
         guard let data = publicKeyData else {
-            Logfile.keychain.pError("KeychainHelper: Public key not found in cache: \(pubKeyTag)")
+            Logfile.keychain.error("KeychainHelper: Public key not found in cache: \(pubKeyTag)")
             return false
         }
         return verify(signature: signature, originalData: originalData, publicKeyData: data)
@@ -169,9 +169,8 @@ final class KeychainHelper {
 
         var keyError: Unmanaged<CFError>?
         guard let key = SecKeyCreateWithData(data as CFData, options as CFDictionary, &keyError) else {
-            Logfile.keychain.error(
-                "KeychainHelper: Failed to create key from data (private=\(isPrivate)): \(keyError!.takeRetainedValue() as Error)"
-            )
+            // swiftlint:disable:next line_length
+            Logfile.keychain.error("KeychainHelper: Failed to create key from data (private=\(isPrivate)): \(keyError!.takeRetainedValue() as Error)")
             return nil
         }
         return key

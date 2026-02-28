@@ -10,5 +10,6 @@
 
 #include <libproc.h>
 #include <sys/proc_info.h>
+#include <bsm/libbsm.h>
 
 #endif /* Bridging_Header_h */

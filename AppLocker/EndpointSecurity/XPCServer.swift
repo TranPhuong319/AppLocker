@@ -15,66 +15,89 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject {
     @Published var authError: String?
     private var pendingAuthSHAs = Set<String>()
     private let authQueue = DispatchQueue(label: "com.TranPhuong319.AppLocker.auth.sha.queue")
-
-    func start() {
-        Logfile.core.log("XPCServer start (app side exported object)")
-        let lockedAppsList = AppState.shared.manager.lockedApps.values.map { $0.toDict() }
-        DispatchQueue.global().async {
-            ESXPCClient.shared.updateBlockedApps(lockedAppsList)
-        }
-    }
+    private var authRequestQueue: [(name: String, path: String, sha: String)] = []
+    private var isAuthenticating = false
 
     // Extension -> App notification when exec attempted and extension denied
     func notifyBlockedExec(name: String, path: String, sha: String) {
-
-        // atomic check + insert
-        let shouldProceed: Bool = authQueue.sync {
+        // atomic check + insert vào pendingAuthSHAs để tránh trùng lặp cùng một app
+        let shouldQueue: Bool = authQueue.sync {
             if pendingAuthSHAs.contains(sha) {
                 return false
             }
             pendingAuthSHAs.insert(sha)
+            authRequestQueue.append((name, path, sha))
             return true
         }
 
-        if !shouldProceed {
+        if !shouldQueue {
             Logfile.core.info("Skipping duplicate auth request for SHA: \(sha.prefix(8))")
             return
         }
 
-        Logfile.core.pLog(
+        Logfile.core.log(
             """
-            Endpoint Security Blocked Apps
+            Endpoint Security Blocked App added to Queue
             Name:   \(name)
             Path:   \(path)
             SHA256: \(sha.prefix(8))
             """
         )
 
-        AuthenticationManager.authenticate(
-            reason: String(localized: "verify that you are opening the \(name) app")
-        ) { [weak self] success, _ in
+        processNextAuthRequest()
+    }
 
-            defer {
-                self?.authQueue.async {
-                    self?.pendingAuthSHAs.remove(sha)
-                }
-            }
-
+    private func processNextAuthRequest() {
+        authQueue.async { [weak self] in
+            guard let self = self, !self.isAuthenticating, !self.authRequestQueue.isEmpty else { return }
+            
+            self.isAuthenticating = true
+            let request = self.authRequestQueue.removeFirst()
+            
+            Logfile.core.log("Processing Auth Request for: \(request.name)")
+            
+            // Đảm bảo App hiện lên trước khi hiện hộp thoại xác thực
             DispatchQueue.main.async {
+                Logfile.core.log("Activating AppLocker for Auth Request...")
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            
+            AuthenticationManager.authenticate(
+                reason: String(localized: "verify that you are opening the \(request.name) app")
+            ) { [weak self] success, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    Logfile.core.error("Authentication error: \(error.localizedDescription)")
+                }
+
+                // Sau khi xác thực xong (bất kể thành công hay thất bại), dọn dẹp và xử lý request tiếp theo
+                defer {
+                    self.authQueue.async {
+                        self.pendingAuthSHAs.remove(request.sha)
+                        self.isAuthenticating = false
+                        self.processNextAuthRequest()
+                    }
+                }
+
                 if success {
-                    ESXPCClient.shared.allowSHAOnce(sha) { accepted in
-                        if accepted {
-                            let appBundleURL = URL(fileURLWithPath: path)
-                                .deletingLastPathComponent()
-                                .deletingLastPathComponent()
-                                .deletingLastPathComponent()
-                            NSWorkspace.shared.open(appBundleURL)
-                        } else {
-                            self?.authError = "ES extension did not approve"
+                    DispatchQueue.main.async {
+                        ESXPCClient.shared.allowSHAOnce(request.sha) { accepted in
+                            if accepted {
+                                let appBundleURL = URL(fileURLWithPath: request.path)
+                                    .deletingLastPathComponent()
+                                    .deletingLastPathComponent()
+                                    .deletingLastPathComponent()
+                                NSWorkspace.shared.open(appBundleURL)
+                            } else {
+                                self.authError = "ES extension did not approve"
+                            }
                         }
                     }
                 } else {
-                    self?.authError = "Authentication failed"
+                    DispatchQueue.main.async {
+                        self.authError = "Authentication failed"
+                    }
                 }
             }
         }

@@ -1,6 +1,11 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+      "extractionState" : "manual",
+      "generatesSymbol" : false,
+      "shouldTranslate" : false
+    },
     "A new beta version is available. Do you want to update?" : {
       "localizations" : {
         "vi" : {
@@ -131,12 +136,12 @@
         }
       }
     },
-    "Check for Updates..." : {
+    "Check for Updates…" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kiểm tra cập nhật..."
+            "value" : "Kiểm tra cập nhật…"
           }
         }
       }
@@ -147,6 +152,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đóng"
+          }
+        }
+      }
+    },
+    "Could not move the application to /Applications automatically. Please move it manually to continue." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tự động di chuyển ứng dụng đến /Applications. Vui lòng di chuyển nó theo cách thủ công để tiếp tục."
           }
         }
       }
@@ -167,6 +182,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ES (EndpointSecurity)"
+          }
+        }
+      }
+    },
+    "Failed to Move Application" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể chuyển đến thư mục Ứng dụng"
           }
         }
       }
@@ -291,6 +316,16 @@
         }
       }
     },
+    "Move to Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển đến thư mục Ứng dụng"
+          }
+        }
+      }
+    },
     "Others…" : {
       "localizations" : {
         "vi" : {
@@ -311,6 +346,16 @@
         }
       }
     },
+    "Quit" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoát"
+          }
+        }
+      }
+    },
     "Quit AppLocker" : {
       "localizations" : {
         "vi" : {
@@ -327,6 +372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sẵn sàng để Cài đặt"
+          }
+        }
+      }
+    },
+    "Requires running in the Applications folder" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu chạy ứng dụng trong thư mục Ứng dụng"
           }
         }
       }
@@ -391,6 +446,16 @@
         }
       }
     },
+    "SIP must be disabled to use this mode" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu tắt SIP để có thể dùng tính năng này"
+          }
+        }
+      }
+    },
     "Stable" : {
       "localizations" : {
         "vi" : {
@@ -417,6 +482,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bản cập nhật beta đã được tải xuống. Cài đặt ngay bây giờ?"
+          }
+        }
+      }
+    },
+    "The currently running application is at %@.\n\nAppLocker must be moved to the /Applications folder to function correctly." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng hiện đang chạy ở %@.\n\nAppLocker phải được chuyển đến thư mục /Applications để hoạt động chính xác."
           }
         }
       }
@@ -478,16 +553,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gỡ cài đặt AppLocker"
-          }
-        }
-      }
-    },
-    "Uninstall Applocker?" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gỡ cài đặt AppLocker?"
           }
         }
       }

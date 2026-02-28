@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  AppLocker
 //
-//  Copyright © 2025 TranPhuong319. All rights reserved.
+//  Created by Doe Phương on 24/7/25.
 //
 
 import AppKit
@@ -22,7 +22,7 @@ enum AgentAction {
 }
 
 enum AppMode: String {
-    case es = "ES"
+    case esMode = "ES"
     case launcher = "Launcher"
 }
 
@@ -46,14 +46,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Build-in Relaunch Wait: Check for -waitForPID argument
         let args = CommandLine.arguments
-        Logfile.core.info("Launch Arguments: \(args)")
+        Logfile.core.debug("Launch Arguments: \(args)")
 
         if let index = args.firstIndex(of: "-waitForPID"),
             index + 1 < args.count,
             let pidString = args[index + 1] as String?,
             let parentProcessID = Int32(pidString) {
 
-            Logfile.core.info("Waiting for PID: \(parentProcessID) to exit...")
+            Logfile.core.log("Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
 
             // Wait for parent process to exit
             // kill(pid, 0) returns 0 if process exists/is reachable
@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             if attempts >= 30 {
                 Logfile.core.warning("Wait timed out after 3 seconds. Proceeding anyway.")
             } else {
-                Logfile.core.info("Parent process exited.")
+                Logfile.core.log("Parent process exited.")
             }
 
             applicationExactlyOneInstance(ignoringPID: parentProcessID)
@@ -73,21 +73,99 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             applicationExactlyOneInstance()
         }
 
-        Logfile.core.info("AppLocker v\(Bundle.main.fullVersion) starting...")
+        #if !DEBUG
+        checkAndMoveToApplications()
+        #endif
+
+        Logfile.core.log("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
         // Sử dụng optional chaining hoặc miêu tả enum an toàn
-        Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None")")
+        Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None", privacy: .public)")
 
         if let mode = modeLock {
+            if mode == .esMode && !launchedByLaunchd() {
+                let agent = SMAppService.agent(plistName: "\(plistName).plist")
+                if agent.status == .enabled {
+                    Logfile.core.log("App launched manually in esMode. Restarting via launchctl...")
+                    let process = Process()
+                    process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                    process.arguments = ["start", plistName]
+                    try? process.run()
+                    NSApp.terminate(nil)
+                    return
+                }
+            }
+            
             launchConfig(config: mode)
         } else {
-            Logfile.core.info("Checking kext signing status...")
-            if isKextSigningDisabled() {
-                WelcomeWindowController.show()
-                return
-            } else {
-                launchConfig(config: .launcher)
+            WelcomeWindowController.show()
+            return
+        }
+    }
+
+    private func moveToApplicationsAndRelaunch() {
+        let bundleURL = Bundle.main.bundleURL
+        
+        // Cố gắng tìm thư mục Applications phù hợp nhất (User trước, System sau)
+        var targetApplicationsURL: URL?
+        
+        let userApplicationsURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Applications")
+        let systemApplicationsURL = URL(fileURLWithPath: "/Applications")
+        
+        // Nếu thư mục User/Applications tồn tại, ưu tiên dùng nó (không cần xin quyền root)
+        if FileManager.default.fileExists(atPath: userApplicationsURL.path) {
+            targetApplicationsURL = userApplicationsURL
+        } else if FileManager.default.isWritableFile(atPath: systemApplicationsURL.path) {
+            // Còn nếu System/Applications cho phép ghi, thì dùng system
+            targetApplicationsURL = systemApplicationsURL
+        } else {
+            // Nếu cả 2 đều không có/không ghi được, tạo User/Applications
+            do {
+                try FileManager.default.createDirectory(at: userApplicationsURL, withIntermediateDirectories: true)
+                targetApplicationsURL = userApplicationsURL
+            } catch {
+                Logfile.core.warning("Không thể tạo ~/Applications, fallback về /Applications")
+                targetApplicationsURL = systemApplicationsURL
             }
+        }
+        
+        guard let finalTargetURL = targetApplicationsURL else { return }
+        let destinationURL = finalTargetURL.appendingPathComponent(bundleURL.lastPathComponent)
+        
+        do {
+            if FileManager.default.fileExists(atPath: destinationURL.path) {
+                try FileManager.default.removeItem(at: destinationURL)
+            }
+            try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
+            
+            do {
+                try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
+            } catch {
+                Logfile.core.warning("Lỗi xóa file gốc: \(error.localizedDescription)")
+            }
+            
+            Logfile.core.log("Đã di chuyển ứng dụng vào \(finalTargetURL.path). Đang khởi động lại...")
+            
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.createsNewApplicationInstance = true
+            let pid = ProcessInfo.processInfo.processIdentifier
+            configuration.arguments = ["-waitForPID", "\(pid)"]
+            
+            NSWorkspace.shared.openApplication(at: destinationURL, configuration: configuration) { app, error in
+                if let error = error {
+                    Logfile.core.error("Lỗi khởi động thư mục mới: \(error.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    NSApp.terminate(nil)
+                }
+            }
+        } catch {
+            Logfile.core.error("Lỗi khi di chuyển vào Applications: \(error.localizedDescription)")
+            let errorAlert = NSAlert()
+            errorAlert.alertStyle = .critical
+            errorAlert.messageText = "Lỗi di chuyển ứng dụng"
+            errorAlert.informativeText = "Không thể tự động di chuyển do thiếu quyền truy cập.\n\nVui lòng kéo thả thủ công ứng dụng vào thư mục Applications. Chi tiết lỗi: \(error.localizedDescription)"
+            errorAlert.runModal()
         }
     }
 
@@ -103,8 +181,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
 
         if !otherApps.isEmpty && !launchedByLaunchd() {
-            Logfile.core.info(
-                "Another instance is running (PIDs: \(otherApps.map { $0.processIdentifier })). Terminating."
+            Logfile.core.warning(
+                """
+                Another instance is running \
+                (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
+                Terminating.
+                """
             )
             NSApp.terminate(nil)
         }

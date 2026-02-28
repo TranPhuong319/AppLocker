@@ -33,11 +33,13 @@ struct AddAppSheet: View {
                     .onSubmit { unfocus() }
                 }
                 .padding(7)
-                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-                .cornerRadius(8)
+                .background {
+                    Capsule()
+                        .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                }
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.secondary.opacity(0.2))
+                    Capsule()
+                        .stroke(Color.secondary.opacity(0.15))
                 )
                 .padding(.horizontal)
                 .padding(.vertical)
@@ -70,7 +72,7 @@ struct AddAppSheet: View {
                 .scrollIndicators(.hidden)
                 .padding(.horizontal)
                 .frame(maxWidth: .infinity)
-                .frame(maxHeight: 420)
+                .frame(maxHeight: WindowLayout.Sheet.AddApp.listMaxHeight)
             }
             .contentShape(Rectangle())
             .onTapGesture { unfocus() }
@@ -78,9 +80,9 @@ struct AddAppSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: {
                         appState.lockButton()
-                    }) {
+                    }, label: {
                         Text("Lock (\(appState.selectedToLock.count))")
-                    }
+                    })
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)
                     .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
@@ -101,7 +103,7 @@ struct AddAppSheet: View {
                 }
             }
         }
-        .frame(minWidth: 400, minHeight: 500)
+        .frame(minWidth: WindowLayout.Sheet.AddApp.minSize.width, minHeight: WindowLayout.Sheet.AddApp.minSize.height)
         .onTapGesture { unfocus() }
         .onAppear {
             unfocus()

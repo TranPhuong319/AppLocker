@@ -38,34 +38,20 @@ extension AppDelegate: NSMenuDelegate {
         menu.addItem(infoItem)
         menu.addItem(.separator())
 
-        if NSEvent.modifierFlags.contains(.option) {
-            buildOptionMenu(for: menu)
-        } else {
-            buildNormalMenu(for: menu)
-        }
-    }
-
-    private func buildNormalMenu(for menu: NSMenu) {
-        let manageItem = NSMenuItem(title: String(localized: "Manage the application list"),
+        // MARK: - Primary Actions
+        let manageItem = NSMenuItem(title: String(localized: "Manage the application list") + "…",
                                     action: #selector(openListApp),
                                     keyEquivalent: "l")
         manageItem.keyEquivalentModifierMask = [.command, .shift]
         manageItem.image = NSImage(systemSymbolName: "lock.app.dashed", accessibilityDescription: nil)
         menu.addItem(manageItem)
 
-        #if DEBUG
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: String(localized: "Quit AppLocker"),
-                                action: #selector(NSApplication.terminate(_:)),
-                                keyEquivalent: "q"))
-        #endif
-    }
 
-    private func buildOptionMenu(for menu: NSMenu) {
-        menu.addItem(NSMenuItem(title: String(localized: "Settings"),
+        // MARK: - Settings & Preferences
+        menu.addItem(NSMenuItem(title: String(localized: "Settings") + "…",
                                 action: #selector(openSettings),
                                 keyEquivalent: ","))
-        menu.addItem(.separator())
 
         if modeLock == .launcher {
             let launchItem = NSMenuItem(title: String(localized: "Launch At Login"),
@@ -76,12 +62,16 @@ extension AppDelegate: NSMenuDelegate {
             menu.addItem(launchItem)
         }
 
-        let updateItem = NSMenuItem(title: String(localized: "Check for Updates..."),
+        menu.addItem(.separator())
+
+        // MARK: - Info & Updates
+        let updateItem = NSMenuItem(title: String(localized: "Check for Updates…"),
                                 action: #selector(checkUpdate),
                                 keyEquivalent: "")
         updateItem.image = NSImage(systemSymbolName: "arrow.trianglehead.2.clockwise.rotate.90",
                                    accessibilityDescription: nil)
         menu.addItem(updateItem)
+
         let aboutItem = NSMenuItem(title: String(localized: "About AppLocker"),
                                 action: #selector(about),
                                 keyEquivalent: "")
@@ -90,20 +80,26 @@ extension AppDelegate: NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        let uninstallItem = NSMenuItem(title: String(localized: "Uninstall AppLocker"),
+        // MARK: - Destructive Actions
+        let uninstallItem = NSMenuItem(title: String(localized: "Uninstall AppLocker") + "…",
                                        action: #selector(uninstall),
                                        keyEquivalent: "")
         uninstallItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
         menu.addItem(uninstallItem)
 
-        let resetItem = NSMenuItem(title: String(localized: "Reset AppLocker"),
+        let resetItem = NSMenuItem(title: String(localized: "Reset AppLocker") + "…",
                                    action: #selector(resetApp),
                                    keyEquivalent: "")
         resetItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)
-
-        resetItem.keyEquivalentModifierMask = NSEvent.ModifierFlags([.option, .shift])
+        resetItem.keyEquivalentModifierMask = [.option]
         resetItem.isAlternate = true
-
         menu.addItem(resetItem)
+
+        #if DEBUG
+        menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: String(localized: "Quit AppLocker"),
+                                action: #selector(NSApplication.terminate(_:)),
+                                keyEquivalent: "q"))
+        #endif
     }
 }

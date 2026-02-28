@@ -88,7 +88,12 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
     }
 
     // MARK: - AppLockerHelperProtocol Auth
-    func authenticate(clientNonce: Data, clientSig: Data, clientPublicKey: Data, withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void) {
+    func authenticate(
+        clientNonce: Data,
+        clientSig: Data,
+        clientPublicKey: Data,
+        withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void
+    ) {
         guard let xpcConnection = NSXPCConnection.current() else {
             reply(nil, nil, nil, false)
             return
@@ -167,17 +172,9 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         process.standardOutput = outputPipe
         process.standardError = errorPipe
 
-        switch command {
-        case "mkdir":       process.executableURL = URL(fileURLWithPath: "/bin/mkdir")
-        case "cp":          process.executableURL = URL(fileURLWithPath: "/bin/cp")
-        case "rm":          process.executableURL = URL(fileURLWithPath: "/bin/rm")
-        case "mv":          process.executableURL = URL(fileURLWithPath: "/bin/mv")
-        case "chmod":       process.executableURL = URL(fileURLWithPath: "/bin/chmod")
-        case "chflags":     process.executableURL = URL(fileURLWithPath: "/usr/bin/chflags")
-        case "chown":       process.executableURL = URL(fileURLWithPath: "/usr/sbin/chown")
-        case "PlistBuddy":  process.executableURL = URL(fileURLWithPath: "/usr/libexec/PlistBuddy")
-        case "touch":       process.executableURL = URL(fileURLWithPath: "/usr/bin/touch")
-        default:
+        if let execURL = getExecutableURL(for: command) {
+            process.executableURL = execURL
+        } else {
             reply(false, "Command not supported: \(command)")
             return
         }
@@ -199,6 +196,24 @@ class AppLockerHelper: NSObject, NSXPCListenerDelegate, AppLockerHelperProtocol 
         } catch {
             reply(false, "Can't run \(command): \(error.localizedDescription)")
         }
+    }
+
+    private func getExecutableURL(for command: String) -> URL? {
+        let paths = [
+            "mkdir": "/bin/mkdir",
+            "cp": "/bin/cp",
+            "rm": "/bin/rm",
+            "mv": "/bin/mv",
+            "chmod": "/bin/chmod",
+            "chflags": "/usr/bin/chflags",
+            "chown": "/usr/sbin/chown",
+            "PlistBuddy": "/usr/libexec/PlistBuddy",
+            "touch": "/usr/bin/touch"
+        ]
+        if let path = paths[command] {
+            return URL(fileURLWithPath: path)
+        }
+        return nil
     }
 
     // MARK: - Parse args safely

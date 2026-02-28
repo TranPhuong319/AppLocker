@@ -1,7 +1,7 @@
 
 <div align="center">
   
-  <img width="256" height="256" alt="AppIcon-macOS-Default-256x256@2x" src="https://github.com/user-attachments/assets/18b552f7-5e87-467e-b680-6f92de4374b3" />
+  <img width="256" height="256" alt="AppLocker Icon" src="docs/images/Icon.png" />
 
 # AppLocker
 
@@ -43,6 +43,8 @@ The application locking mechanism is implemented using masquerading techniques a
 - Drag and drop the AppLocker application into `/Applications`
 
 ## Usage
+For detailed instructions, please refer to the [User Guide](docs/USAGE.md).
+
 - On first launch (with SIP disabled), two modes are available:
   - **Endpoint Security (ES) mode**: requires enabling the System Extension
   - **Launcher mode**: requires enabling the Extension for all users (administrator password may be required)

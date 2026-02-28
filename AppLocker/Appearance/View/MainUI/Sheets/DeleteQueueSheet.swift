@@ -65,7 +65,7 @@ struct DeleteQueueSheet: View {
                 }
             }
         }
-        .frame(minWidth: 350, minHeight: 370)
+        .frame(minWidth: WindowLayout.Sheet.DeleteQueue.minSize.width, minHeight: WindowLayout.Sheet.DeleteQueue.minSize.height)
         .onAppear {
             DispatchQueue.main.async {
                 appState.activeTouchBar = .deleteQueuePopup

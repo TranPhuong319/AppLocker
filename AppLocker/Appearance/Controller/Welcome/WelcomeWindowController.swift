@@ -35,7 +35,7 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         window.contentView?.wantsLayer = true
 
         // 3. Thiết lập kích thước cố định
-        let fixedSize = NSSize(width: 350, height: 450)
+        let fixedSize = WindowLayout.Welcome.size
         window.setContentSize(fixedSize)
         window.minSize = fixedSize
         window.maxSize = fixedSize // Không cho phép resize cửa sổ welcome

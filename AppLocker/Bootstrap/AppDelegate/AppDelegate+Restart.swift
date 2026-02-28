@@ -35,7 +35,7 @@ extension AppDelegate {
             try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
             Logfile.core.info("App successfully moved to Trash")
         } catch {
-            Logfile.core.error("Failed to move app to Trash: \(error.localizedDescription)")
+            Logfile.core.error("Failed to move app to Trash: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -61,7 +61,7 @@ extension AppDelegate {
                 Logfile.core.info("The configuration folder has been successfully deleted.")
             }
         } catch {
-            Logfile.core.pError(
+            Logfile.core.error(
                 "Error deleting folder: \(error.localizedDescription)")
         }
     }
@@ -74,12 +74,12 @@ extension AppDelegate {
         do {
             try restartProcess.run()
         } catch {
-            Logfile.core.error("Lỗi chạy osascript: \(error.localizedDescription)")
+            Logfile.core.error("Error running osascript: \(error.localizedDescription)")
         }
     }
 
     func restartApp(mode: AppMode?, completion: (() -> Void)? = nil) {
-        if mode == .es {
+        if mode == .esMode {
             manageAgent(plistName: plistName, action: .install)
             manageHelperLoginItem(
                 helperBundleID: loginItem,

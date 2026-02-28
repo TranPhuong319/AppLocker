@@ -22,7 +22,7 @@ final class ConfigStore {
             try? ensureDirectoryExists(configDirectory)
             return configDirectory.appendingPathComponent("config.plist")
 
-        case .es:
+        case .esMode:
             let configDirectory = URL(
                 fileURLWithPath: "/Users/Shared/AppLocker",
                 isDirectory: true
@@ -69,7 +69,7 @@ final class ConfigStore {
         // DO NOT call requestAccessIfNeeded here to avoid double XPC calls and timeouts.
 
         guard FileManager.default.fileExists(atPath: configURL.path),
-              let plistData = try? Data(contentsOf: configURL) else {
+              let plistData = try? Data(contentsOf: configURL, options: .mappedIfSafe) else {
             return [:]
         }
 
@@ -94,7 +94,7 @@ final class ConfigStore {
                 }
             }
 
-        case .es:
+        case .esMode:
             let uid = String(getuid())
             if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
                let apps = userBlockedAppsMap[uid] {
@@ -121,16 +121,34 @@ final class ConfigStore {
                 let configDictionary: [String: [LockedAppConfig]] = ["BlockedApps": blockedAppsList]
                 let plistData = try encoder.encode(configDictionary)
                 try plistData.write(to: configURL, options: .atomic)
-                Logfile.core.info("ConfigStore.save launcher: wrote \(blockedAppsList.count) apps")
+                Logfile.core.debug("ConfigStore.save launcher: wrote \(blockedAppsList.count) apps")
 
-            case .es:
-                let userID = String(getuid())   // uid hiện tại
-                let userConfigDictionary: [String: [LockedAppConfig]] = [
-                    userID: Array(map.values)
-                ]
-                let plistData = try encoder.encode(userConfigDictionary)
+            case .esMode:
+                let userID = String(getuid())
+                var fullConfig: [String: [LockedAppConfig]] = [:]
+                
+                // 1. Read existing config to avoid overwriting other users
+                if FileManager.default.fileExists(atPath: configURL.path),
+                   let existingData = try? Data(contentsOf: configURL) {
+                    let decoder = PropertyListDecoder()
+                    if let decoded = try? decoder.decode([String: [LockedAppConfig]].self, from: existingData) {
+                        fullConfig = decoded
+                    }
+                }
+                
+                // 2. Update current user's rules
+                fullConfig[userID] = Array(map.values)
+                
+                // 3. Encode and save
+                let plistData = try encoder.encode(fullConfig)
                 try plistData.write(to: configURL, options: .atomic)
-                Logfile.core.pInfo("ConfigStore.save ES: wrote \(map.count) apps for uid \(userID)")
+                
+                // 4. Set permissions to 0o666 for multi-user access
+                var attributes = [FileAttributeKey: Any]()
+                attributes[.posixPermissions] = 0o666
+                try? FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
+                
+                Logfile.core.debug("ConfigStore.save ES: updated \(map.count) apps for uid \(userID). Total users: \(fullConfig.count)")
 
             case .none:
                 return

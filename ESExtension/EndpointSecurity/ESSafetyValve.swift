@@ -6,7 +6,7 @@ import os
 /// It uses a DispatchSemaphore to ensure that either the main logic worker
 /// OR the emergency timer responds to the ES message, but never both.
 final class ESSafetyValve {
-    private var lock = os_unfair_lock()
+    private let lock = FastLock()
     private let deadlineExpiredSema = DispatchSemaphore(value: 0)
     private let message: ESMessage
     private let manager: ESManager
@@ -26,12 +26,12 @@ final class ESSafetyValve {
     func respond(_ result: es_auth_result_t, cache: Bool) -> Bool {
         var shouldRespond = false
 
-        os_unfair_lock_lock(&lock)
-        if !isResponded {
-            isResponded = true
-            shouldRespond = true
+        lock.perform {
+            if !isResponded {
+                isResponded = true
+                shouldRespond = true
+            }
         }
-        os_unfair_lock_unlock(&lock)
 
         if shouldRespond {
             let status: es_respond_result_t
@@ -56,8 +56,18 @@ final class ESSafetyValve {
             }
 
             if status != ES_RESPOND_RESULT_SUCCESS {
-                let path = ESSafetyValve.getPath(message)
-                Logfile.es.pError("es_respond failed [\(status.rawValue)] for \(path) (Type: \(self.message.pointee.event_type.rawValue))")
+                let path = ESSafetyValve.getPath(self.message)
+                // swiftlint:disable:next line_length
+                Logfile.endpointSecurity.error(
+                """
+                es_respond failed [\(status.rawValue, privacy: .public)] \
+                for \(path, privacy: .public) \
+                (Type: \(self.message.pointee.event_type.rawValue, privacy: .public))
+                """
+                )
+            } else {
+                // Log success mostly for debug (optional, can be noisy)
+                // Logfile.endpointSecurity.debug("es_respond success for Type: \(self.message.pointee.event_type.rawValue)")
             }
 
             // Decrement active message counter
@@ -75,7 +85,7 @@ final class ESSafetyValve {
         // Santa-style: We usually fail-open (ALLOW) in emergency to prevent system freeze.
         if respond(ES_AUTH_RESULT_ALLOW, cache: true) {
              let path = ESSafetyValve.getPath(message)
-             Logfile.es.pError("SAFETY VALVE: Deadline reached for [\(path)]! Forced ALLOW to prevent SIGKILL.")
+             Logfile.endpointSecurity.error("SAFETY VALVE: Deadline reached for [\(path)]! Forced ALLOW to prevent SIGKILL.")
         }
     }
 
@@ -103,10 +113,17 @@ final class ESSafetyValve {
         deadlineExpiredSema.wait()
         deadlineExpiredSema.signal()
     }
+    
+    /// Expose semaphore for external waiters (like ESModularClients)
+    func wait() {
+        deadlineExpiredSema.wait()
+        deadlineExpiredSema.signal()
+    }
 
     deinit {
         // Fallback: If for some reason respond was NEVER called, do it now.
-        if !isResponded {
+        // BUT only for AUTH events. NOTIFY events do not need response.
+        if !isResponded && message.pointee.action_type == ES_ACTION_TYPE_AUTH {
             _ = respond(ES_AUTH_RESULT_ALLOW, cache: false)
         }
     }
