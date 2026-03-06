@@ -52,7 +52,8 @@ extension AppDelegate {
                 """),
             style: .critical,
             buttons: [String(localized: "Cancel"), String(localized: "Uninstall")],
-            cancelIndex: 0
+            cancelIndex: 0,
+            destructiveIndex: 1
         )
 
         if case .button(index: 1, title: String(localized: "Uninstall")) = uninstallConfirmation {
@@ -73,7 +74,8 @@ extension AppDelegate {
                 """),
             style: .critical,
             buttons: [String(localized: "Cancel"), String(localized: "Reset")],
-            cancelIndex: 0
+            cancelIndex: 0,
+            destructiveIndex: 1
         )
 
         if case .button(index: 1, title: String(localized: "Reset")) = resetConfirmation {

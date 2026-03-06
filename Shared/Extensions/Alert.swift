@@ -29,7 +29,8 @@ final class AlertShow {
         message: String,
         style: NSAlert.Style,
         buttons: [String],
-        cancelIndex: Int? = nil
+        cancelIndex: Int? = nil,
+        destructiveIndex: Int? = nil
     ) -> AlertResult {
         let alert = NSAlert()
         alert.messageText = title
@@ -38,7 +39,17 @@ final class AlertShow {
 
         // NSAlert chỉ hỗ trợ tối đa 3 nút
         let displayedButtons = Array(buttons.prefix(3))
-        displayedButtons.forEach { alert.addButton(withTitle: $0) }
+        for (index, title) in displayedButtons.enumerated() {
+            let button = alert.addButton(withTitle: title)
+            if index == destructiveIndex {
+                // macOS 11.0+ supports hasDestructiveAction for red styling in alerts.
+                // Sử dụng KVC để an toàn với mọi phiên bản SDK.
+                let destructiveKey = "hasDestructiveAction"
+                if button.responds(to: NSSelectorFromString("setHasDestructiveAction:")) {
+                    button.setValue(true, forKey: destructiveKey)
+                }
+            }
+        }
 
         // Xác định vị trí cancel
         let effectiveCancelIndex: Int? = {
