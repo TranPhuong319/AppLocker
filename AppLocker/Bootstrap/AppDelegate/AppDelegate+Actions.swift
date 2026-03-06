@@ -51,12 +51,13 @@ extension AppDelegate {
                 Your Mac will restart after Successful Uninstall
                 """),
             style: .critical,
-            buttons: [String(localized: "Cancel"), String(localized: "Uninstall")],
-            cancelIndex: 0,
-            destructiveIndex: 1
+            buttons: [String(localized: "Uninstall"), String(localized: "Cancel")],
+            cancelIndex: 1,
+            destructiveIndex: 0,
+            defaultIndex: 1
         )
 
-        if case .button(index: 1, title: String(localized: "Uninstall")) = uninstallConfirmation {
+        if case .button(index: 0, title: String(localized: "Uninstall")) = uninstallConfirmation {
             performUninstall(for: modeLock)
         }
     }
@@ -73,12 +74,13 @@ extension AppDelegate {
                 Do you want to continue?
                 """),
             style: .critical,
-            buttons: [String(localized: "Cancel"), String(localized: "Reset")],
-            cancelIndex: 0,
-            destructiveIndex: 1
+            buttons: [String(localized: "Reset"), String(localized: "Cancel")],
+            cancelIndex: 1,
+            destructiveIndex: 0,
+            defaultIndex: 1
         )
 
-        if case .button(index: 1, title: String(localized: "Reset")) = resetConfirmation {
+        if case .button(index: 0, title: String(localized: "Reset")) = resetConfirmation {
             performReset(for: modeLock)
         }
     }
