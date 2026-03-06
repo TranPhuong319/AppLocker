@@ -15,6 +15,8 @@ enum AlertResult {
 
 final class AlertShow {
     /// Hiển thị Alert với nhiều nút (tối đa 3)
+    /// - Nếu có window chính đang hiển thị → hiện dạng sheet
+    /// - Nếu không có window → hiện modal thường
     /// - Parameters:
     ///   - title: Tiêu đề
     ///   - message: Nội dung
@@ -47,7 +49,7 @@ final class AlertShow {
         }()
 
         NSApplication.shared.activate(ignoringOtherApps: true)
-        let response = alert.runModal()
+        let response = runAlert(alert)
 
         let index: Int
         switch response {
@@ -78,6 +80,35 @@ final class AlertShow {
         alert.addButton(withTitle: "OK")
 
         NSApplication.shared.activate(ignoringOtherApps: true)
-        alert.runModal()
+        runAlert(alert)
+    }
+
+    // MARK: - Private
+
+    /// Chạy alert: nếu có window chính đang hiển thị → sheet, ngược lại → modal
+    @discardableResult
+    private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow,
+           window.isVisible {
+            // Hiển thị dạng sheet trên window chính
+            var response: NSApplication.ModalResponse = .alertFirstButtonReturn
+            var completed = false
+
+            alert.beginSheetModal(for: window) { result in
+                response = result
+                completed = true
+                NSApp.stopModal()
+            }
+
+            // Chờ đồng bộ cho đến khi sheet đóng
+            if !completed {
+                NSApp.runModal(for: window)
+            }
+
+            return response
+        } else {
+            // Không có window → hiện modal thường
+            return alert.runModal()
+        }
     }
 }

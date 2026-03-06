@@ -11,11 +11,132 @@
 		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
 		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
 		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0572FA02F5B147E00A90708 /* AppLockerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */; };
+		E0572FA12F5B14A000A90708 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
+		E0572FA22F5B14B000A90708 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
+		E0572FA32F5B14D400A90708 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
+		E0572FA42F5B16BC00A90708 /* TempAllowSHAStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76332F59E37C00D46B31 /* TempAllowSHAStore.swift */; };
+		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */ = {isa = PBXBuildFile; fileRef = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
+		E0FD75112F59DB6200D46B31 /* AppLockerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD750D2F59DB6100D46B31 /* AppLockerHelper.swift */; };
+		E0FD75122F59DB6200D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD750F2F59DB6100D46B31 /* main.swift */; };
+		E0FD75132F59DB6200D46B31 /* com.TranPhuong319.AppLocker.Helper.plist in Launch Daemons */ = {isa = PBXBuildFile; fileRef = E0FD750E2F59DB6100D46B31 /* com.TranPhuong319.AppLocker.Helper.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E0FD75682F59DB7400D46B31 /* Launcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75642F59DB7400D46B31 /* Launcher.swift */; };
+		E0FD75692F59DB7400D46B31 /* LauncherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75652F59DB7400D46B31 /* LauncherApp.swift */; };
+		E0FD756A2F59DB7400D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75602F59DB7400D46B31 /* AppIcon.icon */; };
+		E0FD756B2F59DB7400D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75612F59DB7400D46B31 /* Assets.xcassets */; };
+		E0FD756D2F59DB7400D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75662F59DB7400D46B31 /* Localizable.xcstrings */; };
+		E0FD75702F59DB7700D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD756E2F59DB7700D46B31 /* main.swift */; };
+		E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D62F59E36600D46B31 /* AppIcon.icon */; };
+		E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D72F59E36600D46B31 /* Assets.xcassets */; };
+		E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */; };
+		E0FD75F12F59E36600D46B31 /* LockLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LockLauncher.swift */; };
+		E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */; };
+		E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */; };
+		E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DF2F59E36600D46B31 /* Extensions.swift */; };
+		E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */; };
+		E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */; };
+		E0FD75F72F59E36600D46B31 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A72F59E36600D46B31 /* AppIconView.swift */; };
+		E0FD75F82F59E36600D46B31 /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A52F59E36600D46B31 /* SectionHeader.swift */; };
+		E0FD75F92F59E36600D46B31 /* AppDelegate+Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */; };
+		E0FD75FA2F59E36600D46B31 /* DeleteQueueSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AF2F59E36600D46B31 /* DeleteQueueSheet.swift */; };
+		E0FD75FB2F59E36600D46B31 /* AppDelegate+Restart.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */; };
+		E0FD75FC2F59E36600D46B31 /* KextSigningChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CF2F59E36600D46B31 /* KextSigningChecker.swift */; };
+		E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DD2F59E36600D46B31 /* AppState.swift */; };
+		E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */; };
+		E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */; };
+		E0FD76002F59E36600D46B31 /* LabelButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BA2F59E36600D46B31 /* LabelButtonView.swift */; };
+		E0FD76012F59E36600D46B31 /* LockES.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E22F59E36600D46B31 /* LockES.swift */; };
+		E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */; };
+		E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */; };
+		E0FD76042F59E36600D46B31 /* AppRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AA2F59E36600D46B31 /* AppRow.swift */; };
+		E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */; };
+		E0FD76062F59E36600D46B31 /* HelperInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CC2F59E36600D46B31 /* HelperInstaller.swift */; };
+		E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */; };
+		E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C02F59E36600D46B31 /* AppDelegate.swift */; };
+		E0FD76092F59E36600D46B31 /* AppDelegate+Launchctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */; };
+		E0FD760A2F59E36600D46B31 /* AppDelegate+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C12F59E36600D46B31 /* AppDelegate+Actions.swift */; };
+		E0FD760B2F59E36600D46B31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B42F59E36600D46B31 /* ContentView.swift */; };
+		E0FD760C2F59E36600D46B31 /* AppListWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */; };
+		E0FD760D2F59E36600D46B31 /* CustomApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */; };
+		E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E62F59E36600D46B31 /* AppUpdater.swift */; };
+		E0FD760F2F59E36600D46B31 /* AppDelegate+LoginItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C62F59E36600D46B31 /* AppDelegate+LoginItems.swift */; };
+		E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */; };
+		E0FD76112F59E36600D46B31 /* DeleteQueueRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AB2F59E36600D46B31 /* DeleteQueueRow.swift */; };
+		E0FD76122F59E36600D46B31 /* FSEventsMonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */; };
+		E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */; };
+		E0FD76142F59E36600D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D02F59E36600D46B31 /* main.swift */; };
+		E0FD76152F59E36600D46B31 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */; };
+		E0FD76162F59E36600D46B31 /* LockedAppRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AC2F59E36600D46B31 /* LockedAppRow.swift */; };
+		E0FD76172F59E36600D46B31 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */; };
+		E0FD76182F59E36600D46B31 /* WindowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */; };
+		E0FD76192F59E36600D46B31 /* WelcomeWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */; };
+		E0FD761A2F59E36600D46B31 /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */; };
+		E0FD761B2F59E36600D46B31 /* AppDelegate+Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */; };
+		E0FD761C2F59E36600D46B31 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B31 /* SettingsView.swift */; };
+		E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */; };
+		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
+		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
+		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
+		E0FD76212F59E36600D46B31 /* AppLockInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A82F59E36600D46B31 /* AppLockInspection.swift */; };
+		E0FD76222F59E36600D46B31 /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */; };
+		E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */; };
+		E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */; };
+		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
+		E0FD764D2F59E37C00D46B31 /* PIDFromProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763E2F59E37C00D46B31 /* PIDFromProcess.swift */; };
+		E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76402F59E37C00D46B31 /* ESMachListener.swift */; };
+		E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */; };
+		E0FD76502F59E37C00D46B31 /* FastLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763B2F59E37C00D46B31 /* FastLock.swift */; };
+		E0FD76512F59E37C00D46B31 /* BlockedAppsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */; };
+		E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */; };
+		E0FD76532F59E37C00D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762E2F59E37C00D46B31 /* main.swift */; };
+		E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */; };
+		E0FD76552F59E37C00D46B31 /* ESEventAuthExec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76232F59E37C00D46B31 /* ESEventAuthExec.swift */; };
+		E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */; };
+		E0FD76572F59E37C00D46B31 /* ESState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762D2F59E37C00D46B31 /* ESState.swift */; };
+		E0FD76582F59E37C00D46B31 /* ESManager+Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */; };
+		E0FD76592F59E37C00D46B31 /* ESEventAuthFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76242F59E37C00D46B31 /* ESEventAuthFile.swift */; };
+		E0FD765A2F59E37C00D46B31 /* ESMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76262F59E37C00D46B31 /* ESMessage.swift */; };
+		E0FD765B2F59E37C00D46B31 /* ESXPCConnections.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76412F59E37C00D46B31 /* ESXPCConnections.swift */; };
+		E0FD765C2F59E37C00D46B31 /* PathUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763D2F59E37C00D46B31 /* PathUtils.swift */; };
+		E0FD765D2F59E37C00D46B31 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */; };
+		E0FD765E2F59E37C00D46B31 /* AppLauncherUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */; };
+		E0FD76722F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
+		E0FD76742F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
+		E0FD76752F59E3BE00D46B31 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
+		E0FD76782F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
+		E0FD76792F59E3BE00D46B31 /* ComputeSHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */; };
+		E0FD767A2F59E3BE00D46B31 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
+		E0FD767D2F59E3BE00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */; };
+		E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
+		E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */; };
+		E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
+		E0FD76812F59E3BE00D46B31 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
+		E0FD76822F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */; };
+		E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD765F2F59E3BE00D46B31 /* Alert.swift */; };
+		E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
+		E0FD76852F59E3BE00D46B31 /* ComputeSHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */; };
+		E0FD76862F59E3BE00D46B31 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
+		E0FD76872F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */; };
+		E0FD76882F59E3BE00D46B31 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
+		E0FD76942F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
+		E0FD76952F59E3BE00D46B31 /* FuzzySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */; };
+		E0FD76962F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
+		E0FD76972F59E3BE00D46B31 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
+		E0FD76982F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */; };
+		E0FD76992F59E3BE00D46B31 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD765F2F59E3BE00D46B31 /* Alert.swift */; };
+		E0FD769A2F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
+		E0FD769B2F59E3BE00D46B31 /* ComputeSHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */; };
+		E0FD769C2F59E3BE00D46B31 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
+		E0FD769D2F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */; };
+		E0FD769E2F59E3BE00D46B31 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
+		E0FD769F2F59E3BE00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */; };
+		E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76372F59E37C00D46B31 /* InfoPlist.strings */; };
+		E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */ = {isa = PBXBuildFile; fileRef = E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +167,7 @@
 			dstPath = Contents/Library/LaunchDaemons;
 			dstSubfolderSpec = 1;
 			files = (
+				E0FD75132F59DB6200D46B31 /* com.TranPhuong319.AppLocker.Helper.plist in Launch Daemons */,
 			);
 			name = "Launch Daemons";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -78,6 +200,7 @@
 			dstPath = Contents/Library/LaunchAgents;
 			dstSubfolderSpec = 1;
 			files = (
+				E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */,
 			);
 			name = "Launch Agents";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -103,160 +226,114 @@
 		E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AppLocker Launcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.Helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0FD750D2F59DB6100D46B31 /* AppLockerHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockerHelper.swift; sourceTree = "<group>"; };
+		E0FD750E2F59DB6100D46B31 /* com.TranPhuong319.AppLocker.Helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.Helper.plist; sourceTree = "<group>"; };
+		E0FD750F2F59DB6100D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E0FD75602F59DB7400D46B31 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		E0FD75612F59DB7400D46B31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E0FD75622F59DB7400D46B31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E0FD75632F59DB7400D46B31 /* Launcher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Launcher.entitlements; sourceTree = "<group>"; };
+		E0FD75642F59DB7400D46B31 /* Launcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Launcher.swift; sourceTree = "<group>"; };
+		E0FD75652F59DB7400D46B31 /* LauncherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherApp.swift; sourceTree = "<group>"; };
+		E0FD75662F59DB7400D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		E0FD756E2F59DB7700D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
+		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeWindowController.swift; sourceTree = "<group>"; };
+		E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarActionProxy.swift; sourceTree = "<group>"; };
+		E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarManager.swift; sourceTree = "<group>"; };
+		E0FD75A52F59E36600D46B31 /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
+		E0FD75A72F59E36600D46B31 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
+		E0FD75A82F59E36600D46B31 /* AppLockInspection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockInspection.swift; sourceTree = "<group>"; };
+		E0FD75AA2F59E36600D46B31 /* AppRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRow.swift; sourceTree = "<group>"; };
+		E0FD75AB2F59E36600D46B31 /* DeleteQueueRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteQueueRow.swift; sourceTree = "<group>"; };
+		E0FD75AC2F59E36600D46B31 /* LockedAppRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppRow.swift; sourceTree = "<group>"; };
+		E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAppSheet.swift; sourceTree = "<group>"; };
+		E0FD75AF2F59E36600D46B31 /* DeleteQueueSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteQueueSheet.swift; sourceTree = "<group>"; };
+		E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockingPopupSheet.swift; sourceTree = "<group>"; };
+		E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRowButtonStyle.swift; sourceTree = "<group>"; };
+		E0FD75B42F59E36600D46B31 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		E0FD75B62F59E36600D46B31 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlass.swift; sourceTree = "<group>"; };
+		E0FD75BA2F59E36600D46B31 /* LabelButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelButtonView.swift; sourceTree = "<group>"; };
+		E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayout.swift; sourceTree = "<group>"; };
+		E0FD75C02F59E36600D46B31 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E0FD75C12F59E36600D46B31 /* AppDelegate+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Actions.swift"; sourceTree = "<group>"; };
+		E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Agent.swift"; sourceTree = "<group>"; };
+		E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+CheckDirectory.swift"; sourceTree = "<group>"; };
+		E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launch.swift"; sourceTree = "<group>"; };
+		E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launchctl.swift"; sourceTree = "<group>"; };
+		E0FD75C62F59E36600D46B31 /* AppDelegate+LoginItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+LoginItems.swift"; sourceTree = "<group>"; };
+		E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+MenuBar.swift"; sourceTree = "<group>"; };
+		E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Notifications.swift"; sourceTree = "<group>"; };
+		E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Restart.swift"; sourceTree = "<group>"; };
+		E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Updater.swift"; sourceTree = "<group>"; };
+		E0FD75CC2F59E36600D46B31 /* HelperInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperInstaller.swift; sourceTree = "<group>"; };
+		E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomApplication.swift; sourceTree = "<group>"; };
+		E0FD75CF2F59E36600D46B31 /* KextSigningChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KextSigningChecker.swift; sourceTree = "<group>"; };
+		E0FD75D02F59E36600D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCClient.swift; sourceTree = "<group>"; };
+		E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionInstaller.swift; sourceTree = "<group>"; };
+		E0FD75D42F59E36600D46B31 /* XPCServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPCServer.swift; sourceTree = "<group>"; };
+		E0FD75D62F59E36600D46B31 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		E0FD75D72F59E36600D46B31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
+		E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconProvider.swift; sourceTree = "<group>"; };
+		E0FD75DD2F59E36600D46B31 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
+		E0FD75DF2F59E36600D46B31 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSEventsMonitoringService.swift; sourceTree = "<group>"; };
+		E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppConfig.swift; sourceTree = "<group>"; };
+		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
+		E0FD75E32F59E36600D46B31 /* LockLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockLauncher.swift; sourceTree = "<group>"; };
+		E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManagerProtocol.swift; sourceTree = "<group>"; };
+		E0FD75E62F59E36600D46B31 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
+		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
+		E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.agent.plist; sourceTree = "<group>"; };
+		E0FD75EA2F59E36600D46B31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E0FD76232F59E37C00D46B31 /* ESEventAuthExec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthExec.swift; sourceTree = "<group>"; };
+		E0FD76242F59E37C00D46B31 /* ESEventAuthFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthFile.swift; sourceTree = "<group>"; };
+		E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventNotifyExit.swift; sourceTree = "<group>"; };
+		E0FD76262F59E37C00D46B31 /* ESMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESMessage.swift; sourceTree = "<group>"; };
+		E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESSafetyValve.swift; sourceTree = "<group>"; };
+		E0FD76292F59E37C00D46B31 /* ESManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESManager.swift; sourceTree = "<group>"; };
+		E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Auth.swift"; sourceTree = "<group>"; };
+		E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Config.swift"; sourceTree = "<group>"; };
+		E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESModularClients.swift; sourceTree = "<group>"; };
+		E0FD762D2F59E37C00D46B31 /* ESState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESState.swift; sourceTree = "<group>"; };
+		E0FD762E2F59E37C00D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTYNotifier.swift; sourceTree = "<group>"; };
+		E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedAppsStore.swift; sourceTree = "<group>"; };
+		E0FD76332F59E37C00D46B31 /* TempAllowSHAStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempAllowSHAStore.swift; sourceTree = "<group>"; };
+		E0FD76352F59E37C00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E0FD76362F59E37C00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLauncherUtils.swift; sourceTree = "<group>"; };
+		E0FD763B2F59E37C00D46B31 /* FastLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastLock.swift; sourceTree = "<group>"; };
+		E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
+		E0FD763D2F59E37C00D46B31 /* PathUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathUtils.swift; sourceTree = "<group>"; };
+		E0FD763E2F59E37C00D46B31 /* PIDFromProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIDFromProcess.swift; sourceTree = "<group>"; };
+		E0FD76402F59E37C00D46B31 /* ESMachListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESMachListener.swift; sourceTree = "<group>"; };
+		E0FD76412F59E37C00D46B31 /* ESXPCConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCConnections.swift; sourceTree = "<group>"; };
+		E0FD76432F59E37C00D46B31 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		E0FD76442F59E37C00D46B31 /* ESExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ESExtension.entitlements; sourceTree = "<group>"; };
+		E0FD76452F59E37C00D46B31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E0FD765F2F59E3BE00D46B31 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
+		E0FD76602F59E3BE00D46B31 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
+		E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComputeSHA.swift; sourceTree = "<group>"; };
+		E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzySearch.swift; sourceTree = "<group>"; };
+		E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockerHelperProtocol.swift; sourceTree = "<group>"; };
+		E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAppProtocol.swift; sourceTree = "<group>"; };
+		E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCProtocol.swift; sourceTree = "<group>"; };
+		E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
+		E0FD76692F59E3BE00D46B31 /* Data+Random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Random.swift"; sourceTree = "<group>"; };
+		E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		E0FD766C2F59E3BE00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E0FD766D2F59E3BE00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E0FD766F2F59E3BE00D46B31 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E0361B032E87E7E800A37772 /* Exceptions for "AppLocker" folder in "ESExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Core/LockedAppConfig.swift,
-			);
-			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
-		};
-		E03BC41D2E5E1B25001C181D /* Exceptions for "Launcher" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				com.TranPhuong319.AppLocker.agent.plist,
-				Info.plist,
-			);
-			target = E0EF51A92E31558900161CAB /* AppLocker */;
-		};
-		E0749BDB2E96D4D8003CD67D /* Exceptions for "Shared" folder in "AppLockerHelper" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				AuthenticationManager.swift,
-				ESAppProtocol.swift,
-				ESXPCProtocol.swift,
-			);
-			target = E0D4C0642E419DAD003C40E3 /* AppLockerHelper */;
-		};
-		E0749BE12E96D5DA003CD67D /* Exceptions for "Shared" folder in "Launcher" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				ESAppProtocol.swift,
-				ESXPCProtocol.swift,
-			);
-			target = E07075952E38BA97001C7950 /* Launcher */;
-		};
-		E0749BE22E96D5F2003CD67D /* Exceptions for "Shared" folder in "ESExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"/Localized: InfoPlist.strings",
-				AppLockerHelperProtocol.swift,
-				AuthenticationManager.swift,
-			);
-			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
-		};
-		E076EEFE2E883E48009F465F /* Exceptions for "ESExtension" folder in "ESExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
-		};
-		E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				AppInfo.swift,
-				ComputeSHA.swift,
-				FuzzySearcch.swift,
-			);
-			target = E050B43F2E86FB33003AEA49 /* ESExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		E0749BDF2E96D580003CD67D /* Exceptions for "AppLockerHelper" folder in "Launch Daemons" phase from "AppLocker" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				com.TranPhuong319.AppLocker.Helper.plist = (CodeSignOnCopy, );
-			};
-			buildPhase = E058BA142E5A03FC0002D0D2 /* Launch Daemons */;
-			membershipExceptions = (
-				com.TranPhuong319.AppLocker.Helper.plist,
-			);
-		};
-		E0749BE82E96D8E5003CD67D /* Exceptions for "AppLocker" folder in "Launch Agents" phase from "AppLocker" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				com.TranPhuong319.AppLocker.agent.plist = (CodeSignOnCopy, );
-			};
-			buildPhase = E0749BE62E96D8BE003CD67D /* Launch Agents */;
-			membershipExceptions = (
-				com.TranPhuong319.AppLocker.agent.plist,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		E01ADC7E2E7D936700BE719D /* Extensions */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0D064042E93EE7C006B0E4B /* Exceptions for "Extensions" folder in "ESExtension" target */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		E01ADC8A2E7D93A000BE719D /* Shared */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0749BE12E96D5DA003CD67D /* Exceptions for "Shared" folder in "Launcher" target */,
-				E0749BDB2E96D4D8003CD67D /* Exceptions for "Shared" folder in "AppLockerHelper" target */,
-				E0749BE22E96D5F2003CD67D /* Exceptions for "Shared" folder in "ESExtension" target */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		E050B4432E86FB34003AEA49 /* ESExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E076EEFE2E883E48009F465F /* Exceptions for "ESExtension" folder in "ESExtension" target */,
-			);
-			path = ESExtension;
-			sourceTree = "<group>";
-		};
-		E07075972E38BA97001C7950 /* Launcher */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E03BC41D2E5E1B25001C181D /* Exceptions for "Launcher" folder in "Launcher" target */,
-			);
-			path = Launcher;
-			sourceTree = "<group>";
-		};
-		E08AAFD92F17FBAC008C97FC /* AppLocker Launcher */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "AppLocker Launcher";
-			sourceTree = "<group>";
-		};
-		E0D4C0662E419DAD003C40E3 /* AppLockerHelper */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0749BDF2E96D580003CD67D /* Exceptions for "AppLockerHelper" folder in "Launch Daemons" phase from "AppLocker" target */,
-			);
-			path = AppLockerHelper;
-			sourceTree = "<group>";
-		};
-		E0EF51AC2E31558900161CAB /* AppLocker */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E03BC4AD2E5E2043001C181D /* Exceptions for "AppLocker" folder in "AppLocker" target */,
-				E0749BE82E96D8E5003CD67D /* Exceptions for "AppLocker" folder in "Launch Agents" phase from "AppLocker" target */,
-				E0361B032E87E7E800A37772 /* Exceptions for "AppLocker" folder in "ESExtension" target */,
-			);
-			explicitFileTypes = {
-				com.TranPhuong319.AppLocker.agent.plist = text.plist.xml;
-			};
-			path = AppLocker;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E04B8EA72E5D852900BE7903 /* Frameworks */ = {
@@ -314,15 +391,14 @@
 		E0EF51A12E31558800161CAB = {
 			isa = PBXGroup;
 			children = (
-				E0EF51AC2E31558900161CAB /* AppLocker */,
-				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
-				E01ADC7E2E7D936700BE719D /* Extensions */,
-				E07075972E38BA97001C7950 /* Launcher */,
-				E050B4432E86FB34003AEA49 /* ESExtension */,
-				E08AAFD92F17FBAC008C97FC /* AppLocker Launcher */,
-				E0EF51AB2E31558900161CAB /* Products */,
-				E01ADC8A2E7D93A000BE719D /* Shared */,
+				E0FD75EB2F59E36600D46B31 /* AppLocker */,
+				E0FD756F2F59DB7700D46B31 /* AppLocker Launcher */,
+				E0FD75102F59DB6100D46B31 /* AppLockerHelper */,
+				E0FD76462F59E37C00D46B31 /* ESExtension */,
 				E0B2790A2E7FB16C004BC47F /* Frameworks */,
+				E0FD75672F59DB7400D46B31 /* Launcher */,
+				E0EF51AB2E31558900161CAB /* Products */,
+				E0FD76702F59E3BE00D46B31 /* Shared */,
 			);
 			sourceTree = "<group>";
 			usesTabs = 0;
@@ -339,6 +415,425 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		E0FD75102F59DB6100D46B31 /* AppLockerHelper */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD750D2F59DB6100D46B31 /* AppLockerHelper.swift */,
+				E0FD750E2F59DB6100D46B31 /* com.TranPhuong319.AppLocker.Helper.plist */,
+				E0FD750F2F59DB6100D46B31 /* main.swift */,
+			);
+			path = AppLockerHelper;
+			sourceTree = "<group>";
+		};
+		E0FD75672F59DB7400D46B31 /* Launcher */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75602F59DB7400D46B31 /* AppIcon.icon */,
+				E0FD75612F59DB7400D46B31 /* Assets.xcassets */,
+				E0FD75622F59DB7400D46B31 /* Info.plist */,
+				E0FD75632F59DB7400D46B31 /* Launcher.entitlements */,
+				E0FD75642F59DB7400D46B31 /* Launcher.swift */,
+				E0FD75652F59DB7400D46B31 /* LauncherApp.swift */,
+				E0FD75662F59DB7400D46B31 /* Localizable.xcstrings */,
+			);
+			path = Launcher;
+			sourceTree = "<group>";
+		};
+		E0FD756F2F59DB7700D46B31 /* AppLocker Launcher */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD756E2F59DB7700D46B31 /* main.swift */,
+			);
+			path = "AppLocker Launcher";
+			sourceTree = "<group>";
+		};
+		E0FD759C2F59E36600D46B31 /* MainUI */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */,
+			);
+			path = MainUI;
+			sourceTree = "<group>";
+		};
+		E0FD759E2F59E36600D46B31 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		E0FD75A02F59E36600D46B31 /* Welcome */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */,
+			);
+			path = Welcome;
+			sourceTree = "<group>";
+		};
+		E0FD75A12F59E36600D46B31 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD759C2F59E36600D46B31 /* MainUI */,
+				E0FD759E2F59E36600D46B31 /* Settings */,
+				E0FD75A02F59E36600D46B31 /* Welcome */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
+		E0FD75A42F59E36600D46B31 /* TouchBar */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */,
+				E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */,
+			);
+			path = TouchBar;
+			sourceTree = "<group>";
+		};
+		E0FD75A62F59E36600D46B31 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75A52F59E36600D46B31 /* SectionHeader.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		E0FD75A92F59E36600D46B31 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75A72F59E36600D46B31 /* AppIconView.swift */,
+				E0FD75A82F59E36600D46B31 /* AppLockInspection.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		E0FD75AD2F59E36600D46B31 /* Row */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75AA2F59E36600D46B31 /* AppRow.swift */,
+				E0FD75AB2F59E36600D46B31 /* DeleteQueueRow.swift */,
+				E0FD75AC2F59E36600D46B31 /* LockedAppRow.swift */,
+			);
+			path = Row;
+			sourceTree = "<group>";
+		};
+		E0FD75B12F59E36600D46B31 /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */,
+				E0FD75AF2F59E36600D46B31 /* DeleteQueueSheet.swift */,
+				E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */,
+			);
+			path = Sheets;
+			sourceTree = "<group>";
+		};
+		E0FD75B32F59E36600D46B31 /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */,
+			);
+			path = Styles;
+			sourceTree = "<group>";
+		};
+		E0FD75B52F59E36600D46B31 /* MainUI */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75A62F59E36600D46B31 /* Components */,
+				E0FD75A92F59E36600D46B31 /* Helpers */,
+				E0FD75AD2F59E36600D46B31 /* Row */,
+				E0FD75B12F59E36600D46B31 /* Sheets */,
+				E0FD75B32F59E36600D46B31 /* Styles */,
+				E0FD75B42F59E36600D46B31 /* ContentView.swift */,
+			);
+			path = MainUI;
+			sourceTree = "<group>";
+		};
+		E0FD75B72F59E36600D46B31 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75B62F59E36600D46B31 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		E0FD75B92F59E36600D46B31 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		E0FD75BC2F59E36600D46B31 /* Welcome */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75BA2F59E36600D46B31 /* LabelButtonView.swift */,
+				E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */,
+			);
+			path = Welcome;
+			sourceTree = "<group>";
+		};
+		E0FD75BE2F59E36600D46B31 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75B52F59E36600D46B31 /* MainUI */,
+				E0FD75B72F59E36600D46B31 /* Settings */,
+				E0FD75B92F59E36600D46B31 /* Utils */,
+				E0FD75BC2F59E36600D46B31 /* Welcome */,
+				E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		E0FD75BF2F59E36600D46B31 /* Appearance */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75A12F59E36600D46B31 /* Controller */,
+				E0FD75A42F59E36600D46B31 /* TouchBar */,
+				E0FD75BE2F59E36600D46B31 /* View */,
+			);
+			path = Appearance;
+			sourceTree = "<group>";
+		};
+		E0FD75CB2F59E36600D46B31 /* AppDelegate */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75C02F59E36600D46B31 /* AppDelegate.swift */,
+				E0FD75C12F59E36600D46B31 /* AppDelegate+Actions.swift */,
+				E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */,
+				E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */,
+				E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */,
+				E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */,
+				E0FD75C62F59E36600D46B31 /* AppDelegate+LoginItems.swift */,
+				E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */,
+				E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */,
+				E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */,
+				E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */,
+			);
+			path = AppDelegate;
+			sourceTree = "<group>";
+		};
+		E0FD75CD2F59E36600D46B31 /* SMAppService */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75CC2F59E36600D46B31 /* HelperInstaller.swift */,
+			);
+			path = SMAppService;
+			sourceTree = "<group>";
+		};
+		E0FD75D12F59E36600D46B31 /* Bootstrap */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75CB2F59E36600D46B31 /* AppDelegate */,
+				E0FD75CD2F59E36600D46B31 /* SMAppService */,
+				E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */,
+				E0FD75CF2F59E36600D46B31 /* KextSigningChecker.swift */,
+				E0FD75D02F59E36600D46B31 /* main.swift */,
+			);
+			path = Bootstrap;
+			sourceTree = "<group>";
+		};
+		E0FD75D52F59E36600D46B31 /* EndpointSecurity */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */,
+				E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */,
+				E0FD75D42F59E36600D46B31 /* XPCServer.swift */,
+			);
+			path = EndpointSecurity;
+			sourceTree = "<group>";
+		};
+		E0FD75D92F59E36600D46B31 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75D62F59E36600D46B31 /* AppIcon.icon */,
+				E0FD75D72F59E36600D46B31 /* Assets.xcassets */,
+				E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E0FD75DB2F59E36600D46B31 /* HotKey */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */,
+			);
+			path = HotKey;
+			sourceTree = "<group>";
+		};
+		E0FD75E52F59E36600D46B31 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75DB2F59E36600D46B31 /* HotKey */,
+				E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */,
+				E0FD75DD2F59E36600D46B31 /* AppState.swift */,
+				E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */,
+				E0FD75DF2F59E36600D46B31 /* Extensions.swift */,
+				E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */,
+				E0FD75E22F59E36600D46B31 /* LockES.swift */,
+				E0FD75E32F59E36600D46B31 /* LockLauncher.swift */,
+				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E0FD75E72F59E36600D46B31 /* Update */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75E62F59E36600D46B31 /* AppUpdater.swift */,
+			);
+			path = Update;
+			sourceTree = "<group>";
+		};
+		E0FD75EB2F59E36600D46B31 /* AppLocker */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75BF2F59E36600D46B31 /* Appearance */,
+				E0FD75D12F59E36600D46B31 /* Bootstrap */,
+				E0FD75D52F59E36600D46B31 /* EndpointSecurity */,
+				E0FD75D92F59E36600D46B31 /* Resources */,
+				E0FD75E52F59E36600D46B31 /* Services */,
+				E0FD75E72F59E36600D46B31 /* Update */,
+				E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */,
+				E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */,
+				E0FD75EA2F59E36600D46B31 /* Info.plist */,
+			);
+			path = AppLocker;
+			sourceTree = "<group>";
+		};
+		E0FD76282F59E37C00D46B31 /* EndpointSecurity */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76232F59E37C00D46B31 /* ESEventAuthExec.swift */,
+				E0FD76242F59E37C00D46B31 /* ESEventAuthFile.swift */,
+				E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */,
+				E0FD76262F59E37C00D46B31 /* ESMessage.swift */,
+				E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */,
+			);
+			path = EndpointSecurity;
+			sourceTree = "<group>";
+		};
+		E0FD762F2F59E37C00D46B31 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76292F59E37C00D46B31 /* ESManager.swift */,
+				E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */,
+				E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */,
+				E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */,
+				E0FD762D2F59E37C00D46B31 /* ESState.swift */,
+				E0FD762E2F59E37C00D46B31 /* main.swift */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		E0FD76312F59E37C00D46B31 /* Notify */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */,
+			);
+			path = Notify;
+			sourceTree = "<group>";
+		};
+		E0FD76342F59E37C00D46B31 /* Policy */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */,
+				E0FD76332F59E37C00D46B31 /* TempAllowSHAStore.swift */,
+			);
+			path = Policy;
+			sourceTree = "<group>";
+		};
+		E0FD76392F59E37C00D46B31 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76372F59E37C00D46B31 /* InfoPlist.strings */,
+				E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E0FD763F2F59E37C00D46B31 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */,
+				E0FD763B2F59E37C00D46B31 /* FastLock.swift */,
+				E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */,
+				E0FD763D2F59E37C00D46B31 /* PathUtils.swift */,
+				E0FD763E2F59E37C00D46B31 /* PIDFromProcess.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		E0FD76422F59E37C00D46B31 /* XPC */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76402F59E37C00D46B31 /* ESMachListener.swift */,
+				E0FD76412F59E37C00D46B31 /* ESXPCConnections.swift */,
+			);
+			path = XPC;
+			sourceTree = "<group>";
+		};
+		E0FD76462F59E37C00D46B31 /* ESExtension */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76282F59E37C00D46B31 /* EndpointSecurity */,
+				E0FD762F2F59E37C00D46B31 /* Engine */,
+				E0FD76312F59E37C00D46B31 /* Notify */,
+				E0FD76342F59E37C00D46B31 /* Policy */,
+				E0FD76392F59E37C00D46B31 /* Resources */,
+				E0FD763F2F59E37C00D46B31 /* Utils */,
+				E0FD76422F59E37C00D46B31 /* XPC */,
+				E0FD76432F59E37C00D46B31 /* Bridging-Header.h */,
+				E0FD76442F59E37C00D46B31 /* ESExtension.entitlements */,
+				E0FD76452F59E37C00D46B31 /* Info.plist */,
+			);
+			path = ESExtension;
+			sourceTree = "<group>";
+		};
+		E0FD76632F59E3BE00D46B31 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD765F2F59E3BE00D46B31 /* Alert.swift */,
+				E0FD76602F59E3BE00D46B31 /* AppInfo.swift */,
+				E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */,
+				E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		E0FD76672F59E3BE00D46B31 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */,
+				E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */,
+				E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		E0FD766B2F59E3BE00D46B31 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */,
+				E0FD76692F59E3BE00D46B31 /* Data+Random.swift */,
+				E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		E0FD76702F59E3BE00D46B31 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD76632F59E3BE00D46B31 /* Extensions */,
+				E0FD76672F59E3BE00D46B31 /* Protocols */,
+				E0FD766B2F59E3BE00D46B31 /* Security */,
+				E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */,
+				E0FD766F2F59E3BE00D46B31 /* Log.swift */,
+				E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -353,10 +848,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				E01ADC8A2E7D93A000BE719D /* Shared */,
-				E050B4432E86FB34003AEA49 /* ESExtension */,
 			);
 			name = ESExtension;
 			packageProductDependencies = (
@@ -377,11 +868,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				E01ADC7E2E7D936700BE719D /* Extensions */,
-				E01ADC8A2E7D93A000BE719D /* Shared */,
-				E07075972E38BA97001C7950 /* Launcher */,
-			);
 			name = Launcher;
 			packageProductDependencies = (
 			);
@@ -401,9 +887,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				E08AAFD92F17FBAC008C97FC /* AppLocker Launcher */,
-			);
 			name = "AppLocker Launcher";
 			packageProductDependencies = (
 			);
@@ -421,10 +904,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				E01ADC8A2E7D93A000BE719D /* Shared */,
-				E0D4C0662E419DAD003C40E3 /* AppLockerHelper */,
 			);
 			name = AppLockerHelper;
 			packageProductDependencies = (
@@ -451,11 +930,6 @@
 			);
 			dependencies = (
 				E050B4492E86FB35003AEA49 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				E01ADC7E2E7D936700BE719D /* Extensions */,
-				E01ADC8A2E7D93A000BE719D /* Shared */,
-				E0EF51AC2E31558900161CAB /* AppLocker */,
 			);
 			name = AppLocker;
 			packageProductDependencies = (
@@ -526,6 +1000,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0FD756A2F59DB7400D46B31 /* AppIcon.icon in Resources */,
+				E0FD769F2F59E3BE00D46B31 /* InfoPlist.strings in Resources */,
+				E0FD756B2F59DB7400D46B31 /* Assets.xcassets in Resources */,
+				E0FD756D2F59DB7400D46B31 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -533,6 +1011,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */,
+				E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,6 +1027,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0FD767D2F59E3BE00D46B31 /* InfoPlist.strings in Resources */,
+				E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */,
+				E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */,
+				E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -557,6 +1041,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */,
+				E0572FA42F5B16BC00A90708 /* TempAllowSHAStore.swift in Sources */,
+				E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */,
+				E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */,
+				E0FD76722F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
+				E0FD76742F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
+				E0FD76752F59E3BE00D46B31 /* Data+Random.swift in Sources */,
+				E0FD76782F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
+				E0FD76792F59E3BE00D46B31 /* ComputeSHA.swift in Sources */,
+				E0FD767A2F59E3BE00D46B31 /* Log.swift in Sources */,
+				E0FD764D2F59E37C00D46B31 /* PIDFromProcess.swift in Sources */,
+				E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */,
+				E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */,
+				E0FD76502F59E37C00D46B31 /* FastLock.swift in Sources */,
+				E0FD76512F59E37C00D46B31 /* BlockedAppsStore.swift in Sources */,
+				E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */,
+				E0FD76532F59E37C00D46B31 /* main.swift in Sources */,
+				E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */,
+				E0FD76552F59E37C00D46B31 /* ESEventAuthExec.swift in Sources */,
+				E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */,
+				E0FD76572F59E37C00D46B31 /* ESState.swift in Sources */,
+				E0FD76582F59E37C00D46B31 /* ESManager+Auth.swift in Sources */,
+				E0FD76592F59E37C00D46B31 /* ESEventAuthFile.swift in Sources */,
+				E0FD765A2F59E37C00D46B31 /* ESMessage.swift in Sources */,
+				E0FD765B2F59E37C00D46B31 /* ESXPCConnections.swift in Sources */,
+				E0FD765C2F59E37C00D46B31 /* PathUtils.swift in Sources */,
+				E0FD765D2F59E37C00D46B31 /* LanguageManager.swift in Sources */,
+				E0FD765E2F59E37C00D46B31 /* AppLauncherUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -564,6 +1076,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0FD76942F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
+				E0FD76952F59E3BE00D46B31 /* FuzzySearch.swift in Sources */,
+				E0FD76962F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
+				E0FD76972F59E3BE00D46B31 /* Data+Random.swift in Sources */,
+				E0FD76982F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */,
+				E0FD76992F59E3BE00D46B31 /* Alert.swift in Sources */,
+				E0FD769A2F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
+				E0FD769B2F59E3BE00D46B31 /* ComputeSHA.swift in Sources */,
+				E0FD769C2F59E3BE00D46B31 /* Log.swift in Sources */,
+				E0FD769D2F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */,
+				E0FD769E2F59E3BE00D46B31 /* AppInfo.swift in Sources */,
+				E0FD75682F59DB7400D46B31 /* Launcher.swift in Sources */,
+				E0FD75692F59DB7400D46B31 /* LauncherApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -571,6 +1096,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0FD75702F59DB7700D46B31 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -578,6 +1104,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0572FA32F5B14D400A90708 /* Log.swift in Sources */,
+				E0572FA22F5B14B000A90708 /* Data+Random.swift in Sources */,
+				E0572FA12F5B14A000A90708 /* KeychainHelper.swift in Sources */,
+				E0572FA02F5B147E00A90708 /* AppLockerHelperProtocol.swift in Sources */,
+				E0FD75112F59DB6200D46B31 /* AppLockerHelper.swift in Sources */,
+				E0FD75122F59DB6200D46B31 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -585,6 +1117,67 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0FD75F12F59E36600D46B31 /* LockLauncher.swift in Sources */,
+				E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */,
+				E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */,
+				E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */,
+				E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */,
+				E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */,
+				E0FD75F72F59E36600D46B31 /* AppIconView.swift in Sources */,
+				E0FD75F82F59E36600D46B31 /* SectionHeader.swift in Sources */,
+				E0FD75F92F59E36600D46B31 /* AppDelegate+Agent.swift in Sources */,
+				E0FD75FA2F59E36600D46B31 /* DeleteQueueSheet.swift in Sources */,
+				E0FD75FB2F59E36600D46B31 /* AppDelegate+Restart.swift in Sources */,
+				E0FD75FC2F59E36600D46B31 /* KextSigningChecker.swift in Sources */,
+				E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */,
+				E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */,
+				E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */,
+				E0FD76002F59E36600D46B31 /* LabelButtonView.swift in Sources */,
+				E0FD76012F59E36600D46B31 /* LockES.swift in Sources */,
+				E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */,
+				E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */,
+				E0FD76042F59E36600D46B31 /* AppRow.swift in Sources */,
+				E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */,
+				E0FD76062F59E36600D46B31 /* HelperInstaller.swift in Sources */,
+				E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */,
+				E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */,
+				E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
+				E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */,
+				E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
+				E0FD76812F59E3BE00D46B31 /* Data+Random.swift in Sources */,
+				E0FD76822F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */,
+				E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */,
+				E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
+				E0FD76852F59E3BE00D46B31 /* ComputeSHA.swift in Sources */,
+				E0FD76862F59E3BE00D46B31 /* Log.swift in Sources */,
+				E0FD76872F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */,
+				E0FD76882F59E3BE00D46B31 /* AppInfo.swift in Sources */,
+				E0FD76092F59E36600D46B31 /* AppDelegate+Launchctl.swift in Sources */,
+				E0FD760A2F59E36600D46B31 /* AppDelegate+Actions.swift in Sources */,
+				E0FD760B2F59E36600D46B31 /* ContentView.swift in Sources */,
+				E0FD760C2F59E36600D46B31 /* AppListWindowController.swift in Sources */,
+				E0FD760D2F59E36600D46B31 /* CustomApplication.swift in Sources */,
+				E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */,
+				E0FD760F2F59E36600D46B31 /* AppDelegate+LoginItems.swift in Sources */,
+				E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */,
+				E0FD76112F59E36600D46B31 /* DeleteQueueRow.swift in Sources */,
+				E0FD76122F59E36600D46B31 /* FSEventsMonitoringService.swift in Sources */,
+				E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */,
+				E0FD76142F59E36600D46B31 /* main.swift in Sources */,
+				E0FD76152F59E36600D46B31 /* SettingsWindowController.swift in Sources */,
+				E0FD76162F59E36600D46B31 /* LockedAppRow.swift in Sources */,
+				E0FD76172F59E36600D46B31 /* WelcomeView.swift in Sources */,
+				E0FD76182F59E36600D46B31 /* WindowLayout.swift in Sources */,
+				E0FD76192F59E36600D46B31 /* WelcomeWindowController.swift in Sources */,
+				E0FD761A2F59E36600D46B31 /* ConfigStore.swift in Sources */,
+				E0FD761B2F59E36600D46B31 /* AppDelegate+Notifications.swift in Sources */,
+				E0FD761C2F59E36600D46B31 /* SettingsView.swift in Sources */,
+				E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */,
+				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
+				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
+				E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */,
+				E0FD76212F59E36600D46B31 /* AppLockInspection.swift in Sources */,
+				E0FD76222F59E36600D46B31 /* LiquidGlass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -597,6 +1190,27 @@
 			targetProxy = E050B4482E86FB35003AEA49 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		E0FD76372F59E37C00D46B31 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E0FD76352F59E37C00D46B31 /* en */,
+				E0FD76362F59E37C00D46B31 /* vi */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E0FD766C2F59E3BE00D46B31 /* en */,
+				E0FD766D2F59E3BE00D46B31 /* vi */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		E050B44C2E86FB35003AEA49 /* Debug */ = {
