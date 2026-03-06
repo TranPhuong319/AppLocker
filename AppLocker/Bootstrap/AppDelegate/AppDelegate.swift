@@ -83,6 +83,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None", privacy: .public)")
 
         if let mode = modeLock {
+            #if !DEBUG
             if mode == .esMode && !launchedByLaunchd() {
                 let agent = SMAppService.agent(plistName: "\(plistName).plist")
                 if agent.status == .enabled {
@@ -95,6 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                     return
                 }
             }
+            #endif
             
             launchConfig(config: mode)
         } else {
@@ -181,6 +183,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
 
         if !otherApps.isEmpty && !launchedByLaunchd() {
+            #if !DEBUG
             Logfile.core.warning(
                 """
                 Another instance is running \
@@ -189,6 +192,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 """
             )
             NSApp.terminate(nil)
+            #else
+            Logfile.core.warning(
+                """
+                Another instance is running \
+                (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
+                Ignoring termination because of DEBUG mode.
+                """
+            )
+            #endif
         }
     }
 }
