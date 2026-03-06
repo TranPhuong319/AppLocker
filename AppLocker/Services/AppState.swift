@@ -263,7 +263,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         panel.message = String(localized: "Select the application to lock")
         panel.prompt = String(localized: "Lock")
 
-        if let window = window {
+        if let window {
             panel.beginSheetModal(for: window) { response in
                 if response == .OK {
                     self.processSelectedPaths(panel.urls.map { $0.path })

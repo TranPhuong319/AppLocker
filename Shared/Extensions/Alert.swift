@@ -29,7 +29,9 @@ final class AlertShow {
         message: String,
         style: NSAlert.Style,
         buttons: [String],
-        cancelIndex: Int? = nil
+        cancelIndex: Int? = nil,
+        destructiveIndex: Int? = nil,
+        defaultIndex: Int? = nil
     ) -> AlertResult {
         let alert = NSAlert()
         alert.messageText = title
@@ -38,15 +40,25 @@ final class AlertShow {
 
         // NSAlert chỉ hỗ trợ tối đa 3 nút
         let displayedButtons = Array(buttons.prefix(3))
-        displayedButtons.forEach { alert.addButton(withTitle: $0) }
-
-        // Xác định vị trí cancel
-        let effectiveCancelIndex: Int? = {
-            if let cancelIndex, cancelIndex >= 0, cancelIndex < displayedButtons.count {
-                return cancelIndex
+        for (index, title) in displayedButtons.enumerated() {
+            let button = alert.addButton(withTitle: title)
+            
+            if index == destructiveIndex {
+                let destructiveKey = "hasDestructiveAction"
+                if button.responds(to: NSSelectorFromString("setHasDestructiveAction:")) {
+                    button.setValue(true, forKey: destructiveKey)
+                }
             }
-            return displayedButtons.isEmpty ? nil : displayedButtons.count - 1
-        }()
+            
+            // Ép keyEquivalent để macOS không tự đảo nút theo HUD
+            if index == defaultIndex {
+                button.keyEquivalent = "\r"
+            } else if index == cancelIndex {
+                button.keyEquivalent = "\u{1b}"
+            } else {
+                button.keyEquivalent = ""
+            }
+        }
 
         NSApplication.shared.activate(ignoringOtherApps: true)
         let response = runAlert(alert)
@@ -60,7 +72,7 @@ final class AlertShow {
             return .cancelled
         }
 
-        if index == effectiveCancelIndex {
+        if index == cancelIndex {
             return .cancelled
         }
 
@@ -102,7 +114,7 @@ final class AlertShow {
 
             // Chờ đồng bộ cho đến khi sheet đóng
             if !completed {
-                NSApp.runModal(for: window)
+                NSApp.runModal(for: alert.window)
             }
 
             return response

@@ -69,7 +69,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         window.minSize = size
         window.maxSize = size
         window.isReleasedWhenClosed = false
-        window.level = NSWindow.Level.floating
+        window.level = .floating
 
         return window
     }
