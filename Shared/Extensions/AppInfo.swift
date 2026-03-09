@@ -27,3 +27,15 @@ struct InstalledApp: Identifiable, Hashable {
         self.source = source
     }
 }
+
+// MARK: - Mock Data for Previews
+extension InstalledApp {
+    static let mockChrome = InstalledApp(name: "Google Chrome", bundleID: "com.google.Chrome", path: "/Applications/Google Chrome.app", source: .user)
+    static let mockSafari = InstalledApp(name: "Safari", bundleID: "com.apple.Safari", path: "/System/Applications/Safari.app", source: .system)
+    static let mockVSCode = InstalledApp(name: "Visual Studio Code", bundleID: "com.microsoft.VSCode", path: "/Applications/Visual Studio Code.app", source: .user)
+    static let mockFinder = InstalledApp(name: "Finder", bundleID: "com.apple.finder", path: "/System/Library/CoreServices/Finder.app", source: .system)
+
+    static var allMocks: [InstalledApp] {
+        [mockChrome, mockSafari, mockVSCode, mockFinder]
+    }
+}

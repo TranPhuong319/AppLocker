@@ -20,3 +20,11 @@ struct LockingPopupSheet: View {
         .frame(minWidth: WindowLayout.Sheet.LockingPopup.minSize.width, minHeight: WindowLayout.Sheet.LockingPopup.minSize.height)
     }
 }
+
+#Preview("Locking") {
+    LockingPopupSheet(message: "Locking 3 applications...")
+}
+
+#Preview("Unlocking") {
+    LockingPopupSheet(message: "Unlocking 2 applications...")
+}

@@ -10,6 +10,11 @@ import SwiftUI
 struct WelcomeView: View {
     @AppStorage("selectedMode") private var selectedMode: String = ""
     @State private var shouldRestart = false
+    private var isMock: Bool
+
+    init(isMock: Bool = false) {
+        self.isMock = isMock
+    }
 
     var copyright: String {
         Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
@@ -41,11 +46,12 @@ struct WelcomeView: View {
                     .foregroundColor(.gray)
 
                 VStack(spacing: 20) {
-                    let isESEnabled = isKextSigningDisabled()
+                    let isESEnabled = isMock ? true : isKextSigningDisabled()
 
                     LabelButtonView(label: "ES (EndpointSecurity)",
                                     symbol: "lock.shield.fill",
                                     isDisabled: !isESEnabled) {
+                        guard !isMock else { return }
                         selectedMode = AppMode.esMode.rawValue
                         shouldRestart = true
                     }
@@ -54,6 +60,7 @@ struct WelcomeView: View {
 
                     LabelButtonView(label: "Launcher",
                                     symbol: "lock.rectangle.fill") {
+                        guard !isMock else { return }
                         selectedMode = AppMode.launcher.rawValue
                         shouldRestart = true
                     }
@@ -76,8 +83,7 @@ struct WelcomeView: View {
 }
 
 #Preview {
-    WelcomeView()
+    WelcomeView(isMock: true)
         .frame(width: WindowLayout.Welcome.size.width,
                height: WindowLayout.Welcome.size.height)
-
 }

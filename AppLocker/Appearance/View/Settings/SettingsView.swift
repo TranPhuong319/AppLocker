@@ -35,15 +35,19 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
 }
 
 struct SettingsView: View {
-    @State private var autoCheck = false
-    @State private var autoDownload = false
+    @State private var autoCheck: Bool
+    @State private var autoDownload: Bool
+    private var isMock: Bool
 
     // Lấy giá trị từ UserDefaults hoặc mặc định là Stable
-    @State private var selectedChannel: UpdateChannel = {
-        let saved =
-            UserDefaults.standard.string(forKey: "updateChannel") ?? UpdateChannel.stable.rawValue
-        return UpdateChannel(rawValue: saved) ?? .stable
-    }()
+    @State private var selectedChannel: UpdateChannel
+
+    init(autoCheck: Bool = false, autoDownload: Bool = false, selectedChannel: UpdateChannel = .stable, isMock: Bool = false) {
+        _autoCheck = State(initialValue: autoCheck)
+        _autoDownload = State(initialValue: autoDownload)
+        _selectedChannel = State(initialValue: selectedChannel)
+        self.isMock = isMock
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -52,16 +56,20 @@ struct SettingsView: View {
                     Group {
                         Toggle("Automatically check for updates.", isOn: $autoCheck)
                             .onChange(of: autoCheck) { newValue in
-                                let updater = AppUpdater.shared.updaterController.updater
-                                updater.automaticallyChecksForUpdates = newValue
+                                if !isMock {
+                                    let updater = AppUpdater.shared.updaterController.updater
+                                    updater.automaticallyChecksForUpdates = newValue
+                                }
 
                                 if !newValue {
-                                    updater.automaticallyDownloadsUpdates = false
                                     autoDownload = false
+                                    if !isMock {
+                                        AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = false
+                                    }
                                 }
 
                                 #if DEBUG
-                                if newValue {
+                                if newValue && !isMock {
                                     AppUpdater.shared.debugForceCheckIfPossible()
                                 }
                                 #endif
@@ -70,11 +78,13 @@ struct SettingsView: View {
                         Toggle("Automatically download new updates.", isOn: $autoDownload)
                             .disabled(!autoCheck)
                             .onChange(of: autoDownload) { newValue in
-                                let updater = AppUpdater.shared.updaterController.updater
-                                updater.automaticallyDownloadsUpdates = newValue
+                                if !isMock {
+                                    let updater = AppUpdater.shared.updaterController.updater
+                                    updater.automaticallyDownloadsUpdates = newValue
+                                }
 
                                 #if DEBUG
-                                if newValue {
+                                if newValue && !isMock {
                                     AppUpdater.shared.debugForceCheckIfPossible()
                                 }
                                 #endif
@@ -90,7 +100,9 @@ struct SettingsView: View {
                         }
                     }
                     .onChange(of: selectedChannel) { newChannel in
-                        UserDefaults.standard.set(newChannel.rawValue, forKey: "updateChannel")
+                        if !isMock {
+                            UserDefaults.standard.set(newChannel.rawValue, forKey: "updateChannel")
+                        }
                     }
 
                     // Text mô tả, tự động thay đổi theo selectedChannel
@@ -108,6 +120,7 @@ struct SettingsView: View {
         .fixedSize()
         .padding()
         .onAppear {
+            guard !isMock else { return }
             let updater = AppUpdater.shared.updaterController.updater
             autoCheck = updater.automaticallyChecksForUpdates
             autoDownload = updater.automaticallyDownloadsUpdates
@@ -115,6 +128,22 @@ struct SettingsView: View {
     }
 }
 
-#Preview {
-    SettingsView()
+#Preview("No Check & No Download") {
+    SettingsView(autoCheck: false, autoDownload: false, isMock: true)
+}
+
+#Preview("Auto Check Only") {
+    SettingsView(autoCheck: true, autoDownload: false, isMock: true)
+}
+
+#Preview("Auto Check & Download") {
+    SettingsView(autoCheck: true, autoDownload: true, isMock: true)
+}
+
+#Preview("Stable Channel") {
+    SettingsView(selectedChannel: .stable, isMock: true)
+}
+
+#Preview("Beta Channel") {
+    SettingsView(selectedChannel: .beta, isMock: true)
 }

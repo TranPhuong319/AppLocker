@@ -124,3 +124,10 @@ struct AddAppSheet: View {
         }
     }
 }
+
+#Preview {
+    AddAppSheet(
+        appState: .preview(locked: []),
+        unfocus: {}
+    )
+}

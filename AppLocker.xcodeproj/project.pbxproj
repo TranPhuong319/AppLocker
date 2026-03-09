@@ -19,6 +19,7 @@
 		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */ = {isa = PBXBuildFile; fileRef = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
@@ -1055,6 +1056,7 @@
 				E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */,
 				E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */,
 				E0FD76502F59E37C00D46B31 /* FastLock.swift in Sources */,
+				E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */,
 				E0FD76512F59E37C00D46B31 /* BlockedAppsStore.swift in Sources */,
 				E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */,
 				E0FD76532F59E37C00D46B31 /* main.swift in Sources */,

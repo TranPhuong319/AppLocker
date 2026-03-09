@@ -36,19 +36,26 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     @Published private(set) var lockedAppObjects: [InstalledApp] = []
     @Published private(set) var unlockableApps: [InstalledApp] = []
+    
+    var isMock: Bool = false
 
-    override init() {
-        let initialManager: any LockManagerProtocol
-        switch modeLock {
-        case .launcher:
-            initialManager = LockLauncher()
-        case .esMode:
-            initialManager = LockES()
-        case .none:
-            Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")
-            initialManager = LockLauncher()
+    init(manager: (any LockManagerProtocol)? = nil) {
+        if let manager = manager {
+            self.manager = manager
+            self.isMock = manager is MockLockManager
+        } else {
+            let initialManager: any LockManagerProtocol
+            switch modeLock {
+            case .launcher:
+                initialManager = LockLauncher()
+            case .esMode:
+                initialManager = LockES()
+            case .none:
+                Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")
+                initialManager = LockLauncher()
+            }
+            self.manager = initialManager
         }
-        self.manager = initialManager
 
         super.init()
 
@@ -66,20 +73,24 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
 
         setupSearchPipeline()
-        setupSpotlightQuery()
-        refreshAppLists()
+        if !isMock {
+            setupSpotlightQuery()
+            refreshAppLists()
+        }
     }
 
     private func setupSpotlightQuery() {
-        metadataQuery = NSMetadataQuery()
+        let query = NSMetadataQuery()
+        self.metadataQuery = query
+        
         NotificationCenter.default.addObserver(
             self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidFinishGathering,
-            object: metadataQuery)
+            object: query)
         NotificationCenter.default.addObserver(
             self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidUpdate,
-            object: metadataQuery)
+            object: query)
 
-        metadataQuery?.predicate = NSPredicate(
+        query.predicate = NSPredicate(
             format:
                 "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
         )
@@ -145,14 +156,14 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     private func refreshAppLists() {
         let lockedAppsList: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
-            guard manager.lockedApps[path] != nil else { return nil }
+            guard let config = manager.lockedApps[path] else { return nil }
 
-            let name = FileManager.default.displayName(atPath: path)
-                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+            let name = config.name ?? (isMock ? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent : FileManager.default.displayName(atPath: path)
+                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive))
 
             let source: AppSource = path.hasPrefix("/System") ? .system : .user
 
-            return InstalledApp(name: name, bundleID: "", path: path, source: source)
+            return InstalledApp(name: name, bundleID: config.bundleID, path: path, source: source)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
@@ -315,5 +326,61 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
 
         return true
+    }
+}
+
+// MARK: - Mocking for Previews
+class MockLockManager: LockManagerProtocol, ObservableObject {
+    @Published var lockedApps: [String: LockedAppConfig] = [:]
+    @Published var allApps: [InstalledApp] = []
+
+    func toggleLock(for paths: [String]) {
+        for path in paths {
+            if lockedApps[path] != nil {
+                lockedApps.removeValue(forKey: path)
+            } else {
+                lockedApps[path] = LockedAppConfig(
+                    bundleID: "com.mock.app",
+                    path: path,
+                    sha256: "mock_sha256",
+                    blockMode: "ES",
+                    execFile: "MockApp",
+                    name: "Mock App"
+                )
+            }
+        }
+    }
+
+    func reloadAllApps() {}
+    func isLocked(path: String) -> Bool {
+        lockedApps[path] != nil
+    }
+}
+
+extension AppState {
+    static func preview(locked: [InstalledApp] = [], deleteQueue: Set<String> = []) -> AppState {
+        let mockManager = MockLockManager()
+        mockManager.allApps = InstalledApp.allMocks
+        
+        var lockedConfigs: [String: LockedAppConfig] = [:]
+        for app in locked {
+            lockedConfigs[app.path] = .mock(for: app)
+        }
+        mockManager.lockedApps = lockedConfigs
+        
+        let state = AppState(manager: mockManager)
+        state.deleteQueue = deleteQueue
+        
+        // Populate lists synchronously for instantaneous preview
+        state.lockedAppObjects = locked.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        state.unlockableApps = InstalledApp.allMocks.filter { app in
+            !locked.contains(where: { $0.path == app.path })
+        }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        
+        // Trigger search pipeline update
+        state.filteredLockedApps = state.lockedAppObjects
+        state.filteredUnlockableApps = state.unlockableApps
+        
+        return state
     }
 }

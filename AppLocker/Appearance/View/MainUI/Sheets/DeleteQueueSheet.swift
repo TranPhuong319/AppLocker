@@ -79,3 +79,12 @@ struct DeleteQueueSheet: View {
         }
     }
 }
+
+#Preview {
+    DeleteQueueSheet(
+        appState: .preview(
+            locked: [.mockChrome, .mockSafari],
+            deleteQueue: [InstalledApp.mockChrome.path, InstalledApp.mockSafari.path]
+        )
+    )
+}
