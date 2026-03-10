@@ -257,7 +257,10 @@ private struct AppPathContext {
     init?(path: String, execName: String? = nil) {
         let url = URL(fileURLWithPath: path)
         self.appURL = url
-        self.appName = url.deletingPathExtension().lastPathComponent
+        
+        let displayName = FileManager.default.displayName(atPath: path)
+        self.appName = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+        
         self.baseDir = url.deletingLastPathComponent().path
         self.disguisedAppPath = "\(baseDir)/\(appName).app"
         self.hiddenAppPath = "\(baseDir)/.\(appName).app"

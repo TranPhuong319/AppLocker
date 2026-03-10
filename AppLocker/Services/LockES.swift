@@ -86,7 +86,7 @@ class LockES: LockManagerProtocol {
                 // Get filename for config
                 let execName = URL(fileURLWithPath: execPath).lastPathComponent
 
-                let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+                let appName = FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
                 guard let sha = computeSHA(forPath: execPath) else {
                     Logfile.core.error("Cannot compute SHA for \(execPath)")
                     continue

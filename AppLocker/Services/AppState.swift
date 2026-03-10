@@ -155,15 +155,34 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     private func refreshAppLists() {
+        let allApps = manager.allApps
+        
         let lockedAppsList: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard let config = manager.lockedApps[path] else { return nil }
 
-            let name = config.name ?? (isMock ? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent : FileManager.default.displayName(atPath: path)
-                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive))
+            // 1. Ưu tiên lấy tên từ Spotlight (dữ liệu allApps) thông qua path hoặc bundleID
+            var name = allApps.first(where: {
+                $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
+            })?.name
+
+            // 2. Dự phòng: Lấy từ FileManager display name nếu Spotlight chưa có/không thấy (app bị ẩn)
+            if name == nil {
+                var displayName = FileManager.default.displayName(atPath: path)
+                
+                // Xử lý Launcher mode: nếu app bị ẩn (có dấu . ở đầu)
+                if displayName.hasPrefix(".") {
+                    displayName.removeFirst()
+                }
+                
+                name = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+            }
+
+            // 3. Fallback cuối cùng: dùng tên trong config hoặc tên file
+            let finalName = name ?? config.name ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
 
             let source: AppSource = path.hasPrefix("/System") ? .system : .user
 
-            return InstalledApp(name: name, bundleID: config.bundleID, path: path, source: source)
+            return InstalledApp(name: finalName, bundleID: config.bundleID, path: path, source: source)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
