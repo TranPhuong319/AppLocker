@@ -80,17 +80,20 @@ extension ESManager {
         var debounceTimer: DispatchSourceTimer?
         
         source.setEventHandler { [weak self] in
-            // Khi có bất kì thay đổi nào trong folder (ghi file, đổi tên file config), ta load lại config
-            debounceTimer?.cancel()
-            let timer = DispatchSource.makeTimerSource(queue: self?.backgroundProcessingQueue)
-            timer.schedule(deadline: .now() + 0.3) // Debounce 300ms
-            timer.setEventHandler {
-                Logfile.endpointSecurity.log("ESManager: Directory change detected, reloading config...")
-                self?.loadInitialConfig()
-                timer.cancel()
+            guard let self = self else { return }
+            
+            self.stateLock.perform {
+                debounceTimer?.cancel()
+                let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)
+                timer.schedule(deadline: .now() + 0.3) // Debounce 300ms
+                timer.setEventHandler { [weak self] in
+                    Logfile.endpointSecurity.log("ESManager: Directory change detected, reloading config...")
+                    self?.loadInitialConfig()
+                    timer.cancel()
+                }
+                timer.resume()
+                debounceTimer = timer
             }
-            timer.resume()
-            debounceTimer = timer
         }
         
         source.setCancelHandler {

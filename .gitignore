@@ -2,11 +2,43 @@
 .DS_Store
 **/.DS_Store
 
+# Xcode
+#
+# gitignore contributors: add or remove patterns below to suit your needs.
+#
+# Test reports
+*.releasenotes
+*.apptestresults
+
 # Xcode user data
+#
 *.xcuserstate
 *.xcuserdata/
 AppLocker.xcodeproj/xcuserdata/
 AppLocker.xcodeproj/project.xcworkspace/xcuserdata/
 
+# Build results
+build/
+DerivedData/
+
+# Swift Package Manager
+#
+# Add this line if you want to avoid checking in source code from Swift Packages.
+# .build/
+# Only include the next line if you want to avoid checking in SPM configuration.
+.swiftpm/config/
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts/
+Carthage/Build/
+
 # VSCode
 .vscode/
+
+# Secrets & Environment
+.env
+*.secret
+*.key
+*.pem

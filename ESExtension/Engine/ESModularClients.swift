@@ -84,9 +84,11 @@ class ESClientObject {
             return false
         }
 
-        Logfile.endpointSecurity.log(
-            "[\(self.name)] Client created at Addr: \(String(format: "%p", Int(bitPattern: self.client!)))"
-        )
+        if let client = self.client {
+            Logfile.endpointSecurity.log(
+                "[\(self.name)] Client created at Addr: \(String(format: "%p", Int(bitPattern: client)))"
+            )
+        }
 
         // 4. Early Mute (Self Protection)
         // Must mute immediately to prevent self-lockout/generation storms
@@ -265,10 +267,12 @@ class ESTamper: ESClientObject {
         // Santa Pattern: Inverted Muting for target paths
         Logfile.endpointSecurity.log("[\(self.name)] Enabling Inverted Muting (Santa-Style)...")
 
-        _ = es_unmute_all_target_paths(self.client!)
+        if let client = self.client {
+            _ = es_unmute_all_target_paths(client)
 
-        let invRes = es_invert_muting(self.client!, ES_MUTE_INVERSION_TYPE_TARGET_PATH)
-        Logfile.endpointSecurity.log("[\(self.name)] Invert muting result: \(invRes.rawValue)")
+            let invRes = es_invert_muting(client, ES_MUTE_INVERSION_TYPE_TARGET_PATH)
+            Logfile.endpointSecurity.log("[\(self.name)] Invert muting result: \(invRes.rawValue)")
+        }
 
         self.setupAllowlist()
 
@@ -293,9 +297,11 @@ class ESTamper: ESClientObject {
             ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
         ]
 
-        for item in paths {
-            let res = es_mute_path(self.client!, item.path, item.type)
-            Logfile.endpointSecurity.log("[\(self.name)] Allowlist [\(item.path)] result: \(res.rawValue)")
+        if let client = self.client {
+            for item in paths {
+                let res = es_mute_path(client, item.path, item.type)
+                Logfile.endpointSecurity.log("[\(self.name)] Allowlist [\(item.path)] result: \(res.rawValue)")
+            }
         }
     }
 }
