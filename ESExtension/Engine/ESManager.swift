@@ -30,6 +30,7 @@ final class ESManager: NSObject {
     let allowWindowSeconds: TimeInterval = 10
     var decisionCache: [String: ExecDecision] = [:]
     var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
+    var configMonitorSource: DispatchSourceFileSystemObject?
 
     struct BlockedNotification {
         let name: String
