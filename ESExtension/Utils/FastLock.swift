@@ -21,8 +21,8 @@ final class FastLock {
     @inline(__always)
     func perform(_ closure: () -> Void) {
         os_unfair_lock_lock(&_lock)
+        defer { os_unfair_lock_unlock(&_lock) }
         closure()
-        os_unfair_lock_unlock(&_lock)
     }
 
     @inline(__always)
@@ -45,8 +45,8 @@ final class FastLock {
     @inline(__always)
     func tryPerform(default: Bool = false, _ closure: () -> Void) -> Bool {
         if os_unfair_lock_trylock(&_lock) {
+            defer { os_unfair_lock_unlock(&_lock) }
             closure()
-            os_unfair_lock_unlock(&_lock)
             return true
         }
         return false

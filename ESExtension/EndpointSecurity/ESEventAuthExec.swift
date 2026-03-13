@@ -101,8 +101,8 @@ extension ESManager {
         var sha: String?
         if remainingSeconds >= requiredTime {
             shaSemaphore.wait()
+            defer { shaSemaphore.signal() }
             sha = computeSHA(forPath: path)
-            shaSemaphore.signal()
         } else {
             Logfile.endpointSecurity.log("Skipping SHA calc: Not enough budget (Has: \(String(format: "%.2f", remainingSeconds))s, Need: \(requiredTime)s)")
         }
