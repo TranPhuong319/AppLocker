@@ -138,6 +138,7 @@
 		E0FD769F2F59E3BE00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */; };
 		E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76372F59E37C00D46B31 /* InfoPlist.strings */; };
 		E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */ = {isa = PBXBuildFile; fileRef = E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -334,6 +335,7 @@
 		E0FD766C2F59E3BE00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766D2F59E3BE00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766F2F59E3BE00D46B31 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		E0FDDD102F797A8C0078A290 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -478,6 +480,7 @@
 				E0FD759C2F59E36600D46B31 /* MainUI */,
 				E0FD759E2F59E36600D46B31 /* Settings */,
 				E0FD75A02F59E36600D46B31 /* Welcome */,
+				E0FDDD112F797A8C0078A290 /* Utils */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -835,6 +838,14 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		E0FDDD112F797A8C0078A290 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				E0FDDD102F797A8C0078A290 /* WindowManager.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1174,6 +1185,7 @@
 				E0FD761A2F59E36600D46B31 /* ConfigStore.swift in Sources */,
 				E0FD761B2F59E36600D46B31 /* AppDelegate+Notifications.swift in Sources */,
 				E0FD761C2F59E36600D46B31 /* SettingsView.swift in Sources */,
+				E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */,
 				E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */,
 				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
 				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
