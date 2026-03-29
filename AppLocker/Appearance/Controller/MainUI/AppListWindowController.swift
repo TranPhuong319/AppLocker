@@ -55,23 +55,15 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
 
     private static func createMainAppWindow(with contentVC: NSViewController) -> NSWindow {
         let size = WindowLayout.Main.size
-        let window = NSWindow(
-            contentRect: NSRect(origin: .zero, size: size),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-
-        window.center()
-        window.title = String(localized: "Manage the application list")
-        window.contentViewController = contentVC
-        window.setContentSize(size)
-        window.minSize = size
-        window.maxSize = size
-        window.isReleasedWhenClosed = false
-        window.level = .floating
-
-        return window
+        var config = WindowConfiguration()
+        config.title = String(localized: "Manage the application list")
+        config.styleMask = [.titled, .closable, .fullSizeContentView]
+        config.level = .floating
+        config.size = size
+        config.minSize = size
+        config.maxSize = size
+        
+        return WindowManager.createWindow(contentViewController: contentVC, configuration: config)
     }
 
     // MARK: - NSWindowDelegate

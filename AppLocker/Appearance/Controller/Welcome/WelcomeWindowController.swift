@@ -20,27 +20,19 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         let contentView = WelcomeView()
         let hostingController = NSHostingController(rootView: contentView)
 
-        let window = NSWindow(contentViewController: hostingController)
-        window.styleMask = [
-            .titled,
-            .closable,
-            .miniaturizable,
-            .fullSizeContentView
-        ]
-        window.backingType = .buffered
-        window.title = String(localized: "Welcome to AppLocker")
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-        window.toolbar = nil
-        window.contentView?.wantsLayer = true
-
-        // 3. Thiết lập kích thước cố định
         let fixedSize = WindowLayout.Welcome.size
-        window.setContentSize(fixedSize)
-        window.minSize = fixedSize
-        window.maxSize = fixedSize // Không cho phép resize cửa sổ welcome
-
-        window.center()
+        
+        var config = WindowConfiguration()
+        config.title = String(localized: "Welcome to AppLocker")
+        config.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+        config.titleVisibility = .hidden
+        config.titlebarAppearsTransparent = true
+        config.wantsLayer = true
+        config.size = fixedSize
+        config.minSize = fixedSize
+        config.maxSize = fixedSize
+        
+        let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
 //
 //        window.standardWindowButton(.zoomButton)?.isHidden = true
 //        window.standardWindowButton(.miniaturizeButton)?.isHidden = true

@@ -126,7 +126,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 try FileManager.default.createDirectory(at: userApplicationsURL, withIntermediateDirectories: true)
                 targetApplicationsURL = userApplicationsURL
             } catch {
-                Logfile.core.warning("Không thể tạo ~/Applications, fallback về /Applications")
+                Logfile.core.warning("Unable to create ~/Applications, fallback to /Applications")
                 targetApplicationsURL = systemApplicationsURL
             }
         }
@@ -143,10 +143,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             do {
                 try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
             } catch {
-                Logfile.core.warning("Lỗi xóa file gốc: \(error.localizedDescription)")
+                Logfile.core.warning("Error deleting original file: \(error.localizedDescription)")
             }
             
-            Logfile.core.log("Đã di chuyển ứng dụng vào \(finalTargetURL.path). Đang khởi động lại...")
+            Logfile.core.log("Moved app to \(finalTargetURL.path).  Restarting...")
             
             let configuration = NSWorkspace.OpenConfiguration()
             configuration.createsNewApplicationInstance = true
@@ -155,18 +155,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             
             NSWorkspace.shared.openApplication(at: destinationURL, configuration: configuration) { app, error in
                 if let error = error {
-                    Logfile.core.error("Lỗi khởi động thư mục mới: \(error.localizedDescription)")
+                    Logfile.core.error("Error starting new directory: \(error.localizedDescription)")
                 }
                 DispatchQueue.main.async {
                     NSApp.terminate(nil)
                 }
             }
         } catch {
-            Logfile.core.error("Lỗi khi di chuyển vào Applications: \(error.localizedDescription)")
+            Logfile.core.error("Error when moving to Applications: \(error.localizedDescription)")
             let errorAlert = NSAlert()
             errorAlert.alertStyle = .critical
-            errorAlert.messageText = "Lỗi di chuyển ứng dụng"
-            errorAlert.informativeText = "Không thể tự động di chuyển do thiếu quyền truy cập.\n\nVui lòng kéo thả thủ công ứng dụng vào thư mục Applications. Chi tiết lỗi: \(error.localizedDescription)"
+            errorAlert.messageText = "Error moving application"
+            errorAlert.informativeText = "Unable to automatically move due to lack of permissions.\n\nPlease manually drag and drop the application into the Applications folder.  Error details: \(error.localizedDescription)"
             errorAlert.runModal()
         }
     }

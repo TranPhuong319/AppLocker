@@ -14,8 +14,6 @@ extension AppDelegate {
         
         let allowedPaths = [
             "/Applications",
-            "/System/Applications",
-            (NSHomeDirectory() as NSString).appendingPathComponent("Applications")
         ]
         
         let currentPath = bundleURL.deletingLastPathComponent().path
@@ -90,7 +88,7 @@ extension AppDelegate {
             
             // Try to trash original
             try? FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
-            Logfile.core.log("Moved application to /Applications via FileManager.  Restarting...")
+            Logfile.core.log("Moved application to /Applications via FileManager.  Restarting…")
             relaunch(from: destinationURL)
             return
             
@@ -120,7 +118,7 @@ extension AppDelegate {
                 errorAlert.runModal()
                 NSApp.terminate(nil)
             } else {
-                Logfile.core.log("Đã di chuyển ứng dụng vào /Applications qua AppleScript. Đang khởi động lại...")
+                Logfile.core.log("Moved application to /Applications via AppleScript. Restarting…")
                 relaunch(from: destinationURL)
             }
         }

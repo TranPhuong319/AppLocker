@@ -20,13 +20,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         let hostingController = NSHostingController(rootView: SettingsView())
 
-        let window = NSWindow(
-            contentViewController: hostingController
-        )
-        window.styleMask = [.titled, .closable, .miniaturizable]
-        window.backingType = .buffered
-        window.title = String(localized: "Settings")
-        window.isReleasedWhenClosed = false
+        var config = WindowConfiguration()
+        config.title = String(localized: "Settings")
+        let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
 
         let controller = SettingsWindowController(window: window)
         window.delegate = controller

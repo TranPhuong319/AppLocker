@@ -28,11 +28,11 @@ class LockES: LockManagerProtocol {
 
             DispatchQueue.main.async {
                 self.lockedApps = loaded
-            }
 
-            Logfile.core.info("Initial scanning started in background...")
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                self?.rescanLockedApps()
+                Logfile.core.info("Initial scanning started in background...")
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    self?.rescanLockedApps()
+                }
             }
 
             self.setupFSEvents()
