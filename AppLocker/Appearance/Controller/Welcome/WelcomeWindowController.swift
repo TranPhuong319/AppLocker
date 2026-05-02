@@ -21,9 +21,10 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: contentView)
 
         let fixedSize = WindowLayout.Welcome.size
+        let bundle = Bundle.main
         
         var config = WindowConfiguration()
-        config.title = String(localized: "Welcome to AppLocker")
+        config.title = String(localized: "Welcome to \(bundle.appName)")
         config.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
         config.titleVisibility = .hidden
         config.titlebarAppearsTransparent = true

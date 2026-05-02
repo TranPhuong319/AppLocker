@@ -107,11 +107,7 @@ extension AppDelegate {
     }
 
     @objc func about() {
-        NSApp.activate(ignoringOtherApps: true)
-        NSApp.orderFrontStandardAboutPanel(nil)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.bringFrontmostWindow(matching: "About")
-        }
+        AboutWindowController.show()
     }
 
     // MARK: - Helper Methods

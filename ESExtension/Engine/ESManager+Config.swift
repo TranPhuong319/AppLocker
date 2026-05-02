@@ -26,20 +26,31 @@ extension ESManager {
                 let data = try Data(contentsOf: url, options: .mappedIfSafe)
                 let decoder = PropertyListDecoder()
                 
-                // Cấu trúc: [UID_String: [LockedAppConfig]]
-                let rawConfig = try decoder.decode([String: [LockedAppConfig]].self, from: data)
-                
                 var newBlockedSHAs: [uid_t: Set<String>] = [:]
                 var newPathToSHA: [String: String] = [:]
                 
-                for (uidString, apps) in rawConfig {
-                    guard let uid = uid_t(uidString) else { continue }
-                    var shaSet = Set<String>()
-                    for app in apps {
-                        shaSet.insert(app.sha256)
-                        newPathToSHA[app.path] = app.sha256
+                if let rawConfig = try? decoder.decode([String: UserConfig].self, from: data) {
+                    for (uidString, userConfig) in rawConfig {
+                        guard let uid = uid_t(uidString) else { continue }
+                        if userConfig.isDisabled { continue } // Bỏ qua nếu user đã tắt bảo vệ
+                        
+                        var shaSet = Set<String>()
+                        for app in userConfig.apps {
+                            shaSet.insert(app.sha256)
+                            newPathToSHA[app.path] = app.sha256
+                        }
+                        newBlockedSHAs[uid] = shaSet
                     }
-                    newBlockedSHAs[uid] = shaSet
+                } else if let oldConfig = try? decoder.decode([String: [LockedAppConfig]].self, from: data) {
+                    for (uidString, apps) in oldConfig {
+                        guard let uid = uid_t(uidString) else { continue }
+                        var shaSet = Set<String>()
+                        for app in apps {
+                            shaSet.insert(app.sha256)
+                            newPathToSHA[app.path] = app.sha256
+                        }
+                        newBlockedSHAs[uid] = shaSet
+                    }
                 }
                 
                 // Atomic Swap

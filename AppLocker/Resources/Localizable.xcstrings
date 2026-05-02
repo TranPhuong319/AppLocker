@@ -56,6 +56,16 @@
         }
       }
     },
+    "Application lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá ứng dụng"
+          }
+        }
+      }
+    },
     "Applications" : {
       "localizations" : {
         "vi" : {
@@ -172,6 +182,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xoá tất cả khỏi hàng chờ"
+          }
+        }
+      }
+    },
+    "disable application lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vô hiệu hoá khoá ứng dụng"
           }
         }
       }
@@ -476,6 +496,26 @@
         }
       }
     },
+    "The application is locked" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đang được khoá"
+          }
+        }
+      }
+    },
+    "The application is not locked" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đang không được khoá"
+          }
+        }
+      }
+    },
     "The beta update has been downloaded. Install now?" : {
       "localizations" : {
         "vi" : {
@@ -627,7 +667,28 @@
         }
       }
     },
+    "Website" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trang web"
+          }
+        }
+      }
+    },
+    "Welcome to %@" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chào mừng đến với %@"
+          }
+        }
+      }
+    },
     "Welcome to AppLocker" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

@@ -12,6 +12,7 @@ import Foundation
 class LockES: LockManagerProtocol {
     @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     @Published var allApps: [InstalledApp] = []
+    @Published var isProtectionDisabled: Bool = false
     private var fsWatcher: FSEventsMonitoringService?
 
     init() {
@@ -27,7 +28,8 @@ class LockES: LockManagerProtocol {
             let loaded = ConfigStore.shared.load()
 
             DispatchQueue.main.async {
-                self.lockedApps = loaded
+                self.lockedApps = loaded.apps
+                self.isProtectionDisabled = loaded.isDisabled
 
                 Logfile.core.info("Initial scanning started in background...")
                 DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -50,7 +52,12 @@ class LockES: LockManagerProtocol {
 
     // MARK: - Persistence helper
     func save() {
-        ConfigStore.shared.save(self.lockedApps)
+        ConfigStore.shared.save(apps: self.lockedApps, isDisabled: self.isProtectionDisabled)
+    }
+
+    func setProtectionDisabled(_ disabled: Bool) {
+        self.isProtectionDisabled = disabled
+        self.save()
     }
 
     // MARK: - Toggle lock (ES mode: chỉ ghi config và publish)

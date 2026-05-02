@@ -37,3 +37,8 @@ extension LockedAppConfig {
         return ["bundleID": bundleID, "path": path, "sha256": sha256]
     }
 }
+
+struct UserConfig: Codable {
+    var isDisabled: Bool
+    var apps: [LockedAppConfig]
+}

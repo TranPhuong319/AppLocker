@@ -205,20 +205,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 }
 
-extension Bundle {
-    var appVersion: String {
-        infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-    }
-
-    var appBuild: String {
-        infoDictionary?["CFBundleVersion"] as? String ?? "?"
-    }
-
-    var fullVersion: String {
-        "\(appVersion) (\(appBuild))"
-    }
-}
-
 extension SMAppService.Status {
     public var description: String {
         switch self {

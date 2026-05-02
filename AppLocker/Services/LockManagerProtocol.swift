@@ -11,8 +11,10 @@ import AppKit
 protocol LockManagerProtocol: ObservableObject {
     var lockedApps: [String: LockedAppConfig] { get set }
     var allApps: [InstalledApp] { get set }
+    var isProtectionDisabled: Bool { get }
 
     func toggleLock(for paths: [String])
+    func setProtectionDisabled(_ disabled: Bool)
     func reloadAllApps()
     func isLocked(path: String) -> Bool
 }

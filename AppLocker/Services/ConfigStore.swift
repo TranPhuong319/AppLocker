@@ -62,33 +62,34 @@ final class ConfigStore {
         }
     }
 
-    func load() -> [String: LockedAppConfig] {
+    func load() -> (apps: [String: LockedAppConfig], isDisabled: Bool) {
         var result: [String: LockedAppConfig] = [:]
+        var isDisabled = false
 
         // NOTE: Handshake is already done by LockES.bootstrap() BEFORE calling load().
         // DO NOT call requestAccessIfNeeded here to avoid double XPC calls and timeouts.
 
         guard FileManager.default.fileExists(atPath: configURL.path),
               let plistData = try? Data(contentsOf: configURL, options: .mappedIfSafe) else {
-            return [:]
+            return (result, isDisabled)
         }
 
         let decoder = PropertyListDecoder()
 
         switch modeLock {
         case .launcher:
-            if let container = try? decoder.decode(
-                [String: [LockedAppConfig]].self,
-                from: plistData
-            ),
+            if let userConfigMap = try? decoder.decode([String: UserConfig].self, from: plistData),
+               let config = userConfigMap["Launcher"] {
+                for item in config.apps {
+                    result[item.path] = item
+                }
+                isDisabled = config.isDisabled
+            } else if let container = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
                let blockedAppsList = container["BlockedApps"] {
                 for item in blockedAppsList {
                     result[item.path] = item
                 }
-            } else if let blockedAppsList = try? decoder.decode(
-                [LockedAppConfig].self,
-                from: plistData
-            ) {
+            } else if let blockedAppsList = try? decoder.decode([LockedAppConfig].self, from: plistData) {
                 for item in blockedAppsList {
                     result[item.path] = item
                 }
@@ -96,7 +97,13 @@ final class ConfigStore {
 
         case .esMode:
             let uid = String(getuid())
-            if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
+            if let userConfigMap = try? decoder.decode([String: UserConfig].self, from: plistData),
+               let config = userConfigMap[uid] {
+                for app in config.apps {
+                    result[app.path] = app
+                }
+                isDisabled = config.isDisabled
+            } else if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
                let apps = userBlockedAppsMap[uid] {
                 for app in apps {
                     result[app.path] = app
@@ -104,13 +111,13 @@ final class ConfigStore {
             }
 
         case .none:
-            return [:]
+            break
         }
 
-        return result
+        return (result, isDisabled)
     }
 
-    func save(_ map: [String: LockedAppConfig]) {
+    func save(apps map: [String: LockedAppConfig], isDisabled: Bool) {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
 
@@ -118,26 +125,31 @@ final class ConfigStore {
             switch modeLock {
             case .launcher:
                 let blockedAppsList = Array(map.values)
-                let configDictionary: [String: [LockedAppConfig]] = ["BlockedApps": blockedAppsList]
+                let userConfig = UserConfig(isDisabled: isDisabled, apps: blockedAppsList)
+                let configDictionary: [String: UserConfig] = ["Launcher": userConfig]
                 let plistData = try encoder.encode(configDictionary)
                 try plistData.write(to: configURL, options: .atomic)
                 Logfile.core.debug("ConfigStore.save launcher: wrote \(blockedAppsList.count) apps")
 
             case .esMode:
                 let userID = String(getuid())
-                var fullConfig: [String: [LockedAppConfig]] = [:]
+                var fullConfig: [String: UserConfig] = [:]
                 
                 // 1. Read existing config to avoid overwriting other users
                 if FileManager.default.fileExists(atPath: configURL.path),
                    let existingData = try? Data(contentsOf: configURL) {
                     let decoder = PropertyListDecoder()
-                    if let decoded = try? decoder.decode([String: [LockedAppConfig]].self, from: existingData) {
+                    if let decoded = try? decoder.decode([String: UserConfig].self, from: existingData) {
                         fullConfig = decoded
+                    } else if let oldFormat = try? decoder.decode([String: [LockedAppConfig]].self, from: existingData) {
+                        for (key, apps) in oldFormat {
+                            fullConfig[key] = UserConfig(isDisabled: false, apps: apps)
+                        }
                     }
                 }
                 
                 // 2. Update current user's rules
-                fullConfig[userID] = Array(map.values)
+                fullConfig[userID] = UserConfig(isDisabled: isDisabled, apps: Array(map.values))
                 
                 // 3. Encode and save
                 let plistData = try encoder.encode(fullConfig)

@@ -352,6 +352,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 class MockLockManager: LockManagerProtocol, ObservableObject {
     @Published var lockedApps: [String: LockedAppConfig] = [:]
     @Published var allApps: [InstalledApp] = []
+    @Published var isProtectionDisabled: Bool = false
 
     func toggleLock(for paths: [String]) {
         for path in paths {
@@ -368,6 +369,10 @@ class MockLockManager: LockManagerProtocol, ObservableObject {
                 )
             }
         }
+    }
+
+    func setProtectionDisabled(_ disabled: Bool) {
+        self.isProtectionDisabled = disabled
     }
 
     func reloadAllApps() {}

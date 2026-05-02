@@ -11,13 +11,10 @@ struct WelcomeView: View {
     @AppStorage("selectedMode") private var selectedMode: String = ""
     @State private var shouldRestart = false
     private var isMock: Bool
+    let bundle = Bundle.main
 
     init(isMock: Bool = false) {
         self.isMock = isMock
-    }
-
-    var copyright: String {
-        Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
     }
 
     var body: some View {
@@ -29,15 +26,13 @@ struct WelcomeView: View {
                     }
             } else {
                 Spacer(minLength: 20)
+                
+                Image(nsImage: #bundle.appIcon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
 
-                if let icon = NSApplication.shared.applicationIconImage {
-                    Image(nsImage: icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                }
-
-                Text("Welcome to AppLocker")
+                Text("Welcome to \(bundle.appName)")
                     .font(.title)
                     .fontWeight(.bold)
 
@@ -71,7 +66,7 @@ struct WelcomeView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            Text(copyright)
+            Text(bundle.copyright)
                 .font(.footnote)
                 .foregroundColor(.gray)
                 .padding(.bottom, 16)

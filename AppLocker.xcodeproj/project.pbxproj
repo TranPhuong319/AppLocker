@@ -19,6 +19,9 @@
 		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF9782FA5993F00827F2C /* AboutWindowController.swift */; };
+		E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97B2FA5994C00827F2C /* AboutView.swift */; };
+		E07DF97F2FA5997200827F2C /* Bundle+AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */; };
 		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */ = {isa = PBXBuildFile; fileRef = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -225,6 +228,9 @@
 		E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.ESExtension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
 		E07075962E38BA97001C7950 /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E07DF9782FA5993F00827F2C /* AboutWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutWindowController.swift; sourceTree = "<group>"; };
+		E07DF97B2FA5994C00827F2C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+AppInfo.swift"; sourceTree = "<group>"; };
 		E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AppLocker Launcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.Helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -382,6 +388,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E07DF9792FA5993F00827F2C /* About */ = {
+			isa = PBXGroup;
+			children = (
+				E07DF9782FA5993F00827F2C /* AboutWindowController.swift */,
+			);
+			path = About;
+			sourceTree = "<group>";
+		};
+		E07DF97C2FA5994C00827F2C /* About */ = {
+			isa = PBXGroup;
+			children = (
+				E07DF97B2FA5994C00827F2C /* AboutView.swift */,
+			);
+			path = About;
+			sourceTree = "<group>";
+		};
 		E0B2790A2E7FB16C004BC47F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -481,6 +503,7 @@
 				E0FD759E2F59E36600D46B31 /* Settings */,
 				E0FD75A02F59E36600D46B31 /* Welcome */,
 				E0FDDD112F797A8C0078A290 /* Utils */,
+				E07DF9792FA5993F00827F2C /* About */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -585,6 +608,7 @@
 				E0FD75B92F59E36600D46B31 /* Utils */,
 				E0FD75BC2F59E36600D46B31 /* Welcome */,
 				E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */,
+				E07DF97C2FA5994C00827F2C /* About */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -677,6 +701,7 @@
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
 				E0FD75E32F59E36600D46B31 /* LockLauncher.swift */,
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
+				E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1130,12 +1155,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */,
 				E0FD75F12F59E36600D46B31 /* LockLauncher.swift in Sources */,
 				E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */,
 				E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */,
 				E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */,
 				E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */,
 				E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */,
+				E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */,
 				E0FD75F72F59E36600D46B31 /* AppIconView.swift in Sources */,
 				E0FD75F82F59E36600D46B31 /* SectionHeader.swift in Sources */,
 				E0FD75F92F59E36600D46B31 /* AppDelegate+Agent.swift in Sources */,
@@ -1150,6 +1177,7 @@
 				E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */,
 				E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */,
 				E0FD76042F59E36600D46B31 /* AppRow.swift in Sources */,
+				E07DF97F2FA5997200827F2C /* Bundle+AppInfo.swift in Sources */,
 				E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */,
 				E0FD76062F59E36600D46B31 /* HelperInstaller.swift in Sources */,
 				E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */,
@@ -1833,7 +1861,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		E01814A42F137F500093583F /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/TranPhuong319/Sparkle/";
+			repositoryURL = "https://github.com/sparkle-project/Sparkle/";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.8.2;

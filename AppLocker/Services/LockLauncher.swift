@@ -12,18 +12,26 @@ import Foundation
 class LockLauncher: LockManagerProtocol {
     @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     @Published var allApps: [InstalledApp] = []
+    @Published var isProtectionDisabled: Bool = false
 
     private var currentBundleFile: URL {
         Bundle.main.bundleURL
     }
 
     init() {
-        self.lockedApps = ConfigStore.shared.load()
+        let loaded = ConfigStore.shared.load()
+        self.lockedApps = loaded.apps
+        self.isProtectionDisabled = loaded.isDisabled
     }
 
     // MARK: - Persistence helper
     func save() {
-        ConfigStore.shared.save(self.lockedApps)
+        ConfigStore.shared.save(apps: self.lockedApps, isDisabled: self.isProtectionDisabled)
+    }
+
+    func setProtectionDisabled(_ disabled: Bool) {
+        self.isProtectionDisabled = disabled
+        self.save()
     }
 
     // MARK: - Core toggle logic
