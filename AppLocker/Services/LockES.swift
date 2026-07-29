@@ -100,12 +100,11 @@ class LockES: LockManagerProtocol {
                 }
                 let bundleID = bundle.bundleIdentifier ?? ""
 
-                let mode = modeLock?.rawValue ?? AppMode.esMode.rawValue
                 let lockedAppConfig = LockedAppConfig(
                     bundleID: bundleID,
                     path: path,
                     sha256: sha,
-                    blockMode: mode,
+                    blockMode: "ES",
                     execFile: execName,
                     name: appName
                 )

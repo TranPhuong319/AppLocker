@@ -44,17 +44,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             self.manager = manager
             self.isMock = manager is MockLockManager
         } else {
-            let initialManager: any LockManagerProtocol
-            switch modeLock {
-            case .launcher:
-                initialManager = LockLauncher()
-            case .esMode:
-                initialManager = LockES()
-            case .none:
-                Logfile.core.error("No mode selected during AppState init, defaulting to Launcher")
-                initialManager = LockLauncher()
-            }
-            self.manager = initialManager
+            self.manager = LockES()
         }
 
         super.init()
@@ -165,15 +155,9 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
                 $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
             })?.name
 
-            // 2. Dự phòng: Lấy từ FileManager display name nếu Spotlight chưa có/không thấy (app bị ẩn)
+            // 2. Dự phòng: Lấy từ FileManager display name nếu Spotlight chưa có/không thấy
             if name == nil {
-                var displayName = FileManager.default.displayName(atPath: path)
-                
-                // Xử lý Launcher mode: nếu app bị ẩn (có dấu . ở đầu)
-                if displayName.hasPrefix(".") {
-                    displayName.removeFirst()
-                }
-                
+                let displayName = FileManager.default.displayName(atPath: path)
                 name = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
             }
 

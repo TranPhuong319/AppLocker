@@ -31,17 +31,7 @@ extension AppDelegate {
 
     @objc func uninstall() {
         Logfile.core.debug("Uninstall Clicked")
-        let lockManager = AppState.shared.manager
         NSApp.activate(ignoringOtherApps: true)
-
-        guard lockManager.lockedApps.isEmpty || modeLock == .esMode else {
-            AlertShow.showInfo(
-                title: String(localized: "Unable to uninstall AppLocker"),
-                message: String(localized: "You need to unlock all applications before Uninstalling"),
-                style: .critical
-            )
-            return
-        }
 
         let uninstallConfirmation = AlertShow.show(
             title: String(localized: "Uninstall AppLocker") + "?",
@@ -58,7 +48,7 @@ extension AppDelegate {
         )
 
         if case .button(index: 0, title: String(localized: "Uninstall")) = uninstallConfirmation {
-            performUninstall(for: modeLock)
+            performUninstall()
         }
     }
 
@@ -81,7 +71,7 @@ extension AppDelegate {
         )
 
         if case .button(index: 0, title: String(localized: "Reset")) = resetConfirmation {
-            performReset(for: modeLock)
+            performReset()
         }
     }
 
@@ -112,67 +102,31 @@ extension AppDelegate {
 
     // MARK: - Helper Methods
 
-    private func performUninstall(for mode: AppMode?) {
-        switch mode {
-        case .esMode:
-            ExtensionInstaller.shared.onUninstalled = {
-                ESXPCClient.shared.authorizeShutdown(true) { _ in
-                    self.manageAgent(plistName: plistName, action: .uninstall)
-                    self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
-                    self.removeConfig()
-                    self.selfRemoveApp()
-                    self.showRestartSheet()
-                    NSApp.terminate(nil)
-                }
+    private func performUninstall() {
+        ExtensionInstaller.shared.onUninstalled = {
+            ESXPCClient.shared.authorizeShutdown(true) { _ in
+                self.manageAgent(plistName: plistName, action: .uninstall)
+                self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
+                self.removeConfig()
+                self.selfRemoveApp()
+                self.showRestartSheet()
+                NSApp.terminate(nil)
             }
-            ExtensionInstaller.shared.uninstall()
-        case .launcher:
-            AuthenticationManager.authenticate(
-                reason: String(localized: "uninstall the application")
-            ) { success, _ in
-                DispatchQueue.main.async {
-                    if success {
-                        self.callUninstallHelper()
-                        let loginItem = SMAppService.mainApp
-                        if loginItem.status == .enabled { try? loginItem.unregister() }
-                        _ = HelperInstaller.manageHelperTool(
-                            action: .uninstall,
-                            helperToolIdentifier: self.helperIdentifier
-                        )
-                        self.selfRemoveApp()
-                        self.removeConfig()
-                        self.showRestartSheet()
-                        NSApp.terminate(nil)
-                    }
-                }
-            }
-        case nil:
-            break
         }
+        ExtensionInstaller.shared.uninstall()
     }
 
-    private func performReset(for mode: AppMode?) {
-        switch mode {
-        case .launcher:
-            let loginItem = SMAppService.mainApp
-            if loginItem.status == .enabled { try? loginItem.unregister() }
-            removeConfig()
-            _ = HelperInstaller.manageHelperTool(action: .uninstall, helperToolIdentifier: helperIdentifier)
-            restartApp(mode: nil)
-        case .esMode:
-            ExtensionInstaller.shared.onUninstalled = {
-                ESXPCClient.shared.authorizeShutdown(true) { _ in
-                    self.removeConfig()
-                    self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
-                    self.restartApp(mode: nil) {
-                        self.manageAgent(plistName: plistName, action: .uninstall)
-                    }
+    private func performReset() {
+        ExtensionInstaller.shared.onUninstalled = {
+            ESXPCClient.shared.authorizeShutdown(true) { _ in
+                self.removeConfig()
+                self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
+                self.restartApp {
+                    self.manageAgent(plistName: plistName, action: .uninstall)
                 }
             }
-            ExtensionInstaller.shared.uninstall()
-        case nil:
-            break
         }
+        ExtensionInstaller.shared.uninstall()
     }
 
     private func bringFrontmostWindow(matching namePart: String) {

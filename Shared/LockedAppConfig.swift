@@ -25,7 +25,7 @@ struct LockedAppConfig: Codable, Hashable {
             bundleID: app.bundleID,
             path: app.path,
             sha256: "mock_sha256_hash",
-            blockMode: "Launcher",
+            blockMode: "ES",
             execFile: app.name,
             name: app.name
         )

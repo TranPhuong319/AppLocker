@@ -196,7 +196,11 @@
         }
       }
     },
+    "EndpointSecurity (ES)" : {
+
+    },
     "ES (EndpointSecurity)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -257,6 +261,7 @@
       }
     },
     "Launch At Login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -267,6 +272,7 @@
       }
     },
     "Launcher" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -568,6 +574,7 @@
       }
     },
     "Unable to uninstall AppLocker" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -598,6 +605,7 @@
       }
     },
     "uninstall the application" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -709,6 +717,7 @@
       }
     },
     "You need to unlock all applications before Uninstalling" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

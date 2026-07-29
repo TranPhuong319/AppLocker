@@ -9,24 +9,6 @@ import AppKit
 import Foundation
 
 extension AppDelegate {
-    func callUninstallHelper() {
-        let xpcConnection = NSXPCConnection(
-            machServiceName: "com.TranPhuong319.AppLocker.Helper",
-            options: .privileged
-        )
-        xpcConnection.remoteObjectInterface = NSXPCInterface(with: AppLockerHelperProtocol.self)
-        xpcConnection.resume()
-
-        if let proxy = xpcConnection.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.debug("XPC connection closed (expected): \(error.localizedDescription)")
-        }) as? AppLockerHelperProtocol {
-            proxy.uninstallHelper { _, _ in
-                // Fire-and-forget.
-            }
-        }
-
-        xpcConnection.invalidate()
-    }
 
     func selfRemoveApp() {
         let bundleURL = Bundle.main.bundleURL
@@ -78,32 +60,13 @@ extension AppDelegate {
         }
     }
 
-    func restartApp(mode: AppMode?, completion: (() -> Void)? = nil) {
-        if mode == .esMode {
-            manageAgent(plistName: plistName, action: .install)
-            manageHelperLoginItem(
-                helperBundleID: loginItem,
-                action: .install
-            )
-            NSApp.terminate(nil)
-        } else {
-            let bundleURL = Bundle.main.bundleURL
-            let currentProcessPID = ProcessInfo.processInfo.processIdentifier
-
-            let openConfiguration = NSWorkspace.OpenConfiguration()
-            openConfiguration.createsNewApplicationInstance = true
-            openConfiguration.arguments = ["-waitForPID", String(currentProcessPID)]
-
-            NSWorkspace.shared.openApplication(at: bundleURL, configuration: openConfiguration) { _, error in
-                if let error = error {
-                    Logfile.core.error("Relaunch failed: \(error.localizedDescription)")
-                }
-
-                DispatchQueue.main.async {
-                    completion?()
-                    NSApp.terminate(nil)
-                }
-            }
-        }
+    func restartApp(completion: (() -> Void)? = nil) {
+        manageAgent(plistName: plistName, action: .install)
+        manageHelperLoginItem(
+            helperBundleID: loginItem,
+            action: .install
+        )
+        completion?()
+        NSApp.terminate(nil)
     }
 }

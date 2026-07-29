@@ -9,18 +9,13 @@ import UserNotifications
 import AppKit
 
 extension AppDelegate {
-    func launchConfig(config: AppMode) {
-        if config == .launcher {
-            HelperInstaller.checkAndAlertBlocking(helperToolIdentifier: helperIdentifier)
-            setupUIComponents()
-        } else if config == .esMode {
-            ExtensionInstaller.shared.onInstalled = {
-                Logfile.core.log("[App] Setting up UI after extension install")
-                self.setupUIComponents()
-            }
-            Logfile.core.log("Installing Endpoint Security extension...")
-            ExtensionInstaller.shared.install()
+    func launchConfig() {
+        ExtensionInstaller.shared.onInstalled = {
+            Logfile.core.log("[App] Setting up UI after extension install")
+            self.setupUIComponents()
         }
+        Logfile.core.log("Installing Endpoint Security extension...")
+        ExtensionInstaller.shared.install()
     }
 
     func setupUIComponents() {

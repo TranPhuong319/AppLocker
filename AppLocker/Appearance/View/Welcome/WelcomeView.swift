@@ -22,7 +22,7 @@ struct WelcomeView: View {
             if shouldRestart {
                 Color.clear
                     .onAppear {
-                        NSApp.appDelegate?.restartApp(mode: AppMode(rawValue: selectedMode))
+                        NSApp.appDelegate?.restartApp()
                     }
             } else {
                 Spacer(minLength: 20)
@@ -43,22 +43,14 @@ struct WelcomeView: View {
                 VStack(spacing: 20) {
                     let isESEnabled = isMock ? true : isKextSigningDisabled()
 
-                    LabelButtonView(label: "ES (EndpointSecurity)",
+                    LabelButtonView(label: "EndpointSecurity (ES)",
                                     symbol: "lock.shield.fill",
                                     isDisabled: !isESEnabled) {
                         guard !isMock else { return }
-                        selectedMode = AppMode.esMode.rawValue
                         shouldRestart = true
                     }
                     .disabled(!isESEnabled)
                     .help(isESEnabled ? "" : "SIP must be disabled to use this mode")
-
-                    LabelButtonView(label: "Launcher",
-                                    symbol: "lock.rectangle.fill") {
-                        guard !isMock else { return }
-                        selectedMode = AppMode.launcher.rawValue
-                        shouldRestart = true
-                    }
                 }
                 .padding(.horizontal, 20)
 

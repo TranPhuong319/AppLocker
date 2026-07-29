@@ -21,18 +21,6 @@ enum AgentAction {
     case check
 }
 
-enum AppMode: String {
-    case esMode = "ES"
-    case launcher = "Launcher"
-}
-
-var modeLock: AppMode? = {
-    if let savedValue = UserDefaults.standard.string(forKey: "selectedMode") {
-        return AppMode(rawValue: savedValue)
-    }
-    return nil
-}()
-
 let plistName = "com.TranPhuong319.AppLocker.agent"
 let loginItem = "com.TranPhuong319.AppLocker.LoginItems"
 
@@ -79,30 +67,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         Logfile.core.log("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
-        // Sử dụng optional chaining hoặc miêu tả enum an toàn
-        Logfile.core.debug("Mode selected: \(modeLock?.rawValue ?? "None", privacy: .public)")
-
-        if let mode = modeLock {
-            #if !DEBUG
-            if mode == .esMode && !launchedByLaunchd() {
-                let agent = SMAppService.agent(plistName: "\(plistName).plist")
-                if agent.status == .enabled {
-                    Logfile.core.log("App launched manually in esMode. Restarting via launchctl...")
-                    let process = Process()
-                    process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-                    process.arguments = ["start", plistName]
-                    try? process.run()
-                    NSApp.terminate(nil)
-                    return
-                }
+        #if !DEBUG
+        if !launchedByLaunchd() {
+            let agent = SMAppService.agent(plistName: "\(plistName).plist")
+            if agent.status == .enabled {
+                Logfile.core.log("App launched manually. Restarting via launchctl...")
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                process.arguments = ["start", plistName]
+                try? process.run()
+                NSApp.terminate(nil)
+                return
             }
-            #endif
-            
-            launchConfig(config: mode)
-        } else {
-            WelcomeWindowController.show()
-            return
         }
+        #endif
+        
+        launchConfig()
     }
 
     private func moveToApplicationsAndRelaunch() {

@@ -53,15 +53,6 @@ extension AppDelegate: NSMenuDelegate {
                                 action: #selector(openSettings),
                                 keyEquivalent: ","))
 
-        if modeLock == .launcher {
-            let launchItem = NSMenuItem(title: String(localized: "Launch At Login"),
-                                        action: #selector(launchAtLogin),
-                                        keyEquivalent: "")
-            launchItem.target = self
-            launchItem.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
-            menu.addItem(launchItem)
-        }
-
         menu.addItem(.separator())
 
         // MARK: - Info & Updates

@@ -11,34 +11,18 @@
 		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
 		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
 		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		E0572FA02F5B147E00A90708 /* AppLockerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */; };
-		E0572FA12F5B14A000A90708 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
-		E0572FA22F5B14B000A90708 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
-		E0572FA32F5B14D400A90708 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
 		E0572FA42F5B16BC00A90708 /* TempAllowSHAStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76332F59E37C00D46B31 /* TempAllowSHAStore.swift */; };
 		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
-		E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */ = {isa = PBXBuildFile; fileRef = E07075962E38BA97001C7950 /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF9782FA5993F00827F2C /* AboutWindowController.swift */; };
 		E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97B2FA5994C00827F2C /* AboutView.swift */; };
 		E07DF97F2FA5997200827F2C /* Bundle+AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */; };
 		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
-		E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */ = {isa = PBXBuildFile; fileRef = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0B6A16E2F191BE700EAE136 /* (null) in Login Items */ = {isa = PBXBuildFile; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
-		E0FD75112F59DB6200D46B31 /* AppLockerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD750D2F59DB6100D46B31 /* AppLockerHelper.swift */; };
-		E0FD75122F59DB6200D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD750F2F59DB6100D46B31 /* main.swift */; };
-		E0FD75132F59DB6200D46B31 /* com.TranPhuong319.AppLocker.Helper.plist in Launch Daemons */ = {isa = PBXBuildFile; fileRef = E0FD750E2F59DB6100D46B31 /* com.TranPhuong319.AppLocker.Helper.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E0FD75682F59DB7400D46B31 /* Launcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75642F59DB7400D46B31 /* Launcher.swift */; };
-		E0FD75692F59DB7400D46B31 /* LauncherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75652F59DB7400D46B31 /* LauncherApp.swift */; };
-		E0FD756A2F59DB7400D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75602F59DB7400D46B31 /* AppIcon.icon */; };
-		E0FD756B2F59DB7400D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75612F59DB7400D46B31 /* Assets.xcassets */; };
-		E0FD756D2F59DB7400D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75662F59DB7400D46B31 /* Localizable.xcstrings */; };
-		E0FD75702F59DB7700D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD756E2F59DB7700D46B31 /* main.swift */; };
 		E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D62F59E36600D46B31 /* AppIcon.icon */; };
 		E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D72F59E36600D46B31 /* Assets.xcassets */; };
 		E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */; };
-		E0FD75F12F59E36600D46B31 /* LockLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LockLauncher.swift */; };
 		E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */; };
 		E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */; };
 		E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DF2F59E36600D46B31 /* Extensions.swift */; };
@@ -127,18 +111,6 @@
 		E0FD76862F59E3BE00D46B31 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
 		E0FD76872F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */; };
 		E0FD76882F59E3BE00D46B31 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
-		E0FD76942F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
-		E0FD76952F59E3BE00D46B31 /* FuzzySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */; };
-		E0FD76962F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
-		E0FD76972F59E3BE00D46B31 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
-		E0FD76982F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */; };
-		E0FD76992F59E3BE00D46B31 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD765F2F59E3BE00D46B31 /* Alert.swift */; };
-		E0FD769A2F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
-		E0FD769B2F59E3BE00D46B31 /* ComputeSHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */; };
-		E0FD769C2F59E3BE00D46B31 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
-		E0FD769D2F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */; };
-		E0FD769E2F59E3BE00D46B31 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
-		E0FD769F2F59E3BE00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */; };
 		E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76372F59E37C00D46B31 /* InfoPlist.strings */; };
 		E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */ = {isa = PBXBuildFile; fileRef = E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
@@ -172,7 +144,6 @@
 			dstPath = Contents/Library/LaunchDaemons;
 			dstSubfolderSpec = 1;
 			files = (
-				E0FD75132F59DB6200D46B31 /* com.TranPhuong319.AppLocker.Helper.plist in Launch Daemons */,
 			);
 			name = "Launch Daemons";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,20 +154,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				E0749BE52E96D85B003CD67D /* com.TranPhuong319.AppLocker.Helper in Copy Helper */,
 			);
 			name = "Copy Helper";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E0749BE32E96D7AB003CD67D /* Copy Launcher */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-				E0749BE42E96D7CD003CD67D /* Launcher.app in Copy Launcher */,
-			);
-			name = "Copy Launcher";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E0749BE62E96D8BE003CD67D /* Launch Agents */ = {
@@ -216,7 +175,7 @@
 			dstPath = Contents/Library/LoginItems;
 			dstSubfolderSpec = 1;
 			files = (
-				E0B6A16E2F191BE700EAE136 /* AppLocker Launcher.app in Login Items */,
+				E0B6A16E2F191BE700EAE136 /* (null) in Login Items */,
 			);
 			name = "Login Items";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -227,24 +186,10 @@
 		E0361ACF2E879EC300A37772 /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
 		E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.ESExtension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
-		E07075962E38BA97001C7950 /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E07DF9782FA5993F00827F2C /* AboutWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutWindowController.swift; sourceTree = "<group>"; };
 		E07DF97B2FA5994C00827F2C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+AppInfo.swift"; sourceTree = "<group>"; };
-		E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AppLocker Launcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.Helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E0FD750D2F59DB6100D46B31 /* AppLockerHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockerHelper.swift; sourceTree = "<group>"; };
-		E0FD750E2F59DB6100D46B31 /* com.TranPhuong319.AppLocker.Helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.Helper.plist; sourceTree = "<group>"; };
-		E0FD750F2F59DB6100D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		E0FD75602F59DB7400D46B31 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
-		E0FD75612F59DB7400D46B31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		E0FD75622F59DB7400D46B31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E0FD75632F59DB7400D46B31 /* Launcher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Launcher.entitlements; sourceTree = "<group>"; };
-		E0FD75642F59DB7400D46B31 /* Launcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Launcher.swift; sourceTree = "<group>"; };
-		E0FD75652F59DB7400D46B31 /* LauncherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherApp.swift; sourceTree = "<group>"; };
-		E0FD75662F59DB7400D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
-		E0FD756E2F59DB7700D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeWindowController.swift; sourceTree = "<group>"; };
@@ -295,7 +240,6 @@
 		E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSEventsMonitoringService.swift; sourceTree = "<group>"; };
 		E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppConfig.swift; sourceTree = "<group>"; };
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
-		E0FD75E32F59E36600D46B31 /* LockLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockLauncher.swift; sourceTree = "<group>"; };
 		E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManagerProtocol.swift; sourceTree = "<group>"; };
 		E0FD75E62F59E36600D46B31 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
 		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
@@ -364,27 +308,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E08AAFD52F17FBAC008C97FC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E090EB592F120B59002EF366 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E0D4C0622E419DAD003C40E3 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -417,11 +340,8 @@
 			isa = PBXGroup;
 			children = (
 				E0FD75EB2F59E36600D46B31 /* AppLocker */,
-				E0FD756F2F59DB7700D46B31 /* AppLocker Launcher */,
-				E0FD75102F59DB6100D46B31 /* AppLockerHelper */,
 				E0FD76462F59E37C00D46B31 /* ESExtension */,
 				E0B2790A2E7FB16C004BC47F /* Frameworks */,
-				E0FD75672F59DB7400D46B31 /* Launcher */,
 				E0EF51AB2E31558900161CAB /* Products */,
 				E0FD76702F59E3BE00D46B31 /* Shared */,
 			);
@@ -432,44 +352,9 @@
 			isa = PBXGroup;
 			children = (
 				E0EF51AA2E31558900161CAB /* AppLocker.app */,
-				E07075962E38BA97001C7950 /* Launcher.app */,
-				E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */,
 				E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */,
-				E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		E0FD75102F59DB6100D46B31 /* AppLockerHelper */ = {
-			isa = PBXGroup;
-			children = (
-				E0FD750D2F59DB6100D46B31 /* AppLockerHelper.swift */,
-				E0FD750E2F59DB6100D46B31 /* com.TranPhuong319.AppLocker.Helper.plist */,
-				E0FD750F2F59DB6100D46B31 /* main.swift */,
-			);
-			path = AppLockerHelper;
-			sourceTree = "<group>";
-		};
-		E0FD75672F59DB7400D46B31 /* Launcher */ = {
-			isa = PBXGroup;
-			children = (
-				E0FD75602F59DB7400D46B31 /* AppIcon.icon */,
-				E0FD75612F59DB7400D46B31 /* Assets.xcassets */,
-				E0FD75622F59DB7400D46B31 /* Info.plist */,
-				E0FD75632F59DB7400D46B31 /* Launcher.entitlements */,
-				E0FD75642F59DB7400D46B31 /* Launcher.swift */,
-				E0FD75652F59DB7400D46B31 /* LauncherApp.swift */,
-				E0FD75662F59DB7400D46B31 /* Localizable.xcstrings */,
-			);
-			path = Launcher;
-			sourceTree = "<group>";
-		};
-		E0FD756F2F59DB7700D46B31 /* AppLocker Launcher */ = {
-			isa = PBXGroup;
-			children = (
-				E0FD756E2F59DB7700D46B31 /* main.swift */,
-			);
-			path = "AppLocker Launcher";
 			sourceTree = "<group>";
 		};
 		E0FD759C2F59E36600D46B31 /* MainUI */ = {
@@ -699,7 +584,6 @@
 				E0FD75DF2F59E36600D46B31 /* Extensions.swift */,
 				E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */,
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
-				E0FD75E32F59E36600D46B31 /* LockLauncher.swift */,
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
 				E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */,
 			);
@@ -893,62 +777,6 @@
 			productReference = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */;
 			productType = "com.apple.product-type.system-extension";
 		};
-		E07075952E38BA97001C7950 /* Launcher */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E070759F2E38BA9E001C7950 /* Build configuration list for PBXNativeTarget "Launcher" */;
-			buildPhases = (
-				E07075922E38BA97001C7950 /* Sources */,
-				E07075942E38BA97001C7950 /* Resources */,
-				E090EB592F120B59002EF366 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Launcher;
-			packageProductDependencies = (
-			);
-			productName = Launcher;
-			productReference = E07075962E38BA97001C7950 /* Launcher.app */;
-			productType = "com.apple.product-type.application";
-		};
-		E08AAFD72F17FBAC008C97FC /* AppLocker Launcher */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E08AAFE22F17FBBA008C97FC /* Build configuration list for PBXNativeTarget "AppLocker Launcher" */;
-			buildPhases = (
-				E08AAFD42F17FBAC008C97FC /* Sources */,
-				E08AAFD52F17FBAC008C97FC /* Frameworks */,
-				E08AAFD62F17FBAC008C97FC /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "AppLocker Launcher";
-			packageProductDependencies = (
-			);
-			productName = "AppLocker Launcher";
-			productReference = E08AAFD82F17FBAC008C97FC /* AppLocker Launcher.app */;
-			productType = "com.apple.product-type.application";
-		};
-		E0D4C0642E419DAD003C40E3 /* AppLockerHelper */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E0D4C0692E419DAD003C40E3 /* Build configuration list for PBXNativeTarget "AppLockerHelper" */;
-			buildPhases = (
-				E0D4C0612E419DAD003C40E3 /* Sources */,
-				E0D4C0622E419DAD003C40E3 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = AppLockerHelper;
-			packageProductDependencies = (
-			);
-			productName = AppLockerHelper;
-			productReference = E0D4C0652E419DAD003C40E3 /* com.TranPhuong319.AppLocker.Helper */;
-			productType = "com.apple.product-type.tool";
-		};
 		E0EF51A92E31558900161CAB /* AppLocker */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E0EF51B62E31559200161CAB /* Build configuration list for PBXNativeTarget "AppLocker" */;
@@ -959,7 +787,6 @@
 				E06B45C82E5A9C5400323A53 /* Copy Helper */,
 				E04B8EA72E5D852900BE7903 /* Frameworks */,
 				E050B44B2E86FB35003AEA49 /* Embed System Extensions */,
-				E0749BE32E96D7AB003CD67D /* Copy Launcher */,
 				E0749BE62E96D8BE003CD67D /* Launch Agents */,
 				E0B6A16D2F191BBA00EAE136 /* Login Items */,
 			);
@@ -991,15 +818,6 @@
 					E050B43F2E86FB33003AEA49 = {
 						CreatedOnToolsVersion = 26.0;
 					};
-					E07075952E38BA97001C7950 = {
-						CreatedOnToolsVersion = 16.4;
-					};
-					E08AAFD72F17FBAC008C97FC = {
-						CreatedOnToolsVersion = 26.2;
-					};
-					E0D4C0642E419DAD003C40E3 = {
-						CreatedOnToolsVersion = 16.4;
-					};
 					E0EF51A92E31558900161CAB = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -1024,39 +842,18 @@
 			projectRoot = "";
 			targets = (
 				E0EF51A92E31558900161CAB /* AppLocker */,
-				E07075952E38BA97001C7950 /* Launcher */,
-				E0D4C0642E419DAD003C40E3 /* AppLockerHelper */,
 				E050B43F2E86FB33003AEA49 /* ESExtension */,
-				E08AAFD72F17FBAC008C97FC /* AppLocker Launcher */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		E07075942E38BA97001C7950 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E0FD756A2F59DB7400D46B31 /* AppIcon.icon in Resources */,
-				E0FD769F2F59E3BE00D46B31 /* InfoPlist.strings in Resources */,
-				E0FD756B2F59DB7400D46B31 /* Assets.xcassets in Resources */,
-				E0FD756D2F59DB7400D46B31 /* Localizable.xcstrings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		E076EEFD2E883E48009F465F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */,
 				E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E08AAFD62F17FBAC008C97FC /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1110,53 +907,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E07075922E38BA97001C7950 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E0FD76942F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
-				E0FD76952F59E3BE00D46B31 /* FuzzySearch.swift in Sources */,
-				E0FD76962F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
-				E0FD76972F59E3BE00D46B31 /* Data+Random.swift in Sources */,
-				E0FD76982F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */,
-				E0FD76992F59E3BE00D46B31 /* Alert.swift in Sources */,
-				E0FD769A2F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
-				E0FD769B2F59E3BE00D46B31 /* ComputeSHA.swift in Sources */,
-				E0FD769C2F59E3BE00D46B31 /* Log.swift in Sources */,
-				E0FD769D2F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */,
-				E0FD769E2F59E3BE00D46B31 /* AppInfo.swift in Sources */,
-				E0FD75682F59DB7400D46B31 /* Launcher.swift in Sources */,
-				E0FD75692F59DB7400D46B31 /* LauncherApp.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E08AAFD42F17FBAC008C97FC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E0FD75702F59DB7700D46B31 /* main.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E0D4C0612E419DAD003C40E3 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E0572FA32F5B14D400A90708 /* Log.swift in Sources */,
-				E0572FA22F5B14B000A90708 /* Data+Random.swift in Sources */,
-				E0572FA12F5B14A000A90708 /* KeychainHelper.swift in Sources */,
-				E0572FA02F5B147E00A90708 /* AppLockerHelperProtocol.swift in Sources */,
-				E0FD75112F59DB6200D46B31 /* AppLockerHelper.swift in Sources */,
-				E0FD75122F59DB6200D46B31 /* main.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		E0EF51A62E31558900161CAB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */,
-				E0FD75F12F59E36600D46B31 /* LockLauncher.swift in Sources */,
 				E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */,
 				E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */,
 				E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */,
@@ -1349,200 +1104,6 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ESExtension/Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		E07075A02E38BA9E001C7950 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Launcher/Launcher.entitlements;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
-				CODE_SIGN_STYLE = Manual;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-alpha";
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 749P55DL5L;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
-				ENABLE_APP_SANDBOX = NO;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Launcher/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INFOPLIST_KEY_UIStatusBarStyle = "";
-				INSTALL_PATH = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = "$(MARKETING_VERSION)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Launcher;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				REGISTER_APP_GROUPS = YES;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		E07075A12E38BA9E001C7950 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Launcher/Launcher.entitlements;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = YES;
-				CODE_SIGN_STYLE = Manual;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-stable";
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 749P55DL5L;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
-				ENABLE_APP_SANDBOX = NO;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Launcher/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INFOPLIST_KEY_UIStatusBarStyle = "";
-				INSTALL_PATH = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = "$(MARKETING_VERSION)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Launcher;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				REGISTER_APP_GROUPS = YES;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		E08AAFE02F17FBBA008C97FC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Manual;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = NO;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INSTALL_PATH = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = "$(MARKETING_VERSION)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.LoginItems;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				REGISTER_APP_GROUPS = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		E08AAFE12F17FBBA008C97FC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Manual;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = NO;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INSTALL_PATH = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = "$(MARKETING_VERSION)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.LoginItems;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				REGISTER_APP_GROUPS = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		E0D4C06A2E419DAD003C40E3 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INSTALL_PATH = "";
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = "$(MARKETING_VERSION)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Helper;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = "$(PRODUCT_BUNDLE_IDENTIFIER)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				REGISTER_APP_GROUPS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		E0D4C06B2E419DAD003C40E3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-				INSTALL_PATH = "";
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = "$(MARKETING_VERSION)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.Helper;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = "$(PRODUCT_BUNDLE_IDENTIFIER)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				REGISTER_APP_GROUPS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -1807,33 +1368,6 @@
 			buildConfigurations = (
 				E050B44C2E86FB35003AEA49 /* Debug */,
 				E050B44D2E86FB35003AEA49 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E070759F2E38BA9E001C7950 /* Build configuration list for PBXNativeTarget "Launcher" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E07075A02E38BA9E001C7950 /* Debug */,
-				E07075A12E38BA9E001C7950 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E08AAFE22F17FBBA008C97FC /* Build configuration list for PBXNativeTarget "AppLocker Launcher" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E08AAFE02F17FBBA008C97FC /* Debug */,
-				E08AAFE12F17FBBA008C97FC /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E0D4C0692E419DAD003C40E3 /* Build configuration list for PBXNativeTarget "AppLockerHelper" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E0D4C06A2E419DAD003C40E3 /* Debug */,
-				E0D4C06B2E419DAD003C40E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
