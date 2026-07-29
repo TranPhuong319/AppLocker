@@ -37,6 +37,9 @@ Carthage/Build/
 # VSCode
 .vscode/
 
+# Agents behaviors
+.agents/
+
 # Secrets & Environment
 .env
 *.secret
