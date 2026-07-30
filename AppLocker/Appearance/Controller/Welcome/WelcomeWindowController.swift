@@ -10,6 +10,7 @@ import AppKit
 
 class WelcomeWindowController: NSWindowController, NSWindowDelegate {
     static var shared: WelcomeWindowController?
+    var isCompletingOnboarding = false
 
     static func show() {
         if let controller = shared {
@@ -50,6 +51,8 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
     // MARK: - NSWindowDelegate
     func windowWillClose(_ notification: Notification) {
         WelcomeWindowController.shared = nil
-        NSApp.terminate(nil)
+        if !isCompletingOnboarding {
+            NSApp.terminate(nil)
+        }
     }
 }

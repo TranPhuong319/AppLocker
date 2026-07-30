@@ -168,25 +168,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 && app.processIdentifier != ignoringPID
         }
 
-        if !otherApps.isEmpty && !launchedByLaunchd() {
-            #if !DEBUG
+        if !otherApps.isEmpty {
             Logfile.core.warning(
                 """
                 Another instance is running \
                 (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
-                Terminating.
+                Activating existing instance and terminating this new instance.
                 """
             )
+            otherApps.first?.activate(options: [.activateIgnoringOtherApps])
             NSApp.terminate(nil)
-            #else
-            Logfile.core.warning(
-                """
-                Another instance is running \
-                (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
-                Ignoring termination because of DEBUG mode.
-                """
-            )
-            #endif
         }
     }
 }

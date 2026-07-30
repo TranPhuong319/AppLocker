@@ -85,7 +85,10 @@ struct WelcomeView: View {
                     if case .button(index: 0, _) = response {
                         guard !isMock else { return }
                         UserDefaults.standard.set(false, forKey: "isFirstStart")
-                        NSApp.appDelegate?.restartApp()
+                        NSApp.appDelegate?.registerAgentWithoutImmediateLaunch()
+                        WelcomeWindowController.shared?.isCompletingOnboarding = true
+                        WelcomeWindowController.shared?.window?.close()
+                        NSApp.appDelegate?.launchConfig()
                     }
                 }) {
                     Text("Continue")

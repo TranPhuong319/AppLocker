@@ -18,6 +18,14 @@ enum AgentManageResult {
 }
 
 extension AppDelegate {
+    func registerAgentWithoutImmediateLaunch() {
+        manageAgent(plistName: plistName, action: .install)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["stop", plistName]
+        try? process.run()
+    }
+
     @discardableResult
     func manageAgent(
         plistName: String,
