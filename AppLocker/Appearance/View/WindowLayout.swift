@@ -11,11 +11,11 @@ import Foundation
 /// Khi cần thay đổi kích thước, chỉ cần sửa ở đây.
 enum WindowLayout {
     enum Main {
-        static let size = NSSize(width: 450, height: 470)
+        static let size = NSSize(width: 450, height: 880)
     }
 
     enum Welcome {
-        static let size = NSSize(width: 350, height: 450)
+        static let size = NSSize(width: 660, height: 480)
     }
 
     enum Sheet {

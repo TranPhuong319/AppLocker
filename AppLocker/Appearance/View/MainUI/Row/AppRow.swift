@@ -15,7 +15,6 @@ struct AppRow: View {
     var body: some View {
         Button {
             unfocus()
-            guard !appState.pendingLocks.contains(app.path) else { return }
 
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 if appState.selectedToLock.contains(app.path) {
@@ -34,12 +33,7 @@ struct AppRow: View {
 
                 Spacer()
 
-                if appState.pendingLocks.contains(app.path) {
-                    Text("Locking...")
-                        .italic()
-                        .foregroundColor(.secondary)
-                        .font(.subheadline)
-                } else if appState.selectedToLock.contains(app.path) {
+                if appState.selectedToLock.contains(app.path) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.accentColor)
                         .font(.title3)
@@ -49,7 +43,6 @@ struct AppRow: View {
             .padding(.horizontal, 10)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
-            .opacity(appState.selectedToLock.contains(app.path) ? 0.5 : 1.0)
         }
         .buttonStyle(AppRowButtonStyle())
     }

@@ -21,11 +21,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     @Published var showingAddApp = false
     @Published var showingDeleteQueue = false
     @Published var selectedToLock: Set<String> = []
-    @Published var pendingLocks: Set<String> = []
     @Published var deleteQueue: Set<String> = []
     @Published var isLocking = false
-    @Published var lastUnlockableApps: [InstalledApp] = []
-    @Published var showingMenu = false
     @Published var showingLockingPopup = false
     @Published var lockingMessage = ""
     @Published var searchTextLockApps = ""
@@ -185,22 +182,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    private func fuzzyMatch(query: String, target: String) -> Bool {
-        let targetNormalized = target.alNormalized
-        if targetNormalized.contains(query) { return true }
-        var searchIndex = targetNormalized.startIndex
-        for searchCharacter in query {
-            guard
-                let range = targetNormalized.range(
-                    of: String(searchCharacter), options: String.CompareOptions.caseInsensitive,
-                    range: searchIndex..<targetNormalized.endIndex)
-            else {
-                return false
-            }
-            searchIndex = range.upperBound
-        }
-        return true
-    }
 
     // Kích thước window/sheet đã chuyển sang WindowLayout.swift
 
@@ -235,7 +216,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             DispatchQueue.main.async {
                 if locking {
                     self.selectedToLock.removeAll()
-                    self.pendingLocks.removeAll()
                 } else {
                     self.deleteQueue.removeAll()
                 }
@@ -249,10 +229,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     func openAddApp() {
-        let currentApps = self.unlockableApps
-        if currentApps != lastUnlockableApps {
-            lastUnlockableApps = currentApps
-        }
         showingAddApp = true
     }
 
@@ -263,7 +239,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     func closeAddPopup() {
         showingAddApp = false
         selectedToLock.removeAll()
-        pendingLocks.removeAll()
         searchTextLockApps = ""
     }
 

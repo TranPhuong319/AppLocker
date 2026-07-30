@@ -106,7 +106,6 @@ extension AppDelegate {
         ExtensionInstaller.shared.onUninstalled = {
             ESXPCClient.shared.authorizeShutdown(true) { _ in
                 self.manageAgent(plistName: plistName, action: .uninstall)
-                self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
                 self.removeConfig()
                 self.selfRemoveApp()
                 self.showRestartSheet()
@@ -120,7 +119,6 @@ extension AppDelegate {
         ExtensionInstaller.shared.onUninstalled = {
             ESXPCClient.shared.authorizeShutdown(true) { _ in
                 self.removeConfig()
-                self.manageHelperLoginItem(helperBundleID: loginItem, action: .uninstall)
                 self.restartApp {
                     self.manageAgent(plistName: plistName, action: .uninstall)
                 }

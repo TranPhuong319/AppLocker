@@ -1,0 +1,203 @@
+                                  Giấy phép Apache
+                           Phiên bản 2.0, Tháng 1 năm 2004
+                            http://www.apache.org/licenses/
+
+   CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN ĐỂ SỬ DỤNG, SAO CHÉP VÀ PHÂN PHỐI
+
+   1. Định nghĩa.
+
+      "Giấy phép" sẽ có nghĩa là các điều khoản và điều kiện cho việc sử dụng,
+      sao chép, và phân phối được định nghĩa từ Mục 1 đến Mục 9 của tài liệu này.
+
+      "Bên cấp phép" sẽ có nghĩa là chủ sở hữu bản quyền hoặc thực thể được ủy
+      quyền bởi chủ sở hữu bản quyền đang cấp Giấy phép.
+
+      "Thực thể Pháp lý" sẽ có nghĩa là sự hợp nhất của thực thể đang hoạt động và
+      tất cả các thực thể khác kiểm soát, được kiểm soát bởi, hoặc dưới quyền kiểm
+      soát chung với thực thể đó. Đối với mục đích của định nghĩa này, "kiểm soát"
+      có nghĩa là (i) quyền lực, trực tiếp hoặc gián tiếp, điều phối việc quản lý
+      hoặc điều hành thực thể đó, dù bằng hợp đồng hay cách khác, hoặc (ii) quyền
+      sở hữu từ năm mươi phần trăm (50%) trở lên số cổ phiếu đang lưu hành, hoặc
+      (iii) quyền sở hữu hưởng lợi của thực thể đó.
+
+      "Bạn" (hoặc "Của Bạn") sẽ có nghĩa là một cá nhân hoặc Thực thể Pháp lý
+      thực hiện các quyền hạn được cấp bởi Giấy phép này.
+
+      Hình thức "Nguồn" sẽ có nghĩa là hình thức ưu tiên để thực hiện các sửa đổi,
+      bao gồm nhưng không giới hạn ở mã nguồn phần mềm, nguồn tài liệu, và các tệp
+      cấu hình.
+
+      Hình thức "Đối tượng" sẽ có nghĩa là bất kỳ hình thức nào là kết quả từ việc
+      chuyển đổi hoặc dịch thuật cơ học từ hình thức Nguồn, bao gồm nhưng không
+      giới hạn ở mã đối tượng đã biên dịch, tài liệu được tạo ra, và việc chuyển
+      đổi sang các loại phương tiện khác.
+
+      "Tác phẩm" sẽ có nghĩa là tác phẩm của tác giả, dù ở hình thức Nguồn hay Đối
+      tượng, được cung cấp theo Giấy phép, như được chỉ ra bởi một thông báo bản
+      quyền được bao gồm trong hoặc đính kèm với tác phẩm (một ví dụ được cung cấp
+      trong Phụ lục bên dưới).
+
+      "Tác phẩm Phái sinh" sẽ có nghĩa là bất kỳ tác phẩm nào, dù ở hình thức
+      Nguồn hay Đối tượng, dựa trên (hoặc có nguồn gốc từ) Tác phẩm và các chỉnh
+      sửa biên tập, chú giải, trau chuốt, hoặc các sửa đổi khác thể hiện, xét về
+      tổng thể, là một tác phẩm gốc của tác giả. Đối với mục đích của Giấy phép
+      này, Tác phẩm Phái sinh sẽ không bao gồm các tác phẩm vẫn có thể tách rời
+      khỏi, hoặc chỉ đơn thuần liên kết (hoặc ràng buộc bằng tên) với các giao
+      diện của Tác phẩm và Tác phẩm Phái sinh của nó.
+
+      "Phần Đóng góp" sẽ có nghĩa là bất kỳ tác phẩm của tác giả nào, bao gồm
+      phiên bản gốc của Tác phẩm và bất kỳ sửa đổi hoặc bổ sung nào đối với Tác
+      phẩm hoặc Tác phẩm Phái sinh của nó, được chủ sở hữu bản quyền hoặc một cá
+      nhân hay Thực thể Pháp lý được ủy quyền thay mặt chủ sở hữu bản quyền cố ý
+      gửi cho Bên cấp phép để đưa vào Tác phẩm. Đối với mục đích của định nghĩa
+      này, "được gửi" có nghĩa là bất kỳ hình thức giao tiếp điện tử, bằng lời nói
+      hoặc bằng văn bản nào được gửi cho Bên cấp phép hoặc đại diện của họ, bao
+      gồm nhưng không giới hạn ở liên lạc trên các danh sách thư điện tử, hệ thống
+      kiểm soát mã nguồn, và hệ thống theo dõi vấn đề được quản lý bởi, hoặc thay
+      mặt cho, Bên cấp phép nhằm mục đích thảo luận và cải thiện Tác phẩm, nhưng
+      không bao gồm các liên lạc được chủ sở hữu bản quyền đánh dấu rõ ràng hoặc
+      chỉ định bằng văn bản là "Không phải là một Phần Đóng góp."
+
+      "Người Đóng góp" sẽ có nghĩa là Bên cấp phép và bất kỳ cá nhân hoặc Thực thể
+      Pháp lý nào thay mặt cho họ một Phần Đóng góp đã được Bên cấp phép tiếp nhận
+      và sau đó được kết hợp vào Tác phẩm.
+
+   2. Cấp Giấy phép Bản quyền. Tuân theo các điều khoản và điều kiện của
+      Giấy phép này, mỗi Người Đóng góp theo đây cấp cho Bạn một giấy phép bản
+      quyền vĩnh viễn, toàn cầu, không độc quyền, không tính phí, miễn phí bản
+      quyền, không thể thu hồi để sao chép, chuẩn bị các Tác phẩm Phái sinh của,
+      hiển thị công khai, thực hiện công khai, cấp phép thứ cấp và phân phối Tác
+      phẩm và các Tác phẩm Phái sinh đó dưới hình thức Nguồn hoặc Đối tượng.
+
+   3. Cấp Giấy phép Bằng sáng chế. Tuân theo các điều khoản và điều kiện của
+      Giấy phép này, mỗi Người Đóng góp theo đây cấp cho Bạn một giấy phép bằng
+      sáng chế vĩnh viễn, toàn cầu, không độc quyền, không tính phí, miễn phí
+      bản quyền, không thể thu hồi (ngoại trừ trường hợp được nêu trong phần này)
+      để chế tạo, đã chế tạo, sử dụng, chào bán, bán, nhập khẩu và chuyển giao Tác
+      phẩm, trong đó giấy phép đó chỉ áp dụng cho các khiếu nại bằng sáng chế có
+      thể được cấp phép bởi Người Đóng góp đó mà nhất thiết bị vi phạm bởi (các)
+      Phần Đóng góp của họ đơn lẻ hoặc bằng sự kết hợp của (các) Phần Đóng góp của
+      họ với Tác phẩm mà (các) Phần Đóng góp đó đã được gửi đến. Nếu Bạn khởi
+      xướng kiện tụng bằng sáng chế chống lại bất kỳ thực thể nào (bao gồm cả một
+      khiếu nại chéo hoặc phản tố trong một vụ kiện) với cáo buộc rằng Tác phẩm
+      hoặc một Phần Đóng góp được kết hợp trong Tác phẩm cấu thành hành vi vi phạm
+      bằng sáng chế trực tiếp hoặc góp phần, thì bất kỳ giấy phép bằng sáng chế
+      nào được cấp cho Bạn theo Giấy phép này cho Tác phẩm đó sẽ chấm dứt kể từ
+      ngày vụ kiện tụng đó được đệ trình.
+
+   4. Phân phối lại. Bạn có thể sao chép và phân phối các bản sao của Tác
+      phẩm hoặc Tác phẩm Phái sinh của nó trên bất kỳ phương tiện nào, có hoặc
+      không có sửa đổi, và dưới hình thức Nguồn hoặc Đối tượng, với điều kiện là
+      Bạn đáp ứng các điều kiện sau:
+
+      (a) Bạn phải đưa cho bất kỳ người nhận Tác phẩm hoặc Tác phẩm Phái sinh
+          nào khác một bản sao của Giấy phép này; và
+
+      (b) Bạn phải làm cho bất kỳ tệp nào được sửa đổi đều có các thông báo
+          nổi bật nêu rõ rằng Bạn đã thay đổi các tệp đó; và
+
+      (c) Bạn phải giữ lại, trong hình thức Nguồn của bất kỳ Tác phẩm Phái
+          sinh nào mà Bạn phân phối, tất cả các thông báo về bản quyền, bằng
+          sáng chế, nhãn hiệu, và ghi nhận từ hình thức Nguồn của Tác phẩm,
+          ngoại trừ những thông báo không liên quan đến bất kỳ phần nào của
+          Tác phẩm Phái sinh; và
+
+      (d) Nếu Tác phẩm bao gồm một tệp văn bản "NOTICE" như một phần của việc
+          phân phối, thì bất kỳ Tác phẩm Phái sinh nào mà Bạn phân phối phải
+          bao gồm một bản sao có thể đọc được của các thông báo ghi nhận có
+          trong tệp NOTICE đó, ngoại trừ những thông báo không liên quan đến
+          bất kỳ phần nào của Tác phẩm Phái sinh, ở ít nhất một trong các vị
+          trí sau: trong tệp văn bản NOTICE được phân phối như một phần của
+          Tác phẩm Phái sinh; trong hình thức Nguồn hoặc tài liệu, nếu được
+          cung cấp cùng với Tác phẩm Phái sinh; hoặc, trong một màn hình hiển
+          thị được tạo ra bởi Tác phẩm Phái sinh, tại bất kỳ nơi nào mà các
+          thông báo của bên thứ ba như vậy thường xuất hiện. Nội dung của tệp
+          NOTICE chỉ dành cho mục đích thông tin và không sửa đổi Giấy phép.
+          Bạn có thể thêm các thông báo ghi nhận của riêng Bạn trong các Tác
+          phẩm Phái sinh mà Bạn phân phối, bên cạnh hoặc như một phụ lục cho
+          văn bản NOTICE từ Tác phẩm, với điều kiện là các thông báo ghi nhận
+          bổ sung đó không thể được hiểu là sửa đổi Giấy phép.
+
+      Bạn có thể thêm tuyên bố bản quyền của riêng Bạn vào các sửa đổi của Bạn
+      và có thể cung cấp các điều khoản và điều kiện cấp phép bổ sung hoặc khác
+      biệt cho việc sử dụng, sao chép hoặc phân phối các sửa đổi của Bạn, hoặc
+      cho bất kỳ Tác phẩm Phái sinh nào như vậy xét về tổng thể, với điều kiện
+      việc sử dụng, sao chép và phân phối Tác phẩm của Bạn vẫn tuân thủ các điều
+      kiện được nêu trong Giấy phép này.
+
+   5. Gửi các Phần Đóng góp. Trừ khi Bạn có tuyên bố rõ ràng khác, bất kỳ
+      Phần Đóng góp nào được Bạn cố ý gửi để đưa vào Tác phẩm cho Bên cấp phép
+      sẽ tuân theo các điều khoản và điều kiện của Giấy phép này, mà không có
+      bất kỳ điều khoản hoặc điều kiện bổ sung nào. Mặc dù có những điều trên,
+      không có gì ở đây sẽ thay thế hoặc sửa đổi các điều khoản của bất kỳ thỏa
+      thuận cấp phép riêng biệt nào mà bạn có thể đã thực hiện với Bên cấp phép
+      liên quan đến các Phần Đóng góp đó.
+
+   6. Nhãn hiệu. Giấy phép này không cấp quyền sử dụng tên thương mại, nhãn
+      hiệu, nhãn hiệu dịch vụ, hoặc tên sản phẩm của Bên cấp phép, ngoại trừ
+      trường hợp cần thiết để sử dụng hợp lý và theo thông lệ trong việc mô tả
+      nguồn gốc của Tác phẩm và sao chép nội dung của tệp NOTICE.
+
+   7. Miễn trừ Bảo hành. Trừ khi được yêu cầu bởi luật áp dụng hoặc được
+      đồng ý bằng văn bản, Bên cấp phép cung cấp Tác phẩm (và mỗi Người Đóng
+      góp cung cấp các Phần Đóng góp của mình) trên CƠ SỞ "NGUYÊN TRẠNG", KHÔNG
+      CÓ BẢO HÀNH HAY ĐIỀU KIỆN DƯỚI BẤT KỲ HÌNH THỨC NÀO, dù rõ ràng hay ngụ ý,
+      bao gồm nhưng không giới hạn ở bất kỳ bảo hành hoặc điều kiện nào về QUYỀN
+      SỞ HỮU, KHÔNG VI PHẠM, KHẢ NĂNG THƯƠNG MẠI, hoặc SỰ PHÙ HỢP CHO MỘT MỤC
+      ĐÍCH CỤ THỂ. Bạn hoàn toàn chịu trách nhiệm về việc xác định tính thích hợp
+      của việc sử dụng hoặc phân phối lại Tác phẩm và chịu mọi rủi ro liên quan
+      đến việc Bạn thực hiện các quyền hạn theo Giấy phép này.
+
+   8. Giới hạn Trách nhiệm pháp lý. Trong mọi trường hợp và theo bất kỳ lý
+      thuyết pháp lý nào, cho dù là do ngoài hợp đồng (bao gồm cả sơ suất), hợp
+      đồng, hoặc cách khác, trừ khi được yêu cầu bởi luật áp dụng (chẳng hạn như
+      các hành vi cố ý và cẩu thả nghiêm trọng) hoặc được đồng ý bằng văn bản,
+      không có Người Đóng góp nào phải chịu trách nhiệm với Bạn về các thiệt
+      hại, bao gồm bất kỳ thiệt hại trực tiếp, gián tiếp, đặc biệt, ngẫu nhiên,
+      hoặc hệ quả nào dưới bất kỳ tính chất nào phát sinh do kết quả của Giấy
+      phép này hoặc từ việc sử dụng hoặc không thể sử dụng Tác phẩm (bao gồm
+      nhưng không giới hạn ở các thiệt hại do mất uy tín, ngừng việc, hỏng hóc
+      hoặc trục trặc máy tính, hoặc bất kỳ và tất cả các thiệt hại hoặc tổn thất
+      thương mại khác), ngay cả khi Người Đóng góp đó đã được thông báo về khả
+      năng xảy ra các thiệt hại đó.
+
+   9. Chấp nhận Bảo hành hoặc Trách nhiệm bổ sung. Trong khi phân phối lại
+      Tác phẩm hoặc các Tác phẩm Phái sinh của nó, Bạn có thể chọn đề nghị, và
+      tính phí cho, việc chấp nhận các nghĩa vụ hỗ trợ, bảo hành, bồi thường,
+      hoặc các nghĩa vụ trách nhiệm pháp lý khác và/hoặc các quyền phù hợp với
+      Giấy phép này. Tuy nhiên, khi chấp nhận các nghĩa vụ đó, Bạn chỉ có thể
+      hành động thay mặt cho chính Bạn và trên trách nhiệm duy nhất của Bạn, không
+      phải thay mặt cho bất kỳ Người Đóng góp nào khác, và chỉ khi Bạn đồng ý
+      bồi thường, bảo vệ và giữ cho mỗi Người Đóng góp không bị tổn hại đối với
+      bất kỳ trách nhiệm pháp lý nào phát sinh từ, hoặc các khiếu nại chống lại
+      Người Đóng góp đó do lý do Bạn chấp nhận bất kỳ bảo hành hoặc trách nhiệm
+      bổ sung nào như vậy.
+
+   KẾT THÚC CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN
+
+   PHỤ LỤC: Cách áp dụng Giấy phép Apache cho tác phẩm của bạn.
+
+      Để áp dụng Giấy phép Apache cho tác phẩm của bạn, hãy đính kèm thông báo
+      mẫu sau đây, với các trường được bao quanh bởi dấu ngoặc vuông "[]" được
+      thay thế bằng thông tin nhận dạng của riêng bạn. (Đừng bao gồm các dấu
+      ngoặc vuông!) Văn bản nên được đặt trong cú pháp chú thích thích hợp cho
+      định dạng tệp. Chúng tôi cũng khuyên rằng tên tệp hoặc lớp và mô tả mục
+      đích nên được đưa vào cùng một "trang in" với thông báo bản quyền để dễ dàng
+      nhận dạng trong các kho lưu trữ của bên thứ ba.
+
+   Bản quyền 2025 TranPhuong319
+
+   Được cấp phép theo Giấy phép Apache, Phiên bản 2.0 ("Giấy phép"); bạn không được
+   sử dụng tệp này ngoại trừ khi tuân thủ Giấy phép. Bạn có thể lấy một bản sao của
+   Giấy phép tại
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Trừ khi được yêu cầu bởi luật áp dụng hoặc được đồng ý bằng văn bản, phần mềm
+   được phân phối theo Giấy phép được phân phối trên CƠ SỞ "NGUYÊN TRẠNG", KHÔNG CÓ
+   BẢO HÀNH HOẶC ĐIỀU KIỆN DƯỚI BẤT KỲ HÌNH THỨC NÀO, dù rõ ràng hay ngụ ý. Xem
+   Giấy phép để biết các quyền hạn và giới hạn cụ thể chi phối các quyền hạn theo
+   Giấy phép.
+
+
+

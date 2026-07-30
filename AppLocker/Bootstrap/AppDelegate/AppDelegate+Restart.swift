@@ -27,7 +27,6 @@ extension AppDelegate {
         // Always remove UserDefaults regardless of whether config file exists
         if let bundleIdentifierDomain = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: bundleIdentifierDomain)
-            UserDefaults.standard.synchronize()
             Logfile.core.info("UserDefaults cleared for domain: \(bundleIdentifierDomain)")
         }
 
@@ -62,10 +61,6 @@ extension AppDelegate {
 
     func restartApp(completion: (() -> Void)? = nil) {
         manageAgent(plistName: plistName, action: .install)
-        manageHelperLoginItem(
-            helperBundleID: loginItem,
-            action: .install
-        )
         completion?()
         NSApp.terminate(nil)
     }

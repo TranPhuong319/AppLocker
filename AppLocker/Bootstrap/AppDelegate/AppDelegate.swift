@@ -22,11 +22,9 @@ enum AgentAction {
 }
 
 let plistName = "com.TranPhuong319.AppLocker.agent"
-let loginItem = "com.TranPhuong319.AppLocker.LoginItems"
 
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     var statusItem: NSStatusItem?
-    let helperIdentifier = "com.TranPhuong319.AppLocker.Helper"
     var pendingUpdate: SUAppcastItem?
     let notificationIndentifiers = "AppLockerUpdateNotification"
     var hotkey: HotKeyManager?
@@ -82,7 +80,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
         #endif
         
-        launchConfig()
+        let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
+        
+        if isFirstStart {
+            Logfile.core.log("First launch. Showing welcome/ToS screen.")
+            WelcomeWindowController.show()
+        } else {
+            Logfile.core.log("Not first launch. Running normal launch configuration.")
+            launchConfig()
+        }
     }
 
     private func moveToApplicationsAndRelaunch() {

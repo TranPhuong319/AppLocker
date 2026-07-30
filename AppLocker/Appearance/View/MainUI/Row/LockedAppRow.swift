@@ -20,10 +20,6 @@ struct LockedAppRow: View {
 
             Spacer()
 
-            if appState.selectedToLock.contains(app.path) {
-                Image(systemName: "checkmark.circle.fill")
-            }
-
             Button {
                 withAnimation(.spring()) {
                     _ = appState.deleteQueue.insert(app.path)
@@ -37,7 +33,6 @@ struct LockedAppRow: View {
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
-        .frame(maxWidth: 420)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { unfocus() }

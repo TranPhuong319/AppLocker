@@ -49,12 +49,12 @@ extension AppDelegate {
 
             case .check:
                 if agent.status == .enabled {
-                    Logfile.core.info("Agent already enabled")
+                    Logfile.core.info("Agent status: enabled")
                     return .alreadyInstalled
+                } else {
+                    Logfile.core.info("Agent status: disabled")
+                    return .alreadyUninstalled
                 }
-                try agent.register()
-                Logfile.core.info("Agent registered")
-                return .installed
             }
 
         } catch {

@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @AppStorage("selectedMode") private var selectedMode: String = ""
-    @State private var shouldRestart = false
     private var isMock: Bool
     let bundle = Bundle.main
 
@@ -17,45 +15,91 @@ struct WelcomeView: View {
         self.isMock = isMock
     }
 
+    private var licenseText: String {
+        if let url = Bundle.main.url(forResource: "License", withExtension: "txt"),
+           let content = try? String(contentsOf: url, encoding: .utf8) {
+            return content
+        }
+        return "License agreement details..."
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
-            if shouldRestart {
-                Color.clear
-                    .onAppear {
+        VStack(spacing: 16) {
+            Image(nsImage: bundle.appIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 72)
+                .padding(.top, 16)
+
+            Text("Welcome to \(bundle.appName)")
+                .font(.title2)
+                .fontWeight(.bold)
+
+            Text("Please read and agree to the terms of service and license below:")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+
+            ScrollView {
+                Text(licenseText)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+            }
+            .frame(maxWidth: .infinity)
+            .background(Color(NSColor.controlBackgroundColor))
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            )
+            .padding(.horizontal, 20)
+
+            HStack(spacing: 16) {
+                Button(action: {
+                    NSApp.terminate(nil)
+                }) {
+                    Text("Quit")
+                        .font(.body)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                
+                Button(action: {
+                    let response = AlertShow.show(
+                        title: String(localized: "Confirm"),
+                        message: String(localized: "Do you agree to the terms of service and license above?"),
+                        style: .informational,
+                        buttons: [
+                            String(localized: "Agree"),
+                            String(localized: "No")
+                        ],
+                        cancelIndex: 1,
+                        defaultIndex: 0
+                    )
+                    
+                    if case .button(index: 0, _) = response {
+                        guard !isMock else { return }
+                        UserDefaults.standard.set(false, forKey: "isFirstStart")
                         NSApp.appDelegate?.restartApp()
                     }
-            } else {
-                Spacer(minLength: 20)
-                
-                Image(nsImage: #bundle.appIcon)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 100)
-
-                Text("Welcome to \(bundle.appName)")
-                    .font(.title)
-                    .fontWeight(.bold)
-
-                Text("Please choose your preferred lock method:")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-
-                VStack(spacing: 20) {
-                    let isESEnabled = isMock ? true : isKextSigningDisabled()
-
-                    LabelButtonView(label: "EndpointSecurity (ES)",
-                                    symbol: "lock.shield.fill",
-                                    isDisabled: !isESEnabled) {
-                        guard !isMock else { return }
-                        shouldRestart = true
-                    }
-                    .disabled(!isESEnabled)
-                    .help(isESEnabled ? "" : "SIP must be disabled to use this mode")
+                }) {
+                    Text("Continue")
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 20)
-
-                Spacer() // đẩy nội dung lên trên
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+
+            Spacer(minLength: 10)
         }
         .safeAreaInset(edge: .bottom) {
             Text(bundle.copyright)
@@ -65,7 +109,6 @@ struct WelcomeView: View {
         }
         .frame(minWidth: WindowLayout.Welcome.size.width, minHeight: WindowLayout.Welcome.size.height)
         .background(Color(NSColor.windowBackgroundColor))
-        .ignoresSafeArea(.container, edges: .top)
     }
 }
 

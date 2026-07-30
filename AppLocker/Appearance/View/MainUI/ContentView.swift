@@ -112,16 +112,6 @@ struct ContentView: View {
                                 )
                             }
                         }
-
-                        if userApps.isEmpty && systemApps.isEmpty && !apps.isEmpty {
-                            ForEach(apps) {
-                                LockedAppRow(
-                                    app: $0,
-                                    appState: appState,
-                                    unfocus: unfocus
-                                )
-                            }
-                        }
                     }
                     .padding(.vertical, 4)
                     .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)

@@ -18,8 +18,8 @@
 		E07DF97F2FA5997200827F2C /* Bundle+AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */; };
 		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
-		E0B6A16E2F191BE700EAE136 /* (null) in Login Items */ = {isa = PBXBuildFile; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
+		E0DA1B44301AF5D300ABE155 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
 		E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D62F59E36600D46B31 /* AppIcon.icon */; };
 		E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D72F59E36600D46B31 /* Assets.xcassets */; };
 		E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */; };
@@ -37,13 +37,11 @@
 		E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DD2F59E36600D46B31 /* AppState.swift */; };
 		E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */; };
 		E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */; };
-		E0FD76002F59E36600D46B31 /* LabelButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BA2F59E36600D46B31 /* LabelButtonView.swift */; };
 		E0FD76012F59E36600D46B31 /* LockES.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E22F59E36600D46B31 /* LockES.swift */; };
 		E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */; };
 		E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */; };
 		E0FD76042F59E36600D46B31 /* AppRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AA2F59E36600D46B31 /* AppRow.swift */; };
 		E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */; };
-		E0FD76062F59E36600D46B31 /* HelperInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CC2F59E36600D46B31 /* HelperInstaller.swift */; };
 		E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */; };
 		E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C02F59E36600D46B31 /* AppDelegate.swift */; };
 		E0FD76092F59E36600D46B31 /* AppDelegate+Launchctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */; };
@@ -52,7 +50,6 @@
 		E0FD760C2F59E36600D46B31 /* AppListWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */; };
 		E0FD760D2F59E36600D46B31 /* CustomApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */; };
 		E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E62F59E36600D46B31 /* AppUpdater.swift */; };
-		E0FD760F2F59E36600D46B31 /* AppDelegate+LoginItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C62F59E36600D46B31 /* AppDelegate+LoginItems.swift */; };
 		E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */; };
 		E0FD76112F59E36600D46B31 /* DeleteQueueRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AB2F59E36600D46B31 /* DeleteQueueRow.swift */; };
 		E0FD76122F59E36600D46B31 /* FSEventsMonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */; };
@@ -104,7 +101,6 @@
 		E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */; };
 		E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
 		E0FD76812F59E3BE00D46B31 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
-		E0FD76822F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */; };
 		E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD765F2F59E3BE00D46B31 /* Alert.swift */; };
 		E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
 		E0FD76852F59E3BE00D46B31 /* ComputeSHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */; };
@@ -113,6 +109,7 @@
 		E0FD76882F59E3BE00D46B31 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76372F59E37C00D46B31 /* InfoPlist.strings */; };
 		E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */ = {isa = PBXBuildFile; fileRef = E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E0FDA0042F59E37C00D46B31 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
 		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -148,16 +145,6 @@
 			name = "Launch Daemons";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E06B45C82E5A9C5400323A53 /* Copy Helper */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 6;
-			files = (
-			);
-			name = "Copy Helper";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		E0749BE62E96D8BE003CD67D /* Launch Agents */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -167,17 +154,6 @@
 				E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */,
 			);
 			name = "Launch Agents";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E0B6A16D2F191BBA00EAE136 /* Login Items */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = Contents/Library/LoginItems;
-			dstSubfolderSpec = 1;
-			files = (
-				E0B6A16E2F191BE700EAE136 /* (null) in Login Items */,
-			);
-			name = "Login Items";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -208,7 +184,6 @@
 		E0FD75B42F59E36600D46B31 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B31 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlass.swift; sourceTree = "<group>"; };
-		E0FD75BA2F59E36600D46B31 /* LabelButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelButtonView.swift; sourceTree = "<group>"; };
 		E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayout.swift; sourceTree = "<group>"; };
 		E0FD75C02F59E36600D46B31 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -217,12 +192,10 @@
 		E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+CheckDirectory.swift"; sourceTree = "<group>"; };
 		E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launch.swift"; sourceTree = "<group>"; };
 		E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launchctl.swift"; sourceTree = "<group>"; };
-		E0FD75C62F59E36600D46B31 /* AppDelegate+LoginItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+LoginItems.swift"; sourceTree = "<group>"; };
 		E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+MenuBar.swift"; sourceTree = "<group>"; };
 		E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Notifications.swift"; sourceTree = "<group>"; };
 		E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Restart.swift"; sourceTree = "<group>"; };
 		E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Updater.swift"; sourceTree = "<group>"; };
-		E0FD75CC2F59E36600D46B31 /* HelperInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperInstaller.swift; sourceTree = "<group>"; };
 		E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomApplication.swift; sourceTree = "<group>"; };
 		E0FD75CF2F59E36600D46B31 /* KextSigningChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KextSigningChecker.swift; sourceTree = "<group>"; };
 		E0FD75D02F59E36600D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -276,7 +249,6 @@
 		E0FD76602F59E3BE00D46B31 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		E0FD76612F59E3BE00D46B31 /* ComputeSHA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComputeSHA.swift; sourceTree = "<group>"; };
 		E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzySearch.swift; sourceTree = "<group>"; };
-		E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockerHelperProtocol.swift; sourceTree = "<group>"; };
 		E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAppProtocol.swift; sourceTree = "<group>"; };
 		E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCProtocol.swift; sourceTree = "<group>"; };
 		E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
@@ -285,6 +257,8 @@
 		E0FD766C2F59E3BE00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766D2F59E3BE00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766F2F59E3BE00D46B31 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		E0FDA0012F59E37C00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text; name = en; path = en.lproj/License.txt; sourceTree = "<group>"; };
+		E0FDA0022F59E37C00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text; name = vi; path = vi.lproj/License.txt; sourceTree = "<group>"; };
 		E0FDDD102F797A8C0078A290 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -479,7 +453,6 @@
 		E0FD75BC2F59E36600D46B31 /* Welcome */ = {
 			isa = PBXGroup;
 			children = (
-				E0FD75BA2F59E36600D46B31 /* LabelButtonView.swift */,
 				E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */,
 			);
 			path = Welcome;
@@ -517,7 +490,6 @@
 				E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */,
 				E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */,
 				E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */,
-				E0FD75C62F59E36600D46B31 /* AppDelegate+LoginItems.swift */,
 				E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */,
 				E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */,
 				E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */,
@@ -526,19 +498,10 @@
 			path = AppDelegate;
 			sourceTree = "<group>";
 		};
-		E0FD75CD2F59E36600D46B31 /* SMAppService */ = {
-			isa = PBXGroup;
-			children = (
-				E0FD75CC2F59E36600D46B31 /* HelperInstaller.swift */,
-			);
-			path = SMAppService;
-			sourceTree = "<group>";
-		};
 		E0FD75D12F59E36600D46B31 /* Bootstrap */ = {
 			isa = PBXGroup;
 			children = (
 				E0FD75CB2F59E36600D46B31 /* AppDelegate */,
-				E0FD75CD2F59E36600D46B31 /* SMAppService */,
 				E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */,
 				E0FD75CF2F59E36600D46B31 /* KextSigningChecker.swift */,
 				E0FD75D02F59E36600D46B31 /* main.swift */,
@@ -562,6 +525,7 @@
 				E0FD75D62F59E36600D46B31 /* AppIcon.icon */,
 				E0FD75D72F59E36600D46B31 /* Assets.xcassets */,
 				E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */,
+				E0FDA0032F59E37C00D46B31 /* License.txt */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -717,7 +681,6 @@
 		E0FD76672F59E3BE00D46B31 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				E0FD76642F59E3BE00D46B31 /* AppLockerHelperProtocol.swift */,
 				E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */,
 				E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */,
 			);
@@ -784,11 +747,9 @@
 				E0EF51A62E31558900161CAB /* Sources */,
 				E0EF51A82E31558900161CAB /* Resources */,
 				E058BA142E5A03FC0002D0D2 /* Launch Daemons */,
-				E06B45C82E5A9C5400323A53 /* Copy Helper */,
 				E04B8EA72E5D852900BE7903 /* Frameworks */,
 				E050B44B2E86FB35003AEA49 /* Embed System Extensions */,
 				E0749BE62E96D8BE003CD67D /* Launch Agents */,
-				E0B6A16D2F191BBA00EAE136 /* Login Items */,
 			);
 			buildRules = (
 			);
@@ -854,6 +815,7 @@
 			files = (
 				E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */,
 				E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */,
+				E0FDA0042F59E37C00D46B31 /* License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -861,6 +823,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0DA1B44301AF5D300ABE155 /* License.txt in Resources */,
 				E0FD767D2F59E3BE00D46B31 /* InfoPlist.strings in Resources */,
 				E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */,
 				E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */,
@@ -927,21 +890,18 @@
 				E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */,
 				E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */,
 				E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */,
-				E0FD76002F59E36600D46B31 /* LabelButtonView.swift in Sources */,
 				E0FD76012F59E36600D46B31 /* LockES.swift in Sources */,
 				E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */,
 				E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */,
 				E0FD76042F59E36600D46B31 /* AppRow.swift in Sources */,
 				E07DF97F2FA5997200827F2C /* Bundle+AppInfo.swift in Sources */,
 				E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */,
-				E0FD76062F59E36600D46B31 /* HelperInstaller.swift in Sources */,
 				E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */,
 				E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */,
 				E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
 				E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */,
 				E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
 				E0FD76812F59E3BE00D46B31 /* Data+Random.swift in Sources */,
-				E0FD76822F59E3BE00D46B31 /* AppLockerHelperProtocol.swift in Sources */,
 				E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */,
 				E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
 				E0FD76852F59E3BE00D46B31 /* ComputeSHA.swift in Sources */,
@@ -954,7 +914,6 @@
 				E0FD760C2F59E36600D46B31 /* AppListWindowController.swift in Sources */,
 				E0FD760D2F59E36600D46B31 /* CustomApplication.swift in Sources */,
 				E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */,
-				E0FD760F2F59E36600D46B31 /* AppDelegate+LoginItems.swift in Sources */,
 				E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */,
 				E0FD76112F59E36600D46B31 /* DeleteQueueRow.swift in Sources */,
 				E0FD76122F59E36600D46B31 /* FSEventsMonitoringService.swift in Sources */,
@@ -1005,6 +964,15 @@
 				E0FD766D2F59E3BE00D46B31 /* vi */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		E0FDA0032F59E37C00D46B31 /* License.txt */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E0FDA0012F59E37C00D46B31 /* en */,
+				E0FDA0022F59E37C00D46B31 /* vi */,
+			);
+			name = License.txt;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

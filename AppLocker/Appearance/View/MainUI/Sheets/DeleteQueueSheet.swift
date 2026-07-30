@@ -9,7 +9,6 @@ import SwiftUI
 
 struct DeleteQueueSheet: View {
     @ObservedObject var appState: AppState
-    @State private var sharedWidth: CGFloat = 0
 
     var body: some View {
         NavigationStack {

@@ -16,7 +16,6 @@ extension ESManager {
         // AppLocker IDs
         let mainAppID = "com.TranPhuong319.AppLocker"
         let extensionID = "com.TranPhuong319.AppLocker.ESExtension"
-        let helperID = "com.TranPhuong319.AppLocker.Helper"
 
         // 1. Check PID (Fast Cache)
         let processPid = audit_token_to_pid(message.pointee.process.pointee.audit_token)
@@ -33,7 +32,7 @@ extension ESManager {
              let signingID = String(cString: signingIDToken)
 
              // Our components - Must be inside /Applications/AppLocker.app
-             if (signingID == mainAppID || signingID == extensionID || signingID == helperID) && isInsideBundle {
+             if (signingID == mainAppID || signingID == extensionID) && isInsideBundle {
                  return true
              }
 
