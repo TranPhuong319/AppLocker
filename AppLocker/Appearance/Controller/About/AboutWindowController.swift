@@ -20,19 +20,19 @@ class AboutWindowController: NSWindowController {
                 backing: .buffered,
                 defer: false
             )
-            
+
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.isMovableByWindowBackground = true
             window.center()
             window.isReleasedWhenClosed = false
-            
+
             let hostingView = NSHostingView(rootView: AboutView())
             window.contentView = hostingView
-            
+
             shared = AboutWindowController(window: window)
         }
-        
+
         shared?.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

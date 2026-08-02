@@ -32,7 +32,7 @@ extension Bundle {
     var copyright: String {
         Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
     }
-    
+
     var appIcon: NSImage {
         NSApplication.shared.applicationIconImage ?? NSImage(named: NSImage.applicationIconName) ?? NSImage()
     }

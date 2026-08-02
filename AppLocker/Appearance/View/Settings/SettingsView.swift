@@ -42,7 +42,12 @@ struct SettingsView: View {
     // Lấy giá trị từ UserDefaults hoặc mặc định là Stable
     @State private var selectedChannel: UpdateChannel
 
-    init(autoCheck: Bool = false, autoDownload: Bool = false, selectedChannel: UpdateChannel = .stable, isMock: Bool = false) {
+    init(
+        autoCheck: Bool = false,
+        autoDownload: Bool = false,
+        selectedChannel: UpdateChannel = .stable,
+        isMock: Bool = false
+    ) {
         _autoCheck = State(initialValue: autoCheck)
         _autoDownload = State(initialValue: autoDownload)
         _selectedChannel = State(initialValue: selectedChannel)
@@ -64,7 +69,8 @@ struct SettingsView: View {
                                 if !newValue {
                                     autoDownload = false
                                     if !isMock {
-                                        AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates = false
+                                        let updater = AppUpdater.shared.updaterController.updater
+                                        updater.automaticallyDownloadsUpdates = false
                                     }
                                 }
 

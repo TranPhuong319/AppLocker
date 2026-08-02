@@ -90,35 +90,62 @@ class ESClientObject {
     private func makeAuthHandler(for message: ESMessage) -> (OpaquePointer, ESMessage, ESSafetyValve) -> Void {
         let eventType = message.pointee.event_type
         return { (client, msg, valve) in
-            switch eventType {
-            case ES_EVENT_TYPE_AUTH_EXEC:
-                ESManager.handleAuthExec(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_OPEN:
-                ESManager.handleAuthOpen(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_UNLINK:
-                ESManager.handleAuthUnlink(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_RENAME:
-                ESManager.handleAuthRename(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_TRUNCATE:
-                ESManager.handleAuthTruncate(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_EXCHANGEDATA:
-                ESManager.handleAuthExchangedata(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_CLONE:
-                ESManager.handleAuthClone(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_LINK:
-                ESManager.handleAuthLink(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_AUTH_SIGNAL:
-                ESManager.handleAuthSignal(client: client, message: msg, valve: valve)
-            case ES_EVENT_TYPE_NOTIFY_EXEC:
-                ESManager.handleNotifyExec(client: client, message: msg)
-            case ES_EVENT_TYPE_NOTIFY_EXIT:
-                ESManager.handleNotifyExit(client: client, message: msg)
-            default:
-                if msg.pointee.action_type == ES_ACTION_TYPE_AUTH {
-                    _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            if !self.dispatchProcessEvent(eventType, client: client, msg: msg, valve: valve) {
+                if !self.dispatchFileEvent(eventType, client: client, msg: msg, valve: valve) {
+                    if msg.pointee.action_type == ES_ACTION_TYPE_AUTH {
+                        _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+                    }
                 }
             }
         }
+    }
+
+    private func dispatchProcessEvent(
+        _ eventType: es_event_type_t,
+        client: OpaquePointer,
+        msg: ESMessage,
+        valve: ESSafetyValve
+    ) -> Bool {
+        switch eventType {
+        case ES_EVENT_TYPE_AUTH_EXEC:
+            ESManager.handleAuthExec(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_SIGNAL:
+            ESManager.handleAuthSignal(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_NOTIFY_EXEC:
+            ESManager.handleNotifyExec(client: client, message: msg)
+        case ES_EVENT_TYPE_NOTIFY_EXIT:
+            ESManager.handleNotifyExit(client: client, message: msg)
+        default:
+            return false
+        }
+        return true
+    }
+
+    private func dispatchFileEvent(
+        _ eventType: es_event_type_t,
+        client: OpaquePointer,
+        msg: ESMessage,
+        valve: ESSafetyValve
+    ) -> Bool {
+        switch eventType {
+        case ES_EVENT_TYPE_AUTH_OPEN:
+            ESManager.handleAuthOpen(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_UNLINK:
+            ESManager.handleAuthUnlink(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_RENAME:
+            ESManager.handleAuthRename(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_TRUNCATE:
+            ESManager.handleAuthTruncate(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_EXCHANGEDATA:
+            ESManager.handleAuthExchangedata(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_CLONE:
+            ESManager.handleAuthClone(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_LINK:
+            ESManager.handleAuthLink(client: client, message: msg, valve: valve)
+        default:
+            return false
+        }
+        return true
     }
 
     private func handleMessageWithDeadline(
@@ -163,7 +190,7 @@ class ESClientObject {
 
                 let path = ESSafetyValve.getPath(message)
                 Logfile.endpointSecurity.error("DEADLINE REACHED [DENY]: \(path) (Budget: \(finalProcessingBudget)ns)")
-                
+
                 // Signal that we are done responding
                 // The valve itself handles the signal internally when respond() is called.
             }

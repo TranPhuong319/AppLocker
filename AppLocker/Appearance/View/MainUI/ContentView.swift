@@ -182,7 +182,6 @@ struct ContentView: View {
     }
 }
 
-
 #Preview("Empty State") {
     ContentView(appState: .preview(locked: []))
         .frame(width: WindowLayout.Main.size.width,

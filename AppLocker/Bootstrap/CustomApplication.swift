@@ -20,10 +20,12 @@ class CustomApplication: NSApplication {
     }
 
     // MARK: - Disable AppKit AppIntents & Shortcuts auto-registration
+    // swiftlint:disable identifier_name
     @objc func _registerWithIntentsFramework() {}
     @objc func _registerAppIntents() {}
     @objc func _setupAppIntents() {}
     @objc func _setupAppIntentsIfNeeded() {}
     @objc func _registerAutoShortcuts() {}
     @objc func _registerWithShortcutsFramework() {}
+    // swiftlint:enable identifier_name
 }

@@ -15,15 +15,29 @@ extension ESManager {
             self.performNotifyBlockRequest(conn: conn, name: name, path: path, cdhash: cdhash, targetPid: targetPid)
         } else {
             xpcConnectionLock.perform {
-                Logfile.endpointSecurity.warning("No XPC connection available. Queueing notification and forcing App wake-up for UID \(uid)...")
-                let pending = BlockedNotification(name: name, path: path, cdhash: cdhash, uid: uid, targetPid: targetPid)
+                Logfile.endpointSecurity.warning(
+                    "No XPC connection available. Queueing notification and forcing App wake-up for UID \(uid)..."
+                )
+                let pending = BlockedNotification(
+                    name: name,
+                    path: path,
+                    cdhash: cdhash,
+                    uid: uid,
+                    targetPid: targetPid
+                )
                 self.pendingNotifications.append(pending)
             }
             AppLauncherUtils.forceEnableAndRestartAgent(for: uid)
         }
     }
 
-    func performNotifyBlockRequest(conn: NSXPCConnection, name: String, path: String, cdhash: String, targetPid: pid_t) {
+    func performNotifyBlockRequest(
+        conn: NSXPCConnection,
+        name: String,
+        path: String,
+        cdhash: String,
+        targetPid: pid_t
+    ) {
         let rawPID = Int32(targetPid)
         if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
             Logfile.endpointSecurity.error(
@@ -43,7 +57,7 @@ extension ESManager {
                 "Notified app (sync fallback) about blocked exec: \(path) (PID: \(rawPID))")
             return
         }
-        
+
         Logfile.endpointSecurity.error("Failed to notify app: Could not obtain valid XPC proxy for ESXPCProtocol")
     }
 }

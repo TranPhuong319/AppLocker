@@ -25,7 +25,13 @@ extension ESManager {
 
     func markPendingVerificationPath(path: String, cdhash: String, parentPid: pid_t, uid: uid_t, signingID: String) {
         let key = normalizePath(path)
-        let info = PendingExecInfo(cdhash: cdhash, parentPid: parentPid, uid: uid, signingID: signingID, timestamp: Date())
+        let info = PendingExecInfo(
+            cdhash: cdhash,
+            parentPid: parentPid,
+            uid: uid,
+            signingID: signingID,
+            timestamp: Date()
+        )
         let now = Date()
         stateLock.perform {
             // Clean up stale pending paths older than 60s to prevent memory leaks

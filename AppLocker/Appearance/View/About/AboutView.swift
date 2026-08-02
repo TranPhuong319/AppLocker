@@ -11,7 +11,7 @@ struct AboutView: View {
     let bundle = Bundle.main
     @Environment(\.openURL) var openURL
     @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -20,13 +20,13 @@ struct AboutView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)
-                
+
                 Text(bundle.appName)
                     .font(.system(size: 32, weight: .bold))
             }
             .padding(.top, 30)
             .padding(.bottom, 20)
-            
+
             // Info Card
             GroupBox {
                 VStack(spacing: 12) {
@@ -43,7 +43,7 @@ struct AboutView: View {
                         .labelsHidden()
                         .toggleStyle(.switch)
                     }
-                    
+
                     HStack {
                         Text(isProtectionEnabled ? "The application is locked"
                              : "The application is not locked")
@@ -60,22 +60,22 @@ struct AboutView: View {
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
                 isProtectionEnabled = !AppState.shared.manager.isProtectionDisabled
             }
-            
+
             Spacer()
-            
+
             // Footer Area
             VStack(spacing: 12) {
                 Text(bundle.detailedVersion)
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
+
                 HStack {
                     Text(bundle.copyright)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
+
                     Spacer()
-                    
+
                     Link("Website", destination: URL(string: "https://github.com/TranPhuong319/AppLocker")!)
                         .font(.caption)
                 }
@@ -86,7 +86,7 @@ struct AboutView: View {
         .frame(width: 450, height: 300)
         .background(Color(NSColor.windowBackgroundColor))
     }
-    
+
     private func handleToggle(newValue: Bool) {
         if newValue == false {
             AuthenticationManager.authenticate(

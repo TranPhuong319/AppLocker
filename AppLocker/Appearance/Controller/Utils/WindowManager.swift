@@ -8,9 +8,9 @@ import SwiftUI
 
 struct WindowConfiguration {
     var title: String = ""
-    var size: NSSize? = nil
-    var minSize: NSSize? = nil
-    var maxSize: NSSize? = nil
+    var size: NSSize?
+    var minSize: NSSize?
+    var maxSize: NSSize?
     var styleMask: NSWindow.StyleMask = [.titled, .closable, .miniaturizable]
     var backingType: NSWindow.BackingStoreType = .buffered
     var isReleasedWhenClosed: Bool = false
@@ -27,7 +27,7 @@ class WindowManager {
         configuration: WindowConfiguration
     ) -> NSWindow {
         let window = NSWindow(contentViewController: contentViewController)
-        
+
         window.styleMask = configuration.styleMask
         window.backingType = configuration.backingType
         window.title = configuration.title
@@ -35,11 +35,11 @@ class WindowManager {
         window.level = configuration.level
         window.titleVisibility = configuration.titleVisibility
         window.titlebarAppearsTransparent = configuration.titlebarAppearsTransparent
-        
+
         if configuration.wantsLayer {
             window.contentView?.wantsLayer = true
         }
-        
+
         if let size = configuration.size {
             window.setContentSize(size)
         }
@@ -49,11 +49,11 @@ class WindowManager {
         if let maxSize = configuration.maxSize {
             window.maxSize = maxSize
         }
-        
+
         if configuration.center {
             window.center()
         }
-        
+
         return window
     }
 }

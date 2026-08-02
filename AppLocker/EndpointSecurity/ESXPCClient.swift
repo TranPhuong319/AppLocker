@@ -268,7 +268,12 @@ final class ESXPCClient {
 
         guard let conn = connection else {
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs, retry: retry + 1, completion: completion)
+                self?.processPendingApps(
+                    approvedPIDs: approvedPIDs,
+                    rejectedPIDs: rejectedPIDs,
+                    retry: retry + 1,
+                    completion: completion
+                )
             }
             return
         }
@@ -285,7 +290,9 @@ final class ESXPCClient {
         }
 
         proxy.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { success in
-            Logfile.core.log("processPendingApps reply: \(success) (Approved: \(approvedPIDs), Rejected: \(rejectedPIDs))")
+            Logfile.core.log(
+                "processPendingApps reply: \(success) (Approved: \(approvedPIDs), Rejected: \(rejectedPIDs))"
+            )
             completion(success)
         }
     }

@@ -12,8 +12,6 @@ import Sparkle
 import SwiftUI
 import UserNotifications
 
-
-
 enum AgentAction {
     case install
     case uninstall
@@ -78,9 +76,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
         }
         #endif
-        
+
         let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
-        
+
         if isFirstStart {
             Logfile.core.log("First launch. Showing welcome/ToS screen.")
             WelcomeWindowController.show()
@@ -92,35 +90,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
     private func moveToApplicationsAndRelaunch() {
         let bundleURL = Bundle.main.bundleURL
-        
+
         // Cố gắng tìm thư mục Applications phù hợp nhất (User trước, System sau)
         let targetApplicationsURL = URL(fileURLWithPath: "/Applications")
 
         let destinationURL = targetApplicationsURL
             .appendingPathComponent(bundleURL.lastPathComponent)
-        
+
         do {
             if FileManager.default.fileExists(atPath: destinationURL.path) {
                 try FileManager.default.removeItem(at: destinationURL)
             }
             try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
-            
+
             do {
                 try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
             } catch {
                 Logfile.core.warning("Error deleting original file: \(error.localizedDescription)")
             }
-            
+
             Logfile.core.log(
                 "Moved app to \(targetApplicationsURL.path).  Restarting..."
             )
-            
+
             let configuration = NSWorkspace.OpenConfiguration()
             configuration.createsNewApplicationInstance = true
             let pid = ProcessInfo.processInfo.processIdentifier
             configuration.arguments = ["-waitForPID", "\(pid)"]
-            
-            NSWorkspace.shared.openApplication(at: destinationURL, configuration: configuration) { app, error in
+
+            NSWorkspace.shared.openApplication(at: destinationURL, configuration: configuration) { _, error in
                 if let error = error {
                     Logfile.core.error("Error starting new directory: \(error.localizedDescription)")
                 }
@@ -133,7 +131,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             let errorAlert = NSAlert()
             errorAlert.alertStyle = .critical
             errorAlert.messageText = "Error moving application"
-            errorAlert.informativeText = "Unable to automatically move due to lack of permissions.\n\nPlease manually drag and drop the application into the Applications folder.  Error details: \(error.localizedDescription)"
+            errorAlert.informativeText = """
+                Unable to automatically move due to lack of permissions.
+
+                Please manually drag and drop the application into the Applications folder. \
+                Error details: \(error.localizedDescription)
+                """
             errorAlert.runModal()
         }
     }
