@@ -45,43 +45,9 @@ class LockES: LockManagerProtocol {
         var updatedApps = self.lockedApps
 
         for (path, var appConfig) in updatedApps {
-            var updated = false
-
-            // 1. Resolve cdhash if missing or empty, and strip legacy sha256
-            if appConfig.cdhash == nil || appConfig.cdhash?.isEmpty == true {
-                var execPath = appConfig.path
-                if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
-                    execPath = bundle.executablePath ?? appConfig.path
-                }
-
-                if let cdhash = extractCDHash(forPath: execPath) ?? extractCDHash(forPath: appConfig.path) {
-                    appConfig.cdhash = cdhash
-                    appConfig.sha256 = nil // Remove legacy sha256
-                    updated = true
-                    Logfile.core.info("Migrated legacy config for \(appConfig.name ?? path): calculated cdhash (\(cdhash.prefix(8)))")
-                }
-            } else if appConfig.sha256 != nil {
-                // Clean up obsolete sha256 field
-                appConfig.sha256 = nil
-                updated = true
-            }
-
-            // 2. Fill execFile if missing
-            if appConfig.execFile == nil || appConfig.execFile?.isEmpty == true {
-                var execPath = appConfig.path
-                if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
-                    execPath = bundle.executablePath ?? appConfig.path
-                }
-                appConfig.execFile = URL(fileURLWithPath: execPath).lastPathComponent
-                updated = true
-            }
-
-            // 3. Fill app name if missing
-            if appConfig.name == nil || appConfig.name?.isEmpty == true {
-                let name = FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-                appConfig.name = name
-                updated = true
-            }
+            var updated = migrateCDHash(for: &appConfig, defaultPath: path)
+            if migrateExecFile(for: &appConfig) { updated = true }
+            if migrateName(for: &appConfig, path: path) { updated = true }
 
             if updated {
                 updatedApps[path] = appConfig
@@ -97,6 +63,50 @@ class LockES: LockManagerProtocol {
                 Logfile.core.info("Auto-migrated legacy app configs to unified ES format and saved to disk.")
             }
         }
+    }
+
+    private func migrateCDHash(for appConfig: inout LockedAppConfig, defaultPath: String) -> Bool {
+        if appConfig.cdhash == nil || appConfig.cdhash?.isEmpty == true {
+            var execPath = appConfig.path
+            if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
+                execPath = bundle.executablePath ?? appConfig.path
+            }
+
+            if let cdhash = extractCDHash(forPath: execPath) ?? extractCDHash(forPath: appConfig.path) {
+                appConfig.cdhash = cdhash
+                appConfig.sha256 = nil
+                let appName = appConfig.name ?? defaultPath
+                let prefix = String(cdhash.prefix(8))
+                Logfile.core.info("Migrated legacy config for \(appName): cdhash (\(prefix))")
+                return true
+            }
+        } else if appConfig.sha256 != nil {
+            appConfig.sha256 = nil
+            return true
+        }
+        return false
+    }
+
+    private func migrateExecFile(for appConfig: inout LockedAppConfig) -> Bool {
+        if appConfig.execFile == nil || appConfig.execFile?.isEmpty == true {
+            var execPath = appConfig.path
+            if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
+                execPath = bundle.executablePath ?? appConfig.path
+            }
+            appConfig.execFile = URL(fileURLWithPath: execPath).lastPathComponent
+            return true
+        }
+        return false
+    }
+
+    private func migrateName(for appConfig: inout LockedAppConfig, path: String) -> Bool {
+        if appConfig.name == nil || appConfig.name?.isEmpty == true {
+            let name = FileManager.default.displayName(atPath: path)
+                .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+            appConfig.name = name
+            return true
+        }
+        return false
     }
 
     private func setupFSEvents() {
@@ -151,7 +161,8 @@ class LockES: LockManagerProtocol {
                 // Get filename for config
                 let execName = URL(fileURLWithPath: execPath).lastPathComponent
 
-                let appName = FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+                let appName = FileManager.default.displayName(atPath: path)
+                    .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
                 let cdhash = extractCDHash(forPath: execPath) ?? extractCDHash(forPath: path)
                 let bundleID = bundle.bundleIdentifier ?? ""
 

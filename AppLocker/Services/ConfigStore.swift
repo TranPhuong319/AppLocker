@@ -7,29 +7,24 @@
 
 import Foundation
 
+struct ConfigLoadResult {
+    let apps: [String: LockedAppConfig]
+    let isDisabled: Bool
+    let isLegacyFormat: Bool
+}
+
 final class ConfigStore {
     static let shared = ConfigStore()
-    private init() {}
+    let configURL = URL(fileURLWithPath: "/Users/Shared/AppLocker/config.plist")
 
-    var configURL: URL {
-        let configDirectory = URL(
-            fileURLWithPath: "/Users/Shared/AppLocker",
-            isDirectory: true
+    private init() {
+        let directory = configURL.deletingLastPathComponent()
+        let attributes: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
+        try? FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: attributes
         )
-        try? ensureDirectoryExists(configDirectory)
-        return configDirectory.appendingPathComponent("config.plist")
-    }
-
-    private func ensureDirectoryExists(_ directory: URL) throws {
-        if !FileManager.default.fileExists(atPath: directory.path) {
-            try FileManager.default.createDirectory(
-                at: directory,
-                withIntermediateDirectories: true,
-                attributes: [
-                    .posixPermissions: 0o755
-                ]
-            )
-        }
     }
 
     func performHandshake(completion: @escaping (Bool) -> Void) {
@@ -39,14 +34,14 @@ final class ConfigStore {
         }
     }
 
-    func load() -> (apps: [String: LockedAppConfig], isDisabled: Bool, isLegacyFormat: Bool) {
+    func load() -> ConfigLoadResult {
         var result: [String: LockedAppConfig] = [:]
         var isDisabled = false
         var isLegacyFormat = false
 
         guard FileManager.default.fileExists(atPath: configURL.path),
               let plistData = try? Data(contentsOf: configURL, options: .mappedIfSafe) else {
-            return (result, isDisabled, isLegacyFormat)
+            return ConfigLoadResult(apps: result, isDisabled: isDisabled, isLegacyFormat: isLegacyFormat)
         }
 
         let decoder = PropertyListDecoder()
@@ -65,7 +60,7 @@ final class ConfigStore {
             }
         }
 
-        return (result, isDisabled, isLegacyFormat)
+        return ConfigLoadResult(apps: result, isDisabled: isDisabled, isLegacyFormat: isLegacyFormat)
     }
 
     func save(apps map: [String: LockedAppConfig], isDisabled: Bool) {
@@ -75,7 +70,7 @@ final class ConfigStore {
         do {
             let userID = String(getuid())
             var fullConfig: [String: UserConfig] = [:]
-            
+
             // 1. Read existing config to avoid overwriting other users
             if FileManager.default.fileExists(atPath: configURL.path),
                let existingData = try? Data(contentsOf: configURL) {
@@ -88,20 +83,22 @@ final class ConfigStore {
                     }
                 }
             }
-            
+
             // 2. Update current user's rules
             fullConfig[userID] = UserConfig(isDisabled: isDisabled, apps: Array(map.values))
-            
+
             // 3. Encode and save
             let plistData = try encoder.encode(fullConfig)
             try plistData.write(to: configURL, options: .atomic)
-            
+
             // 4. Set permissions to 0o666 for multi-user access
             var attributes = [FileAttributeKey: Any]()
             attributes[.posixPermissions] = 0o666
             try? FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
-            
-            Logfile.core.debug("ConfigStore.save ES: updated \(map.count) apps for uid \(userID). Total users: \(fullConfig.count)")
+
+            Logfile.core.debug(
+                "ConfigStore.save ES: updated \(map.count) apps for uid \(userID). Total users: \(fullConfig.count)"
+            )
         } catch {
             Logfile.core.error("ConfigStore.save failed: \(error.localizedDescription)")
         }

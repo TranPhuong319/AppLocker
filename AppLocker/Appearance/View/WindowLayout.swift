@@ -18,19 +18,17 @@ enum WindowLayout {
         static let size = NSSize(width: 660, height: 480)
     }
 
-    enum Sheet {
-        enum AddApp {
-            static let minSize = NSSize(width: 400, height: 500)
-            static let listMaxHeight: CGFloat = 420
-        }
+    enum AddApp {
+        static let minSize = NSSize(width: 400, height: 500)
+        static let listMaxHeight: CGFloat = 420
+    }
 
-        enum DeleteQueue {
-            static let minSize = NSSize(width: 350, height: 370)
-        }
+    enum DeleteQueue {
+        static let minSize = NSSize(width: 350, height: 370)
+    }
 
-        enum LockingPopup {
-            static let minSize = NSSize(width: 200, height: 100)
-        }
+    enum LockingPopup {
+        static let minSize = NSSize(width: 200, height: 100)
     }
 
     enum BatchAuth {

@@ -30,17 +30,23 @@ extension ESManager {
                 manager.markPendingVerification(pid: targetPid)
                 let result = kill(targetPid, SIGSTOP)
                 if result == 0 {
-                    Logfile.endpointSecurity.log("[NOTIFY_EXEC] Backup SIGSTOP sent to target PID \(targetPid) (\(path))")
+                    Logfile.endpointSecurity.log(
+                        "[NOTIFY_EXEC] Backup SIGSTOP sent to target PID \(targetPid) (\(path))"
+                    )
                 } else {
-                    Logfile.endpointSecurity.error("[NOTIFY_EXEC] Backup SIGSTOP failed for PID \(targetPid): errno \(errno)")
+                    Logfile.endpointSecurity.error(
+                        "[NOTIFY_EXEC] Backup SIGSTOP failed for PID \(targetPid): errno \(errno)"
+                    )
                 }
                 manager.sendBlockedNotifications(
-                    path: path,
-                    cdhash: info.cdhash,
-                    parentPid: info.parentPid,
-                    uid: info.uid,
-                    signingID: info.signingID,
-                    targetPid: targetPid
+                    context: BlockedExecContext(
+                        path: path,
+                        cdhash: info.cdhash,
+                        parentPid: info.parentPid,
+                        uid: info.uid,
+                        signingID: info.signingID,
+                        targetPid: targetPid
+                    )
                 )
             } else {
                 Logfile.endpointSecurity.log("[NOTIFY_EXEC] PID \(targetPid) already frozen by AUTH_EXEC (\(path))")

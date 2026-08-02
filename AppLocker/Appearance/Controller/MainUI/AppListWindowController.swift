@@ -44,7 +44,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-
     private static func createHostingController() -> TouchBarHostingController<ContentView> {
         let hostingController = TouchBarHostingController(rootView: ContentView())
 
@@ -62,7 +61,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         config.size = size
         config.minSize = size
         config.maxSize = size
-        
+
         return WindowManager.createWindow(contentViewController: contentVC, configuration: config)
     }
 

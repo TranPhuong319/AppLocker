@@ -17,7 +17,10 @@ struct LockingPopupSheet: View {
                 .font(.headline)
         }
         .padding()
-        .frame(minWidth: WindowLayout.Sheet.LockingPopup.minSize.width, minHeight: WindowLayout.Sheet.LockingPopup.minSize.height)
+        .frame(
+            minWidth: WindowLayout.LockingPopup.minSize.width,
+            minHeight: WindowLayout.LockingPopup.minSize.height
+        )
     }
 }
 

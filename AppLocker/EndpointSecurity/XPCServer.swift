@@ -97,7 +97,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
             isAuthenticating = true
 
             let reason = String(format: String(localized: "open %@"), app.name)
-            AuthenticationManager.authenticate(reason: reason) { [weak self] success, error in
+            AuthenticationManager.authenticate(reason: reason) { [weak self] success, _ in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     self.isAuthenticating = false
@@ -105,7 +105,8 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
                     // If single app Touch ID prompt was invalidated to upgrade to BatchAuthWindow:
                     if self.isUpgradingToBatch {
                         self.isUpgradingToBatch = false
-                        Logfile.core.log("SingleAppAuth: Upgrading active prompt to BatchAuthWindow for \(self.pendingApps.count) apps.")
+                        let count = self.pendingApps.count
+                        Logfile.core.log("SingleAppAuth: Upgrading active prompt to BatchAuthWindow for \(count) apps.")
                         self.startOrResetCountdownTimer()
                         BatchAuthWindowController.shared.showWindow()
                         return
@@ -174,14 +175,19 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
 
         let reason = String(format: String(localized: "open %d application(s)"), approvedPIDs.count)
 
-        AuthenticationManager.authenticate(reason: reason) { [weak self] success, error in
+        AuthenticationManager.authenticate(reason: reason) { [weak self] success, _ in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.isAuthenticating = false
 
                 if success {
-                    Logfile.core.log("XPCServer: Batch auth succeeded. Approved PIDs: \(approvedPIDs), Rejected PIDs: \(rejectedPIDs)")
-                    ESXPCClient.shared.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { _ in }
+                    Logfile.core.log(
+                        "XPCServer: Batch auth succeeded. Approved: \(approvedPIDs), Rejected: \(rejectedPIDs)"
+                    )
+                    ESXPCClient.shared.processPendingApps(
+                        approvedPIDs: approvedPIDs,
+                        rejectedPIDs: rejectedPIDs
+                    ) { _ in }
                 } else {
                     let allPIDs = currentApps.map { $0.pid }
                     Logfile.core.error("XPCServer: Batch auth failed or cancelled. Rejecting all PIDs: \(allPIDs)")

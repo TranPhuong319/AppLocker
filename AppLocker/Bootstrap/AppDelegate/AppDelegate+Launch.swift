@@ -33,7 +33,6 @@ extension AppDelegate {
                 }
             }
 
-
         Logfile.core.log("Setting up hotkey manager...")
         self.hotkey = HotKeyManager()
 

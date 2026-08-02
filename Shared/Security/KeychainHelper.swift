@@ -104,4 +104,3 @@ final class KeychainHelper {
         return privateKeys[tag] != nil
     }
 }
-

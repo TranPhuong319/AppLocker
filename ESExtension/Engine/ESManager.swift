@@ -190,7 +190,7 @@ final class ESManager: NSObject {
         stateLock.perform {
             self.activeUserUID = audit_token_to_euid(auditToken)
         }
-        
+
         // Critical: Mute AppLocker immediately to prevent deadlock on Config IO
         muteAppLockerProcess(&auditToken)
     }

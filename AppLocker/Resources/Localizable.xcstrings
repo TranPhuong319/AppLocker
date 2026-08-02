@@ -117,6 +117,7 @@
       }
     },
     "Automatically close the application after %d seconds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -217,6 +218,7 @@
       }
     },
     "Could not move the application to /Applications automatically. Please move it manually to continue." : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

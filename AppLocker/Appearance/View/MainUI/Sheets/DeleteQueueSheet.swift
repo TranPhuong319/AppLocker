@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DeleteQueueSheet: View {
     @ObservedObject var appState: AppState
-    @State private var maxButtonWidth: CGFloat? = nil
+    @State private var maxButtonWidth: CGFloat?
 
     var body: some View {
         NavigationStack {
@@ -52,37 +52,43 @@ struct DeleteQueueSheet: View {
                 HStack(spacing: 12) {
                     Spacer()
 
-                    Button(action: {
-                        appState.deleteAllFromWaitingList()
-                    }) {
-                        Text(String(localized: "Cancel"))
-                            .font(.system(size: 13, weight: .medium))
-                            .lineLimit(1)
-                            .padding(.horizontal, 8)
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                                }
-                            )
-                            .frame(width: maxButtonWidth)
-                    }
+                    Button(
+                        action: {
+                            appState.deleteAllFromWaitingList()
+                        },
+                        label: {
+                            Text(String(localized: "Cancel"))
+                                .font(.system(size: 13, weight: .medium))
+                                .lineLimit(1)
+                                .padding(.horizontal, 8)
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                                    }
+                                )
+                                .frame(width: maxButtonWidth)
+                        }
+                    )
                     .buttonStyle(.bordered)
                     .controlSize(.large)
 
-                    Button(action: {
-                        appState.unlockApp()
-                    }) {
-                        Text(String(localized: "Unlock"))
-                            .font(.system(size: 13, weight: .semibold))
-                            .lineLimit(1)
-                            .padding(.horizontal, 8)
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                                }
-                            )
-                            .frame(width: maxButtonWidth)
-                    }
+                    Button(
+                        action: {
+                            appState.unlockApp()
+                        },
+                        label: {
+                            Text(String(localized: "Unlock"))
+                                .font(.system(size: 13, weight: .semibold))
+                                .lineLimit(1)
+                                .padding(.horizontal, 8)
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                                    }
+                                )
+                                .frame(width: maxButtonWidth)
+                        }
+                    )
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)
@@ -96,7 +102,10 @@ struct DeleteQueueSheet: View {
                 .padding(.vertical, 12)
             }
         }
-        .frame(minWidth: WindowLayout.Sheet.DeleteQueue.minSize.width, minHeight: WindowLayout.Sheet.DeleteQueue.minSize.height)
+        .frame(
+            minWidth: WindowLayout.DeleteQueue.minSize.width,
+            minHeight: WindowLayout.DeleteQueue.minSize.height
+        )
         .onAppear {
             DispatchQueue.main.async {
                 appState.activeTouchBar = .deleteQueuePopup

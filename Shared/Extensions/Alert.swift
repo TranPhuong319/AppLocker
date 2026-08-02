@@ -42,14 +42,14 @@ final class AlertShow {
         let displayedButtons = Array(buttons.prefix(3))
         for (index, title) in displayedButtons.enumerated() {
             let button = alert.addButton(withTitle: title)
-            
+
             if index == destructiveIndex {
                 let destructiveKey = "hasDestructiveAction"
                 if button.responds(to: NSSelectorFromString("setHasDestructiveAction:")) {
                     button.setValue(true, forKey: destructiveKey)
                 }
             }
-            
+
             // Ép keyEquivalent để macOS không tự đảo nút theo HUD
             if index == defaultIndex {
                 button.keyEquivalent = "\r"

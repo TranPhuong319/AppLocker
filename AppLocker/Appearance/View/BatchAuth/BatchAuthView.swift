@@ -199,14 +199,14 @@ struct VisualEffectView: NSViewRepresentable {
 
 private struct BatchAuthViewPreviewWrapper: View {
     @StateObject private var server: XPCServer = {
-        let s = XPCServer()
-        s.pendingApps = [
+        let xpcServer = XPCServer()
+        xpcServer.pendingApps = [
             PendingAppItem(name: "Safari", path: "/Applications/Safari.app/Contents/MacOS/Safari", cdhash: "abc123hash", pid: 1024, isSelected: true),
             PendingAppItem(name: "Xcode", path: "/Applications/Xcode.app/Contents/MacOS/Xcode", cdhash: "def456hash", pid: 2048, isSelected: true),
             PendingAppItem(name: "Telegram", path: "/Applications/Telegram.app/Contents/MacOS/Telegram", cdhash: "ghi789hash", pid: 4096, isSelected: false)
         ]
-        s.remainingSeconds = 60
-        return s
+        xpcServer.remainingSeconds = 60
+        return xpcServer
     }()
     private let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 

@@ -59,43 +59,49 @@ struct WelcomeView: View {
             .padding(.horizontal, 20)
 
             HStack(spacing: 16) {
-                Button(action: {
-                    NSApp.terminate(nil)
-                }) {
-                    Text("Quit")
-                        .font(.body)
-                        .frame(maxWidth: .infinity)
-                }
+                Button(
+                    action: {
+                        NSApp.terminate(nil)
+                    },
+                    label: {
+                        Text("Quit")
+                            .font(.body)
+                            .frame(maxWidth: .infinity)
+                    }
+                )
                 .buttonStyle(.bordered)
                 .controlSize(.large)
-                
-                Button(action: {
-                    let response = AlertShow.show(
-                        title: String(localized: "Confirm"),
-                        message: String(localized: "Do you agree to the terms of service and license above?"),
-                        style: .informational,
-                        buttons: [
-                            String(localized: "Agree"),
-                            String(localized: "Decline")
-                        ],
-                        cancelIndex: 1,
-                        defaultIndex: 0
-                    )
-                    
-                    if case .button(index: 0, _) = response {
-                        guard !isMock else { return }
-                        UserDefaults.standard.set(false, forKey: "isFirstStart")
-                        NSApp.appDelegate?.registerAgentWithoutImmediateLaunch()
-                        WelcomeWindowController.shared?.isCompletingOnboarding = true
-                        WelcomeWindowController.shared?.window?.close()
-                        NSApp.appDelegate?.launchConfig()
+
+                Button(
+                    action: {
+                        let response = AlertShow.show(
+                            title: String(localized: "Confirm"),
+                            message: String(localized: "Do you agree to the terms of service and license above?"),
+                            style: .informational,
+                            buttons: [
+                                String(localized: "Agree"),
+                                String(localized: "Decline")
+                            ],
+                            cancelIndex: 1,
+                            defaultIndex: 0
+                        )
+
+                        if case .button(index: 0, _) = response {
+                            guard !isMock else { return }
+                            UserDefaults.standard.set(false, forKey: "isFirstStart")
+                            NSApp.appDelegate?.registerAgentWithoutImmediateLaunch()
+                            WelcomeWindowController.shared?.isCompletingOnboarding = true
+                            WelcomeWindowController.shared?.window?.close()
+                            NSApp.appDelegate?.launchConfig()
+                        }
+                    },
+                    label: {
+                        Text("Continue")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
                     }
-                }) {
-                    Text("Continue")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                }
+                )
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
             }
