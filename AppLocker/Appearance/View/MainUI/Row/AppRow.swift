@@ -9,19 +9,15 @@ import SwiftUI
 
 struct AppRow: View {
     let app: InstalledApp
-    @ObservedObject var appState: AppState
+    let isSelected: Bool
+    let onToggle: () -> Void
     let unfocus: () -> Void
 
     var body: some View {
         Button {
             unfocus()
-
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                if appState.selectedToLock.contains(app.path) {
-                    appState.selectedToLock.remove(app.path)
-                } else {
-                    appState.selectedToLock.insert(app.path)
-                }
+                onToggle()
             }
         } label: {
             HStack(spacing: 12) {
@@ -33,7 +29,7 @@ struct AppRow: View {
 
                 Spacer()
 
-                if appState.selectedToLock.contains(app.path) {
+                if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.accentColor)
                         .font(.title3)

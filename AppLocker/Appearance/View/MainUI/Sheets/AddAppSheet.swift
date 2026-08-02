@@ -48,22 +48,30 @@ struct AddAppSheet: View {
 
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
-                        let userApps = appState.filteredUnlockableApps.filter { $0.source == .user }
+                        let userApps = appState.userUnlockableApps
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications")
                             ForEach(userApps, id: \.path) { app in
-                                AppRow(app: app, appState: appState, unfocus: unfocus)
+                                AppRow(
+                                    app: app,
+                                    isSelected: appState.selectedToLock.contains(app.path),
+                                    onToggle: { toggleSelection(for: app.path) },
+                                    unfocus: unfocus
+                                )
                             }
                         }
 
-                        let systemApps = appState.filteredUnlockableApps.filter {
-                            $0.source == .system
-                        }
+                        let systemApps = appState.systemUnlockableApps
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications")
                                 .padding(.top, 10)
                             ForEach(systemApps, id: \.path) { app in
-                                AppRow(app: app, appState: appState, unfocus: unfocus)
+                                AppRow(
+                                    app: app,
+                                    isSelected: appState.selectedToLock.contains(app.path),
+                                    onToggle: { toggleSelection(for: app.path) },
+                                    unfocus: unfocus
+                                )
                             }
                         }
                     }
@@ -111,7 +119,6 @@ struct AddAppSheet: View {
         .onTapGesture { unfocus() }
         .onAppear {
             unfocus()
-            appState.manager.reloadAllApps()
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 NSApp.keyWindow?.makeFirstResponder(nil)
@@ -125,6 +132,14 @@ struct AddAppSheet: View {
                 appState.searchTextUnlockaleApps = ""
                 appState.activeTouchBar = .mainWindow
             }
+        }
+    }
+
+    private func toggleSelection(for path: String) {
+        if appState.selectedToLock.contains(path) {
+            appState.selectedToLock.remove(path)
+        } else {
+            appState.selectedToLock.insert(path)
         }
     }
 }
