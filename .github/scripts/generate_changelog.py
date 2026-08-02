@@ -152,7 +152,10 @@ def get_current_branch():
     return run_command("git rev-parse --abbrev-ref HEAD")
 
 def get_merge_base(branch, base="main"):
-    return run_command(f"git merge-base {base} {branch}")
+    res = run_command(f"git merge-base {base} {branch}")
+    if not res:
+        res = run_command(f"git merge-base origin/{base} {branch}")
+    return res
 
 def main():
     parser = argparse.ArgumentParser()
