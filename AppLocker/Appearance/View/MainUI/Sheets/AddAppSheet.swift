@@ -83,6 +83,7 @@ struct AddAppSheet: View {
                     }, label: {
                         Text("Lock (\(appState.selectedToLock.count))")
                     })
+                    .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)
                     .disabled(appState.selectedToLock.isEmpty || appState.isLocking)

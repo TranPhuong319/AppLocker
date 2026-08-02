@@ -54,28 +54,18 @@ class ESClientObject {
                 return
             }
 
-            // 3. AUTH Handling - Santa Semaphore Logic
-            // CRITICAL FIX: Only AUTH events need deadline logic. NOTIFY events (like EXIT) must skip this.
-            if esMessage.pointee.action_type == ES_ACTION_TYPE_AUTH {
-                if let currentManager = self.manager {
-                    let handler = self.makeAuthHandler(for: message)
-                    self.handleMessageWithDeadline(
-                        esClient: esClient,
-                        message: message,
-                        manager: currentManager,
-                        handler: handler
-                    )
-                } else {
-                    // No Manager (Deallocated?) - Fail Safe
-                    es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
-                }
+            // AUTH Handling — Santa Semaphore Logic
+            if let currentManager = self.manager {
+                let handler = self.makeAuthHandler(for: message)
+                self.handleMessageWithDeadline(
+                    esClient: esClient,
+                    message: message,
+                    manager: currentManager,
+                    handler: handler
+                )
             } else {
-                // NOTIFY EVents (like EXIT)
-                if let manager = self.manager {
-                     manager.authorizationProcessingQueue.async {
-                         ESManager.handleNotifyExit(client: esClient, message: message)
-                     }
-                }
+                // No Manager (Deallocated?) - Fail Safe
+                es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
             }
         }
 
@@ -117,6 +107,10 @@ class ESClientObject {
                 ESManager.handleAuthClone(client: client, message: msg, valve: valve)
             case ES_EVENT_TYPE_AUTH_LINK:
                 ESManager.handleAuthLink(client: client, message: msg, valve: valve)
+            case ES_EVENT_TYPE_AUTH_SIGNAL:
+                ESManager.handleAuthSignal(client: client, message: msg, valve: valve)
+            case ES_EVENT_TYPE_NOTIFY_EXEC:
+                ESManager.handleNotifyExec(client: client, message: msg)
             case ES_EVENT_TYPE_NOTIFY_EXIT:
                 ESManager.handleNotifyExit(client: client, message: msg)
             default:
@@ -240,10 +234,10 @@ class ESAuthorizer: ESClientObject {
     }
 
     func enable() {
-        // MuteSelf moved to createClient, but calling it again here is harmless and safe checks
-        _ = self.muteSelf()
         _ = self.subscribe([
             ES_EVENT_TYPE_AUTH_EXEC,
+            ES_EVENT_TYPE_NOTIFY_EXEC,
+            ES_EVENT_TYPE_AUTH_SIGNAL,
             ES_EVENT_TYPE_NOTIFY_EXIT
         ])
     }

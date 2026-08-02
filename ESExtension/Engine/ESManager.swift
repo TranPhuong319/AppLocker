@@ -24,21 +24,28 @@ final class ESManager: NSObject {
 
     // MARK: - State
     let stateLock = FastLock()
-    var blockedSHAs: [uid_t: Set<String>] = [:]
-    var blockedPathToSHA: [String: String] = [:]
-    var tempAllowedSHAs: [String: Date] = [:]
-    let allowWindowSeconds: TimeInterval = 10
-    var decisionCache: [String: ExecDecision] = [:]
+    var lockedCDHashes: [uid_t: Set<String>] = [:]
+    var lockedBundlePaths: [uid_t: Set<String>] = [:]
     var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
     var configMonitorSource: DispatchSourceFileSystemObject?
 
     struct BlockedNotification {
         let name: String
         let path: String
-        let sha: String
+        let cdhash: String
         let uid: uid_t
+        let targetPid: pid_t
+    }
+    struct PendingExecInfo {
+        let cdhash: String
+        let parentPid: pid_t
+        let uid: uid_t
+        let signingID: String
+        var timestamp: Date = Date()
     }
     var pendingNotifications: [BlockedNotification] = []
+    var pendingVerificationPIDs: Set<pid_t> = []
+    var pendingVerificationPaths: [String: [PendingExecInfo]] = [:]
 
     // MARK: - Locks and Queues
     let xpcConnectionLock = FastLock()
@@ -68,7 +75,6 @@ final class ESManager: NSObject {
     let keyGenGroup = DispatchGroup()
 
     var activeMessageCount: Int32 = 0
-    let shaSemaphore = DispatchSemaphore(value: 12)
 
     // MARK: - File Access Cache / Rate Limiting (Flood Protection)
     let fileAccessLock = FastLock()
@@ -105,8 +111,6 @@ final class ESManager: NSObject {
                 self?.keyGenGroup.leave()
             }
 
-            scheduleTempCleanup()
-
             // 4. Setup Listener (Ready for connections)
             setupMachListener()
 
@@ -137,9 +141,8 @@ final class ESManager: NSObject {
     }
 
     func invalidateCache(forPath path: String) {
-        stateLock.perform {
-            decisionCache.removeValue(forKey: path)
-            blockedPathToSHA.removeValue(forKey: path)
+        fileAccessLock.perform {
+            fileAccessAllowCache.remove(path)
         }
         Logfile.endpointSecurity.log("Cache invalidated for: \(path)")
     }

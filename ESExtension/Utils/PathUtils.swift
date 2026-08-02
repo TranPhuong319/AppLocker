@@ -22,34 +22,35 @@ func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
     return String(bytes: buffer, encoding: .utf8)
 }
 
+extension String {
+    /// Returns true if path points to an embedded app extension (.appex) or XPC service (.xpc) inside PlugIns/XPCServices.
+    var isAppExtensionOrPlugin: Bool {
+        return self.contains("/Contents/PlugIns/") ||
+               self.contains("/Contents/XPCServices/") ||
+               self.hasSuffix(".appex") ||
+               self.hasSuffix(".xpc")
+    }
+}
+
 extension ESManager {
     // Compute app bundle name for an exec path (best-effort).
     func computeAppName(forExecPath path: String) -> String {
-        let execFile = URL(fileURLWithPath: path)
-        let appBundleURL = execFile.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        var appName = appBundleURL.deletingPathExtension().lastPathComponent
-        if let bundle = Bundle(url: appBundleURL) {
-            if let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String {
-                appName = displayName
-            } else if let name = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String {
-                appName = name
+        var url = URL(fileURLWithPath: path)
+        while url.pathComponents.count > 1 {
+            if url.pathExtension == "app" {
+                if let bundle = Bundle(url: url) {
+                    if let name = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String {
+                        return name
+                    }
+                }
+                return url.deletingPathExtension().lastPathComponent
             }
+            url.deleteLastPathComponent()
         }
-        return appName
+        return URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
     }
-}
-//
-//  ESManager+ProtectedPaths.swift
-//  ESExtension
-//
-//  Created by Doe Phương on 30/1/26.
-//
 
-import EndpointSecurity
-import Foundation
-
-extension ESManager {
-
+    // MARK: - Protected Paths & Verification
     static func isSharedPath(_ esPath: es_string_token_t) -> Bool {
         guard let data = esPath.data else { return false }
         let len = Int(esPath.length)

@@ -13,8 +13,11 @@ extension ESManager {
     static func handleNotifyExit(client: OpaquePointer, message: ESMessage) {
         guard let manager = sharedInstanceForCallbacks else { return }
         
-        // 1. Check if it's our main app
         let process = message.pointee.process
+        let exitingPID = audit_token_to_pid(process.pointee.audit_token)
+        manager.removePendingVerification(pid: exitingPID)
+
+        // 1. Check if it's our main app
         guard manager.isMainAppProcess(process) else {
             return
         }

@@ -10,5 +10,9 @@
 	<string>https://github.com/TranPhuong319/AppLocker/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>oFALyoEASIdUJ7KSQ3JMpH8dlC4/p7HBd6bmp+BRUQs=</string>
+	<key>NSPrincipalClass</key>
+	<string>$(PRODUCT_MODULE_NAME).CustomApplication</string>
+	<key>NSAppIntentsEnabled</key>
+	<false/>
 </dict>
 </plist>

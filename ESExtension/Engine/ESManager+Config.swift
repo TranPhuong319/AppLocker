@@ -26,42 +26,50 @@ extension ESManager {
                 let data = try Data(contentsOf: url, options: .mappedIfSafe)
                 let decoder = PropertyListDecoder()
                 
-                var newBlockedSHAs: [uid_t: Set<String>] = [:]
-                var newPathToSHA: [String: String] = [:]
+                var newCDHashes: [uid_t: Set<String>] = [:]
+                var newBundlePaths: [uid_t: Set<String>] = [:]
+                
+                let processAppsForUser: (uid_t, [LockedAppConfig]) -> Void = { uid, apps in
+                    var cdhashes = Set<String>()
+                    var bundlePaths = Set<String>()
+                    
+                    for app in apps {
+                        let p1 = app.path
+                        let p2 = (p1 as NSString).standardizingPath
+                        bundlePaths.insert(p1)
+                        bundlePaths.insert(p2)
+                        
+                        let resolvedCDHash = app.cdhash ?? extractCDHash(forPath: p1)
+                        if let hash = resolvedCDHash, !hash.isEmpty {
+                            cdhashes.insert(hash.lowercased())
+                        }
+                    }
+                    
+                    newCDHashes[uid] = cdhashes
+                    newBundlePaths[uid] = bundlePaths
+                }
                 
                 if let rawConfig = try? decoder.decode([String: UserConfig].self, from: data) {
                     for (uidString, userConfig) in rawConfig {
                         guard let uid = uid_t(uidString) else { continue }
                         if userConfig.isDisabled { continue } // Bỏ qua nếu user đã tắt bảo vệ
-                        
-                        var shaSet = Set<String>()
-                        for app in userConfig.apps {
-                            shaSet.insert(app.sha256)
-                            newPathToSHA[app.path] = app.sha256
-                        }
-                        newBlockedSHAs[uid] = shaSet
+                        processAppsForUser(uid, userConfig.apps)
                     }
                 } else if let oldConfig = try? decoder.decode([String: [LockedAppConfig]].self, from: data) {
                     for (uidString, apps) in oldConfig {
                         guard let uid = uid_t(uidString) else { continue }
-                        var shaSet = Set<String>()
-                        for app in apps {
-                            shaSet.insert(app.sha256)
-                            newPathToSHA[app.path] = app.sha256
-                        }
-                        newBlockedSHAs[uid] = shaSet
+                        processAppsForUser(uid, apps)
                     }
                 }
                 
                 // Atomic Swap
                 self.stateLock.perform {
-                    self.blockedSHAs = newBlockedSHAs
-                    self.blockedPathToSHA = newPathToSHA
-                    self.decisionCache.removeAll()
+                    self.lockedCDHashes = newCDHashes
+                    self.lockedBundlePaths = newBundlePaths
                 }
                 
-                let totalApps = newBlockedSHAs.values.reduce(0) { $0 + $1.count }
-                Logfile.endpointSecurity.log("ESManager: Loaded \(totalApps) apps for \(newBlockedSHAs.count) users from config.")
+                let totalApps = newBundlePaths.values.reduce(0) { $0 + $1.count }
+                Logfile.endpointSecurity.log("ESManager: Loaded \(totalApps) apps for \(newCDHashes.count) users from config.")
                 
             } catch {
                 Logfile.endpointSecurity.error("ESManager: Failed to load config: \(error.localizedDescription)")
@@ -72,6 +80,10 @@ extension ESManager {
     /// Theo dõi thay đổi của thư mục chứa cấu hình để bắt được sự kiện Atomic Write (Rename/Delete)
     func startConfigMonitoring() {
         let configDir = URL(fileURLWithPath: ESManager.configPath).deletingLastPathComponent().path
+        
+        configMonitorSource?.cancel()
+        configMonitorSource = nil
+        
         let fileDescriptor = open(configDir, O_EVTONLY)
         
         guard fileDescriptor != -1 else {
@@ -93,18 +105,16 @@ extension ESManager {
         source.setEventHandler { [weak self] in
             guard let self = self else { return }
             
-            self.stateLock.perform {
-                debounceTimer?.cancel()
-                let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)
-                timer.schedule(deadline: .now() + 0.3) // Debounce 300ms
-                timer.setEventHandler { [weak self] in
-                    Logfile.endpointSecurity.log("ESManager: Directory change detected, reloading config...")
-                    self?.loadInitialConfig()
-                    timer.cancel()
-                }
-                timer.resume()
-                debounceTimer = timer
+            debounceTimer?.cancel()
+            let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)
+            timer.schedule(deadline: .now() + 0.3) // Debounce 300ms
+            timer.setEventHandler { [weak self] in
+                Logfile.endpointSecurity.log("ESManager: Directory change detected, reloading config...")
+                self?.loadInitialConfig()
+                timer.cancel()
             }
+            timer.resume()
+            debounceTimer = timer
         }
         
         source.setCancelHandler {

@@ -31,13 +31,71 @@ class LockES: LockManagerProtocol {
                 self.lockedApps = loaded.apps
                 self.isProtectionDisabled = loaded.isDisabled
 
-                Logfile.core.info("Initial scanning started in background...")
                 DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                    self?.rescanLockedApps()
+                    self?.migrateLegacyConfigsIfNeeded(isLegacyFormat: loaded.isLegacyFormat)
                 }
             }
 
             self.setupFSEvents()
+        }
+    }
+
+    private func migrateLegacyConfigsIfNeeded(isLegacyFormat: Bool = false) {
+        var needsSave = isLegacyFormat
+        var updatedApps = self.lockedApps
+
+        for (path, var appConfig) in updatedApps {
+            var updated = false
+
+            // 1. Resolve cdhash if missing or empty, and strip legacy sha256
+            if appConfig.cdhash == nil || appConfig.cdhash?.isEmpty == true {
+                var execPath = appConfig.path
+                if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
+                    execPath = bundle.executablePath ?? appConfig.path
+                }
+
+                if let cdhash = extractCDHash(forPath: execPath) ?? extractCDHash(forPath: appConfig.path) {
+                    appConfig.cdhash = cdhash
+                    appConfig.sha256 = nil // Remove legacy sha256
+                    updated = true
+                    Logfile.core.info("Migrated legacy config for \(appConfig.name ?? path): calculated cdhash (\(cdhash.prefix(8)))")
+                }
+            } else if appConfig.sha256 != nil {
+                // Clean up obsolete sha256 field
+                appConfig.sha256 = nil
+                updated = true
+            }
+
+            // 2. Fill execFile if missing
+            if appConfig.execFile == nil || appConfig.execFile?.isEmpty == true {
+                var execPath = appConfig.path
+                if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
+                    execPath = bundle.executablePath ?? appConfig.path
+                }
+                appConfig.execFile = URL(fileURLWithPath: execPath).lastPathComponent
+                updated = true
+            }
+
+            // 3. Fill app name if missing
+            if appConfig.name == nil || appConfig.name?.isEmpty == true {
+                let name = FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+                appConfig.name = name
+                updated = true
+            }
+
+            if updated {
+                updatedApps[path] = appConfig
+                needsSave = true
+            }
+        }
+
+        if needsSave {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.lockedApps = updatedApps
+                self.save()
+                Logfile.core.info("Auto-migrated legacy app configs to unified ES format and saved to disk.")
+            }
         }
     }
 
@@ -94,19 +152,16 @@ class LockES: LockManagerProtocol {
                 let execName = URL(fileURLWithPath: execPath).lastPathComponent
 
                 let appName = FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-                guard let sha = computeSHA(forPath: execPath) else {
-                    Logfile.core.error("Cannot compute SHA for \(execPath)")
-                    continue
-                }
+                let cdhash = extractCDHash(forPath: execPath) ?? extractCDHash(forPath: path)
                 let bundleID = bundle.bundleIdentifier ?? ""
 
                 let lockedAppConfig = LockedAppConfig(
                     bundleID: bundleID,
                     path: path,
-                    sha256: sha,
-                    blockMode: "ES",
+                    sha256: nil,
                     execFile: execName,
-                    name: appName
+                    name: appName,
+                    cdhash: cdhash
                 )
                 lockedApps[path] = lockedAppConfig
                 hasConfigChanged = true
@@ -127,117 +182,9 @@ class LockES: LockManagerProtocol {
     }
 }
 
-// MARK: - Auto SHA Rescan
+// MARK: - FSEvents Delegate
 extension LockES: FSEventsDelegate {
     func fileSystemChanged(at paths: [String]) {
-        // Lọc các đường dẫn thuộc các app đang bị khóa
-        let lockedPaths = lockedApps.keys
-        var appsToUpdate: [String] = []
-
-        for changedPath in paths {
-            for lockedPath in lockedPaths where changedPath.hasPrefix(lockedPath) {
-                appsToUpdate.append(lockedPath)
-            }
-        }
-
-        guard !appsToUpdate.isEmpty else { return }
-
-        // Loại bỏ trùng lặp và update SHA
-        let uniqueApps = Set(appsToUpdate)
-        Logfile.core.info(
-            "FSEvents detected changes in \(uniqueApps.count) locked apps. Updating SHAs...")
-
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.updateSHAs(for: Array(uniqueApps))
-        }
-    }
-
-    private func updateSHAs(for paths: [String]) {
-        var hasChanges = false
-        var updatedLockedAppsMap = self.lockedApps
-
-        for path in paths {
-            guard let appConfig = updatedLockedAppsMap[path] else { continue }
-            let executableFileName = appConfig.execFile ?? "Unknown"
-            let execPath = "\(path)/Contents/MacOS/\(executableFileName)"
-
-            guard FileManager.default.fileExists(atPath: execPath) else { continue }
-            guard let newSHAValue = computeSHA(forPath: execPath), !newSHAValue.isEmpty else { continue }
-
-            if appConfig.sha256 != newSHAValue {
-                Logfile.core.warning(
-                    "SHA auto-updated for \(appConfig.name ?? "Unknown"): \(appConfig.sha256.prefix(8)) → \(newSHAValue.prefix(8))"
-                )
-                let updatedCfg = LockedAppConfig(
-                    bundleID: appConfig.bundleID,
-                    path: appConfig.path,
-                    sha256: newSHAValue,
-                    blockMode: appConfig.blockMode,
-                    execFile: appConfig.execFile,
-                    name: appConfig.name
-                )
-                updatedLockedAppsMap[path] = updatedCfg
-                hasChanges = true
-            }
-        }
-
-        if hasChanges {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.lockedApps = updatedLockedAppsMap
-                self.save()
-            }
-        }
-    }
-
-    func stopPeriodicRescan() {
-        fsWatcher?.stop()
-        fsWatcher = nil
-    }
-
-    @objc func rescanLockedApps() {
-        // Run the heavy SHA calculation on the current thread (usually background)
-        Logfile.core.info("Re-scanning the SHA of locked apps...")
-        var hasChanges = false
-        var updatedLockedAppsMap = self.lockedApps  // Copy locally for processing
-
-        for (path, appConfig) in updatedLockedAppsMap {
-            let executableFileName = appConfig.execFile ?? "Unknown"
-            let execPath = "\(path)/Contents/MacOS/\(executableFileName)"
-            guard FileManager.default.fileExists(atPath: execPath) else { continue }
-
-            guard let newSHAValue = computeSHA(forPath: execPath), !newSHAValue.isEmpty else {
-                continue
-            }
-
-            if appConfig.sha256 != newSHAValue {
-                let name = appConfig.name ?? "Unknown"
-                Logfile.core.warning(
-                    "SHA changes for \(name): \(appConfig.sha256.prefix(8)) → \(newSHAValue.prefix(8))")
-
-                let updatedCfg = LockedAppConfig(
-                    bundleID: appConfig.bundleID,
-                    path: appConfig.path,
-                    sha256: newSHAValue,
-                    blockMode: appConfig.blockMode,
-                    execFile: appConfig.execFile,
-                    name: appConfig.name
-                )
-                updatedLockedAppsMap[path] = updatedCfg
-                hasChanges = true
-            }
-        }
-
-        if hasChanges {
-            // Push the update of the original data and save the file to the Main Thread
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.lockedApps = updatedLockedAppsMap
-                self.save()
-                Logfile.core.info("New SHA updated")
-            }
-        } else {
-            Logfile.core.info("No SHA changes")
-        }
+        // App changes monitored; cdhash and path matching are handled dynamically without heavy SHA re-calculation
     }
 }

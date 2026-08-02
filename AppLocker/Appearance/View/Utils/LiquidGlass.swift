@@ -14,6 +14,6 @@ extension View {
         in shape: S,
         @ViewBuilder fallback: () -> Fallback
     ) -> some View {
-        fallback()
+        self.background(fallback())
     }
 }

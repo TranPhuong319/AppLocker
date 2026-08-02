@@ -62,7 +62,7 @@ final class TTYNotifier {
 
         let labelPath    = String(localized: "Path:")
         let labelId      = String(localized: "Identifier:")
-        let labelSha     = String(localized: "SHA256:")
+        let labelCDHash  = String(localized: "CDHash:")
         let labelParent  = String(localized: "Parent PID:")
         let labelAuth    = String(localized: "Authenticate...")
 
@@ -72,7 +72,7 @@ final class TTYNotifier {
 
         let paddedPath = labelPath.padding(toLength: 12, withPad: " ", startingAt: 0)
         let paddedId   = labelId.padding(toLength: 12, withPad: " ", startingAt: 0)
-        let paddedSha  = labelSha.padding(toLength: 12, withPad: " ", startingAt: 0)
+        let paddedCDHash = labelCDHash.padding(toLength: 12, withPad: " ", startingAt: 0)
         let paddedParent = labelParent.padding(toLength: 12, withPad: " ", startingAt: 0)
 
         let message = """
@@ -83,7 +83,7 @@ final class TTYNotifier {
 
             \(bold)\(paddedPath)\(reset) \(blockedPath)
             \(bold)\(paddedId)\(reset) \(identifier ?? "Unknown")
-            \(bold)\(paddedSha)\(reset) \(sha)
+            \(bold)\(paddedCDHash)\(reset) \(sha)
             \(bold)\(paddedParent)\(reset) \(parentPid)
             \(labelAuth)
             \n

@@ -11,7 +11,7 @@ import Foundation
 /// Khi cần thay đổi kích thước, chỉ cần sửa ở đây.
 enum WindowLayout {
     enum Main {
-        static let size = NSSize(width: 450, height: 880)
+        static let size = NSSize(width: 450, height: 470)
     }
 
     enum Welcome {
@@ -31,5 +31,10 @@ enum WindowLayout {
         enum LockingPopup {
             static let minSize = NSSize(width: 200, height: 100)
         }
+    }
+
+    enum BatchAuth {
+        static let size = NSSize(width: 440, height: 360)
+        static let maxListHeight: CGFloat = 220
     }
 }

@@ -7,8 +7,11 @@
 
 import AppKit
 
+// Tắt log rác hệ thống (AppIntents / OS Activity) và tự động đăng ký Shortcuts
+setenv("OS_ACTIVITY_MODE", "disable", 1)
+UserDefaults.standard.set(false, forKey: "NSAppIntentsEnabled")
+
 // Tạo instance của app custom để chặn Cmd+Q
-_ = CustomApplication.shared
 let app = CustomApplication.shared
 
 // Gắn AppDelegate

@@ -11,6 +11,9 @@
         }
       }
     },
+    "CDHash:" : {
+
+    },
     "Identifier:" : {
       "localizations" : {
         "vi" : {
@@ -42,6 +45,7 @@
       }
     },
     "SHA256:" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
