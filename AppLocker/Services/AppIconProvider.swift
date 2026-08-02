@@ -19,17 +19,29 @@ class AppIconProvider {
     }
 
     func icon(forPath path: String, size: CGFloat = 32) -> NSImage {
-        let key = "\(path)_\(size)" as NSString
+        let appBundlePath = resolveAppBundlePath(from: path)
+        let key = "\(appBundlePath)_\(size)" as NSString
 
         if let cachedIcon = cache.object(forKey: key) {
             return cachedIcon
         }
 
-        let icon = NSWorkspace.shared.icon(forFile: path)
+        let icon = NSWorkspace.shared.icon(forFile: appBundlePath)
         icon.size = NSSize(width: size, height: size)
 
         cache.setObject(icon, forKey: key)
         return icon
+    }
+
+    private func resolveAppBundlePath(from path: String) -> String {
+        var url = URL(fileURLWithPath: path)
+        while url.path != "/" && url.pathComponents.count > 1 {
+            if url.pathExtension.lowercased() == "app" {
+                return url.path
+            }
+            url = url.deletingLastPathComponent()
+        }
+        return path
     }
 
     func clearCache() {

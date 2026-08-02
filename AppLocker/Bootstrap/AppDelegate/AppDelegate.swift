@@ -6,14 +6,13 @@
 //
 
 import AppKit
-import Darwin
 import Foundation
-import LocalAuthentication
-import Security
 import ServiceManagement
 import Sparkle
 import SwiftUI
 import UserNotifications
+
+
 
 enum AgentAction {
     case install
@@ -95,30 +94,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         let bundleURL = Bundle.main.bundleURL
         
         // Cố gắng tìm thư mục Applications phù hợp nhất (User trước, System sau)
-        var targetApplicationsURL: URL?
-        
-        let userApplicationsURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Applications")
-        let systemApplicationsURL = URL(fileURLWithPath: "/Applications")
-        
-        // Nếu thư mục User/Applications tồn tại, ưu tiên dùng nó (không cần xin quyền root)
-        if FileManager.default.fileExists(atPath: userApplicationsURL.path) {
-            targetApplicationsURL = userApplicationsURL
-        } else if FileManager.default.isWritableFile(atPath: systemApplicationsURL.path) {
-            // Còn nếu System/Applications cho phép ghi, thì dùng system
-            targetApplicationsURL = systemApplicationsURL
-        } else {
-            // Nếu cả 2 đều không có/không ghi được, tạo User/Applications
-            do {
-                try FileManager.default.createDirectory(at: userApplicationsURL, withIntermediateDirectories: true)
-                targetApplicationsURL = userApplicationsURL
-            } catch {
-                Logfile.core.warning("Unable to create ~/Applications, fallback to /Applications")
-                targetApplicationsURL = systemApplicationsURL
-            }
-        }
-        
-        guard let finalTargetURL = targetApplicationsURL else { return }
-        let destinationURL = finalTargetURL.appendingPathComponent(bundleURL.lastPathComponent)
+        let targetApplicationsURL = URL(fileURLWithPath: "/Applications")
+
+        let destinationURL = targetApplicationsURL
+            .appendingPathComponent(bundleURL.lastPathComponent)
         
         do {
             if FileManager.default.fileExists(atPath: destinationURL.path) {
@@ -132,7 +111,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 Logfile.core.warning("Error deleting original file: \(error.localizedDescription)")
             }
             
-            Logfile.core.log("Moved app to \(finalTargetURL.path).  Restarting...")
+            Logfile.core.log(
+                "Moved app to \(targetApplicationsURL.path).  Restarting..."
+            )
             
             let configuration = NSWorkspace.OpenConfiguration()
             configuration.createsNewApplicationInstance = true

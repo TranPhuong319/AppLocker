@@ -190,7 +190,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         unlockButton.keyEquivalent = "\r"
 
         let clearButton = NSButton(
-            title: String(localized: "Delete all from the waiting list"),
+            title: String(localized: "Cancel"),
             target: TouchBarActionProxy.shared,
             action: #selector(TouchBarActionProxy.shared.clearWaitingList)
         )

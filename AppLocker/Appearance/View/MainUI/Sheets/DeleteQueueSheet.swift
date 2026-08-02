@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DeleteQueueSheet: View {
     @ObservedObject var appState: AppState
+    @State private var maxButtonWidth: CGFloat? = nil
 
     var body: some View {
         NavigationStack {
@@ -46,22 +47,53 @@ struct DeleteQueueSheet: View {
                 }
                 .scrollIndicators(.hidden)
                 .padding(.horizontal)
-            }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Delete all from the waiting list") {
-                        appState.deleteAllFromWaitingList()
-                    }
-                    .controlSize(.large)
-                }
+                Divider()
 
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Unlock") {
-                        appState.unlockApp()
+                HStack(spacing: 12) {
+                    Spacer()
+
+                    Button(action: {
+                        appState.deleteAllFromWaitingList()
+                    }) {
+                        Text(String(localized: "Cancel"))
+                            .font(.system(size: 13, weight: .medium))
+                            .lineLimit(1)
+                            .padding(.horizontal, 8)
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                                }
+                            )
+                            .frame(width: maxButtonWidth)
                     }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+
+                    Button(action: {
+                        appState.unlockApp()
+                    }) {
+                        Text(String(localized: "Unlock"))
+                            .font(.system(size: 13, weight: .semibold))
+                            .lineLimit(1)
+                            .padding(.horizontal, 8)
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                                }
+                            )
+                            .frame(width: maxButtonWidth)
+                    }
+                    .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)
                 }
+                .onPreferenceChange(EqualWidthKey.self) { width in
+                    if width > 0 {
+                        self.maxButtonWidth = width
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
             }
         }
         .frame(minWidth: WindowLayout.Sheet.DeleteQueue.minSize.width, minHeight: WindowLayout.Sheet.DeleteQueue.minSize.height)
@@ -76,6 +108,13 @@ struct DeleteQueueSheet: View {
                 appState.searchTextLockApps = ""
             }
         }
+    }
+}
+
+private struct EqualWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 

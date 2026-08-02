@@ -64,7 +64,7 @@ extension ESManager {
             Logfile.endpointSecurity.log("Auth complete. Flushing \(pendingToFlush.count) pending notifications...")
             DispatchQueue.global(qos: .utility).async { [weak self] in
                 for item in pendingToFlush {
-                    self?.performNotifyBlockRequest(conn: conn, name: item.name, path: item.path, sha: item.sha)
+                    self?.performNotifyBlockRequest(conn: conn, name: item.name, path: item.path, cdhash: item.cdhash, targetPid: item.targetPid)
                 }
             }
         }

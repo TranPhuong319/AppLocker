@@ -76,7 +76,7 @@ struct WelcomeView: View {
                         style: .informational,
                         buttons: [
                             String(localized: "Agree"),
-                            String(localized: "No")
+                            String(localized: "Decline")
                         ],
                         cancelIndex: 1,
                         defaultIndex: 0

@@ -39,13 +39,14 @@ final class ConfigStore {
         }
     }
 
-    func load() -> (apps: [String: LockedAppConfig], isDisabled: Bool) {
+    func load() -> (apps: [String: LockedAppConfig], isDisabled: Bool, isLegacyFormat: Bool) {
         var result: [String: LockedAppConfig] = [:]
         var isDisabled = false
+        var isLegacyFormat = false
 
         guard FileManager.default.fileExists(atPath: configURL.path),
               let plistData = try? Data(contentsOf: configURL, options: .mappedIfSafe) else {
-            return (result, isDisabled)
+            return (result, isDisabled, isLegacyFormat)
         }
 
         let decoder = PropertyListDecoder()
@@ -58,12 +59,13 @@ final class ConfigStore {
             isDisabled = config.isDisabled
         } else if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
            let apps = userBlockedAppsMap[uid] {
+            isLegacyFormat = true
             for app in apps {
                 result[app.path] = app
             }
         }
 
-        return (result, isDisabled)
+        return (result, isDisabled, isLegacyFormat)
     }
 
     func save(apps map: [String: LockedAppConfig], isDisabled: Bool) {

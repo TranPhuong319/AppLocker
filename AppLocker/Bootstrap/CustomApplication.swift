@@ -18,4 +18,12 @@ class CustomApplication: NSApplication {
 
         super.sendEvent(event)
     }
+
+    // MARK: - Disable AppKit AppIntents & Shortcuts auto-registration
+    @objc func _registerWithIntentsFramework() {}
+    @objc func _registerAppIntents() {}
+    @objc func _setupAppIntents() {}
+    @objc func _setupAppIntentsIfNeeded() {}
+    @objc func _registerAutoShortcuts() {}
+    @objc func _registerWithShortcutsFramework() {}
 }

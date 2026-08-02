@@ -143,7 +143,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     private func refreshAppLists() {
         let allApps = manager.allApps
-        
+        let lockedPathSet = Set(manager.lockedApps.keys)
+
         let lockedAppsList: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard let config = manager.lockedApps[path] else { return nil }
 
@@ -160,20 +161,14 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
             // 3. Fallback cuối cùng: dùng tên trong config hoặc tên file
             let finalName = name ?? config.name ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-
             let source: AppSource = path.hasPrefix("/System") ? .system : .user
 
             return InstalledApp(name: finalName, bundleID: config.bundleID, path: path, source: source)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        let allInstalledAppsFromManager: [InstalledApp] = manager.allApps
-
-        let unlockable =
-            allInstalledAppsFromManager
-            .filter { (installedApp: InstalledApp) -> Bool in
-                return !manager.lockedApps.keys.contains(installedApp.path)
-            }
+        let unlockable = allApps
+            .filter { !lockedPathSet.contains($0.path) }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
         DispatchQueue.main.async {
@@ -185,9 +180,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     // Kích thước window/sheet đã chuyển sang WindowLayout.swift
 
-    var appsToUnlock: [String] {
-        Array(deleteQueue)
-    }
 
     @Published var activeTouchBar: TouchBarType = .mainWindow
 
@@ -273,7 +265,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     func unlockApp() {
-        toggleLockPopup(for: Set(appsToUnlock), locking: false)
+        toggleLockPopup(for: deleteQueue, locking: false)
     }
 
     func deleteAllFromWaitingList() {
@@ -322,7 +314,6 @@ class MockLockManager: LockManagerProtocol, ObservableObject {
                     bundleID: "com.mock.app",
                     path: path,
                     sha256: "mock_sha256",
-                    blockMode: "ES",
                     execFile: "MockApp",
                     name: "Mock App"
                 )

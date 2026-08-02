@@ -40,10 +40,11 @@ final class ESXPCClient {
 
             Logfile.core.log("[ESXPCClient] Connecting to MachService")
 
+            let server = XPCServer.shared
             let conn = NSXPCConnection(machServiceName: self.serviceName)
             conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
             conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
-            conn.exportedObject = XPCServer.shared
+            conn.exportedObject = server
 
             conn.invalidationHandler = { [weak self] in
                 self?.scheduleReconnect(immediate: true)
@@ -176,41 +177,6 @@ final class ESXPCClient {
         }
     }
 
-    // App requests extension to allow SHA once (with reply ack)
-    func allowSHAOnce(
-        _ sha: String,
-        retry: Int = 0,
-        completion: @escaping (Bool) -> Void
-    ) {
-        guard retry <= 10 else {
-            Logfile.core.error("allowSHAOnce retry limit reached for SHA \(sha.prefix(8))")
-            completion(false)
-            return
-        }
-
-        guard let conn = connection else {
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) {
-                self.allowSHAOnce(sha, retry: retry + 1, completion: completion)
-            }
-            return
-        }
-
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "allowSHAOnce failed: \(String(describing: error))")
-                completion(false)
-            }) as? ESAppProtocol
-        else {
-            completion(false)
-            return
-        }
-
-        proxy.allowSHAOnce(sha) { success in
-            completion(success)
-        }
-    }
-
     func updateLanguage(_ langCode: String) {
         guard let conn = connection else {
             Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
@@ -232,11 +198,16 @@ final class ESXPCClient {
     }
 
     // App requests extension to allow config access once (with reply ack)
-    func allowConfigAccess(_ processID: Int32, completion: @escaping (Bool) -> Void) {
+    func allowConfigAccess(_ processID: Int32, retry: Int = 0, completion: @escaping (Bool) -> Void) {
+        guard retry <= 10 else {
+            Logfile.core.error("[ESXPCClient] allowConfigAccess: Max retries reached, giving up.")
+            completion(false)
+            return
+        }
+
         guard let conn = connection else {
-            // quick retry once after 50ms
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) {
-                self.allowConfigAccess(processID, completion: completion)
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.allowConfigAccess(processID, retry: retry + 1, completion: completion)
             }
             return
         }
@@ -279,6 +250,42 @@ final class ESXPCClient {
 
         proxy.authorizeShutdown(authorized) { success in
             Logfile.core.log("authorizeShutdown reply: \(success)")
+            completion(success)
+        }
+    }
+
+    func processPendingApps(
+        approvedPIDs: [Int32],
+        rejectedPIDs: [Int32],
+        retry: Int = 0,
+        completion: @escaping (Bool) -> Void
+    ) {
+        guard retry <= 5 else {
+            Logfile.core.error("processPendingApps retry limit reached (connection unavailable)")
+            completion(false)
+            return
+        }
+
+        guard let conn = connection else {
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs, retry: retry + 1, completion: completion)
+            }
+            return
+        }
+
+        guard
+            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                Logfile.core.error("processPendingApps failed: \(String(describing: error))")
+                completion(false)
+            }) as? ESAppProtocol
+        else {
+            Logfile.core.error("processPendingApps: Failed to get ESAppProtocol proxy")
+            completion(false)
+            return
+        }
+
+        proxy.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { success in
+            Logfile.core.log("processPendingApps reply: \(success) (Approved: \(approvedPIDs), Rejected: \(rejectedPIDs))")
             completion(success)
         }
     }

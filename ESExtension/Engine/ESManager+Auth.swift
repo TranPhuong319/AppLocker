@@ -136,4 +136,20 @@ extension ESManager: ESAppProtocol {
         
         reply(serverNonce, serverSig, serverPubKeyData, true)
     }
+
+    public func processPendingApps(
+        approvedPIDs: [Int32],
+        rejectedPIDs: [Int32],
+        withReply reply: @escaping (Bool) -> Void
+    ) {
+        guard isCurrentConnectionAuthenticated() else {
+            Logfile.endpointSecurity.error("processPendingApps: Connection not authenticated")
+            reply(false)
+            return
+        }
+
+        Logfile.endpointSecurity.log("processPendingApps: Approved PIDs \(approvedPIDs), Rejected PIDs \(rejectedPIDs)")
+        let result = processPendingBatch(approved: approvedPIDs, rejected: rejectedPIDs)
+        reply(result)
+    }
 }
