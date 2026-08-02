@@ -18,6 +18,12 @@ class AppIconProvider {
         cache.countLimit = 200
     }
 
+    func cachedIcon(forPath path: String, size: CGFloat = 32) -> NSImage? {
+        let appBundlePath = resolveAppBundlePath(from: path)
+        let key = "\(appBundlePath)_\(size)" as NSString
+        return cache.object(forKey: key)
+    }
+
     func icon(forPath path: String, size: CGFloat = 32) -> NSImage {
         let appBundlePath = resolveAppBundlePath(from: path)
         let key = "\(appBundlePath)_\(size)" as NSString

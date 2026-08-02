@@ -93,10 +93,11 @@ struct ContentView: View {
 
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications")
-                            ForEach(userApps, id: \.path) {
+                            ForEach(userApps, id: \.path) { app in
                                 LockedAppRow(
-                                    app: $0,
-                                    appState: appState,
+                                    app: app,
+                                    isDeleting: appState.deleteQueue.contains(app.path),
+                                    onDelete: { _ = appState.deleteQueue.insert(app.path) },
                                     unfocus: unfocus
                                 )
                             }
@@ -104,10 +105,11 @@ struct ContentView: View {
 
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications")
-                            ForEach(systemApps, id: \.path) {
+                            ForEach(systemApps, id: \.path) { app in
                                 LockedAppRow(
-                                    app: $0,
-                                    appState: appState,
+                                    app: app,
+                                    isDeleting: appState.deleteQueue.contains(app.path),
+                                    onDelete: { _ = appState.deleteQueue.insert(app.path) },
                                     unfocus: unfocus
                                 )
                             }

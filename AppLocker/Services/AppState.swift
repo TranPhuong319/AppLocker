@@ -175,6 +175,20 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             self.lockedAppObjects = lockedAppsList
             self.unlockableApps = unlockable
         }
+
+        DispatchQueue.global(qos: .utility).async {
+            for app in unlockable.prefix(60) {
+                _ = AppIconProvider.shared.icon(forPath: app.path, size: 32)
+            }
+        }
+    }
+
+    var userUnlockableApps: [InstalledApp] {
+        filteredUnlockableApps.filter { $0.source == .user }
+    }
+
+    var systemUnlockableApps: [InstalledApp] {
+        filteredUnlockableApps.filter { $0.source == .system }
     }
 
     // Kích thước window/sheet đã chuyển sang WindowLayout.swift

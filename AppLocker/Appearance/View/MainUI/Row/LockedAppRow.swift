@@ -9,7 +9,8 @@ import SwiftUI
 
 struct LockedAppRow: View {
     let app: InstalledApp
-    @ObservedObject var appState: AppState
+    let isDeleting: Bool
+    let onDelete: () -> Void
     let unfocus: () -> Void
 
     var body: some View {
@@ -22,20 +23,20 @@ struct LockedAppRow: View {
 
             Button {
                 withAnimation(.spring()) {
-                    _ = appState.deleteQueue.insert(app.path)
+                    onDelete()
                 }
             } label: {
                 Image(systemName: "minus.circle")
                     .foregroundColor(.red)
             }
             .buttonStyle(BorderlessButtonStyle())
-            .disabled(appState.deleteQueue.contains(app.path))
+            .disabled(isDeleting)
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { unfocus() }
-        .opacity(appState.deleteQueue.contains(app.path) ? 0.3 : 1.0)
+        .opacity(isDeleting ? 0.3 : 1.0)
     }
 }
