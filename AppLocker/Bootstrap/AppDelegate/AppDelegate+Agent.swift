@@ -19,11 +19,15 @@ enum AgentManageResult {
 
 extension AppDelegate {
     func registerAgentWithoutImmediateLaunch() {
+        #if DEBUG
+        Logfile.core.info("Skipping registerAgentWithoutImmediateLaunch in DEBUG mode")
+        #else
         manageAgent(plistName: plistName, action: .install)
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         process.arguments = ["stop", plistName]
         try? process.run()
+        #endif
     }
 
     @discardableResult
@@ -31,7 +35,10 @@ extension AppDelegate {
         plistName: String,
         action: AgentAction
     ) -> AgentManageResult {
-
+        #if DEBUG
+        Logfile.core.info("Skipping agent manage in DEBUG mode")
+        return .alreadyInstalled
+        #else
         let agent = SMAppService.agent(plistName: "\(plistName).plist")
 
         do {
@@ -76,5 +83,6 @@ extension AppDelegate {
             )
             return .failed(error)
         }
+        #endif
     }
 }

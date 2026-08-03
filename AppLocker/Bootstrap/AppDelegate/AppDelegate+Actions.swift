@@ -71,7 +71,15 @@ extension AppDelegate {
         )
 
         if case .button(index: 0, title: String(localized: "Reset")) = resetConfirmation {
-            performReset()
+            AuthenticationManager.authenticate(
+                reason: String(localized: "authenticate to reset AppLocker")
+            ) { [weak self] success, error in
+                if success {
+                    self?.performReset()
+                } else if let error = error {
+                    Logfile.core.error("Authentication failed for reset: \(error.localizedDescription)")
+                }
+            }
         }
     }
 
@@ -116,15 +124,8 @@ extension AppDelegate {
     }
 
     private func performReset() {
-        ExtensionInstaller.shared.onUninstalled = {
-            ESXPCClient.shared.authorizeShutdown(true) { _ in
-                self.removeConfig()
-                self.restartApp {
-                    self.manageAgent(plistName: plistName, action: .uninstall)
-                }
-            }
-        }
-        ExtensionInstaller.shared.uninstall()
+        removeConfig()
+        restartApp()
     }
 
     private func bringFrontmostWindow(matching namePart: String) {

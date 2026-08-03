@@ -59,9 +59,21 @@ extension AppDelegate {
         }
     }
 
-    func restartApp(completion: (() -> Void)? = nil) {
-        manageAgent(plistName: plistName, action: .install)
-        completion?()
-        NSApp.terminate(nil)
+    func restartApp() {
+        let bundleURL = Bundle.main.bundleURL
+        let pid = ProcessInfo.processInfo.processIdentifier
+
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        configuration.arguments = ["-waitForPID", "\(pid)"]
+
+        NSWorkspace.shared.openApplication(at: bundleURL, configuration: configuration) { _, error in
+            if let error = error {
+                Logfile.core.error("App restart error: \(error.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                NSApp.terminate(nil)
+            }
+        }
     }
 }
