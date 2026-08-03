@@ -50,9 +50,13 @@ extension ESManager {
             return nil
         }
         let key = normalizePath(path)
+        let realKey = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
         return stateLock.sync {
             // 1. Direct match
             if let queue = pendingVerificationPaths[key], let first = queue.first {
+                return first
+            }
+            if let queue = pendingVerificationPaths[realKey], let first = queue.first {
                 return first
             }
             if key != path, let queue = pendingVerificationPaths[path], let first = queue.first {
@@ -63,11 +67,15 @@ extension ESManager {
             while url.pathComponents.count > 1 {
                 if url.pathExtension.lowercased() == "app" {
                     let appPath = normalizePath(url.path)
+                    let realAppPath = url.resolvingSymlinksInPath().path
                     if let queue = pendingVerificationPaths[appPath], let first = queue.first {
                         return first
                     }
+                    if let queue = pendingVerificationPaths[realAppPath], let first = queue.first {
+                        return first
+                    }
                     for (pendingKey, queue) in pendingVerificationPaths {
-                        if pendingKey.hasPrefix(appPath) && !queue.isEmpty {
+                        if (pendingKey.hasPrefix(appPath) || pendingKey.hasPrefix(realAppPath)) && !queue.isEmpty {
                             return queue.first
                         }
                     }

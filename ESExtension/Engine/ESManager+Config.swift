@@ -12,34 +12,37 @@ extension ESManager {
     static let configPath = "/Users/Shared/AppLocker/config.plist"
 
     /// Đọc cấu hình từ file và cập nhật vào bộ nhớ
+    /// Đọc cấu hình từ file và cập nhật vào bộ nhớ ngay lập tức
+    func loadInitialConfigSync() {
+        let url = URL(fileURLWithPath: ESManager.configPath)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            Logfile.endpointSecurity.log("Config file not found at \(ESManager.configPath). Skipping initial load.")
+            return
+        }
+
+        do {
+            let data = try Data(contentsOf: url, options: .mappedIfSafe)
+            let (newCDHashes, newBundlePaths) = self.parseConfigData(data)
+
+            // Atomic Swap
+            self.stateLock.perform {
+                self.lockedCDHashes = newCDHashes
+                self.lockedBundlePaths = newBundlePaths
+            }
+
+            let totalApps = newBundlePaths.values.reduce(0) { $0 + $1.count }
+            Logfile.endpointSecurity.log(
+                "ESManager: Loaded \(totalApps) apps for \(newCDHashes.count) users from config."
+            )
+
+        } catch {
+            Logfile.endpointSecurity.error("ESManager: Failed to load config: \(error.localizedDescription)")
+        }
+    }
+
     func loadInitialConfig() {
         backgroundProcessingQueue.async { [weak self] in
-            guard let self = self else { return }
-
-            let url = URL(fileURLWithPath: ESManager.configPath)
-            guard FileManager.default.fileExists(atPath: url.path) else {
-                Logfile.endpointSecurity.log("Config file not found at \(ESManager.configPath). Skipping initial load.")
-                return
-            }
-
-            do {
-                let data = try Data(contentsOf: url, options: .mappedIfSafe)
-                let (newCDHashes, newBundlePaths) = self.parseConfigData(data)
-
-                // Atomic Swap
-                self.stateLock.perform {
-                    self.lockedCDHashes = newCDHashes
-                    self.lockedBundlePaths = newBundlePaths
-                }
-
-                let totalApps = newBundlePaths.values.reduce(0) { $0 + $1.count }
-                Logfile.endpointSecurity.log(
-                    "ESManager: Loaded \(totalApps) apps for \(newCDHashes.count) users from config."
-                )
-
-            } catch {
-                Logfile.endpointSecurity.error("ESManager: Failed to load config: \(error.localizedDescription)")
-            }
+            self?.loadInitialConfigSync()
         }
     }
 
@@ -55,8 +58,10 @@ extension ESManager {
             for app in apps {
                 let path1 = app.path
                 let path2 = (path1 as NSString).standardizingPath
+                let realPath = URL(fileURLWithPath: path1).resolvingSymlinksInPath().path
                 bundlePaths.insert(path1)
                 bundlePaths.insert(path2)
+                bundlePaths.insert(realPath)
 
                 let resolvedCDHash = app.cdhash ?? extractCDHash(forPath: path1)
                 if let hash = resolvedCDHash, !hash.isEmpty {
@@ -113,10 +118,10 @@ extension ESManager {
 
             debounceTimer?.cancel()
             let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)
-            timer.schedule(deadline: .now() + 0.3) // Debounce 300ms
+            timer.schedule(deadline: .now() + 0.05) // Debounce 50ms for instant update
             timer.setEventHandler { [weak self] in
                 Logfile.endpointSecurity.log("ESManager: Directory change detected, reloading config...")
-                self?.loadInitialConfig()
+                self?.loadInitialConfigSync()
                 timer.cancel()
             }
             timer.resume()

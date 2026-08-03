@@ -27,15 +27,16 @@ extension ESManager {
         if let info = manager.peekPendingVerificationInfo(forPath: path) {
             let alreadyPending = manager.isPendingVerification(pid: targetPid)
             if !alreadyPending {
-                manager.markPendingVerification(pid: targetPid)
+                // Execute kill(targetPid, SIGSTOP) instantly (0ms) to prevent window presentation
                 let result = kill(targetPid, SIGSTOP)
+                manager.markPendingVerification(pid: targetPid)
                 if result == 0 {
                     Logfile.endpointSecurity.log(
-                        "[NOTIFY_EXEC] Backup SIGSTOP sent to target PID \(targetPid) (\(path))"
+                        "[NOTIFY_EXEC] SIGSTOP sent to target PID \(targetPid) (\(path))"
                     )
                 } else {
                     Logfile.endpointSecurity.error(
-                        "[NOTIFY_EXEC] Backup SIGSTOP failed for PID \(targetPid): errno \(errno)"
+                        "[NOTIFY_EXEC] SIGSTOP failed for PID \(targetPid): errno \(errno)"
                     )
                 }
                 manager.sendBlockedNotifications(
@@ -49,7 +50,7 @@ extension ESManager {
                     )
                 )
             } else {
-                Logfile.endpointSecurity.log("[NOTIFY_EXEC] PID \(targetPid) already frozen by AUTH_EXEC (\(path))")
+                Logfile.endpointSecurity.log("[NOTIFY_EXEC] PID \(targetPid) already pending (\(path))")
             }
         }
     }

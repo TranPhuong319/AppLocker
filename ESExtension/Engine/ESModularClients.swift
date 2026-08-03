@@ -45,11 +45,16 @@ class ESClientObject {
             // Non-AUTH messages don't need deadline logic
             if esMessage.pointee.action_type != ES_ACTION_TYPE_AUTH {
                 if let manager = self.manager {
-                     manager.authorizationProcessingQueue.async {
-                         // Use the internal handler for non-auth messages too
-                         let handler = self.makeAuthHandler(for: message)
-                         handler(esClient, message, ESSafetyValve(message: message, manager: manager))
-                     }
+                    if esMessage.pointee.event_type == ES_EVENT_TYPE_NOTIFY_EXEC {
+                        // Handle NOTIFY_EXEC synchronously (0ms latency) to send SIGSTOP immediately
+                        let handler = self.makeAuthHandler(for: message)
+                        handler(esClient, message, ESSafetyValve(message: message, manager: manager))
+                    } else {
+                        manager.authorizationProcessingQueue.async {
+                            let handler = self.makeAuthHandler(for: message)
+                            handler(esClient, message, ESSafetyValve(message: message, manager: manager))
+                        }
+                    }
                 }
                 return
             }

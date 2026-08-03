@@ -115,7 +115,7 @@ final class ESManager: NSObject {
             setupMachListener()
 
             // 5. Initial Config & Monitoring
-            loadInitialConfig()
+            loadInitialConfigSync()
             startConfigMonitoring()
 
             // 6. Enable (Subscribe)

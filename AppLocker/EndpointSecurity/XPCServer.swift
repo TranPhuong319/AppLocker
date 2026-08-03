@@ -75,9 +75,9 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
             return
         }
 
-        // Debounce for 0.5s to gather all apps launched simultaneously by OS
+        // Debounce for 0.25s for instant response time on single app launches
         self.pendingDebounceTimer?.invalidate()
-        self.pendingDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+        self.pendingDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: false) { [weak self] _ in
             DispatchQueue.main.async {
                 self?.processIncomingQueue()
             }
@@ -105,10 +105,15 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
                     // If single app Touch ID prompt was invalidated to upgrade to BatchAuthWindow:
                     if self.isUpgradingToBatch {
                         self.isUpgradingToBatch = false
-                        let count = self.pendingApps.count
-                        Logfile.core.log("SingleAppAuth: Upgrading active prompt to BatchAuthWindow for \(count) apps.")
-                        self.startOrResetCountdownTimer()
-                        BatchAuthWindowController.shared.showWindow()
+                        if success {
+                            if let idx = self.pendingApps.firstIndex(where: { $0.id == app.id }) {
+                                self.pendingApps.remove(at: idx)
+                            }
+                            ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
+                        }
+                        if !self.pendingApps.isEmpty {
+                            self.processIncomingQueue()
+                        }
                         return
                     }
 
