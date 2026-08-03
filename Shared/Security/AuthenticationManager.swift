@@ -15,8 +15,14 @@ final class AuthenticationManager {
                              completion: @escaping (Bool, Error?) -> Void) {
         let context = LAContext()
 
-        Task { @MainActor in
-            self.currentContext = context
+        if Thread.isMainThread {
+            MainActor.assumeIsolated {
+                self.currentContext = context
+            }
+        } else {
+            Task { @MainActor in
+                self.currentContext = context
+            }
         }
 
         var error: NSError?
@@ -25,8 +31,8 @@ final class AuthenticationManager {
                 if self.currentContext === context {
                     self.currentContext = nil
                 }
-                completion(false, error)
             }
+            completion(false, error)
             return
         }
 
