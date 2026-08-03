@@ -13,15 +13,15 @@ enum AlertResult {
     case cancelled                         // Người dùng hủy (Cancel, ESC, đóng bằng X)
 }
 
-final class AlertShow {
+enum AlertShow {
     /// Hiển thị Alert với nhiều nút (tối đa 3)
-    /// - Nếu có window chính đang hiển thị → hiện dạng sheet
-    /// - Nếu không có window → hiện modal thường
+    /// - Nếu có window đang hiển thị và ứng dụng đang active → hiện dạng sheet
+    /// - Nếu không có window active → hiện modal thường
     /// - Parameters:
     ///   - title: Tiêu đề
     ///   - message: Nội dung
     ///   - style: Kiểu alert (critical, warning, informational)
-    ///   - buttons: Danh sách nút (nút cuối luôn là Cancel)
+    ///   - buttons: Danh sách nút
     /// - Returns: `AlertResult` để switch xử lý
     @discardableResult
     static func show(
@@ -38,19 +38,10 @@ final class AlertShow {
         alert.informativeText = message
         alert.alertStyle = style
 
-        // NSAlert chỉ hỗ trợ tối đa 3 nút
         let displayedButtons = Array(buttons.prefix(3))
-        for (index, title) in displayedButtons.enumerated() {
-            let button = alert.addButton(withTitle: title)
+        for (index, buttonTitle) in displayedButtons.enumerated() {
+            let button = alert.addButton(withTitle: buttonTitle)
 
-            if index == destructiveIndex {
-                let destructiveKey = "hasDestructiveAction"
-                if button.responds(to: NSSelectorFromString("setHasDestructiveAction:")) {
-                    button.setValue(true, forKey: destructiveKey)
-                }
-            }
-
-            // Ép keyEquivalent để macOS không tự đảo nút theo HUD
             if index == defaultIndex {
                 button.keyEquivalent = "\r"
             } else if index == cancelIndex {
@@ -85,41 +76,32 @@ final class AlertShow {
         message: String,
         style: NSAlert.Style = .informational
     ) {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = message
-        alert.alertStyle = style
-        alert.addButton(withTitle: "OK")
-
-        NSApplication.shared.activate(ignoringOtherApps: true)
-        runAlert(alert)
+        _ = show(title: title, message: message, style: style, buttons: ["OK"])
     }
 
-    // MARK: - Private
-
-    /// Chạy alert: nếu có window chính đang hiển thị → sheet, ngược lại → modal
+    /// Chạy alert: chỉ gắn dạng sheet khi window đang focus (keyWindow), ngược lại hiện modal độc lập
     @discardableResult
     private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
-        if let window = NSApp.keyWindow ?? NSApp.mainWindow,
-           window.isVisible {
-            // Hiển thị dạng sheet trên window chính
+        if NSApp.isActive,
+           let window = NSApp.keyWindow,
+           window.isKeyWindow,
+           window.isVisible,
+           !window.isMiniaturized {
             var response: NSApplication.ModalResponse = .alertFirstButtonReturn
             var completed = false
 
-            alert.beginSheetModal(for: window) { result in
+            alert.beginSheetModal(for: window, completionHandler: { result in
                 response = result
                 completed = true
                 NSApp.stopModal()
-            }
+            })
 
-            // Chờ đồng bộ cho đến khi sheet đóng
             if !completed {
                 NSApp.runModal(for: alert.window)
             }
 
             return response
         } else {
-            // Không có window → hiện modal thường
             return alert.runModal()
         }
     }
