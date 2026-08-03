@@ -13,10 +13,9 @@ extension ESManager {
     // MARK: - Pending Verification PID & Path Management
 
     func markPendingVerification(pid: pid_t) {
-        stateLock.perform {
+        pendingPIDLock.perform {
             _ = pendingVerificationPIDs.insert(pid)
         }
-        Logfile.endpointSecurity.log("Marked PID \(pid) as pending verification")
     }
 
     private func normalizePath(_ path: String) -> String {
@@ -92,13 +91,13 @@ extension ESManager {
     }
 
     func isPendingVerification(pid: pid_t) -> Bool {
-        return stateLock.sync {
+        return pendingPIDLock.sync {
             pendingVerificationPIDs.contains(pid)
         }
     }
 
     func removePendingVerification(pid: pid_t) {
-        stateLock.perform {
+        pendingPIDLock.perform {
             pendingVerificationPIDs.remove(pid)
         }
     }
@@ -114,7 +113,7 @@ extension ESManager {
             // ponytail: Safety guard: never pass pid <= 0 to kill() to prevent process group signals
             guard pid > 0 else { continue }
 
-            let wasPending = stateLock.sync {
+            let wasPending = pendingPIDLock.sync {
                 pendingVerificationPIDs.remove(pid) != nil
             }
 
@@ -136,7 +135,7 @@ extension ESManager {
             // ponytail: Safety guard: never pass pid <= 0 to kill() to prevent process group signals
             guard pid > 0 else { continue }
 
-            let wasPending = stateLock.sync {
+            let wasPending = pendingPIDLock.sync {
                 pendingVerificationPIDs.remove(pid) != nil
             }
 

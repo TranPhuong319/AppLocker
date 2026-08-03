@@ -44,6 +44,7 @@ final class ESManager: NSObject {
         var timestamp: Date = Date()
     }
     var pendingNotifications: [BlockedNotification] = []
+    let pendingPIDLock = FastLock()
     var pendingVerificationPIDs: Set<pid_t> = []
     var pendingVerificationPaths: [String: [PendingExecInfo]] = [:]
 
