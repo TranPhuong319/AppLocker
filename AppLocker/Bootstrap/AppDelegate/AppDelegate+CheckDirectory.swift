@@ -34,23 +34,22 @@ extension AppDelegate {
                 }
             }
 
-            let alert = NSAlert()
-            alert.alertStyle = .critical
-            alert.messageText = String(localized: "Requires running in the Applications folder")
-            alert.informativeText = String(localized:
-            """
-            The currently running application is at \(displayPath).
+            let response = AlertShow.show(
+                title: String(localized: "Requires running in the Applications folder"),
+                message: String(localized:
+                """
+                The currently running application is at \(displayPath).
 
-            AppLocker must be moved to the /Applications folder to function correctly.
-            """
-                                           )
-            alert.addButton(withTitle: String(localized: "Move to Applications"))
-            alert.addButton(withTitle: String(localized: "Quit"))
+                AppLocker must be moved to the /Applications folder to function correctly.
+                """
+                               ),
+                style: .critical,
+                buttons: [String(localized: "Move to Applications"), String(localized: "Quit")],
+                cancelIndex: 1,
+                defaultIndex: 0
+            )
 
-            NSApp.activate(ignoringOtherApps: true)
-
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
+            if case .button(index: 0, _) = response {
                 moveToApplicationsAndRelaunch()
             } else {
                 NSApp.terminate(nil)
@@ -111,14 +110,14 @@ extension AppDelegate {
 
             if errorDict != nil {
                 Logfile.core.error("AppleScript privileged move failed: \(String(describing: errorDict))")
-                let errorAlert = NSAlert()
-                errorAlert.alertStyle = .critical
-                errorAlert.messageText = String(localized: "Failed to Move Application")
                 let msg = """
                 Could not move the application to /Applications automatically. Please move it manually to continue.
                 """
-                errorAlert.informativeText = String(localized: String.LocalizationValue(msg))
-                errorAlert.runModal()
+                AlertShow.showInfo(
+                    title: String(localized: "Failed to Move Application"),
+                    message: String(localized: String.LocalizationValue(msg)),
+                    style: .critical
+                )
                 NSApp.terminate(nil)
             } else {
                 Logfile.core.log("Moved application to /Applications via AppleScript. Restarting…")

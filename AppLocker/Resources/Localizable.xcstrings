@@ -96,6 +96,16 @@
         }
       }
     },
+    "authenticate to reset AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để Đặt lại AppLocker"
+          }
+        }
+      }
+    },
     "Authentication (%d)" : {
       "localizations" : {
         "vi" : {
@@ -117,7 +127,6 @@
       }
     },
     "Automatically close the application after %d seconds" : {
-      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -213,17 +222,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tiếp tục"
-          }
-        }
-      }
-    },
-    "Could not move the application to /Applications automatically. Please move it manually to continue." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không thể tự động di chuyển ứng dụng đến /Applications. Vui lòng di chuyển nó theo cách thủ công để tiếp tục."
           }
         }
       }
