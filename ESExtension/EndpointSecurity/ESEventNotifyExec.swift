@@ -27,9 +27,10 @@ extension ESManager {
         if let info = manager.peekPendingVerificationInfo(forPath: path) {
             let alreadyPending = manager.isPendingVerification(pid: targetPid)
             if !alreadyPending {
-                // Execute kill(targetPid, SIGSTOP) instantly (0ms) to prevent window presentation
-                let result = kill(targetPid, SIGSTOP)
+                // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
                 manager.markPendingVerification(pid: targetPid)
+                let result = kill(targetPid, SIGSTOP)
+                Logfile.endpointSecurity.log("Marked PID \(targetPid) as pending verification")
                 if result == 0 {
                     Logfile.endpointSecurity.log(
                         "[NOTIFY_EXEC] SIGSTOP sent to target PID \(targetPid) (\(path))"
