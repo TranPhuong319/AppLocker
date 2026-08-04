@@ -38,23 +38,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
             Logfile.core.log("Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
 
-            // Wait for parent process to exit
-            // kill(pid, 0) returns 0 if process exists/is reachable
-            var attempts = 0
-            while kill(parentProcessID, 0) == 0 && attempts < 30 {  // Check for 3s (30 * 0.1s)
-                usleep(100000)  // 0.1s
-                attempts += 1
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                var attempts = 0
+                while kill(parentProcessID, 0) == 0 && attempts < 30 {
+                    Thread.sleep(forTimeInterval: 0.1)
+                    attempts += 1
+                }
+                DispatchQueue.main.async {
+                    if attempts >= 30 {
+                        Logfile.core.warning("Wait timed out after 3 seconds. Proceeding anyway.")
+                    } else {
+                        Logfile.core.log("Parent process exited.")
+                    }
+                    self?.applicationExactlyOneInstance(ignoringPID: parentProcessID)
+                    self?.finishLaunchSetup()
+                }
             }
-            if attempts >= 30 {
-                Logfile.core.warning("Wait timed out after 3 seconds. Proceeding anyway.")
-            } else {
-                Logfile.core.log("Parent process exited.")
-            }
-
-            applicationExactlyOneInstance(ignoringPID: parentProcessID)
         } else {
             applicationExactlyOneInstance()
+            finishLaunchSetup()
         }
+    }
+
+    @MainActor
+    private func finishLaunchSetup() {
 
         #if !DEBUG
         checkAndMoveToApplications()

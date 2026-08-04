@@ -9,35 +9,6 @@ import Foundation
 import os
 
 extension ESManager {
-    // Try to obtain an active app connection with short backoff retries.
-    func withRetryPickAppConnection(
-        maxRetries: Int = 6,
-        delays: [TimeInterval] = [0.0, 0.01, 0.02, 0.05, 0.1, 0.25],
-        completion: @escaping (NSXPCConnection?) -> Void
-    ) {
-        func attempt(_ idx: Int) {
-            if let conn = self.pickAppConnection() {
-                Logfile.endpointSecurity.log("Got active XPC connection on attempt #\(idx + 1)")
-                completion(conn)
-                return
-            }
-
-            if idx >= min(maxRetries - 1, delays.count - 1) {
-                Logfile.endpointSecurity.log(
-                    "No XPC connection after quick retries (attempts=\(idx + 1), giving up)"
-                )
-                completion(nil)
-                return
-            }
-
-            let delay = delays[min(idx + 1, delays.count - 1)]
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
-                attempt(idx + 1)
-            }
-        }
-        attempt(0)
-    }
-
     // Store an incoming connection (thread-safe).
     func storeIncomingConnection(_ conn: NSXPCConnection) {
         var count = 0

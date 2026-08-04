@@ -43,8 +43,9 @@ extension ESManager {
         let uid = audit_token_to_euid(messagePtr.process.pointee.audit_token)
 
         var signingID = "Unsigned/Unknown"
-        if let signingToken = messagePtr.event.exec.target.pointee.signing_id.data {
-            signingID = String(cString: signingToken)
+        let signingToken = messagePtr.event.exec.target.pointee.signing_id
+        if let idStr = string(from: signingToken) {
+            signingID = idStr
         }
 
         var targetProcess = messagePtr.event.exec.target.pointee

@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 protocol FSEventsDelegate: AnyObject {
     func fileSystemChanged(at paths: [String])
 }
@@ -38,7 +39,9 @@ class FSEventsMonitoringService {
                 changedPaths.append(path)
             }
 
-            watcher.delegate?.fileSystemChanged(at: changedPaths)
+            DispatchQueue.main.async {
+                watcher.delegate?.fileSystemChanged(at: changedPaths)
+            }
         }
 
         stream = FSEventStreamCreate(

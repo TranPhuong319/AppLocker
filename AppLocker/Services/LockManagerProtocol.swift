@@ -8,7 +8,8 @@
 import Foundation
 import AppKit
 
-protocol LockManagerProtocol: ObservableObject {
+@MainActor
+protocol LockManagerProtocol: AnyObject, ObservableObject {
     var lockedApps: [String: LockedAppConfig] { get set }
     var allApps: [InstalledApp] { get set }
     var isProtectionDisabled: Bool { get }

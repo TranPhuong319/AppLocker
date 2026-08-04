@@ -219,31 +219,14 @@ class ESClientObject {
 
     @discardableResult
     func muteSelf() -> Bool {
-        guard let client = client else { return false }
+        guard let client = client, var token = ESManager.getSelfAuditToken() else { return false }
 
-        var token = audit_token_t()
-        var count = mach_msg_type_number_t(
-            MemoryLayout<audit_token_t>.size / MemoryLayout<integer_t>.size)
-
-        let res = withUnsafeMutablePointer(to: &token) { tPtr in
-            tPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { iPtr in
-                return withUnsafeMutablePointer(to: &count) { cPtr in
-                    return task_info(mach_task_self_, task_flavor_t(TASK_AUDIT_TOKEN), iPtr, cPtr)
-                }
-            }
-        }
-
-        if res == KERN_SUCCESS {
-            let muteRes = es_mute_process(client, &token)
-            if muteRes == ES_RETURN_SUCCESS {
-                Logfile.endpointSecurity.log("[\(self.name)] Mute self result: Success")
-                return true
-            } else {
-                Logfile.endpointSecurity.error("[\(self.name)] Mute self result: \(muteRes.rawValue)")
-                return false
-            }
+        let muteRes = es_mute_process(client, &token)
+        if muteRes == ES_RETURN_SUCCESS {
+            Logfile.endpointSecurity.log("[\(self.name)] Mute self result: Success")
+            return true
         } else {
-            Logfile.endpointSecurity.error("[\(self.name)] Failed to get self audit token: \(res)")
+            Logfile.endpointSecurity.error("[\(self.name)] Mute self result: \(muteRes.rawValue)")
             return false
         }
     }

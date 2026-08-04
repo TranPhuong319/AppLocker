@@ -7,6 +7,7 @@
 
 import AppKit
 
+@MainActor
 class TouchBarActionProxy: NSObject {
     static let shared = TouchBarActionProxy()
 

@@ -8,6 +8,7 @@
 import AppKit
 import Combine
 
+@MainActor
 class TouchBarManager: NSObject, NSTouchBarDelegate {
     static let shared = TouchBarManager()
     let appState = AppState.shared
@@ -240,6 +241,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
 // MARK: - Self-Updating TouchBar Components
 
+@MainActor
 class DeleteQueueTouchBarButton: NSButton {
     private var cancellables = Set<AnyCancellable>()
 
@@ -267,6 +269,7 @@ class DeleteQueueTouchBarButton: NSButton {
     }
 }
 
+@MainActor
 class LockTouchBarButton: NSButton {
     private var cancellables = Set<AnyCancellable>()
 

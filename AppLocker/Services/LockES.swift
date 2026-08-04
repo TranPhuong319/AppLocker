@@ -9,6 +9,7 @@ import AppKit
 import CryptoKit
 import Foundation
 
+@MainActor
 class LockES: LockManagerProtocol {
     @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     @Published var allApps: [InstalledApp] = []
@@ -30,42 +31,41 @@ class LockES: LockManagerProtocol {
             DispatchQueue.main.async {
                 self.lockedApps = loaded.apps
                 self.isProtectionDisabled = loaded.isDisabled
-
-                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                    self?.migrateLegacyConfigsIfNeeded(isLegacyFormat: loaded.isLegacyFormat)
-                }
+                self.migrateLegacyConfigsIfNeeded(appsToMigrate: loaded.apps, isLegacyFormat: loaded.isLegacyFormat)
             }
 
             self.setupFSEvents()
         }
     }
 
-    private func migrateLegacyConfigsIfNeeded(isLegacyFormat: Bool = false) {
-        var needsSave = isLegacyFormat
-        var updatedApps = self.lockedApps
+    private func migrateLegacyConfigsIfNeeded(appsToMigrate: [String: LockedAppConfig], isLegacyFormat: Bool) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            var needsSave = isLegacyFormat
+            var updatedApps = appsToMigrate
 
-        for (path, var appConfig) in updatedApps {
-            var updated = migrateCDHash(for: &appConfig, defaultPath: path)
-            if migrateExecFile(for: &appConfig) { updated = true }
-            if migrateName(for: &appConfig, path: path) { updated = true }
+            for (path, var appConfig) in updatedApps {
+                var updated = LockES.migrateCDHash(for: &appConfig, defaultPath: path)
+                if LockES.migrateExecFile(for: &appConfig) { updated = true }
+                if LockES.migrateName(for: &appConfig, path: path) { updated = true }
 
-            if updated {
-                updatedApps[path] = appConfig
-                needsSave = true
+                if updated {
+                    updatedApps[path] = appConfig
+                    needsSave = true
+                }
             }
-        }
 
-        if needsSave {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.lockedApps = updatedApps
-                self.save()
-                Logfile.core.info("Auto-migrated legacy app configs to unified ES format and saved to disk.")
+            if needsSave {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.lockedApps = updatedApps
+                    self.save()
+                    Logfile.core.info("Auto-migrated legacy app configs to unified ES format and saved to disk.")
+                }
             }
         }
     }
 
-    private func migrateCDHash(for appConfig: inout LockedAppConfig, defaultPath: String) -> Bool {
+    private nonisolated static func migrateCDHash(for appConfig: inout LockedAppConfig, defaultPath: String) -> Bool {
         if appConfig.cdhash == nil || appConfig.cdhash?.isEmpty == true {
             var execPath = appConfig.path
             if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
@@ -87,7 +87,7 @@ class LockES: LockManagerProtocol {
         return false
     }
 
-    private func migrateExecFile(for appConfig: inout LockedAppConfig) -> Bool {
+    private nonisolated static func migrateExecFile(for appConfig: inout LockedAppConfig) -> Bool {
         if appConfig.execFile == nil || appConfig.execFile?.isEmpty == true {
             var execPath = appConfig.path
             if let bundle = Bundle(url: URL(fileURLWithPath: appConfig.path)) {
@@ -99,7 +99,7 @@ class LockES: LockManagerProtocol {
         return false
     }
 
-    private func migrateName(for appConfig: inout LockedAppConfig, path: String) -> Bool {
+    private nonisolated static func migrateName(for appConfig: inout LockedAppConfig, path: String) -> Bool {
         if appConfig.name == nil || appConfig.name?.isEmpty == true {
             let name = FileManager.default.displayName(atPath: path)
                 .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
@@ -189,6 +189,7 @@ class LockES: LockManagerProtocol {
     }
 
     func isLocked(path: String) -> Bool {
+        if isProtectionDisabled { return false }
         return lockedApps[path] != nil
     }
 }

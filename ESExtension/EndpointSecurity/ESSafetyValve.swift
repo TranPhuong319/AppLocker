@@ -17,7 +17,7 @@ final class ESSafetyValve {
         self.manager = manager
 
         // Track the count of active messages in the system
-        OSAtomicIncrement32(&manager.activeMessageCount)
+        manager.incrementActiveMessageCount()
     }
 
     /// Thread-safe response method.
@@ -69,7 +69,7 @@ final class ESSafetyValve {
             }
 
             // Decrement active message counter
-            OSAtomicDecrement32(&manager.activeMessageCount)
+            manager.decrementActiveMessageCount()
 
             // Signal that we are done to any waiting threads (usually the worker cleanup)
             deadlineExpiredSema.signal()
@@ -106,12 +106,6 @@ final class ESSafetyValve {
             return safePath(fromFilePointer: messagePtr.event.truncate.target) ?? "unknown_truncate"
         default: return "Event-\(type.rawValue)"
         }
-    }
-
-    /// Wait until a response has been sent (to ensure object stays alive until timer finishes).
-    func waitForResponse() {
-        deadlineExpiredSema.wait()
-        deadlineExpiredSema.signal()
     }
 
     /// Expose semaphore for external waiters (like ESModularClients)

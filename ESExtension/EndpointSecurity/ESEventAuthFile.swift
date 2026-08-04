@@ -28,9 +28,8 @@ extension ESManager {
         let isInsideBundle = procPath.hasPrefix("/Applications/AppLocker.app")
 
         // 3. Check Signing ID (Immutable Identity)
-        if let signingIDToken = message.pointee.process.pointee.signing_id.data {
-             let signingID = String(cString: signingIDToken)
-
+        let signingIDToken = message.pointee.process.pointee.signing_id
+        if let signingID = string(from: signingIDToken) {
              // Our components - Must be inside /Applications/AppLocker.app
              if (signingID == mainAppID || signingID == extensionID) && isInsideBundle {
                  return true
@@ -67,8 +66,9 @@ extension ESManager {
     }
 
     static func getSigningID(_ message: ESMessage) -> String {
-        if let signingIDToken = message.pointee.process.pointee.signing_id.data {
-            return String(cString: signingIDToken)
+        let signingIDToken = message.pointee.process.pointee.signing_id
+        if let idStr = string(from: signingIDToken) {
+            return idStr
         }
         return "Unsigned/Unknown"
     }

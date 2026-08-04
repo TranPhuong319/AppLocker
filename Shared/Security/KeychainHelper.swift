@@ -19,9 +19,6 @@ final class KeychainHelper {
 
         static let extensionPublic = "com.TranPhuong319.AppLocker.ESExtension.public"
         static let extensionPrivate = "com.TranPhuong319.AppLocker.ESExtension.private"
-
-        static let helperPublic = "com.TranPhuong319.AppLocker.Helper.public"
-        static let helperPrivate = "com.TranPhuong319.AppLocker.Helper.private"
     }
 
     // Ephemeral Cache (Memory only)
