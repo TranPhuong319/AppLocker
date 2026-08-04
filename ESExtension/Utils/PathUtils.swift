@@ -22,15 +22,6 @@ func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
     return String(bytes: buffer, encoding: .utf8)
 }
 
-extension String {
-    /// Returns true if path points to an embedded extension (.appex) or XPC service (.xpc).
-    var isAppExtensionOrPlugin: Bool {
-        return self.contains("/Contents/PlugIns/") ||
-               self.contains("/Contents/XPCServices/") ||
-               self.hasSuffix(".appex") ||
-               self.hasSuffix(".xpc")
-    }
-}
 
 extension ESManager {
     // Compute app bundle name for an exec path (best-effort).

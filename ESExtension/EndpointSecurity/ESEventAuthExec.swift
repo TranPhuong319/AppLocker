@@ -79,7 +79,6 @@ extension ESManager {
     }
 
     private func isPathInLockedBundle(path: String, uid: uid_t) -> Bool {
-        guard !path.isAppExtensionOrPlugin else { return false }
         var url = URL(fileURLWithPath: path)
         let userBundlePaths = lockedBundlePaths[uid] ?? Set<String>()
         let allPaths = lockedBundlePaths.values
@@ -89,9 +88,14 @@ extension ESManager {
             let stdPath = (currentPath as NSString).standardizingPath
             if userBundlePaths.contains(currentPath) || userBundlePaths.contains(stdPath) ||
                allPaths.contains(where: { $0.contains(currentPath) || $0.contains(stdPath) }) {
-                return true
+                // If inside a locked app bundle, verify that path is the main executable of this app bundle
+                if let bundle = Bundle(url: url), let mainExec = bundle.executablePath {
+                    let normPath = (path as NSString).standardizingPath
+                    let normMainExec = (mainExec as NSString).standardizingPath
+                    return normPath == normMainExec
+                }
+                return false
             }
-            if url.pathExtension == "app" { break }
             url.deleteLastPathComponent()
         }
         return false

@@ -44,10 +44,6 @@ extension ESManager {
     }
 
     func peekPendingVerificationInfo(forPath path: String) -> PendingExecInfo? {
-        // ponytail: Skip pending verification lookup for background widgets/extensions (.appex, .xpc)
-        if path.isAppExtensionOrPlugin {
-            return nil
-        }
         let key = normalizePath(path)
         let realKey = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
         return stateLock.sync {
@@ -65,6 +61,11 @@ extension ESManager {
             var url = URL(fileURLWithPath: path)
             while url.pathComponents.count > 1 {
                 if url.pathExtension.lowercased() == "app" {
+                    if let bundle = Bundle(url: url), let mainExec = bundle.executablePath {
+                        let normPath = normalizePath(path)
+                        let normMainExec = normalizePath(mainExec)
+                        guard normPath == normMainExec else { return nil }
+                    }
                     let appPath = normalizePath(url.path)
                     let realAppPath = url.resolvingSymlinksInPath().path
                     if let queue = pendingVerificationPaths[appPath], let first = queue.first {
