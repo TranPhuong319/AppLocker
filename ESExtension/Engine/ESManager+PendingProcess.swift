@@ -87,10 +87,6 @@ extension ESManager {
         }
     }
 
-    func takePendingVerificationPath(path: String) -> PendingExecInfo? {
-        return peekPendingVerificationInfo(forPath: path)
-    }
-
     func isPendingVerification(pid: pid_t) -> Bool {
         return pendingPIDLock.sync {
             pendingVerificationPIDs.contains(pid)

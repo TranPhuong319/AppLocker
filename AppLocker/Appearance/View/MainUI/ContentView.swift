@@ -11,8 +11,9 @@ struct ContentView: View {
     @ObservedObject var appState: AppState
     @FocusState var isSearchFocused: Bool
 
-    init(appState: AppState = .shared) {
-        self.appState = appState
+    @MainActor
+    init(appState: AppState? = nil) {
+        self.appState = appState ?? AppState.shared
     }
 
     var body: some View {

@@ -40,6 +40,11 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
         )
 
         DispatchQueue.main.async { [weak self] in
+            if AppState.shared.manager.isProtectionDisabled {
+                Logfile.core.log("XPCServer: Protection is disabled. Auto-approving PID \(pid) (\(name))")
+                ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+                return
+            }
             self?.addPendingAuth(name: name, path: path, cdhash: cdhash, pid: pid)
         }
     }

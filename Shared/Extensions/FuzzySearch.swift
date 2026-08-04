@@ -20,6 +20,7 @@ func fuzzyMatch(query: String, target: String) -> Bool {
 extension String {
     var normalized: String {
         self.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
     }
 }

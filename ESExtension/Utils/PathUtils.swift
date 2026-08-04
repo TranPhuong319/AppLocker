@@ -8,18 +8,18 @@
 import Foundation
 import EndpointSecurity
 
+// Safely extract string from es_string_token_t structure (not guaranteed to be null-terminated).
+func string(from token: es_string_token_t) -> String? {
+    guard let dataPtr = token.data, token.length > 0 else { return nil }
+    let rawPtr = UnsafeRawPointer(dataPtr).assumingMemoryBound(to: UInt8.self)
+    let buffer = UnsafeBufferPointer(start: rawPtr, count: Int(token.length))
+    return String(bytes: buffer, encoding: .utf8)
+}
+
 // Safely extract path from es_file_t pointer.
 func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
     guard let filePtr = filePtr else { return nil }
-    let file = filePtr.pointee
-    let token = file.path
-    guard let dataPtr = token.data else { return nil }
-    let length = Int(token.length)
-
-    // Tạo String bằng cách decode từ buffer với length (không phụ thuộc null-terminator).
-    let rawPtr = UnsafeRawPointer(dataPtr).assumingMemoryBound(to: UInt8.self)
-    let buffer = UnsafeBufferPointer(start: rawPtr, count: length)
-    return String(bytes: buffer, encoding: .utf8)
+    return string(from: filePtr.pointee.path)
 }
 
 
@@ -44,102 +44,43 @@ extension ESManager {
     }
 
     // MARK: - Protected Paths & Verification
-    static func isSharedPath(_ esPath: es_string_token_t) -> Bool {
-        guard let data = esPath.data else { return false }
-        let len = Int(esPath.length)
-        // "/Users/Shared" is 13 chars
-        let prefixLen = 13
-        if len < prefixLen { return false }
 
-        let prefix: [UInt8] = [
-            0x2f, 0x55, 0x73, 0x65, 0x72, 0x73, 0x2f, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64
-        ]
-        return memcmp(data, prefix, prefixLen) == 0
+    private static func matchTokenPrefix(_ token: es_string_token_t, prefix: String) -> Bool {
+        guard let data = token.data else { return false }
+        let prefixBytes = Array(prefix.utf8)
+        let len = Int(token.length)
+        guard len >= prefixBytes.count else { return false }
+
+        if memcmp(data, prefixBytes, prefixBytes.count) == 0 {
+            if len == prefixBytes.count { return true }
+            return data.advanced(by: prefixBytes.count).pointee == 0x2f // '/'
+        }
+        return false
+    }
+
+    static func isSharedPath(_ esPath: es_string_token_t) -> Bool {
+        return matchTokenPrefix(esPath, prefix: "/Users/Shared")
     }
 
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker
-    static func isInsideProtectedFolder(
-        _ esPath: es_string_token_t
-    ) -> Bool {
-        guard let data = esPath.data else { return false }
-        let len = Int(esPath.length)
-        let prefix: [UInt8] = [
-            0x2f, 0x55, 0x73, 0x65, 0x72, 0x73, 0x2f, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64, 0x2f,
-            0x41, 0x70, 0x70, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x72
-        ]  // "/Users/Shared/AppLocker"
-        let prefixLen = 23
-
-        if len < prefixLen { return false }
-
-        // Check prefix
-        if memcmp(data, prefix, prefixLen) == 0 {
-            // Exact match (/Users/Shared/AppLocker)
-            if len == prefixLen { return true }
-            // Subpath match (/Users/Shared/AppLocker/...)
-            // Next char must be '/'
-            if data.advanced(by: prefixLen).pointee == 0x2f {
-                return true
-            }
-        }
-        return false
+    static func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
+        return matchTokenPrefix(esPath, prefix: "/Users/Shared/AppLocker")
     }
 
-    static func isProtectedConfigPath(
-        _ esPath: es_string_token_t
-    ) -> Bool {
+    static func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
         guard let data = esPath.data else { return false }
         let len = Int(esPath.length)
-        let suffix: [UInt8] = [
-            0x2f, 0x41, 0x70, 0x70, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x2f, 0x63, 0x6f, 0x6e,
-            0x66, 0x69, 0x67, 0x2e, 0x70, 0x6c, 0x69, 0x73, 0x74
-        ]  // "/AppLocker/config.plist"
-        let suffixLen = 23
-        if len < suffixLen { return false }
-        let ptr = data.advanced(by: len - suffixLen)
-        return memcmp(ptr, suffix, suffixLen) == 0
+        let suffixBytes = Array("/AppLocker/config.plist".utf8)
+        guard len >= suffixBytes.count else { return false }
+        let ptr = data.advanced(by: len - suffixBytes.count)
+        return memcmp(ptr, suffixBytes, suffixBytes.count) == 0
     }
 
-    static func isAppBundlePath(
-        _ esPath: es_string_token_t
-    ) -> Bool {
-        guard let data = esPath.data else { return false }
-        let len = Int(esPath.length)
-        let prefix: [UInt8] = [
-            0x2f, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f,
-            0x41, 0x70, 0x70, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x2e, 0x61, 0x70, 0x70
-        ]  // "/Applications/AppLocker.app"
-        let prefixLen = 27
-
-        if len < prefixLen { return false }
-
-        // Check prefix
-        if memcmp(data, prefix, prefixLen) == 0 {
-            // Exact match (/Applications/AppLocker.app)
-            if len == prefixLen { return true }
-            // Subpath match (/Applications/AppLocker.app/...)
-            // Next char must be '/'
-            if data.advanced(by: prefixLen).pointee == 0x2f {
-                return true
-            }
-        }
-        return false
+    static func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {
+        return matchTokenPrefix(esPath, prefix: "/Applications/AppLocker.app")
     }
 
-    static func isProtectedFolderPath(
-        _ esPath: es_string_token_t
-    ) -> Bool {
-        guard let data = esPath.data else { return false }
-        let len = Int(esPath.length)
-        let suffix: [UInt8] = [
-            0x2f, 0x55, 0x73, 0x65, 0x72, 0x73, 0x2f, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64, 0x2f,
-            0x41, 0x70, 0x70, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x72
-        ]  // "/Users/Shared/AppLocker"
-        let suffixLen = 23
-        if len == suffixLen && memcmp(data, suffix, suffixLen) == 0 { return true }
-        if len == suffixLen + 1 && memcmp(data, suffix, suffixLen) == 0
-            && data.advanced(by: suffixLen).pointee == 0x2f {
-            return true
-        }
-        return false
+    static func isProtectedFolderPath(_ esPath: es_string_token_t) -> Bool {
+        return matchTokenPrefix(esPath, prefix: "/Users/Shared/AppLocker")
     }
 }

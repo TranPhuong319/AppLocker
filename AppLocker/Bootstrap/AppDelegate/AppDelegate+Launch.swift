@@ -9,6 +9,7 @@ import UserNotifications
 import AppKit
 
 extension AppDelegate {
+    @MainActor
     func launchConfig() {
         ExtensionInstaller.shared.onInstalled = {
             Logfile.core.log("[App] Setting up UI after extension install")
@@ -18,6 +19,7 @@ extension AppDelegate {
         ExtensionInstaller.shared.install()
     }
 
+    @MainActor
     func setupUIComponents() {
         Logfile.core.info("Starting menu bar and Notification")
         self.setupMenuBar()

@@ -196,19 +196,15 @@ final class ESManager: NSObject {
         muteAppLockerProcess(&auditToken)
     }
 
-    // MARK: - Muting Logic
-
-    private func muteSelf() {
-        guard let client = authorizer?.client else { return }
-        if let token = getMyAuditToken() {
-             var mutableToken = token
-             if es_mute_process(client, &mutableToken) == ES_RETURN_SUCCESS {
-                 Logfile.endpointSecurity.log("Mute self result: Success")
-             } else {
-                 Logfile.endpointSecurity.error("Mute self result: Failed")
-             }
-        }
+    func incrementActiveMessageCount() {
+        stateLock.perform { activeMessageCount += 1 }
     }
+
+    func decrementActiveMessageCount() {
+        stateLock.perform { activeMessageCount -= 1 }
+    }
+
+    // MARK: - Muting Logic
 
     func muteAppLockerProcess(_ token: UnsafePointer<audit_token_t>) {
         guard let client = authorizer?.client else { return }
@@ -228,7 +224,7 @@ final class ESManager: NSObject {
         }
     }
 
-    private func getMyAuditToken() -> audit_token_t? {
+    static func getSelfAuditToken() -> audit_token_t? {
         var token = audit_token_t()
         var size = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
 

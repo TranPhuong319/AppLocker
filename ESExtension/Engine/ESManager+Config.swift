@@ -40,12 +40,6 @@ extension ESManager {
         }
     }
 
-    func loadInitialConfig() {
-        backgroundProcessingQueue.async { [weak self] in
-            self?.loadInitialConfigSync()
-        }
-    }
-
     private func parseConfigData(_ data: Data) -> ([uid_t: Set<String>], [uid_t: Set<String>]) {
         let decoder = PropertyListDecoder()
         var newCDHashes: [uid_t: Set<String>] = [:]

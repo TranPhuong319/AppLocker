@@ -10,6 +10,7 @@ import CoreServices
 import Foundation
 import SwiftUI
 
+@MainActor
 class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     static let shared = AppState()
 
@@ -64,6 +65,11 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             setupSpotlightQuery()
             refreshAppLists()
         }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        metadataQuery?.stop()
     }
 
     private func setupSpotlightQuery() {
@@ -121,7 +127,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             .assign(to: &$filteredLockedApps)
 
         Publishers.CombineLatest($searchTextUnlockaleApps, $unlockableApps)
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.global())
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .map { [weak self] (text, apps) -> [InstalledApp] in
                 guard let self = self else { return [] }
                 return self.performFilter(text: text, apps: apps)
@@ -131,7 +137,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     }
 
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
-        let query = text.alNormalized
+        let query = text.normalized
         guard !query.isEmpty else { return apps }
 
         return apps.filter { app in
@@ -214,21 +220,24 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             : String(localized: "Unlocking \(apps.count) apps...")
         showingLockingPopup = true
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.manager.toggleLock(for: Array(apps))
+        let appsArray = Array(apps)
 
-            DispatchQueue.main.async {
-                if locking {
-                    self.selectedToLock.removeAll()
-                } else {
-                    self.deleteQueue.removeAll()
-                }
+        Task {
+            // Cho SwiftUI 1 nhịp (0.15s) để hiển thị mượt mà sheet LockingPopupSheet
+            try? await Task.sleep(nanoseconds: 150_000_000)
 
-                self.manager.reloadAllApps()
-                self.refreshAppLists()
+            self.manager.toggleLock(for: appsArray)
 
-                self.showingLockingPopup = false
+            if locking {
+                self.selectedToLock.removeAll()
+            } else {
+                self.deleteQueue.removeAll()
             }
+
+            self.manager.reloadAllApps()
+            self.refreshAppLists()
+
+            self.showingLockingPopup = false
         }
     }
 
@@ -312,6 +321,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 }
 
 // MARK: - Mocking for Previews
+@MainActor
 class MockLockManager: LockManagerProtocol, ObservableObject {
     @Published var lockedApps: [String: LockedAppConfig] = [:]
     @Published var allApps: [InstalledApp] = []

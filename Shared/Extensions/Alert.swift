@@ -79,28 +79,17 @@ enum AlertShow {
         _ = show(title: title, message: message, style: style, buttons: ["OK"])
     }
 
-    /// Chạy alert: chỉ gắn dạng sheet khi window đang focus (keyWindow), ngược lại hiện modal độc lập
+    /// Chạy alert: chỉ gắn dạng sheet khi window đang focus (keyWindow/mainWindow), ngược lại hiện modal độc lập
     @discardableResult
     private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
-        if NSApp.isActive,
-           let window = NSApp.keyWindow,
-           window.isKeyWindow,
-           window.isVisible,
-           !window.isMiniaturized {
-            var response: NSApplication.ModalResponse = .alertFirstButtonReturn
-            var completed = false
-
-            alert.beginSheetModal(for: window, completionHandler: { result in
-                response = result
-                completed = true
-                NSApp.stopModal()
-            })
-
-            if !completed {
-                NSApp.runModal(for: alert.window)
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible && !$0.isMiniaturized }) {
+            var modalResponse: NSApplication.ModalResponse = .alertFirstButtonReturn
+            alert.beginSheetModal(for: window) { response in
+                modalResponse = response
+                NSApp.stopModal(withCode: response)
             }
-
-            return response
+            _ = NSApp.runModal(for: alert.window)
+            return modalResponse
         } else {
             return alert.runModal()
         }

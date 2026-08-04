@@ -8,8 +8,9 @@
 import Cocoa
 import Carbon
 
-class HotKeyManager {
+final class HotKeyManager {
     var hotKeyRef: EventHotKeyRef?
+    var eventHandlerRef: EventHandlerRef?
     var hotKeyID = EventHotKeyID()
 
     init() {
@@ -44,9 +45,20 @@ class HotKeyManager {
                               &id)
 
             if id.id == 1 {
-                NSApp.appDelegate?.openListApp()
+                DispatchQueue.main.async {
+                    NSApp.appDelegate?.openListApp()
+                }
             }
             return noErr
-        }, 1, &eventType, nil, nil)
+        }, 1, &eventType, nil, &eventHandlerRef)
+    }
+
+    deinit {
+        if let hotKeyRef = hotKeyRef {
+            UnregisterEventHotKey(hotKeyRef)
+        }
+        if let eventHandlerRef = eventHandlerRef {
+            RemoveEventHandler(eventHandlerRef)
+        }
     }
 }

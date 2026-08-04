@@ -150,8 +150,12 @@ final class ESXPCClient {
         xpcQueue.async { [weak self] in
             guard let self = self else { return }
 
-            // Clean up existing connection
-            self.connection?.invalidate()
+            // Clean up existing connection safely without triggering recursive handler
+            if let oldConn = self.connection {
+                oldConn.invalidationHandler = nil
+                oldConn.interruptionHandler = nil
+                oldConn.invalidate()
+            }
             self.connection = nil
             self.isConnecting = false  // Allow new connection attempt
 

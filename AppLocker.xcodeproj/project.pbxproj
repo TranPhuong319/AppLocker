@@ -24,7 +24,6 @@
 		E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */; };
 		E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */; };
 		E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */; };
-		E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DF2F59E36600D46B31 /* Extensions.swift */; };
 		E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */; };
 		E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */; };
 		E0FD75F72F59E36600D46B31 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A72F59E36600D46B31 /* AppIconView.swift */; };
@@ -211,7 +210,6 @@
 		E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconProvider.swift; sourceTree = "<group>"; };
 		E0FD75DD2F59E36600D46B31 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
-		E0FD75DF2F59E36600D46B31 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSEventsMonitoringService.swift; sourceTree = "<group>"; };
 		E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppConfig.swift; sourceTree = "<group>"; };
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
@@ -469,6 +467,7 @@
 			isa = PBXGroup;
 			children = (
 				E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */,
+				E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -489,7 +488,6 @@
 				E0FD75B72F59E36600D46B31 /* Settings */,
 				E0FD75B92F59E36600D46B31 /* Utils */,
 				E0FD75BC2F59E36600D46B31 /* Welcome */,
-				E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */,
 				E07DF97C2FA5994C00827F2C /* About */,
 			);
 			path = View;
@@ -568,7 +566,6 @@
 				E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */,
 				E0FD75DD2F59E36600D46B31 /* AppState.swift */,
 				E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */,
-				E0FD75DF2F59E36600D46B31 /* Extensions.swift */,
 				E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */,
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
@@ -904,7 +901,6 @@
 				E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */,
 				E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */,
 				E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */,
-				E0FD75F42F59E36600D46B31 /* Extensions.swift in Sources */,
 				E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */,
 				E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */,
 				E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */,
