@@ -3,6 +3,9 @@ name: Build
 env:
   BUILDDIR: "build"
   DEVELOPER_DIR: "/Applications/Xcode_26.2.app/Contents/Developer"
+  OLD_PRE_TAG: ""
+  IS_PRE: "false"
+  REL_TAG: ""
 
 on:
   push:
@@ -60,25 +63,15 @@ jobs:
             | head -n 1 \
             | sed -E 's/.*= *"?([^";]+)"?;.*/\1/')
 
-          if [[ "$GITHUB_EVENT_NAME" != 'workflow_dispatch' ]]; then
-            # alpha
-            sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj
-          else
-            # stable
-            sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj
-          fi
+          sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj
           echo "VER=$MARKETING_VERSION" >> $GITHUB_ENV
-          if [[ -z $CUR_TAG ]]; then
-            echo "OLD_PRE_TAG=NULL" >> $GITHUB_ENV
-          else
-            echo "OLD_PRE_TAG=$CUR_TAG">> $GITHUB_ENV
-          fi
+          echo "OLD_PRE_TAG=${CUR_TAG:-NULL}" >> $GITHUB_ENV
         shell: zsh {0}
 
       - name: Lint Code
-        run: |
-          swiftlint lint --reporter github-actions-logging
+        run: swiftlint lint --reporter github-actions-logging
         continue-on-error: true
+
       - name: i18n Stats
         run: python .github/scripts/check_localization.py
 
@@ -118,26 +111,22 @@ jobs:
           mkdir Artifacts
           cp -R ${XCBUILD_PATH}/*.dmg Artifacts
 
-      - name: Setup Prerelease Variables
-        if: github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))
-        run: |
-          echo "REL_TAG=v${VER}-alpha" >> $GITHUB_ENV
-          echo "IS_PRE=true" >> $GITHUB_ENV
-          echo '### Disclaimer:' >> ReleaseNotes.md
-          echo '***This alpha version is for testing only.***' >> ReleaseNotes.md
-          echo 'It is not ready for daily use and we do not guarantee its usability.' >> ReleaseNotes.md
-
       - name: Setup Release Variables
-        if: github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))) || github.event_name == 'workflow_dispatch'
         run: |
-          echo "REL_TAG=v${VER}" >> $GITHUB_ENV
-          echo "IS_PRE=false" >> $GITHUB_ENV
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            echo "REL_TAG=v${VER}-alpha" >> $GITHUB_ENV
+            echo "IS_PRE=true" >> $GITHUB_ENV
+            printf "### Disclaimer:\n***This alpha version is for testing only.***\nIt is not ready for daily use and we do not guarantee its usability.\n" > ReleaseNotes.md
+          else
+            echo "REL_TAG=v${VER}" >> $GITHUB_ENV
+            echo "IS_PRE=false" >> $GITHUB_ENV
+          fi
 
       - name: Generate Changelog
         id: changelog
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))) || github.event_name == 'workflow_dispatch'
-        run: |
-          python .github/scripts/generate_changelog.py --to-ref HEAD --current-tag "$REL_TAG"
+        run: python .github/scripts/generate_changelog.py --to-ref HEAD --current-tag "$REL_TAG"
 
       - name: Delete Old Prerelease
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/')) && steps.changelog.outputs.HAS_CHANGES == 'true') || github.event_name == 'workflow_dispatch'
@@ -146,94 +135,51 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare Sparkle Key
-        run: |
-          echo "${SPARKLE_KEY}" | tr -d '\r' > sparkle_key.pem
-          chmod 600 sparkle_key.pem
-        env:
-          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
-
-      - name: Setup Critical Update Flag
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          if [[ "${{ inputs.critical }}" == "true" ]]; then
-            echo "SPARKLE_CRITICAL=true" >> $GITHUB_ENV
-          else
-            echo "SPARKLE_CRITICAL=false" >> $GITHUB_ENV
-          fi
-          if [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
-            SPARKLE_CRITICAL=false
-          fi
-
-      - name: Default Critical Flag (push)
-        if: github.event_name == 'push'
-        run: echo "SPARKLE_CRITICAL=false" >> $GITHUB_ENV
-
       - name: Generate Sparkle Appcast
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))) || github.event_name == 'workflow_dispatch'
         run: |
-          SHORTSTRING="${VER}"
-          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            # push → pre-release alpha
-            DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/download/${REL_TAG}/AppLocker.dmg"
-          else
-            # workflow_dispatch → stable
+          echo "${SPARKLE_KEY}" | tr -d '\r' > sparkle_key.pem && chmod 600 sparkle_key.pem
+          
+          DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/download/${REL_TAG}/AppLocker.dmg"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             DMG_URL="https://github.com/TranPhuong319/AppLocker/releases/latest/download/AppLocker.dmg"
           fi
 
-          APPCAST_VER="${GITHUB_RUN_NUMBER}"
-          CUR_VER="${APPCAST_VER}"
-          sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${CUR_VER}\";/g" AppLocker.xcodeproj/project.pbxproj
-
-          CHANGELOG="$(cat changelog_body.html)"
-          PUBDATE="$(date +"%a, %d %b %Y %T %z")"
           SPARKLE_BIN='./build/SourcePackages/artifacts/sparkle/Sparkle/bin'
           SIGNED_ATTR=$($SPARKLE_BIN/sign_update --ed-key-file sparkle_key.pem ./Artifacts/AppLocker.dmg)
-          CRITICAL_ATTR=""
-          if [[ "$SPARKLE_CRITICAL" == "true" ]]; then
-            CRITICAL_ATTR="<sparkle:criticalUpdate />"
-          fi
-          CHANNEL_ATTR=""
-          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            CHANNEL_ATTR='sparkle:channel="beta"'
-          fi
+          CRITICAL_TAG="${{ inputs.critical == 'true' && '<sparkle:criticalUpdate />' || '' }}"
+          CHANNEL_ATTR="${{ github.event_name == 'push' && 'sparkle:channel="beta"' || '' }}"
+          CHANGELOG="$(cat changelog_body.html)"
+          PUBDATE="$(date +"%a, %d %b %Y %T %z")"
 
-          APPCAST=(
-              '<?xml version="1.0" standalone="yes"?>'
-              '<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">'
-              '    <channel>'
-              '        <title>AppLocker</title>'
-              '        <item>'
-              "            <title>${VER}</title>"
-              "            <pubDate>${PUBDATE}</pubDate>"
-              "            ${CRITICAL_ATTR}"
-              '            <description><![CDATA['
-              '                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/19.4.0/primer.min.css">'
-              '                <meta charset="UTF-8">'
-              '                <style>'
-              '                @media (prefers-color-scheme: dark) {'
-              '                  body { background:#0d1117; color:#c9d1d9; }'
-              '                  a { color:#58a6ff; }'
-              '                }'
-              '                @media (prefers-color-scheme: light) {'
-              '                  body { background:#ffffff; color:#24292f; }'
-              '                  a { color:#0969da; }'
-              '                }'
-              '                </style>'
-              '                <div class="markdown-body">'
-              "${CHANGELOG}"
-              '                </div>'
-              '            ]]>'
-              '            </description>'
-              '            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>'
-              "            <enclosure url='${DMG_URL}' sparkle:version='${APPCAST_VER}' sparkle:shortVersionString='${SHORTSTRING}' type='application/octet-stream' ${CHANNEL_ATTR} ${SIGNED_ATTR}/>"
-              '        </item>'
-              '    </channel>'
-              '</rss>'
-          )
-          for appcast in "${APPCAST[@]}"; do
-              echo "${appcast}" >> ./Artifacts/appcast.xml
-          done
+          cat <<EOF > ./Artifacts/appcast.xml
+          <?xml version="1.0" standalone="yes"?>
+          <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+              <channel>
+                  <title>AppLocker</title>
+                  <item>
+                      <title>${VER}</title>
+                      <pubDate>${PUBDATE}</pubDate>
+                      <sparkle:version>${GITHUB_RUN_NUMBER}</sparkle:version>
+                      <sparkle:shortVersionString>${VER}</sparkle:shortVersionString>
+                      <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>
+                      ${CRITICAL_TAG}
+                      <description><![CDATA[
+                          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/19.4.0/primer.min.css">
+                          <meta charset="UTF-8">
+                          <style>
+                          @media (prefers-color-scheme: dark) { body { background:#0d1117; color:#c9d1d9; } a { color:#58a6ff; } }
+                          @media (prefers-color-scheme: light) { body { background:#ffffff; color:#24292f; } a { color:#0969da; } }
+                          </style>
+                          <div class="markdown-body">
+                          ${CHANGELOG}
+                          </div>
+                      ]]></description>
+                      <enclosure url='${DMG_URL}' sparkle:version='${GITHUB_RUN_NUMBER}' sparkle:shortVersionString='${VER}' type='application/octet-stream' ${CHANNEL_ATTR} ${SIGNED_ATTR}/>
+                  </item>
+              </channel>
+          </rss>
+          EOF
         shell: zsh {0}
         env:
           SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
