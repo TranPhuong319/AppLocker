@@ -1,74 +1,120 @@
 # AppLocker User Guide
 
-Welcome to AppLocker! This guide will help you understand how to use the application effectively to secure your macOS applications.
+[ English | [Tiếng Việt](USAGE-vi.md) ]
 
-## Table of Contents
-1. [Installation](#installation)
-2. [First Launch & Modes](#first-launch--modes)
-3. [Managing Locked Apps](#managing-locked-apps)
-4. [Authentication](#authentication)
-5. [Troubleshooting](#troubleshooting)
+AppLocker is a native macOS security utility that intercepts application launches and requires user authentication (Touch ID or System Password) before execution.
 
-## Installation
+---
 
-1. Download the latest release from the [Releases Page](https://github.com/TranPhuong319/AppLocker/releases).
-2. Drag and drop `AppLocker.app` into your `/Applications` folder.
-3. Launch the application.
+## System Requirements
 
-## First Launch & Modes
+- **macOS Version**: macOS 13 (Ventura) or later.
+- **System Integrity Protection (SIP)**: Must be **disabled** to allow the Endpoint Security (ES) system extension to load and intercept process launches at kernel level.
 
-AppLocker operates in two main modes. The choice depends on your security needs and system configuration.
+---
 
-### 1. Endpoint Security (ES) Mode (Recommended)
-This mode uses Apple's Endpoint Security framework for robust and secure application blocking.
+## Initial Setup
 
-- **Requirement**: You must disable **System Integrity Protection (SIP)** to load the system extension.
-- **Setup**:
-    1. Disable SIP (Boot into Recovery Mode > Terminal > `csrutil disable` > Restart).
-    2. Open AppLocker.
-    3. Click "Install System Extension" when prompted.
-    4. Allow the extension in **System Settings > Privacy & Security**.
+### 1. Disable System Integrity Protection (SIP)
+1. Turn off your Mac.
+2. Boot into Recovery Mode:
+   - **Apple Silicon (M1/M2/M3/M4)**: Press and hold the **Power button** until "Loading startup options" appears, then select **Options > Continue**.
+   - **Intel Macs**: Hold `Cmd + R` immediately after powering on until the Apple logo appears.
+3. In the top menu bar, open **Utilities > Terminal**.
+4. Run the command:
+   ```bash
+   csrutil disable
+   ```
+5. Restart your Mac.
 
-### 2. Launcher Mode
-This is a simpler mode that doesn't require disabling SIP but provides less robust protection (it relies on wrapping the app launch).
+### 2. Enable System Extension
+1. Drag `AppLocker.app` into your `/Applications` directory and launch it.
+2. When prompted, allow the system extension installation.
+3. Open **System Settings > Privacy & Security**.
+4. Scroll down to the **Security** section and click **Allow** next to the prompt for software from developer *"Tran Phuong"*.
 
-- **Setup**:
-    1. Open AppLocker.
-    2. Choose "Launcher Mode" if prompted or configured.
-    3. You may need to provide administrator privileges to set up the helper tools.
+---
 
-## Managing Locked Apps
+## Managing Locked Applications
 
-### Adding an App
-1. Open the AppLocker main window.
-2. Click the **"+"** (Plus) button at the top-left or bottom-left of the window.
-3. Select the application you want to lock from the file picker.
-4. The app will appear in the list.
+Access the management window at any time by clicking the **AppLocker lock icon (`🔒`)** in your macOS menu bar and choosing **Manage the application list…** (or press `Cmd + Shift + L`).  
+*Note: Opening the management window requires authentication.*
 
-### Removing an App
-1. Select the app you want to remove from the list.
-2. Click the **"-"** (Minus) button or press `Delete` on your keyboard.
+### Locking an Application
+1. In the AppLocker main window, click the **`+` (Plus)** button in the header.
+2. Select applications from the **Applications** or **System Applications** list.
+3. Alternatively, click **Select Other Applications…** to browse for any custom `.app` bundle using Finder.
+4. Click **Lock** to enforce protection.
 
-## Authentication
+### Unlocking an Application
+1. Click the **`-` (Minus / Trash)** icon next to the app in your locked list.
+2. The app is placed into the **Unlock Waiting List**.
+3. Click the notification bar at the bottom (*"Waiting to unlock N application(s)..."*).
+4. Review the queue and click **Unlock** to confirm removal.
 
-When you try to open a locked application:
-1. The application launch will be intercepted.
-2. An AppLocker authentication window will appear.
-3. Enter your password (or use Touch ID if configured).
-4. If successful, the application will launch.
+---
 
-## Troubleshooting
+## Launching a Locked Application
 
-### "System Extension Blocked"
-If you see this message, go to **System Settings > Privacy & Security** and look for a message about software from "Tran Phuong" being blocked. Click **Allow**.
+1. Open any locked application as normal (via Finder, Dock, Spotlight, or Launchpad).
+2. AppLocker will intercept the launch before the process starts.
+3. An authentication dialog will appear asking for **Touch ID** or your **macOS User Password**.
+4. Upon successful authentication, the application will launch immediately. If authentication fails or is cancelled, the launch is aborted.
 
-### App not launching after password
-- Ensure the password is correct.
-- Check if AppLocker is running in the menu bar.
-- If using ES mode, verify that the extension is active (green indicator in the main app).
+---
 
-### Resetting AppLocker
-If you encounter persistent issues, you can reset the configuration:
-1. Quit AppLocker.
-2. Delete `~/Library/Application Support/AppLocker`.
-3. Delete `~/Library/Preferences/com.fpt.AppLocker.plist`.
+## Menu Bar Controls & Shortcuts
+
+| Shortcut | Menu Action | Description |
+| :--- | :--- | :--- |
+| `Cmd + Shift + L` | **Manage the application list…** | Opens the app list manager (requires authentication). |
+| `Cmd + ,` | **Settings…** | Configure automatic software update checks, downloads, and channels (Stable / Beta). |
+| — | **Check for Updates…** | Manually check for software updates. |
+| — | **About AppLocker** | View current app version and developer information. |
+| — | **Uninstall AppLocker…** | Deauthorizes the system extension, removes background services, and uninstalls AppLocker cleanly. |
+| `Option` (Hold) | **Reset AppLocker…** | Reset all settings and clear the locked applications list (requires authentication). |
+
+---
+
+## Uninstallation
+
+To cleanly remove AppLocker, its system extension, background agent, and settings:
+
+### Recommended (Automatic Uninstall)
+1. Make sure all locked applications have been unlocked.
+2. Click the **AppLocker lock icon (`🔒`)** in your macOS menu bar.
+3. Select **Uninstall AppLocker…**.
+4. Confirm the uninstallation prompt. AppLocker will automatically:
+   - Deauthorize and unload the Endpoint Security system extension.
+   - Stop and remove the background agent (`launchd`).
+   - Clean up application configuration files.
+   - Move `AppLocker.app` to Trash.
+5. Restart your Mac when prompted to finalize system cleanup.
+
+### Manual Cleanup
+If you have already deleted `AppLocker.app` manually:
+1. Delete residual configuration and launch agent files:
+   ```bash
+   rm -rf ~/Library/Application\ Support/AppLocker
+   rm -rf ~/Library/LaunchAgents/com.TranPhuong319.AppLocker.agent.plist
+   ```
+2. (Optional) Re-enable System Integrity Protection (SIP) if you no longer require process interception:
+   - Boot into **Recovery Mode** -> **Utilities > Terminal**.
+   - Run `csrutil enable` and restart your Mac.
+
+---
+
+## Troubleshooting & Reset
+
+### System Extension Blocked
+- Ensure SIP is disabled (`csrutil status` in Terminal should output `System Integrity Protection status: disabled.`).
+- Go to **System Settings > Privacy & Security** and allow the system extension under Security.
+
+### Reset Configuration
+If you need to restore AppLocker to default settings:
+1. Hold `Option` key while opening the menu bar icon `🔒`.
+2. Click **Reset AppLocker…** and authenticate.
+3. Or manually delete the configuration file:
+   ```bash
+   rm -rf ~/Library/Application\ Support/AppLocker
+   ```
