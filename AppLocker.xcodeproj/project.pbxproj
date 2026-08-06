@@ -69,7 +69,6 @@
 		E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */; };
 		E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */; };
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
-		E0FD764D2F59E37C00D46B31 /* PIDFromProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763E2F59E37C00D46B31 /* PIDFromProcess.swift */; };
 		E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76402F59E37C00D46B31 /* ESMachListener.swift */; };
 		E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */; };
 		E0FD76502F59E37C00D46B31 /* FastLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763B2F59E37C00D46B31 /* FastLock.swift */; };
@@ -77,9 +76,7 @@
 		E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */; };
 		E0FD76532F59E37C00D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762E2F59E37C00D46B31 /* main.swift */; };
 		E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */; };
-		E0FD76552F59E37C00D46B31 /* ESEventAuthExec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76232F59E37C00D46B31 /* ESEventAuthExec.swift */; };
 		E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */; };
-		E0FD76572F59E37C00D46B31 /* ESState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762D2F59E37C00D46B31 /* ESState.swift */; };
 		E0FD76582F59E37C00D46B31 /* ESManager+Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */; };
 		E0FD76592F59E37C00D46B31 /* ESEventAuthFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76242F59E37C00D46B31 /* ESEventAuthFile.swift */; };
 		E0FD765A2F59E37C00D46B31 /* ESMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76262F59E37C00D46B31 /* ESMessage.swift */; };
@@ -218,7 +215,6 @@
 		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
 		E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.agent.plist; sourceTree = "<group>"; };
 		E0FD75EA2F59E36600D46B31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E0FD76232F59E37C00D46B31 /* ESEventAuthExec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthExec.swift; sourceTree = "<group>"; };
 		E0FD76242F59E37C00D46B31 /* ESEventAuthFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthFile.swift; sourceTree = "<group>"; };
 		E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventNotifyExit.swift; sourceTree = "<group>"; };
 		E0FD76262F59E37C00D46B31 /* ESMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESMessage.swift; sourceTree = "<group>"; };
@@ -227,7 +223,6 @@
 		E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Auth.swift"; sourceTree = "<group>"; };
 		E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Config.swift"; sourceTree = "<group>"; };
 		E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESModularClients.swift; sourceTree = "<group>"; };
-		E0FD762D2F59E37C00D46B31 /* ESState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESState.swift; sourceTree = "<group>"; };
 		E0FD762E2F59E37C00D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTYNotifier.swift; sourceTree = "<group>"; };
 		E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedAppsStore.swift; sourceTree = "<group>"; };
@@ -238,7 +233,6 @@
 		E0FD763B2F59E37C00D46B31 /* FastLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastLock.swift; sourceTree = "<group>"; };
 		E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		E0FD763D2F59E37C00D46B31 /* PathUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathUtils.swift; sourceTree = "<group>"; };
-		E0FD763E2F59E37C00D46B31 /* PIDFromProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIDFromProcess.swift; sourceTree = "<group>"; };
 		E0FD76402F59E37C00D46B31 /* ESMachListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESMachListener.swift; sourceTree = "<group>"; };
 		E0FD76412F59E37C00D46B31 /* ESXPCConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCConnections.swift; sourceTree = "<group>"; };
 		E0FD76432F59E37C00D46B31 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
@@ -601,7 +595,6 @@
 		E0FD76282F59E37C00D46B31 /* EndpointSecurity */ = {
 			isa = PBXGroup;
 			children = (
-				E0FD76232F59E37C00D46B31 /* ESEventAuthExec.swift */,
 				E0FD76242F59E37C00D46B31 /* ESEventAuthFile.swift */,
 				E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */,
 				E0FD76262F59E37C00D46B31 /* ESMessage.swift */,
@@ -619,7 +612,6 @@
 				E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */,
 				E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */,
 				E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */,
-				E0FD762D2F59E37C00D46B31 /* ESState.swift */,
 				E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */,
 				E0FD762E2F59E37C00D46B31 /* main.swift */,
 			);
@@ -658,7 +650,6 @@
 				E0FD763B2F59E37C00D46B31 /* FastLock.swift */,
 				E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */,
 				E0FD763D2F59E37C00D46B31 /* PathUtils.swift */,
-				E0FD763E2F59E37C00D46B31 /* PIDFromProcess.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -869,7 +860,6 @@
 				E0FD76782F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
 				E0FD76792F59E3BE00D46B31 /* CDHashHelper.swift in Sources */,
 				E0FD767A2F59E3BE00D46B31 /* Log.swift in Sources */,
-				E0FD764D2F59E37C00D46B31 /* PIDFromProcess.swift in Sources */,
 				E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */,
 				E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */,
 				E0FD76502F59E37C00D46B31 /* FastLock.swift in Sources */,
@@ -878,12 +868,10 @@
 				E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */,
 				E0FD76532F59E37C00D46B31 /* main.swift in Sources */,
 				E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */,
-				E0FD76552F59E37C00D46B31 /* ESEventAuthExec.swift in Sources */,
 				E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */,
 				E0FD79022F59E37C00D46B31 /* ESManager+PendingProcess.swift in Sources */,
 				E0FD79042F59E37C00D46B31 /* ESEventNotifyExec.swift in Sources */,
 				E0FD79062F59E37C00D46B31 /* ESEventAuthSignal.swift in Sources */,
-				E0FD76572F59E37C00D46B31 /* ESState.swift in Sources */,
 				E0FD76582F59E37C00D46B31 /* ESManager+Auth.swift in Sources */,
 				E0FD76592F59E37C00D46B31 /* ESEventAuthFile.swift in Sources */,
 				E0FD765A2F59E37C00D46B31 /* ESMessage.swift in Sources */,
