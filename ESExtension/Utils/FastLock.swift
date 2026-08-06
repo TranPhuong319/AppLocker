@@ -24,31 +24,4 @@ final class FastLock {
         defer { os_unfair_lock_unlock(&_lock) }
         closure()
     }
-
-    @inline(__always)
-    func performThrowing(_ closure: () throws -> Void) throws {
-        os_unfair_lock_lock(&_lock)
-        defer { os_unfair_lock_unlock(&_lock) }
-        try closure()
-    }
-
-    // --- try variants (không block)
-    @inline(__always)
-    func trySync<T>(default defaultValue: T, _ closure: () -> T) -> T {
-        if os_unfair_lock_trylock(&_lock) {
-            defer { os_unfair_lock_unlock(&_lock) }
-            return closure()
-        }
-        return defaultValue
-    }
-
-    @inline(__always)
-    func tryPerform(default: Bool = false, _ closure: () -> Void) -> Bool {
-        if os_unfair_lock_trylock(&_lock) {
-            defer { os_unfair_lock_unlock(&_lock) }
-            closure()
-            return true
-        }
-        return false
-    }
 }

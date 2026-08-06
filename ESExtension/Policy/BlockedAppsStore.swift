@@ -9,25 +9,23 @@ import Foundation
 import os
 
 extension ESManager {
-    // Notify the app when an execution is blocked.
-    func sendBlockedNotificationToApp(name: String, path: String, cdhash: String, uid: uid_t, targetPid: pid_t) {
+    func sendBlockedNotificationToApp(notification: BlockedNotification) {
         if let conn = self.pickAppConnection() {
-            self.performNotifyBlockRequest(conn: conn, name: name, path: path, cdhash: cdhash, targetPid: targetPid)
+            self.performNotifyBlockRequest(
+                conn: conn,
+                name: notification.name,
+                path: notification.path,
+                cdhash: notification.cdhash,
+                targetPid: notification.targetPid
+            )
         } else {
             xpcConnectionLock.perform {
                 Logfile.endpointSecurity.warning(
-                    "No XPC connection available. Queueing notification and forcing App wake-up for UID \(uid)..."
+                    "No XPC connection available. Queueing notification and forcing App wake-up for UID \(notification.uid)..."
                 )
-                let pending = BlockedNotification(
-                    name: name,
-                    path: path,
-                    cdhash: cdhash,
-                    uid: uid,
-                    targetPid: targetPid
-                )
-                self.pendingNotifications.append(pending)
+                self.pendingNotifications.append(notification)
             }
-            AppLauncherUtils.forceEnableAndRestartAgent(for: uid)
+            AppLauncherUtils.forceEnableAndRestartAgent(for: notification.uid)
         }
     }
 
@@ -45,19 +43,8 @@ extension ESManager {
         }) as? ESXPCProtocol {
             proxy.notifyBlockedExec(name: name, path: path, cdhash: cdhash, pid: rawPID)
             Logfile.endpointSecurity.log("Notified app (async) about blocked exec: \(path) (PID: \(rawPID))")
-            return
+        } else {
+            Logfile.endpointSecurity.error("Failed to notify app: Could not obtain valid XPC proxy for ESXPCProtocol")
         }
-
-        if let syncProxy = conn.synchronousRemoteObjectProxyWithErrorHandler({ error in
-            Logfile.endpointSecurity.error(
-                "XPC notify (sync) error: \(String(describing: error))")
-        }) as? ESXPCProtocol {
-            syncProxy.notifyBlockedExec(name: name, path: path, cdhash: cdhash, pid: rawPID)
-            Logfile.endpointSecurity.log(
-                "Notified app (sync fallback) about blocked exec: \(path) (PID: \(rawPID))")
-            return
-        }
-
-        Logfile.endpointSecurity.error("Failed to notify app: Could not obtain valid XPC proxy for ESXPCProtocol")
     }
 }

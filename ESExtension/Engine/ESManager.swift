@@ -18,10 +18,6 @@ final class ESManager: NSObject {
     var authorizer: ESAuthorizer?
     var tamper: ESTamper?
 
-    // Legacy support for other parts of the code
-    var authClient: OpaquePointer? { authorizer?.client }
-    var fileClient: OpaquePointer? { tamper?.client }
-
     // MARK: - State
     let stateLock = FastLock()
     var lockedCDHashes: [uid_t: Set<String>] = [:]
@@ -33,20 +29,15 @@ final class ESManager: NSObject {
         let name: String
         let path: String
         let cdhash: String
-        let uid: uid_t
-        let targetPid: pid_t
-    }
-    struct PendingExecInfo {
-        let cdhash: String
         let parentPid: pid_t
         let uid: uid_t
         let signingID: String
-        var timestamp: Date = Date()
+        let targetPid: pid_t
     }
+
     var pendingNotifications: [BlockedNotification] = []
     let pendingPIDLock = FastLock()
     var pendingVerificationPIDs: Set<pid_t> = []
-    var pendingVerificationPaths: [String: [PendingExecInfo]] = [:]
 
     // MARK: - Locks and Queues
     let xpcConnectionLock = FastLock()
@@ -76,13 +67,6 @@ final class ESManager: NSObject {
     let keyGenGroup = DispatchGroup()
 
     var activeMessageCount: Int32 = 0
-
-    // MARK: - File Access Cache / Rate Limiting (Flood Protection)
-    let fileAccessLock = FastLock()
-    /// Cache kết quả allow nhanh cho path, tránh check lại logic phức tạp
-    var fileAccessAllowCache: Set<String> = []
-    /// Track lần truy cập cuối cùng cho mỗi path để rate limit (Fail-Open)
-    var recentFileAccess: [String: [Date]] = [:]
 
     override init() {
         super.init()
@@ -139,13 +123,6 @@ final class ESManager: NSObject {
         if ESManager.sharedInstanceForCallbacks === self {
             ESManager.sharedInstanceForCallbacks = nil
         }
-    }
-
-    func invalidateCache(forPath path: String) {
-        fileAccessLock.perform {
-            fileAccessAllowCache.remove(path)
-        }
-        Logfile.endpointSecurity.log("Cache invalidated for: \(path)")
     }
 
     func isCurrentConnectionAuthenticated() -> Bool {
@@ -250,13 +227,10 @@ final class ESManager: NSObject {
             do {
                 try KeychainHelper.shared.generateKeys(tag: serverTag)
 
-                var timebaseInfo = mach_timebase_info_data_t()
-                mach_timebase_info(&timebaseInfo)
-                let elapsed =
-                    Double(mach_absolute_time() - startTime) * Double(timebaseInfo.numer) / Double(timebaseInfo.denom)
-                    / 1_000_000.0
+                let elapsedNanos = ESManager.machTimeToNanos(mach_absolute_time() - startTime)
+                let elapsedMs = Double(elapsedNanos) / 1_000_000.0
 
-                Logfile.endpointSecurity.log("Auth: Keys generated in \(String(format: "%.1f", elapsed))ms")
+                Logfile.endpointSecurity.log("Auth: Keys generated in \(String(format: "%.1f", elapsedMs))ms")
             } catch {
                 Logfile.endpointSecurity.error("Auth: Pre-generation failed: \(error)")
             }
@@ -264,8 +238,6 @@ final class ESManager: NSObject {
             Logfile.endpointSecurity.log("Auth: Server keys already exist")
         }
     }
-
-    func clearMainAppPID() { processIDLock.perform { self.authenticatedMainAppPID = nil } }
 
     // MARK: - Time Utilities
     private static var timebaseInfo: mach_timebase_info_data_t = {

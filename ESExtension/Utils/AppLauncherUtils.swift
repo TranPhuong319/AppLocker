@@ -11,20 +11,6 @@ import os
 struct AppLauncherUtils {
     static let agentLabel = "com.TranPhuong319.AppLocker.agent"
 
-    /// Đánh thức App chính (dưới dạng LaunchAgent) cho một User ID cụ thể
-    /// Lệnh: launchctl asuser <uid> launchctl kickstart -p gui/<uid>/<label>
-    static func wakeUpMainApp(for uid: uid_t) {
-        let uidString = String(uid)
-        let serviceTarget = "gui/\(uidString)/\(agentLabel)"
-
-        let path = "/bin/launchctl"
-        let args = ["asuser", uidString, "launchctl", "kickstart", "-p", serviceTarget]
-
-        Logfile.endpointSecurity.log("Auto-Wake: Attempting to wake up agent for UID \(uidString)...")
-
-        executeCommand(path: path, args: args)
-    }
-
     private static func executeCommand(path: String, args: [String]) {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: path)

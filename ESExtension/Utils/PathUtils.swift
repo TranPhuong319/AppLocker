@@ -58,10 +58,6 @@ extension ESManager {
         return false
     }
 
-    static func isSharedPath(_ esPath: es_string_token_t) -> Bool {
-        return matchTokenPrefix(esPath, prefix: "/Users/Shared")
-    }
-
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker
     static func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
         return matchTokenPrefix(esPath, prefix: "/Users/Shared/AppLocker")
@@ -78,9 +74,5 @@ extension ESManager {
 
     static func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {
         return matchTokenPrefix(esPath, prefix: "/Applications/AppLocker.app")
-    }
-
-    static func isProtectedFolderPath(_ esPath: es_string_token_t) -> Bool {
-        return matchTokenPrefix(esPath, prefix: "/Users/Shared/AppLocker")
     }
 }

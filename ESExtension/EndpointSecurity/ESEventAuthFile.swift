@@ -144,7 +144,7 @@ extension ESManager {
         }
 
         // 3. System Folder Safety Check (Muting redundant folders)
-        if isProtectedFolderPath(esPath) {
+        if isInsideProtectedFolder(esPath) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
         }
@@ -161,7 +161,7 @@ extension ESManager {
 
         // Check if Folder OR File is protected
         let isFileProtected = isProtectedConfigPath(targetPathToken)
-        let isFolderProtected = isProtectedFolderPath(targetPathToken)
+        let isFolderProtected = isInsideProtectedFolder(targetPathToken)
         let isAppProtected = isAppBundlePath(targetPathToken)
 
         if isFileProtected || isFolderProtected || isAppProtected {
@@ -172,7 +172,6 @@ extension ESManager {
             }
 
             if isAuthorized(manager, message) {
-                manager.invalidateCache(forPath: path)
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 // swiftlint:disable:next line_length
                 Logfile.endpointSecurity.log("SELF_PROT [UNLINK] ALLOW (Authorized): \(path) (Process: \(getSigningID(message)))")
@@ -183,13 +182,6 @@ extension ESManager {
             let procID = getSigningID(message)
             Logfile.endpointSecurity.log("SELF_PROT [UNLINK] DENY (Protected): \(path) (Process: \(procID))")
         } else {
-            // Not protected, but invalidate cache if it's in /Users/Shared
-            if isSharedPath(targetPathToken) {
-                if let manager = ESManager.sharedInstanceForCallbacks {
-                    let path = ESSafetyValve.getPath(message)
-                    manager.invalidateCache(forPath: path)
-                }
-            }
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
         }
     }
@@ -203,7 +195,7 @@ extension ESManager {
         let srcPathToken = renameEvent.source.pointee.path
 
         let srcIsProtected = isProtectedConfigPath(srcPathToken) ||
-                             isProtectedFolderPath(srcPathToken) ||
+                             isInsideProtectedFolder(srcPathToken) ||
                              isAppBundlePath(srcPathToken)
 
         let dstIsProtected = isRenameDestinationProtected(renameEvent)
@@ -217,7 +209,6 @@ extension ESManager {
             let procID = getSigningID(message)
             if isAuthorized(manager, message) {
                 let path = ESSafetyValve.getPath(message)
-                manager.invalidateCache(forPath: path)
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 Logfile.endpointSecurity.log("SELF_PROT [RENAME] ALLOW (Authorized): \(path) (Process: \(procID))")
                 return
@@ -234,26 +225,18 @@ extension ESManager {
         if renameEvent.destination_type == ES_DESTINATION_TYPE_EXISTING_FILE {
             let dstToken = renameEvent.destination.existing_file.pointee.path
             return isProtectedConfigPath(dstToken) ||
-                   isProtectedFolderPath(dstToken) ||
+                   isInsideProtectedFolder(dstToken) ||
                    isAppBundlePath(dstToken)
         } else if renameEvent.destination_type == ES_DESTINATION_TYPE_NEW_PATH {
-            let filename = renameEvent.destination.new_path.filename
-            if let data = filename.data {
-                let rawPtr = UnsafeRawPointer(data).assumingMemoryBound(to: UInt8.self)
-                let buffer = UnsafeBufferPointer(start: rawPtr, count: Int(filename.length))
-                let nameStr = String(bytes: buffer, encoding: .utf8) ?? ""
-                let isParentProtected = isProtectedFolderPath(renameEvent.destination.new_path.dir.pointee.path)
+            let filenameToken = renameEvent.destination.new_path.filename
+            if let nameStr = string(from: filenameToken) {
+                let isParentProtected = isInsideProtectedFolder(renameEvent.destination.new_path.dir.pointee.path)
                 if nameStr == "config.plist" && isParentProtected {
                     return true
                 } else if nameStr == "AppLocker.app" {
                     let dirToken = renameEvent.destination.new_path.dir.pointee.path
-                    if let dirData = dirToken.data {
-                        let rawPtr = UnsafeRawPointer(dirData).assumingMemoryBound(to: UInt8.self)
-                        let buffer = UnsafeBufferPointer(start: rawPtr, count: Int(dirToken.length))
-                        let dirStr = String(bytes: buffer, encoding: .utf8) ?? ""
-                        if dirStr == "/Applications" {
-                            return true
-                        }
+                    if let dirStr = string(from: dirToken), dirStr == "/Applications" {
+                        return true
                     }
                 }
             }
@@ -268,7 +251,7 @@ extension ESManager {
     ) {
         let targetToken = message.pointee.event.truncate.target.pointee.path
 
-        if isProtectedConfigPath(targetToken) || isProtectedFolderPath(targetToken) || isAppBundlePath(targetToken) {
+        if isProtectedConfigPath(targetToken) || isInsideProtectedFolder(targetToken) || isAppBundlePath(targetToken) {
             guard let manager = ESManager.sharedInstanceForCallbacks else {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
                 return

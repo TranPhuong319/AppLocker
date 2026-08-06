@@ -1,3 +1,10 @@
+//
+//  ESSafetyValve.swift
+//  ESExtension
+//
+//  Created by Doe Phương on 31/7/26.
+//
+
 import EndpointSecurity
 import Foundation
 import os
