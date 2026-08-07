@@ -43,4 +43,13 @@ extension AppDelegate {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
     }
+
+    func launchedByLaunchd() -> Bool {
+        guard let launchByLaunchctl = ProcessInfo.processInfo.environment[
+            "LAUNCHED_BY_LAUNCHD"
+        ] else {
+            return false
+        }
+        return launchByLaunchctl == "1"
+    }
 }

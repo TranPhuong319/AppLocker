@@ -118,8 +118,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         // plus button
         let plusButton = NSButton(
             image: NSImage(systemSymbolName: "plus", accessibilityDescription: "Add App")!,
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.openPopupAddApp)
+            target: appState,
+            action: #selector(AppState.openAddApp)
         )
         plusButton.isBordered = true
 
@@ -135,8 +135,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     private static func buildAddAppTouchBarContent(appState: AppState) -> NSView {
         let otherButton = NSButton(
             title: String(localized: "Others…"),
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.addAnotherApp)
+            target: appState,
+            action: #selector(AppState.addAnotherApp)
         )
         otherButton.bezelStyle = .rounded
         let width = otherButton.intrinsicContentSize.width + 80
@@ -146,16 +146,16 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
         let closeButton = NSButton(
             title: String(localized: "Close"),
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.closeAddAppPopup)
+            target: appState,
+            action: #selector(AppState.closeAddPopup)
         )
         closeButton.isBordered = true
         closeButton.bezelStyle = .rounded
 
         let lockButton = LockTouchBarButton(
             title: String(localized: "Lock"),
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.lockApp)
+            target: appState,
+            action: #selector(AppState.lockButton)
         )
         lockButton.isBordered = true
         lockButton.bezelStyle = .rounded
@@ -183,8 +183,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     private static func buildDeleteQueueButtons(appState: AppState) -> NSView {
         let unlockButton = NSButton(
             title: String(localized: "Unlock"),
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.unlockApp)
+            target: appState,
+            action: #selector(AppState.unlockApp)
         )
         unlockButton.isBordered = true
         unlockButton.bezelStyle = .rounded
@@ -192,8 +192,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
         let clearButton = NSButton(
             title: String(localized: "Cancel"),
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.clearWaitingList)
+            target: appState,
+            action: #selector(AppState.deleteAllFromWaitingList)
         )
         clearButton.isBordered = true
         clearButton.bezelStyle = .rounded
@@ -215,8 +215,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let container = NSView()
         let button = DeleteQueueTouchBarButton(
             title: "",
-            target: TouchBarActionProxy.shared,
-            action: #selector(TouchBarActionProxy.shared.showDeleteQueuePopup)
+            target: AppState.shared,
+            action: #selector(AppState.showDeleteQueuePopup)
         )
 
         button.isBordered = false

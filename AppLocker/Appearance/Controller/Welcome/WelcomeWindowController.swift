@@ -35,9 +35,6 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         config.maxSize = fixedSize
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-//
-//        window.standardWindowButton(.zoomButton)?.isHidden = true
-//        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
 
         let controller = WelcomeWindowController(window: window)
         window.delegate = controller

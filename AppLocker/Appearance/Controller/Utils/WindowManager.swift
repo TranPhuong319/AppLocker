@@ -2,6 +2,8 @@
 //  WindowManager.swift
 //  AppLocker
 //
+//  Created by Doe Phương on 29/3/26.
+//
 
 import AppKit
 import SwiftUI

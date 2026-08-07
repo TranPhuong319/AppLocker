@@ -24,7 +24,6 @@
 		E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */; };
 		E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */; };
 		E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */; };
-		E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */; };
 		E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */; };
 		E0FD75F72F59E36600D46B31 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A72F59E36600D46B31 /* AppIconView.swift */; };
 		E0FD75F82F59E36600D46B31 /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A52F59E36600D46B31 /* SectionHeader.swift */; };
@@ -41,7 +40,6 @@
 		E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */; };
 		E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */; };
 		E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C02F59E36600D46B31 /* AppDelegate.swift */; };
-		E0FD76092F59E36600D46B31 /* AppDelegate+Launchctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */; };
 		E0FD760A2F59E36600D46B31 /* AppDelegate+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C12F59E36600D46B31 /* AppDelegate+Actions.swift */; };
 		E0FD760B2F59E36600D46B31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B42F59E36600D46B31 /* ContentView.swift */; };
 		E0FD760C2F59E36600D46B31 /* AppListWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */; };
@@ -49,7 +47,6 @@
 		E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E62F59E36600D46B31 /* AppUpdater.swift */; };
 		E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */; };
 		E0FD76112F59E36600D46B31 /* DeleteQueueRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AB2F59E36600D46B31 /* DeleteQueueRow.swift */; };
-		E0FD76122F59E36600D46B31 /* FSEventsMonitoringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */; };
 		E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */; };
 		E0FD76142F59E36600D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D02F59E36600D46B31 /* main.swift */; };
 		E0FD76152F59E36600D46B31 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */; };
@@ -64,8 +61,6 @@
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
-		E0FD76212F59E36600D46B31 /* AppLockInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A82F59E36600D46B31 /* AppLockInspection.swift */; };
-		E0FD76222F59E36600D46B31 /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */; };
 		E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */; };
 		E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */; };
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
@@ -168,11 +163,9 @@
 		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeWindowController.swift; sourceTree = "<group>"; };
-		E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarActionProxy.swift; sourceTree = "<group>"; };
 		E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarManager.swift; sourceTree = "<group>"; };
 		E0FD75A52F59E36600D46B31 /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		E0FD75A72F59E36600D46B31 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
-		E0FD75A82F59E36600D46B31 /* AppLockInspection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockInspection.swift; sourceTree = "<group>"; };
 		E0FD75AA2F59E36600D46B31 /* AppRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRow.swift; sourceTree = "<group>"; };
 		E0FD75AB2F59E36600D46B31 /* DeleteQueueRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteQueueRow.swift; sourceTree = "<group>"; };
 		E0FD75AC2F59E36600D46B31 /* LockedAppRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppRow.swift; sourceTree = "<group>"; };
@@ -182,7 +175,6 @@
 		E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRowButtonStyle.swift; sourceTree = "<group>"; };
 		E0FD75B42F59E36600D46B31 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B31 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlass.swift; sourceTree = "<group>"; };
 		E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayout.swift; sourceTree = "<group>"; };
 		E0FD75C02F59E36600D46B31 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -190,7 +182,6 @@
 		E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Agent.swift"; sourceTree = "<group>"; };
 		E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+CheckDirectory.swift"; sourceTree = "<group>"; };
 		E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launch.swift"; sourceTree = "<group>"; };
-		E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launchctl.swift"; sourceTree = "<group>"; };
 		E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+MenuBar.swift"; sourceTree = "<group>"; };
 		E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Notifications.swift"; sourceTree = "<group>"; };
 		E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Restart.swift"; sourceTree = "<group>"; };
@@ -207,7 +198,6 @@
 		E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconProvider.swift; sourceTree = "<group>"; };
 		E0FD75DD2F59E36600D46B31 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
-		E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSEventsMonitoringService.swift; sourceTree = "<group>"; };
 		E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppConfig.swift; sourceTree = "<group>"; };
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
 		E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManagerProtocol.swift; sourceTree = "<group>"; };
@@ -385,7 +375,6 @@
 		E0FD75A42F59E36600D46B31 /* TouchBar */ = {
 			isa = PBXGroup;
 			children = (
-				E0FD75A22F59E36600D46B31 /* TouchBarActionProxy.swift */,
 				E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */,
 			);
 			path = TouchBar;
@@ -403,7 +392,6 @@
 			isa = PBXGroup;
 			children = (
 				E0FD75A72F59E36600D46B31 /* AppIconView.swift */,
-				E0FD75A82F59E36600D46B31 /* AppLockInspection.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -460,7 +448,6 @@
 		E0FD75B92F59E36600D46B31 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				E0FD75B82F59E36600D46B31 /* LiquidGlass.swift */,
 				E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */,
 			);
 			path = Utils;
@@ -505,7 +492,6 @@
 				E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */,
 				E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */,
 				E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */,
-				E0FD75C52F59E36600D46B31 /* AppDelegate+Launchctl.swift */,
 				E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */,
 				E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */,
 				E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */,
@@ -560,7 +546,6 @@
 				E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */,
 				E0FD75DD2F59E36600D46B31 /* AppState.swift */,
 				E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */,
-				E0FD75E02F59E36600D46B31 /* FSEventsMonitoringService.swift */,
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
 				E07DF97E2FA5997200827F2C /* Bundle+AppInfo.swift */,
@@ -889,7 +874,6 @@
 				E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */,
 				E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */,
 				E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */,
-				E0FD75F52F59E36600D46B31 /* TouchBarActionProxy.swift in Sources */,
 				E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */,
 				E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */,
 				E0FD75F72F59E36600D46B31 /* AppIconView.swift in Sources */,
@@ -918,7 +902,6 @@
 				E0FD76862F59E3BE00D46B31 /* Log.swift in Sources */,
 				E0FD76872F59E3BE00D46B31 /* AuthenticationManager.swift in Sources */,
 				E0FD76882F59E3BE00D46B31 /* AppInfo.swift in Sources */,
-				E0FD76092F59E36600D46B31 /* AppDelegate+Launchctl.swift in Sources */,
 				E0FD760A2F59E36600D46B31 /* AppDelegate+Actions.swift in Sources */,
 				E0FD760B2F59E36600D46B31 /* ContentView.swift in Sources */,
 				E0FD760C2F59E36600D46B31 /* AppListWindowController.swift in Sources */,
@@ -926,7 +909,6 @@
 				E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */,
 				E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */,
 				E0FD76112F59E36600D46B31 /* DeleteQueueRow.swift in Sources */,
-				E0FD76122F59E36600D46B31 /* FSEventsMonitoringService.swift in Sources */,
 				E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */,
 				E0FD76142F59E36600D46B31 /* main.swift in Sources */,
 				E0FD79082F59E37C00D46B31 /* BatchAuthView.swift in Sources */,
@@ -944,8 +926,6 @@
 				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
 				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
 				E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */,
-				E0FD76212F59E36600D46B31 /* AppLockInspection.swift in Sources */,
-				E0FD76222F59E36600D46B31 /* LiquidGlass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

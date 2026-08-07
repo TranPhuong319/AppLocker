@@ -14,21 +14,17 @@ class AboutWindowController: NSWindowController {
 
     static func show() {
         if shared == nil {
-            let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 450, height: 300),
-                styleMask: [.titled, .closable, .fullSizeContentView],
-                backing: .buffered,
-                defer: false
-            )
+            let hostingController = NSHostingController(rootView: AboutView())
+            var config = WindowConfiguration()
+            config.styleMask = [.titled, .closable, .fullSizeContentView]
+            config.titlebarAppearsTransparent = true
+            config.titleVisibility = .hidden
+            config.size = NSSize(width: 450, height: 300)
+            config.isReleasedWhenClosed = false
+            config.center = true
 
-            window.titlebarAppearsTransparent = true
-            window.titleVisibility = .hidden
+            let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
             window.isMovableByWindowBackground = true
-            window.center()
-            window.isReleasedWhenClosed = false
-
-            let hostingView = NSHostingView(rootView: AboutView())
-            window.contentView = hostingView
 
             shared = AboutWindowController(window: window)
         }
