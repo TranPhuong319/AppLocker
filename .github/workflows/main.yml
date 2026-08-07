@@ -148,7 +148,10 @@ jobs:
           SPARKLE_BIN='./build/SourcePackages/artifacts/sparkle/Sparkle/bin'
           SIGNED_ATTR=$($SPARKLE_BIN/sign_update --ed-key-file sparkle_key.pem ./Artifacts/AppLocker.dmg)
           CRITICAL_TAG="${{ inputs.critical == 'true' && '<sparkle:criticalUpdate />' || '' }}"
-          CHANNEL_ATTR="${{ github.event_name == 'push' && 'sparkle:channel="beta"' || '' }}"
+          CHANNEL_TAG=""
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            CHANNEL_TAG='sparkle:channel="beta"'
+          fi
           CHANGELOG="$(cat changelog_body.html)"
           PUBDATE="$(date +"%a, %d %b %Y %T %z")"
 
@@ -175,7 +178,7 @@ jobs:
                           ${CHANGELOG}
                           </div>
                       ]]></description>
-                      <enclosure url='${DMG_URL}' sparkle:version='${GITHUB_RUN_NUMBER}' sparkle:shortVersionString='${VER}' type='application/octet-stream' ${CHANNEL_ATTR} ${SIGNED_ATTR}/>
+                      <enclosure url="${DMG_URL}" sparkle:version="${GITHUB_RUN_NUMBER}" sparkle:shortVersionString="${VER}" type="application/octet-stream" ${CHANNEL_TAG} ${SIGNED_ATTR}/>
                   </item>
               </channel>
           </rss>
