@@ -14,7 +14,6 @@ class LockES: LockManagerProtocol {
     @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     @Published var allApps: [InstalledApp] = []
     @Published var isProtectionDisabled: Bool = false
-    private var fsWatcher: FSEventsMonitoringService?
 
     init() {
         // Defer loading to bootstrap() to allow ES Handshake first
@@ -33,8 +32,6 @@ class LockES: LockManagerProtocol {
                 self.isProtectionDisabled = loaded.isDisabled
                 self.migrateLegacyConfigsIfNeeded(appsToMigrate: loaded.apps, isLegacyFormat: loaded.isLegacyFormat)
             }
-
-            self.setupFSEvents()
         }
     }
 
@@ -107,13 +104,6 @@ class LockES: LockManagerProtocol {
             return true
         }
         return false
-    }
-
-    private func setupFSEvents() {
-        fsWatcher = FSEventsMonitoringService(paths: ["/Applications", "/System/Applications"])
-        fsWatcher?.delegate = self
-        fsWatcher?.start()
-        Logfile.core.info("FSEvents monitoring started for applications directories")
     }
 
     // MARK: - Installed apps discovery (Removed in favor of Spotlight)
@@ -194,9 +184,4 @@ class LockES: LockManagerProtocol {
     }
 }
 
-// MARK: - FSEvents Delegate
-extension LockES: FSEventsDelegate {
-    func fileSystemChanged(at paths: [String]) {
-        // App changes monitored; cdhash and path matching are handled dynamically without heavy SHA re-calculation
-    }
-}
+

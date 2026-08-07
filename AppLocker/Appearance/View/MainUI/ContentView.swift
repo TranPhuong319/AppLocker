@@ -165,7 +165,7 @@ struct ContentView: View {
             .padding(.leading, 4)
             .frame(maxWidth: .infinity, maxHeight: 42)
             .contentShape(Capsule())
-            .liquidGlass(in: Capsule()) {
+            .background {
                 ZStack {
                     Capsule()
                         .fill(.ultraThinMaterial)

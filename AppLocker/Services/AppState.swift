@@ -241,18 +241,22 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    func openAddApp() {
+    @objc func openAddApp() {
         showingAddApp = true
     }
 
-    func lockButton() {
+    @objc func lockButton() {
         toggleLockPopup(for: selectedToLock, locking: true)
     }
 
-    func closeAddPopup() {
+    @objc func closeAddPopup() {
         showingAddApp = false
         selectedToLock.removeAll()
         searchTextLockApps = ""
+    }
+
+    @objc func addAnotherApp() {
+        addOthersApp(over: NSApp.keyWindow)
     }
 
     func addOthersApp(over window: NSWindow? = nil) {
@@ -285,13 +289,17 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    func unlockApp() {
+    @objc func unlockApp() {
         toggleLockPopup(for: deleteQueue, locking: false)
     }
 
-    func deleteAllFromWaitingList() {
+    @objc func deleteAllFromWaitingList() {
         deleteQueue.removeAll()
         showingDeleteQueue = false
+    }
+
+    @objc func showDeleteQueuePopup() {
+        showingDeleteQueue = true
     }
 
     // MARK: - NSOpenSavePanelDelegate
