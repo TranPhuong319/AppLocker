@@ -10,7 +10,7 @@ import os
 
 extension ESManager: NSXPCListenerDelegate {
     func setupMachListener() {
-        xpcConnectionLock.perform {
+        xpcConnectionLock.withLock {
             if listener != nil {
                 return
             }
@@ -55,7 +55,7 @@ extension ESManager: NSXPCListenerDelegate {
 
             // Clear main app PID if this was the main app connection
             let processID = conn.processIdentifier
-            self.processIDLock.perform {
+            self.processIDLock.withLock {
                 if let mainPID = self.authenticatedMainAppPID, pid_t(processID) == mainPID {
                     self.authenticatedMainAppPID = nil
                     Logfile.endpointSecurity.log("Cleared authenticated main app PID on connection invalidation")

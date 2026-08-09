@@ -25,7 +25,7 @@ extension ESManager {
             let (newCDHashes, newBundlePaths) = self.parseConfigData(data)
 
             // Atomic Swap
-            self.stateLock.perform {
+            self.stateLock.withLock {
                 self.lockedCDHashes = newCDHashes
                 self.lockedBundlePaths = newBundlePaths
             }

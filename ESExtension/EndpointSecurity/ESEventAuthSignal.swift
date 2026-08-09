@@ -25,7 +25,7 @@ extension ESManager {
         let isPending = manager.isPendingVerification(pid: targetPid)
 
         if isPending {
-            let isAuthorizedSender = manager.stateLock.sync {
+            let isAuthorizedSender = manager.stateLock.withLock {
                 return senderPid == manager.authenticatedMainAppPID || senderPid == getpid()
             }
 

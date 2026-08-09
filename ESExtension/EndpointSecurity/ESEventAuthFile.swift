@@ -19,7 +19,7 @@ extension ESManager {
 
         // 1. Check PID (Fast Cache)
         let processPid = audit_token_to_pid(message.pointee.process.pointee.audit_token)
-        if manager.processIDLock.sync({ processPid == manager.authenticatedMainAppPID }) {
+        if manager.processIDLock.withLock({ processPid == manager.authenticatedMainAppPID }) {
             return true
         }
 
@@ -45,7 +45,7 @@ extension ESManager {
                  // The updater must be spawned by our authenticated Main App
                  let parentAuditToken = message.pointee.process.pointee.parent_audit_token
                  let parentPid = audit_token_to_pid(parentAuditToken)
-                 let mainAppPid = manager.processIDLock.sync({ manager.authenticatedMainAppPID })
+                 let mainAppPid = manager.processIDLock.withLock({ manager.authenticatedMainAppPID })
 
                  if parentPid != -1 && parentPid == mainAppPid {
                      // Only allow specific temporary locations to minimize surface

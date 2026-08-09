@@ -19,7 +19,7 @@ extension ESManager {
                 targetPid: notification.targetPid
             )
         } else {
-            xpcConnectionLock.perform {
+            xpcConnectionLock.withLock {
                 Logfile.endpointSecurity.warning(
                     "No XPC connection available. Queueing notification and forcing App wake-up for UID \(notification.uid)..."
                 )
