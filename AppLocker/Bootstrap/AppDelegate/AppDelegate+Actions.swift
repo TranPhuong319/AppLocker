@@ -9,6 +9,7 @@ import AppKit
 import Foundation
 import ServiceManagement
 
+@MainActor
 extension AppDelegate {
     @objc func openListApp() {
         AuthenticationManager.authenticate(

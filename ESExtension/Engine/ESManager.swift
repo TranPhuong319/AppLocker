@@ -70,9 +70,6 @@ final class ESManager: NSObject {
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.emergency",
         qos: .userInteractive)
 
-    /// Group to coordinate Async Key Generation
-    let keyGenGroup = DispatchGroup()
-
     var activeMessageCount: Int32 = 0
 
     override init() {
@@ -95,13 +92,8 @@ final class ESManager: NSObject {
         if authorizer.start() && tamper.start() {
             Logfile.endpointSecurity.log("Modular ES Clients created and self-muted.")
 
-            // 3. Async Key Generation (Optimized EC P-256)
-            // Move off main thread to prevent init blocking, but guard via Group
-            keyGenGroup.enter()
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                self?.prepareAuthenticationKeys()
-                self?.keyGenGroup.leave()
-            }
+            // 3. Pre-generate EC P-256 Authentication Keys (Fast ~0.1ms)
+            prepareAuthenticationKeys()
 
             // 4. Setup Listener (Ready for connections)
             setupMachListener()

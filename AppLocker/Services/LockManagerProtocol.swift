@@ -16,6 +16,5 @@ protocol LockManagerProtocol: AnyObject, ObservableObject {
 
     func toggleLock(for paths: [String])
     func setProtectionDisabled(_ disabled: Bool)
-    func reloadAllApps()
     func isLocked(path: String) -> Bool
 }

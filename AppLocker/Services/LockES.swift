@@ -106,8 +106,6 @@ class LockES: LockManagerProtocol {
         return false
     }
 
-    // MARK: - Installed apps discovery (Removed in favor of Spotlight)
-
     // MARK: - Persistence helper
     func save() {
         ConfigStore.shared.save(apps: self.lockedApps, isDisabled: self.isProtectionDisabled)
@@ -172,10 +170,6 @@ class LockES: LockManagerProtocol {
         if hasConfigChanged {
             save()
         }
-    }
-
-    func reloadAllApps() {
-        // Spotlight updates automatically
     }
 
     func isLocked(path: String) -> Bool {
