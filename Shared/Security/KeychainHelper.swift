@@ -15,10 +15,7 @@ final class KeychainHelper {
     // Identifiers
     struct Keys {
         static let appPublic = "com.TranPhuong319.AppLocker.public"
-        static let appPrivate = "com.TranPhuong319.AppLocker.private"
-
         static let extensionPublic = "com.TranPhuong319.AppLocker.ESExtension.public"
-        static let extensionPrivate = "com.TranPhuong319.AppLocker.ESExtension.private"
     }
 
     // Ephemeral Cache (Memory only)
@@ -73,18 +70,6 @@ final class KeychainHelper {
             Logfile.keychain.error("KeychainHelper: Verify error: \(error)")
             return false
         }
-    }
-
-    func verify(signature: Data, originalData: Data, pubKeyTag: String) -> Bool {
-        cacheLock.lock()
-        let pubData = publicKeys[pubKeyTag]
-        cacheLock.unlock()
-
-        guard let data = pubData else {
-            Logfile.keychain.error("KeychainHelper: Public key not found in cache: \(pubKeyTag)")
-            return false
-        }
-        return verify(signature: signature, originalData: originalData, publicKeyData: data)
     }
 
     // MARK: - Exports & Utils

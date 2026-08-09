@@ -234,7 +234,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
                 self.deleteQueue.removeAll()
             }
 
-            self.manager.reloadAllApps()
             self.refreshAppLists()
 
             self.showingLockingPopup = false
@@ -355,7 +354,6 @@ class MockLockManager: LockManagerProtocol, ObservableObject {
         self.isProtectionDisabled = disabled
     }
 
-    func reloadAllApps() {}
     func isLocked(path: String) -> Bool {
         lockedApps[path] != nil
     }
