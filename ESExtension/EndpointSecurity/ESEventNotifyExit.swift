@@ -26,7 +26,7 @@ extension ESManager {
         Logfile.endpointSecurity.log("Guardian: Main App (pid: \(pid)) exited.")
 
         // 2. Check if shutdown was authorized
-        let isAuthorized = manager.stateLock.sync { manager.isShutdownAuthorized }
+        let isAuthorized = manager.stateLock.withLock { manager.isShutdownAuthorized }
 
         if isAuthorized {
             Logfile.endpointSecurity.log("Guardian: Shutdown was authorized. Watchdog standing down.")
@@ -36,7 +36,7 @@ extension ESManager {
         // 3. Unauthorized exit detected -> Self-Healing with 10s delay
         Logfile.endpointSecurity.warning("Guardian: Unauthorized exit detected! Launching watchdog (10s delay)...")
 
-        let uid = manager.stateLock.sync { manager.activeUserUID }
+        let uid = manager.stateLock.withLock { manager.activeUserUID }
         guard let userUID = uid else {
             Logfile.endpointSecurity.error("Guardian: No active User UID found. Cannot kickstart.")
             return

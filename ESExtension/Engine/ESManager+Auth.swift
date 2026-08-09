@@ -72,12 +72,8 @@ extension ESManager: ESAppProtocol {
                 return
             }
 
-            // Use atomic flag to ensure single generation
-            var shouldGenerate = false
-            self.xpcConnectionLock.perform {
-                if !KeychainHelper.shared.hasKey(tag: serverTag) {
-                    shouldGenerate = true
-                }
+            let shouldGenerate = self.xpcConnectionLock.withLock { () -> Bool in
+                return !KeychainHelper.shared.hasKey(tag: serverTag)
             }
 
             if shouldGenerate {
@@ -123,8 +119,9 @@ extension ESManager: ESAppProtocol {
         }
 
         // 3. Mark as Authenticated & Cache PID
-        xpcConnectionLock.perform {
-            authenticatedConnections.insert(ObjectIdentifier(conn))
+        let connID = ObjectIdentifier(conn)
+        _ = xpcConnectionLock.withLock {
+            authenticatedConnections.insert(connID)
         }
 
         cacheMainAppPID(from: conn)

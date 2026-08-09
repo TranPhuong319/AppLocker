@@ -16,17 +16,32 @@ final class ESXPCClient {
     private var retryCount = 0
     private var isConnecting = false  // Prevent parallel connection attempts
 
-    private init() {
-        // tiny delay to avoid race but keep it short
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
-            self?.connect()
-        }
-    }
-
     private let xpcQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc.qos",
         qos: .userInitiated
     )
+
+    private init() {
+        xpcQueue.async { [weak self] in
+            self?.connect()
+        }
+    }
+
+    private func proxy(
+        conn: NSXPCConnection,
+        actionName: String,
+        onError: @escaping () -> Void = {}
+    ) -> ESAppProtocol? {
+        guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+            Logfile.core.error("\(actionName) failed: \(String(describing: error))")
+            onError()
+        }) as? ESAppProtocol else {
+            Logfile.core.error("[ESXPCClient] No valid proxy for \(actionName)")
+            onError()
+            return nil
+        }
+        return proxy
+    }
 
     func connect() {
         xpcQueue.async { [weak self] in
@@ -59,23 +74,23 @@ final class ESXPCClient {
             // Perform Authentication Handshake
             self.performAuth(conn: conn) { [weak self] success in
                 guard let self = self else { return }
+                self.xpcQueue.async {
                     if success {
                         Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
                         self.connection = conn
                         self.retryCount = 0
                         self.isConnecting = false  // Clear flag on success
 
-                        if let langs = UserDefaults.standard.array(forKey: "AppleLanguages")
-                        as? [String],
-                        let primary = langs.first {
-                        self.updateLanguage(primary)
+                        if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
+                           let primary = langs.first {
+                            self.updateLanguage(primary)
+                        }
+                    } else {
+                        Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                        self.isConnecting = false  // Clear flag on failure
+                        conn.invalidate()
+                        // Reconnect logic will trigger via invalidationHandler
                     }
-                } else {
-                    Logfile.core.error(
-                        "[ESXPCClient] Authentication failed. Invalidating connection.")
-                    self.isConnecting = false  // Clear flag on failure
-                    conn.invalidate()
-                    // Reconnect logic will trigger via invalidationHandler
                 }
             }
         }
@@ -112,13 +127,7 @@ final class ESXPCClient {
         }
 
         // 3. Send to Server
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error("[ESXPCClient] Auth XPC error: \(error.localizedDescription)")
-                completion(false)
-            }) as? ESAppProtocol
-        else {
-            completion(false)
+        guard let proxy = self.proxy(conn: conn, actionName: "Auth XPC", onError: { completion(false) }) else {
             return
         }
 
@@ -133,7 +142,7 @@ final class ESXPCClient {
                 return
             }
 
-            // 4. Verify Server (Curve25519)
+            // 4. Verify Server
             let combined = clientNonce + serverNonce
 
             if KeychainHelper.shared.verify(
@@ -175,86 +184,71 @@ final class ESXPCClient {
             Logfile.core.log(
                 "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
             )
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) { [weak self] in
+            self.xpcQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
                 self?.connect()
             }
         }
     }
 
     func updateLanguage(_ langCode: String) {
-        guard let conn = connection else {
-            Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
-            return
-        }
+        xpcQueue.async { [weak self] in
+            guard let self = self, let conn = self.connection else {
+                Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
+                return
+            }
 
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "updateLanguage failed: \(String(describing: error))")
-            }) as? ESAppProtocol
-        else {
-            Logfile.core.error("[ESXPCClient] No valid proxy to send language update")
-            return
+            guard let proxy = self.proxy(conn: conn, actionName: "updateLanguage") else { return }
+            proxy.updateLanguage(to: langCode)
+            Logfile.core.log("updateLanguage sent: \(langCode)")
         }
-
-        proxy.updateLanguage(to: langCode)
-        Logfile.core.log("updateLanguage sent: \(langCode)")
     }
 
     // App requests extension to allow config access once (with reply ack)
     func allowConfigAccess(_ processID: Int32, retry: Int = 0, completion: @escaping (Bool) -> Void) {
-        guard retry <= 10 else {
-            Logfile.core.error("[ESXPCClient] allowConfigAccess: Max retries reached, giving up.")
-            completion(false)
-            return
-        }
-
-        guard let conn = connection else {
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.allowConfigAccess(processID, retry: retry + 1, completion: completion)
-            }
-            return
-        }
-
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "allowConfigAccess failed: \(String(describing: error))")
+        xpcQueue.async { [weak self] in
+            guard let self = self else {
                 completion(false)
-            }) as? ESAppProtocol
-        else {
-            Logfile.core.error("[ESXPCClient] No valid proxy to send allowConfigAccess")
-            completion(false)
-            return
-        }
+                return
+            }
 
-        proxy.allowConfigAccess(processID) { success in
-            Logfile.core.log(
-                "allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(processID)")
-            completion(success)
+            guard retry <= 10 else {
+                Logfile.core.error("[ESXPCClient] allowConfigAccess: Max retries reached, giving up.")
+                completion(false)
+                return
+            }
+
+            guard let conn = self.connection else {
+                self.xpcQueue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                    self?.allowConfigAccess(processID, retry: retry + 1, completion: completion)
+                }
+                return
+            }
+
+            guard let proxy = self.proxy(conn: conn, actionName: "allowConfigAccess", onError: { completion(false) })
+            else { return }
+
+            proxy.allowConfigAccess(processID) { success in
+                Logfile.core.log(
+                    "allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(processID)")
+                completion(success)
+            }
         }
     }
 
     func authorizeShutdown(_ authorized: Bool, completion: @escaping (Bool) -> Void) {
-        guard let conn = connection else {
-            completion(false)
-            return
-        }
-
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error(
-                    "authorizeShutdown failed: \(String(describing: error))")
+        xpcQueue.async { [weak self] in
+            guard let self = self, let conn = self.connection else {
                 completion(false)
-            }) as? ESAppProtocol
-        else {
-            completion(false)
-            return
-        }
+                return
+            }
 
-        proxy.authorizeShutdown(authorized) { success in
-            Logfile.core.log("authorizeShutdown reply: \(success)")
-            completion(success)
+            guard let proxy = self.proxy(conn: conn, actionName: "authorizeShutdown", onError: { completion(false) })
+            else { return }
+
+            proxy.authorizeShutdown(authorized) { success in
+                Logfile.core.log("authorizeShutdown reply: \(success)")
+                completion(success)
+            }
         }
     }
 
@@ -264,40 +258,41 @@ final class ESXPCClient {
         retry: Int = 0,
         completion: @escaping (Bool) -> Void
     ) {
-        guard retry <= 5 else {
-            Logfile.core.error("processPendingApps retry limit reached (connection unavailable)")
-            completion(false)
-            return
-        }
-
-        guard let conn = connection else {
-            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.processPendingApps(
-                    approvedPIDs: approvedPIDs,
-                    rejectedPIDs: rejectedPIDs,
-                    retry: retry + 1,
-                    completion: completion
-                )
-            }
-            return
-        }
-
-        guard
-            let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                Logfile.core.error("processPendingApps failed: \(String(describing: error))")
+        xpcQueue.async { [weak self] in
+            guard let self = self else {
                 completion(false)
-            }) as? ESAppProtocol
-        else {
-            Logfile.core.error("processPendingApps: Failed to get ESAppProtocol proxy")
-            completion(false)
-            return
-        }
+                return
+            }
 
-        proxy.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { success in
-            Logfile.core.log(
-                "processPendingApps reply: \(success) (Approved: \(approvedPIDs), Rejected: \(rejectedPIDs))"
-            )
-            completion(success)
+            guard retry <= 5 else {
+                Logfile.core.error("processPendingApps retry limit reached (connection unavailable)")
+                completion(false)
+                return
+            }
+
+            guard let conn = self.connection else {
+                self.xpcQueue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                    self?.processPendingApps(
+                        approvedPIDs: approvedPIDs,
+                        rejectedPIDs: rejectedPIDs,
+                        retry: retry + 1,
+                        completion: completion
+                    )
+                }
+                return
+            }
+
+            guard let proxy = self.proxy(conn: conn, actionName: "processPendingApps", onError: { completion(false) })
+            else { return }
+
+            proxy.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { success in
+                Logfile.core.log(
+                    "processPendingApps reply: \(success) (Approved: \(approvedPIDs), Rejected: \(rejectedPIDs))"
+                )
+                completion(success)
+            }
         }
     }
 }
+
+

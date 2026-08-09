@@ -13,7 +13,7 @@ import os
 /// It uses a DispatchSemaphore to ensure that either the main logic worker
 /// OR the emergency timer responds to the ES message, but never both.
 final class ESSafetyValve {
-    private let lock = FastLock()
+    private let lock = OSAllocatedUnfairLock()
     private let deadlineExpiredSema = DispatchSemaphore(value: 0)
     private let message: ESMessage
     private let manager: ESManager
@@ -31,19 +31,18 @@ final class ESSafetyValve {
     /// - Returns: `true` if this call was the one that actually responded.
     @discardableResult
     func respond(_ result: es_auth_result_t, cache: Bool) -> Bool {
-        var shouldRespond = false
-
-        lock.perform {
+        let shouldRespond = lock.withLock { () -> Bool in
             if !isResponded {
                 isResponded = true
-                shouldRespond = true
+                return true
             }
+            return false
         }
 
         if shouldRespond {
             let status: es_respond_result_t
 
-            // CRITICAL FIX: AUTH_OPEN requires es_respond_flags_result
+            // AUTH_OPEN requires es_respond_flags_result
             if message.pointee.event_type == ES_EVENT_TYPE_AUTH_OPEN {
                 let allowedFlags: UInt32 = (result == ES_AUTH_RESULT_ALLOW)
                 ? 0xFFFFFFFF : 0
@@ -71,8 +70,6 @@ final class ESSafetyValve {
                 (Type: \(self.message.pointee.event_type.rawValue, privacy: .public))
                 """
                 )
-            } else {
-                // Log success mostly for debug (optional, can be noisy)
             }
 
             // Decrement active message counter

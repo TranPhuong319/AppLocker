@@ -72,7 +72,7 @@ extension ESManager {
 
     private func isProcessBlocked(path: String, cdhashData: Data, cdhashHex: String, uid: uid_t) -> Bool {
         let isZeroCDHash = cdhashData.allSatisfy { $0 == 0 }
-        return stateLock.sync { () -> Bool in
+        return stateLock.withLock { () -> Bool in
             if !isZeroCDHash {
                 if lockedCDHashes.values.contains(where: { $0.contains(cdhashHex) }) {
                     return true

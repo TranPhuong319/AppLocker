@@ -19,7 +19,7 @@ final class ESManager: NSObject {
     var tamper: ESTamper?
 
     // MARK: - State
-    let stateLock = FastLock()
+    let stateLock = OSAllocatedUnfairLock()
     var lockedCDHashes: [uid_t: Set<String>] = [:]
     var lockedBundlePaths: [uid_t: Set<String>] = [:]
     var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
@@ -36,18 +36,25 @@ final class ESManager: NSObject {
     }
 
     var pendingNotifications: [BlockedNotification] = []
-    let pendingPIDLock = FastLock()
+    let pendingPIDLock = OSAllocatedUnfairLock()
     var pendingVerificationPIDs: Set<pid_t> = []
 
+    struct XPCConn: @unchecked Sendable, Equatable {
+        let connection: NSXPCConnection
+        static func == (lhs: XPCConn, rhs: XPCConn) -> Bool {
+            lhs.connection === rhs.connection
+        }
+    }
+
     // MARK: - Locks and Queues
-    let xpcConnectionLock = FastLock()
+    let xpcConnectionLock = OSAllocatedUnfairLock()
     var listener: NSXPCListener?
-    var activeConnections: [NSXPCConnection] = []
+    var activeConnections: [XPCConn] = []
     var authenticatedConnections: Set<ObjectIdentifier> = []
     var authenticatedMainAppPID: pid_t?
     var activeUserUID: uid_t?
     var isShutdownAuthorized: Bool = false
-    let processIDLock = FastLock()
+    let processIDLock = OSAllocatedUnfairLock()
     let backgroundProcessingQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg", qos: .userInitiated,
         attributes: .concurrent)
@@ -127,7 +134,8 @@ final class ESManager: NSObject {
 
     func isCurrentConnectionAuthenticated() -> Bool {
         guard let connection = NSXPCConnection.current() else { return false }
-        return xpcConnectionLock.sync { authenticatedConnections.contains(ObjectIdentifier(connection)) }
+        let connID = ObjectIdentifier(connection)
+        return xpcConnectionLock.withLock { authenticatedConnections.contains(connID) }
     }
 
     func allowConfigAccess(
@@ -148,7 +156,7 @@ final class ESManager: NSObject {
             reply(false)
             return
         }
-        stateLock.perform {
+        stateLock.withLock {
             self.isShutdownAuthorized = authorized
         }
         Logfile.endpointSecurity.log("Authorized shutdown status updated to: \(authorized)")
@@ -157,16 +165,17 @@ final class ESManager: NSObject {
 
     func isMainAppProcess(_ process: UnsafePointer<es_process_t>) -> Bool {
         let processPid = audit_token_to_pid(process.pointee.audit_token)
-        return processIDLock.sync { processPid == authenticatedMainAppPID }
+        return processIDLock.withLock { processPid == authenticatedMainAppPID }
     }
 
     func cacheMainAppPID(from connection: NSXPCConnection) {
         let processID = connection.processIdentifier
-        processIDLock.perform { self.authenticatedMainAppPID = pid_t(processID) }
+        processIDLock.withLock { self.authenticatedMainAppPID = pid_t(processID) }
 
         var auditToken = connection.esAuditToken
-        stateLock.perform {
-            self.activeUserUID = audit_token_to_euid(auditToken)
+        let userUID = audit_token_to_euid(auditToken)
+        stateLock.withLock {
+            self.activeUserUID = userUID
         }
 
         // Critical: Mute AppLocker immediately to prevent deadlock on Config IO
@@ -174,11 +183,11 @@ final class ESManager: NSObject {
     }
 
     func incrementActiveMessageCount() {
-        stateLock.perform { activeMessageCount += 1 }
+        stateLock.withLock { activeMessageCount += 1 }
     }
 
     func decrementActiveMessageCount() {
-        stateLock.perform { activeMessageCount -= 1 }
+        stateLock.withLock { activeMessageCount -= 1 }
     }
 
     // MARK: - Muting Logic

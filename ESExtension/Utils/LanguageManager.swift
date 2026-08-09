@@ -15,7 +15,7 @@ extension ESManager {
             Logfile.endpointSecurity.error("Unauthorized call to updateLanguage")
             return
         }
-        stateLock.perform {
+        stateLock.withLock {
             self.currentLanguage = code
             UserDefaults.standard.set([code], forKey: "AppleLanguages")
             UserDefaults.standard.synchronize()
@@ -25,6 +25,6 @@ extension ESManager {
 
     // Read the current language in a thread-safe way.
     func getCurrentLanguage() -> String {
-        return stateLock.sync { self.currentLanguage }
+        return stateLock.withLock { self.currentLanguage }
     }
 }

@@ -11,11 +11,10 @@ import os
 extension ESManager {
     // Store an incoming connection (thread-safe).
     func storeIncomingConnection(_ conn: NSXPCConnection) {
-        var count = 0
-
-        xpcConnectionLock.perform {
-            self.activeConnections.append(conn)
-            count = self.activeConnections.count
+        let boxed = XPCConn(connection: conn)
+        let count = xpcConnectionLock.withLock { () -> Int in
+            self.activeConnections.append(boxed)
+            return self.activeConnections.count
         }
 
         Logfile.endpointSecurity.log("Stored incoming XPC connection — total=\(count)")
@@ -23,12 +22,10 @@ extension ESManager {
 
     // Flush pending notifications to a specific connection (called after Auth)
     func flushPendingNotifications(to conn: NSXPCConnection) {
-        var pendingToFlush: [BlockedNotification] = []
-
-        xpcConnectionLock.perform {
-            // Lấy các thông báo đang chờ để gửi đi
-            pendingToFlush = self.pendingNotifications
+        let pendingToFlush = xpcConnectionLock.withLock { () -> [BlockedNotification] in
+            let pending = self.pendingNotifications
             self.pendingNotifications.removeAll()
+            return pending
         }
 
         if !pendingToFlush.isEmpty {
@@ -49,19 +46,21 @@ extension ESManager {
 
     // Remove a connection when it goes away.
     func removeIncomingConnection(_ conn: NSXPCConnection) {
-        var count = 0
-        xpcConnectionLock.perform {
-            self.activeConnections.removeAll { $0 === conn }
-            self.authenticatedConnections.remove(ObjectIdentifier(conn))
-            count = self.activeConnections.count
+        let boxed = XPCConn(connection: conn)
+        let connID = ObjectIdentifier(conn)
+        let count = xpcConnectionLock.withLock { () -> Int in
+            self.activeConnections.removeAll { $0 == boxed }
+            self.authenticatedConnections.remove(connID)
+            return self.activeConnections.count
         }
         Logfile.endpointSecurity.log("Removed XPC connection — total=\(count)")
     }
 
     // Pick the first available active connection.
     func pickAppConnection() -> NSXPCConnection? {
-        return xpcConnectionLock.sync {
-            return self.activeConnections.first
+        let boxed = xpcConnectionLock.withLock {
+            self.activeConnections.first
         }
+        return boxed?.connection
     }
 }
