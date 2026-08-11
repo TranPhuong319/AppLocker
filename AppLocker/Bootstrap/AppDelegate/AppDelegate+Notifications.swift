@@ -5,6 +5,7 @@
 //  Created by Doe Phương on 28/12/25.
 //
 
+import AppKit
 import UserNotifications
 
 extension AppDelegate {
@@ -45,18 +46,21 @@ extension AppDelegate {
         )
     }
 
+    @MainActor
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
 
-        if response.actionIdentifier == UpdateNotificationAction.more ||
-           response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+        if response.notification.request.content.categoryIdentifier == "SPARKLE_UPDATE" {
+            if response.actionIdentifier == UpdateNotificationAction.more ||
+               response.actionIdentifier == UNNotificationDefaultActionIdentifier {
 
-            AppUpdater.shared.updaterController.checkForUpdates(nil)
+                AppUpdater.shared.updaterController.checkForUpdates(nil)
+            }
+
+            UNUserNotificationCenter.current()
+                .removeDeliveredNotifications(withIdentifiers: [notificationIndentifiers])
         }
-
-        UNUserNotificationCenter.current()
-            .removeDeliveredNotifications(withIdentifiers: [notificationIndentifiers])
 
         completionHandler()
     }

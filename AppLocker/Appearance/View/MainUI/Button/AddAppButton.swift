@@ -1,5 +1,5 @@
 //
-//  AppRow.swift
+//  AddAppButton.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 28/12/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AppRow: View {
+struct AddAppButton: View {
     let app: InstalledApp
     let isSelected: Bool
     let onToggle: () -> Void

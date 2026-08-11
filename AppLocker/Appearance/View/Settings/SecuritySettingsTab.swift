@@ -1,0 +1,87 @@
+//
+//  SecuritySettingsTab.swift
+//  AppLocker
+//
+//  Created by Doe Phương on 18/8/25.
+//
+
+import SwiftUI
+
+struct SecuritySettingsTab: View {
+    @Binding var isProtectionEnabled: Bool
+    let isMock: Bool
+
+    @AppStorage("batchAuthCountdownSeconds") private var authCountdownSeconds: Double = 30
+    @AppStorage("autoLockTimeoutMinutes") private var autoLockTimeoutMinutes: Int = 0
+
+    var body: some View {
+        Form {
+            Section(header: Text("Application Lock Protection")) {
+                Toggle("Application Lock", isOn: Binding(
+                    get: { isProtectionEnabled },
+                    set: { newValue in
+                        handleLockToggle(newValue: newValue)
+                    }
+                ))
+
+                HStack {
+                    Text(isProtectionEnabled ? "Application Lock is enabled"
+                         : "Application Lock is disabled")
+                        .font(.caption)
+                        .foregroundColor(isProtectionEnabled ? .green : .red)
+                }
+            }
+
+            Section(header: Text("Authentication Popup Timeout")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Popup Countdown:")
+                        Spacer()
+                        Text("\(Int(authCountdownSeconds)) seconds")
+                            .foregroundColor(.secondary)
+                    }
+                    Slider(value: $authCountdownSeconds, in: 10...60, step: 5)
+                }
+            }
+
+            Section(header: Text("Auto-Lock Duration")) {
+                Picker("Lock Session Timeout", selection: $autoLockTimeoutMinutes) {
+                    Text("Immediately").tag(0)
+                    Text("After 5 minutes").tag(5)
+                    Text("After 15 minutes").tag(15)
+                    Text("When System Sleeps").tag(-1)
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func handleLockToggle(newValue: Bool) {
+        guard !isMock else {
+            isProtectionEnabled = newValue
+            return
+        }
+
+        if newValue == false {
+            AuthenticationManager.authenticate(
+                reason: String(localized: "disable application lock")
+            ) { success, _ in
+                DispatchQueue.main.async {
+                    if success {
+                        AppState.shared.manager.setProtectionDisabled(true)
+                        self.isProtectionEnabled = false
+                    } else {
+                        self.isProtectionEnabled = true
+                    }
+                }
+            }
+        } else {
+            AppState.shared.manager.setProtectionDisabled(false)
+            self.isProtectionEnabled = true
+        }
+    }
+}
+
+#Preview {
+    SecuritySettingsTab(isProtectionEnabled: .constant(true), isMock: true)
+}

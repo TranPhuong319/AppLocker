@@ -31,7 +31,7 @@ struct DeleteQueueSheet: View {
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications")
                             ForEach(userApps, id: \.path) { app in
-                                DeleteQueueRow(app: app, appState: appState)
+                                DeleteAppButton(app: app, appState: appState)
                             }
                         }
 
@@ -39,7 +39,7 @@ struct DeleteQueueSheet: View {
                         if !systemApps.isEmpty {
                             SectionHeader(title: "System Applications")
                             ForEach(systemApps, id: \.path) { app in
-                                DeleteQueueRow(app: app, appState: appState)
+                                DeleteAppButton(app: app, appState: appState)
                             }
                         }
                     }

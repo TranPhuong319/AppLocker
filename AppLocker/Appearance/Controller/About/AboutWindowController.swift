@@ -19,7 +19,7 @@ class AboutWindowController: NSWindowController {
             config.styleMask = [.titled, .closable, .fullSizeContentView]
             config.titlebarAppearsTransparent = true
             config.titleVisibility = .hidden
-            config.size = NSSize(width: 450, height: 300)
+            config.size = WindowLayout.About.size
             config.isReleasedWhenClosed = false
             config.center = true
 

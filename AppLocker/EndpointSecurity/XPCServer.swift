@@ -9,9 +9,11 @@ import AppKit
 import Combine
 import Foundation
 import os
+import UserNotifications
 
 final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sendable {
     static let shared = XPCServer()
+    @MainActor static var lastAuthTimestampsByPath: [String: Date] = [:]
 
     @Published var authError: String?
     @Published var pendingApps: [PendingAppItem] = []
@@ -53,6 +55,20 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
 
     @MainActor
     func addPendingAuth(name: String, path: String, cdhash: String, pid: Int32) {
+        let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
+        if timeoutMinutes > 0, let lastAuth = XPCServer.lastAuthTimestampsByPath[path] {
+            let elapsed = Date().timeIntervalSince(lastAuth)
+            if elapsed < Double(timeoutMinutes * 60) {
+                Logfile.core.log("XPCServer: Per-app grace period active (\(Int(elapsed))s / \(timeoutMinutes * 60)s) for \(name). Auto-approving PID \(pid).")
+                ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+                return
+            }
+        } else if timeoutMinutes == -1, XPCServer.lastAuthTimestampsByPath[path] != nil {
+            Logfile.core.log("XPCServer: Per-app grace period active (When System Sleeps) for \(name). Auto-approving PID \(pid).")
+            ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+            return
+        }
+
         // Deduplicate PID (or path if pid == 0)
         let exists = self.pendingApps.contains { (pid != 0 && $0.pid == pid) || (pid == 0 && $0.path == path) }
 
@@ -60,6 +76,11 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
             let item = PendingAppItem(name: name, path: path, cdhash: cdhash, pid: pid, isSelected: true)
             self.pendingApps.append(item)
             Logfile.core.log("XPCServer: Added PID \(pid) (\(name)) to pending queue. Total: \(self.pendingApps.count)")
+
+            let showNotifications = UserDefaults.standard.object(forKey: "showBlockedNotifications") as? Bool ?? true
+            if showNotifications {
+                sendBlockedNotification(appName: name)
+            }
         }
 
         // If BatchAuthWindow is ALREADY open, update timer
@@ -127,6 +148,7 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
                     }
 
                     if success {
+                        XPCServer.lastAuthTimestampsByPath[app.path] = Date()
                         Logfile.core.log("SingleAppAuth: Succeeded for \(app.name) (PID: \(app.pid))")
                         ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
                     } else {
@@ -149,7 +171,8 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
     @MainActor
     func startOrResetCountdownTimer() {
         countdownTimer?.invalidate()
-        remainingSeconds = 60
+        let configuredSeconds = UserDefaults.standard.integer(forKey: "batchAuthCountdownSeconds")
+        remainingSeconds = configuredSeconds > 0 ? configuredSeconds : 30
 
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {
@@ -157,11 +180,25 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
                 if self.remainingSeconds > 0 {
                     self.remainingSeconds -= 1
                 } else {
-                    Logfile.core.warning("XPCServer: 60s Timeout reached! Auto cancelling all pending PIDs.")
+                    Logfile.core.warning("XPCServer: Timeout reached! Auto cancelling all pending PIDs.")
                     self.handleCancel()
                 }
             }
         }
+    }
+
+    private func sendBlockedNotification(appName: String) {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Application Lock")
+        content.body = String(format: String(localized: "%@ has been blocked from launching."), appName)
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "BlockedAppNotification-\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request)
     }
 
     @MainActor
@@ -191,6 +228,10 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
                 self.isAuthenticating = false
 
                 if success {
+                    let now = Date()
+                    for item in currentApps where item.isSelected {
+                        XPCServer.lastAuthTimestampsByPath[item.path] = now
+                    }
                     Logfile.core.log(
                         "XPCServer: Batch auth succeeded. Approved: \(approvedPIDs), Rejected: \(rejectedPIDs)"
                     )

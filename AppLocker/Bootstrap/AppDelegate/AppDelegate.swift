@@ -20,7 +20,7 @@ enum AgentAction {
 
 let plistName = "com.TranPhuong319.AppLocker.agent"
 
-class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
     var statusItem: NSStatusItem?
     var pendingUpdate: SUAppcastItem?
     let notificationIndentifiers = "AppLockerUpdateNotification"
@@ -85,6 +85,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         #endif
 
         let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
+        let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "System"
+        applyTheme(theme)
 
         if isFirstStart {
             Logfile.core.log("First launch. Showing welcome/ToS screen.")
@@ -92,6 +94,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         } else {
             Logfile.core.log("Not first launch. Running normal launch configuration.")
             launchConfig()
+        }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            openSettings()
+        }
+        return true
+    }
+
+    func applyTheme(_ theme: String) {
+        switch theme {
+        case "Light":
+            NSApp.appearance = NSAppearance(named: .aqua)
+        case "Dark":
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        default:
+            NSApp.appearance = nil
         }
     }
 
