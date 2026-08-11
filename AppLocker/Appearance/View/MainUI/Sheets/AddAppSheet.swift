@@ -52,7 +52,7 @@ struct AddAppSheet: View {
                         if !userApps.isEmpty {
                             SectionHeader(title: "Applications")
                             ForEach(userApps, id: \.path) { app in
-                                AppRow(
+                                AddAppButton(
                                     app: app,
                                     isSelected: appState.selectedToLock.contains(app.path),
                                     onToggle: { toggleSelection(for: app.path) },
@@ -66,7 +66,7 @@ struct AddAppSheet: View {
                             SectionHeader(title: "System Applications")
                                 .padding(.top, 10)
                             ForEach(systemApps, id: \.path) { app in
-                                AppRow(
+                                AddAppButton(
                                     app: app,
                                     isSelected: appState.selectedToLock.contains(app.path),
                                     onToggle: { toggleSelection(for: app.path) },

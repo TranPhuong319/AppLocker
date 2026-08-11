@@ -85,4 +85,26 @@ extension AppDelegate {
         }
         #endif
     }
+
+    @discardableResult
+    func checkAgentStatus() -> Bool {
+        let result = manageAgent(plistName: plistName, action: .check)
+        switch result {
+        case .installed, .alreadyInstalled:
+            return true
+        default:
+            return false
+        }
+    }
+
+    @discardableResult
+    func repairAgentService() -> Bool {
+        let result = manageAgent(plistName: plistName, action: .install)
+        switch result {
+        case .installed, .alreadyInstalled:
+            return true
+        default:
+            return false
+        }
+    }
 }

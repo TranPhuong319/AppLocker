@@ -79,10 +79,11 @@ enum AlertShow {
         _ = show(title: title, message: message, style: style, buttons: ["OK"])
     }
 
-    /// Chạy alert: chỉ gắn dạng sheet khi window đang focus (keyWindow/mainWindow), ngược lại hiện modal độc lập
+    /// Chạy alert: chỉ gắn dạng sheet khi có window thực thụ (không phải menu bar/status bar), ngược lại hiện modal độc lập
     @discardableResult
     private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
-        if let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible && !$0.isMiniaturized }) {
+        let candidateWindows = [NSApp.keyWindow, NSApp.mainWindow].compactMap { $0 } + NSApp.windows
+        if let window = candidateWindows.first(where: isValidSheetWindow) {
             var modalResponse: NSApplication.ModalResponse = .alertFirstButtonReturn
             alert.beginSheetModal(for: window) { response in
                 modalResponse = response
@@ -93,5 +94,12 @@ enum AlertShow {
         } else {
             return alert.runModal()
         }
+    }
+
+    private static func isValidSheetWindow(_ window: NSWindow) -> Bool {
+        guard window.isVisible, !window.isMiniaturized else { return false }
+        if window.className.contains("StatusBar") || window.className.contains("Menu") { return false }
+        if window.level == .statusBar || window.level == .popUpMenu || window.level == .mainMenu { return false }
+        return window.styleMask.contains(.titled)
     }
 }

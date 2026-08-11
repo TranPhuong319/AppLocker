@@ -13,6 +13,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     static func show() {
         if let controller = shared {
+            controller.window?.center()
             controller.window?.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
@@ -28,16 +29,10 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = controller
         shared = controller
 
-        controller.showWindow(nil)
-
-        // Đảm bảo SwiftUI layout xong
-        window.contentView?.layoutSubtreeIfNeeded()
-
-        // Lấy size thật từ SwiftUI
-        let fittingSize = hostingController.view.fittingSize
-        window.setContentSize(fittingSize)
-
+        window.setContentSize(NSSize(width: 640, height: 440))
         window.center()
+
+        controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

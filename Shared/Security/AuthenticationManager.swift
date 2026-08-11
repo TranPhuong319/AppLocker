@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import LocalAuthentication
+@preconcurrency import LocalAuthentication
 
 @MainActor
 final class AuthenticationManager {
@@ -26,9 +26,10 @@ final class AuthenticationManager {
             return
         }
 
+        let contextID = ObjectIdentifier(context)
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, evalError in
             Task { @MainActor in
-                if self.currentContext === context {
+                if let currentContext = self.currentContext, ObjectIdentifier(currentContext) == contextID {
                     self.currentContext = nil
                 }
                 completion(success, evalError)

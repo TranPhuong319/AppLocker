@@ -92,19 +92,6 @@ extension AppDelegate {
         }
     }
 
-    @objc func launchAtLogin(_ sender: NSMenuItem) {
-        Task {
-            let loginItem = SMAppService.mainApp
-            if sender.state == .on {
-                try? await loginItem.unregister()
-                sender.state = .off
-            } else {
-                try? loginItem.register()
-                sender.state = .on
-            }
-        }
-    }
-
     @objc func about() {
         AboutWindowController.show()
     }

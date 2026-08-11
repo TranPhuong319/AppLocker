@@ -1,5 +1,5 @@
 //
-//  DeleteQueueRow.swift
+//  DeleteAppButton.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 28/12/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DeleteQueueRow: View {
+struct DeleteAppButton: View {
     let app: InstalledApp
     @ObservedObject var appState: AppState
 

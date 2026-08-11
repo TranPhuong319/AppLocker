@@ -14,13 +14,6 @@ extension AppDelegate: NSMenuDelegate {
 
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
-
-            button.translatesAutoresizingMaskIntoConstraints = false
-
-            NSLayoutConstraint.activate([
-                button.widthAnchor.constraint(equalToConstant: 22),
-                button.heightAnchor.constraint(equalToConstant: 22)
-            ])
         }
 
         let menu = NSMenu()

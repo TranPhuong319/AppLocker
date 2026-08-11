@@ -1,5 +1,5 @@
 //
-//  LockedAppRow.swift
+//  LockedAppButton.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 28/12/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LockedAppRow: View {
+struct LockedAppButton: View {
     let app: InstalledApp
     let isDeleting: Bool
     let onDelete: () -> Void

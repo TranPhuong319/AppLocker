@@ -35,4 +35,8 @@ enum WindowLayout {
         static let size = NSSize(width: 440, height: 360)
         static let maxListHeight: CGFloat = 220
     }
+
+    struct About {
+        static let size = NSSize(width: 450, height: 220)
+    }
 }

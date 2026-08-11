@@ -42,6 +42,28 @@ extension AppDelegate {
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
+
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleWorkspaceSleep),
+            name: NSWorkspace.willSleepNotification,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleWorkspaceSleep),
+            name: NSWorkspace.screensDidSleepNotification,
+            object: nil
+        )
+    }
+
+    @objc @MainActor private func handleWorkspaceSleep() {
+        XPCServer.lastAuthTimestampsByPath.removeAll()
+        let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
+        if timeoutMinutes != 0 {
+            Logfile.core.log("Workspace sleep event detected (autoLockTimeoutMinutes = \(timeoutMinutes)). Re-enabling application lock.")
+            AppState.shared.manager.setProtectionDisabled(false)
+        }
     }
 
     func launchedByLaunchd() -> Bool {
