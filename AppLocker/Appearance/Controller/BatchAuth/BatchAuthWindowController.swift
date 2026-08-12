@@ -19,31 +19,6 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private init() {
-        let size = WindowLayout.BatchAuth.size
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: size.width, height: size.height),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = ""
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-        window.isMovableByWindowBackground = true
-        window.isReleasedWhenClosed = false
-        window.level = .floating
-        window.center()
-        super.init(window: window)
-        window.delegate = self
-        setupContentView()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupContentView() {
-        guard let window = window else { return }
         let contentView = BatchAuthView(
             server: XPCServer.shared,
             onAuthenticate: {
@@ -53,7 +28,31 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
                 XPCServer.shared.handleCancel()
             }
         )
-        window.contentView = NSHostingView(rootView: contentView)
+        let hostingController = NSHostingController(rootView: contentView)
+        hostingController.sizingOptions = [.preferredContentSize]
+
+        let size = WindowLayout.BatchAuth.size
+        var config = WindowConfiguration()
+        config.title = ""
+        config.styleMask = [.titled, .closable, .fullSizeContentView]
+        config.titleVisibility = .hidden
+        config.titlebarAppearsTransparent = true
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
+        config.isReleasedWhenClosed = false
+        config.level = .floating
+        config.size = size
+        config.minSize = size
+        config.maxSize = size
+        config.center = true
+
+        let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
+        super.init(window: window)
+        window.delegate = self
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     func showWindow() {

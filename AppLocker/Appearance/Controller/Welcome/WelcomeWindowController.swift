@@ -30,11 +30,14 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         config.titleVisibility = .hidden
         config.titlebarAppearsTransparent = true
         config.wantsLayer = true
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
         config.size = fixedSize
         config.minSize = fixedSize
         config.maxSize = fixedSize
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
+        window.isMovableByWindowBackground = true
 
         let controller = WelcomeWindowController(window: window)
         window.delegate = controller

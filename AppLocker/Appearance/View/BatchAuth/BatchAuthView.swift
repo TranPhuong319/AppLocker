@@ -107,13 +107,7 @@ struct BatchAuthView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .frame(width: WindowLayout.BatchAuth.size.width)
-        .background(
-            ZStack {
-                VisualEffectView(material: .windowBackground, blendingMode: .withinWindow)
-                Color(NSColor.windowBackgroundColor).opacity(0.88)
-            }
-        )
+        .frame(width: WindowLayout.BatchAuth.size.width, height: WindowLayout.BatchAuth.size.height)
     }
 
     private func getAppIcon(for path: String) -> NSImage? {
@@ -160,11 +154,7 @@ struct BatchAppRowView: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(app.isSelected ? Color(NSColor.controlBackgroundColor) : Color(NSColor.controlBackgroundColor).opacity(0.35))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(app.isSelected ? Color.blue.opacity(0.4) : Color.primary.opacity(0.06), lineWidth: 1)
+                .fill(app.isSelected ? Color.primary.opacity(0.06) : Color.primary.opacity(0.02))
         )
         .contentShape(Rectangle())
         .onTapGesture {
@@ -172,24 +162,6 @@ struct BatchAppRowView: View {
                 app.isSelected.toggle()
             }
         }
-    }
-}
-
-struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-    let blendingMode: NSVisualEffectView.BlendingMode
-
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let visualEffectView = NSVisualEffectView()
-        visualEffectView.material = material
-        visualEffectView.blendingMode = blendingMode
-        visualEffectView.state = .active
-        return visualEffectView
-    }
-
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.material = material
-        nsView.blendingMode = blendingMode
     }
 }
 

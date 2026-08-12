@@ -25,19 +25,27 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationSplitView(sidebar: {
+        NavigationSplitView {
             List(SettingsTab.allCases, id: \.self, selection: $selectedTab) { tab in
-                Label(tab.displayName, systemImage: tab.iconName)
-                    .tag(tab)
+                Label {
+                    Text(tab.displayName)
+                        .font(.system(size: 13, weight: .medium))
+                } icon: {
+                    Image(systemName: tab.iconName)
+                        .foregroundColor(.blue)
+                }
+                .tag(tab)
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 150, ideal: 170, max: 200)
-        }, detail: {
+            .navigationTitle(String(localized: "Settings"))
+        } detail: {
             detailContent(for: selectedTab)
+                .navigationTitle(selectedTab.displayName)
+                .padding(.top, -25)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding()
-        })
-        .frame(width: 640, height: 440)
+        }
+        .navigationSplitViewStyle(.automatic)
+        .frame(minWidth: 600, minHeight: 400)
         .onAppear {
             checkAgentStatus()
             updateSparkleStatus()

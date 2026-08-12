@@ -8,12 +8,6 @@
 import AppKit
 import SwiftUI
 
-class TouchBarHostingController<Content: View>: NSHostingController<Content> {
-    override func makeTouchBar() -> NSTouchBar? {
-        return TouchBarManager.shared.makeTouchBar(for: AppState.shared.activeTouchBar)
-    }
-}
-
 class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
 
@@ -44,10 +38,9 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private static func createHostingController() -> TouchBarHostingController<ContentView> {
-        let hostingController = TouchBarHostingController(rootView: ContentView())
-
-        hostingController.view.setFrameSize(WindowLayout.Main.size)
+    private static func createHostingController() -> NSHostingController<ContentView> {
+        let hostingController = NSHostingController(rootView: ContentView())
+        hostingController.view.setFrameSize(WindowLayout.mainSize)
         hostingController.view.layoutSubtreeIfNeeded()
         return hostingController
     }
@@ -57,10 +50,14 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
         var config = WindowConfiguration()
         config.title = String(localized: "Manage the application list")
         config.styleMask = [.titled, .closable, .fullSizeContentView]
+        config.titleVisibility = .hidden
+        config.titlebarAppearsTransparent = true
         config.level = .floating
         config.size = size
         config.minSize = size
         config.maxSize = size
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
 
         return WindowManager.createWindow(contentViewController: contentVC, configuration: config)
     }

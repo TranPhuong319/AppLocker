@@ -39,7 +39,7 @@ struct WelcomeView: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 14)
 
             ScrollView {
                 Text(licenseText)
@@ -50,13 +50,13 @@ struct WelcomeView: View {
                     .padding(12)
             }
             .frame(maxWidth: .infinity)
-            .background(Color(NSColor.controlBackgroundColor))
+            .liquidGlassCard(isSelected: true)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.2), lineWidth: 1)
             )
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 14)
 
             HStack(spacing: 16) {
                 Button(
@@ -105,7 +105,7 @@ struct WelcomeView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 14)
             .padding(.top, 8)
 
             Spacer(minLength: 10)
@@ -117,7 +117,6 @@ struct WelcomeView: View {
                 .padding(.bottom, 16)
         }
         .frame(minWidth: WindowLayout.Welcome.size.width, minHeight: WindowLayout.Welcome.size.height)
-        .background(Color(NSColor.windowBackgroundColor))
     }
 }
 

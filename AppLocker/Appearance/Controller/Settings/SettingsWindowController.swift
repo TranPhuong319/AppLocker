@@ -23,7 +23,18 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         var config = WindowConfiguration()
         config.title = String(localized: "Settings")
+        config.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+        config.titlebarAppearsTransparent = true
+        config.titleVisibility = .visible
+        config.isOpaque = false
+        config.backgroundColor = .clear
+
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
+        
+        let toolbar = NSToolbar(identifier: "SettingsToolbar")
+        toolbar.showsBaselineSeparator = false
+        window.toolbar = toolbar
+        window.toolbarStyle = .unified
 
         let controller = SettingsWindowController(window: window)
         window.delegate = controller
