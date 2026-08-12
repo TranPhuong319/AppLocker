@@ -23,7 +23,7 @@ struct AboutView: View {
                 Text(bundle.appName)
                     .font(.system(size: 32, weight: .bold))
             }
-            .padding(.top, 20)
+            .padding(.top, 28)
             .padding(.bottom, 10)
 
             Spacer()
@@ -43,12 +43,14 @@ struct AboutView: View {
 
                     Link("Website", destination: URL(string: "https://github.com/TranPhuong319/AppLocker")!)
                         .font(.caption)
+                        .buttonStyle(.plain)
+                        .foregroundColor(.blue)
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 24)
+            .padding(.bottom, 16)
         }
-        .frame(width: 450, height: 220)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(NSColor.windowBackgroundColor))
     }
 }

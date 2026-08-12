@@ -33,14 +33,7 @@ struct AddAppSheet: View {
                     .onSubmit { unfocus() }
                 }
                 .padding(7)
-                .background {
-                    Capsule()
-                        .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
-                }
-                .overlay(
-                    Capsule()
-                        .stroke(Color.secondary.opacity(0.15))
-                )
+                .liquidGlassCapsule()
                 .padding(.horizontal)
                 .padding(.vertical)
 

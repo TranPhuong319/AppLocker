@@ -13,15 +13,19 @@ extension AppDelegate: NSMenuDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
+            let image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
+            image?.isTemplate = true
+            button.image = image
         }
 
         let menu = NSMenu()
+        menu.appearance = NSApp.appearance
         menu.delegate = self
         statusItem?.menu = menu
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.appearance = NSApp.appearance
         menu.removeAllItems()
 
         let infoItem = NSMenuItem(title: "AppLocker v\(Bundle.main.fullVersion)",

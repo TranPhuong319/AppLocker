@@ -26,7 +26,8 @@ struct ContentView: View {
                 mainListView
             }
         }
-        .padding(12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
         .contentShape(Rectangle())
         .onTapGesture { isSearchFocused = false }
 
@@ -75,14 +76,7 @@ struct ContentView: View {
                     .onSubmit { unfocus() }
             }
             .padding(7)
-            .background {
-                Capsule()
-                    .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
-            }
-            .overlay(
-                Capsule()
-                    .stroke(Color.secondary.opacity(0.15))
-            )
+            .liquidGlassCapsule()
             .padding(.horizontal, 8)
 
             ZStack(alignment: .bottom) {
@@ -120,7 +114,7 @@ struct ContentView: View {
                     .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)
                 }
                 .scrollIndicators(.hidden)
-                .background(Color.white.opacity(0.000001).onTapGesture { isSearchFocused = false })
+                .background(Color.clear.contentShape(Rectangle()).onTapGesture { isSearchFocused = false })
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 if !appState.deleteQueue.isEmpty {
@@ -165,14 +159,7 @@ struct ContentView: View {
             .padding(.leading, 4)
             .frame(maxWidth: .infinity, maxHeight: 42)
             .contentShape(Capsule())
-            .background {
-                ZStack {
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                    Capsule()
-                        .stroke(Color.secondary.opacity(0.15), lineWidth: 0.5)
-                }
-            }
+            .liquidGlassCapsule()
             .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
         }
         .buttonStyle(.plain)

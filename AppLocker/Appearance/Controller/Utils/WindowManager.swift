@@ -21,6 +21,8 @@ struct WindowConfiguration {
     var titlebarAppearsTransparent: Bool = false
     var wantsLayer: Bool = false
     var center: Bool = true
+    var isOpaque: Bool = true
+    var backgroundColor: NSColor? = .windowBackgroundColor
 }
 
 class WindowManager {
@@ -37,6 +39,12 @@ class WindowManager {
         window.level = configuration.level
         window.titleVisibility = configuration.titleVisibility
         window.titlebarAppearsTransparent = configuration.titlebarAppearsTransparent
+        window.isOpaque = configuration.isOpaque
+        window.isMovableByWindowBackground = false
+
+        if let backgroundColor = configuration.backgroundColor {
+            window.backgroundColor = backgroundColor
+        }
 
         if configuration.wantsLayer {
             window.contentView?.wantsLayer = true

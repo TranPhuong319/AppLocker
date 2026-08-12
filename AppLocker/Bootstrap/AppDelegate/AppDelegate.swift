@@ -105,13 +105,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
     }
 
     func applyTheme(_ theme: String) {
+        let appearance: NSAppearance?
         switch theme {
         case "Light":
-            NSApp.appearance = NSAppearance(named: .aqua)
+            appearance = NSAppearance(named: .aqua)
         case "Dark":
-            NSApp.appearance = NSAppearance(named: .darkAqua)
+            appearance = NSAppearance(named: .darkAqua)
         default:
-            NSApp.appearance = nil
+            appearance = nil
+        }
+
+        NSApp.appearance = appearance
+        NSAppearance.current = appearance ?? NSApp.effectiveAppearance
+        statusItem?.menu?.appearance = appearance
+
+        for window in NSApp.windows {
+            window.appearance = appearance
         }
     }
 
