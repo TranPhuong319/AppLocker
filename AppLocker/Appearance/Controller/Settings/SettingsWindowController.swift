@@ -41,6 +41,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         shared = controller
 
         window.setContentSize(NSSize(width: 640, height: 440))
+        window.minSize = NSSize(width: 640, height: 440)
         window.center()
 
         controller.showWindow(nil)
@@ -50,5 +51,12 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         SettingsWindowController.shared = nil
+    }
+
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        var size = frameSize
+        if size.width < 640 { size.width = 640 }
+        if size.height < 440 { size.height = 440 }
+        return size
     }
 }

@@ -174,24 +174,24 @@ struct ContentView: View {
 
 #Preview("Empty State") {
     ContentView(appState: .preview(locked: []))
-        .frame(width: WindowLayout.Main.size.width,
-               height: WindowLayout.Main.size.height)
+        .frame(width: WindowLayout.mainSize.width,
+               height: WindowLayout.mainSize.height)
 }
 
 #Preview("User Apps Only") {
     ContentView(appState: .preview(locked: [.mockChrome, .mockVSCode]))
-        .frame(width: WindowLayout.Main.size.width,
-               height: WindowLayout.Main.size.height)
+        .frame(width: WindowLayout.mainSize.width,
+               height: WindowLayout.mainSize.height)
 }
 
 #Preview("System Apps Only") {
     ContentView(appState: .preview(locked: [.mockSafari, .mockFinder]))
-        .frame(width: WindowLayout.Main.size.width,
-               height: WindowLayout.Main.size.height)
+        .frame(width: WindowLayout.mainSize.width,
+               height: WindowLayout.mainSize.height)
 }
 
 #Preview("Both Types") {
     ContentView(appState: .preview(locked: InstalledApp.allMocks))
-        .frame(width: WindowLayout.Main.size.width,
-               height: WindowLayout.Main.size.height)
+        .frame(width: WindowLayout.mainSize.width,
+               height: WindowLayout.mainSize.height)
 }

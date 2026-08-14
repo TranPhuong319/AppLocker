@@ -103,8 +103,8 @@ struct DeleteQueueSheet: View {
             }
         }
         .frame(
-            minWidth: WindowLayout.DeleteQueue.minSize.width,
-            minHeight: WindowLayout.DeleteQueue.minSize.height
+            minWidth: WindowLayout.deleteQueueMinSize.width,
+            minHeight: WindowLayout.deleteQueueMinSize.height
         )
         .onAppear {
             DispatchQueue.main.async {

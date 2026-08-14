@@ -21,7 +21,7 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         let contentView = WelcomeView()
         let hostingController = NSHostingController(rootView: contentView)
 
-        let fixedSize = WindowLayout.Welcome.size
+        let fixedSize = WindowLayout.welcomeSize
         let bundle = Bundle.main
 
         var config = WindowConfiguration()

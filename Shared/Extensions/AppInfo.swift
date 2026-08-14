@@ -78,12 +78,8 @@ extension Bundle {
         "\(appVersion) (\(appBuild))"
     }
 
-    var detailedVersion: String {
-        "Version \(appVersion) (Build \(appBuild))"
-    }
-
     var copyright: String {
-        Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
+        object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
     }
 
     var appIcon: NSImage {

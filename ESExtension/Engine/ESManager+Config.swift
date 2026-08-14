@@ -130,4 +130,25 @@ extension ESManager {
         source.resume()
         Logfile.endpointSecurity.log("ESManager: Started directory monitoring for \(configDir)")
     }
+
+    // MARK: - Language Configuration
+
+    // Force the extension process to use a specific language.
+    @objc func updateLanguage(to code: String) {
+        guard isCurrentConnectionAuthenticated() else {
+            Logfile.endpointSecurity.error("Unauthorized call to updateLanguage")
+            return
+        }
+        stateLock.withLock {
+            self.currentLanguage = code
+            UserDefaults.standard.set([code], forKey: "AppleLanguages")
+            UserDefaults.standard.synchronize()
+            Logfile.endpointSecurity.log("ES Process language forced to: \(code)")
+        }
+    }
+
+    // Read the current language in a thread-safe way.
+    func getCurrentLanguage() -> String {
+        return stateLock.withLock { self.currentLanguage }
+    }
 }

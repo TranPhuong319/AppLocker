@@ -31,7 +31,7 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: contentView)
         hostingController.sizingOptions = [.preferredContentSize]
 
-        let size = WindowLayout.BatchAuth.size
+        let size = WindowLayout.batchAuthSize
         var config = WindowConfiguration()
         config.title = ""
         config.styleMask = [.titled, .closable, .fullSizeContentView]
