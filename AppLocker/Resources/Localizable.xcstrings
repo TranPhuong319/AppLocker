@@ -108,6 +108,7 @@
       }
     },
     "Appearance" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -278,6 +279,7 @@
       }
     },
     "Beta" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -378,6 +380,7 @@
       }
     },
     "Dark Mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -448,6 +451,7 @@
       }
     },
     "General" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -477,6 +481,9 @@
         }
       }
     },
+    "Giao diện" : {
+
+    },
     "Immediately" : {
       "localizations" : {
         "vi" : {
@@ -499,6 +506,7 @@
       }
     },
     "Light Mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -719,6 +727,9 @@
         }
       }
     },
+    "Sáng" : {
+
+    },
     "Search apps..." : {
       "localizations" : {
         "vi" : {
@@ -730,6 +741,7 @@
       }
     },
     "Security" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -780,6 +792,7 @@
       }
     },
     "Stable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -800,6 +813,7 @@
       }
     },
     "System Default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -841,6 +855,7 @@
       }
     },
     "Theme" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -851,6 +866,7 @@
       }
     },
     "Theme Mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -879,6 +895,12 @@
           }
         }
       }
+    },
+    "Tối" : {
+
+    },
+    "Tự động" : {
+
     },
     "Uninstall" : {
       "localizations" : {
@@ -951,6 +973,7 @@
       }
     },
     "Updates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

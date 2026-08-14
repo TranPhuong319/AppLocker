@@ -9,23 +9,22 @@ import SwiftUI
 
 struct SettingsView: View {
     @State private var selectedTab: SettingsTab = .general
+    @State private var navigationHistory: [SettingsTab] = [.general]
+    @State private var historyIndex: Int = 0
+    @State private var isNavigatingHistory: Bool = false
     private var isMock: Bool
-
-    @State private var isAgentActive: Bool = true
-    @State private var hasAvailableUpdate: Bool = false
-    @State private var availableUpdateVersion: String = ""
-    @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
 
     init(
         selectedTab: SettingsTab = .general,
         isMock: Bool = false
     ) {
         _selectedTab = State(initialValue: selectedTab)
+        _navigationHistory = State(initialValue: [selectedTab])
         self.isMock = isMock
     }
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: .constant(.all)) {
             List(SettingsTab.allCases, id: \.self, selection: $selectedTab) { tab in
                 Label {
                     Text(tab.displayName)
@@ -37,74 +36,73 @@ struct SettingsView: View {
                 .tag(tab)
             }
             .listStyle(.sidebar)
-            .navigationTitle(String(localized: "Settings"))
+            .navigationSplitViewColumnWidth(min: 120, ideal: 150, max: 180)
         } detail: {
             detailContent(for: selectedTab)
+                .padding(.top, -16)
+                .frame(minWidth: 440, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .navigationTitle(selectedTab.displayName)
-                .padding(.top, -25)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .toolbar {
+                    ToolbarItem(placement: .navigation) {
+                        ControlGroup {
+                            Button(action: goBack) {
+                                Image(systemName: "chevron.left")
+                            }
+                            .disabled(historyIndex <= 0)
+
+                            Button(action: goForward) {
+                                Image(systemName: "chevron.right")
+                            }
+                            .disabled(historyIndex >= navigationHistory.count - 1)
+                        }
+                        .controlGroupStyle(.navigation)
+                    }
+                }
         }
-        .navigationSplitViewStyle(.automatic)
-        .frame(minWidth: 600, minHeight: 400)
-        .onAppear {
-            checkAgentStatus()
-            updateSparkleStatus()
-            if !isMock {
-                isProtectionEnabled = !AppState.shared.manager.isProtectionDisabled
-            }
+        .navigationSplitViewStyle(.balanced)
+        .frame(minWidth: 640, minHeight: 440)
+        .onChange(of: selectedTab) { newTab in
+            handleTabChange(to: newTab)
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
-            if !isMock {
-                isProtectionEnabled = !AppState.shared.manager.isProtectionDisabled
-            }
+    }
+
+    private func handleTabChange(to newTab: SettingsTab) {
+        if isNavigatingHistory {
+            isNavigatingHistory = false
+            return
         }
-        .onReceive(NotificationCenter.default.publisher(for: .appLockerPendingUpdateDidChange)) { _ in
-            updateSparkleStatus()
+        if navigationHistory.indices.contains(historyIndex), navigationHistory[historyIndex] != newTab {
+            navigationHistory = Array(navigationHistory.prefix(historyIndex + 1))
+            navigationHistory.append(newTab)
+            historyIndex = navigationHistory.count - 1
         }
+    }
+
+    private func goBack() {
+        guard historyIndex > 0 else { return }
+        isNavigatingHistory = true
+        historyIndex -= 1
+        selectedTab = navigationHistory[historyIndex]
+    }
+
+    private func goForward() {
+        guard historyIndex < navigationHistory.count - 1 else { return }
+        isNavigatingHistory = true
+        historyIndex += 1
+        selectedTab = navigationHistory[historyIndex]
     }
 
     @ViewBuilder
     private func detailContent(for tab: SettingsTab) -> some View {
         switch tab {
         case .general:
-            GeneralSettingsTab(isAgentActive: $isAgentActive, isMock: isMock)
+            GeneralSettingsTab(isMock: isMock)
         case .security:
-            SecuritySettingsTab(isProtectionEnabled: $isProtectionEnabled, isMock: isMock)
+            SecuritySettingsTab(isMock: isMock)
         case .updates:
-            UpdatesSettingsTab(
-                hasAvailableUpdate: $hasAvailableUpdate,
-                availableUpdateVersion: $availableUpdateVersion,
-                isMock: isMock
-            )
+            UpdatesSettingsTab(isMock: isMock)
         case .appearance:
             AppearanceSettingsTab(isMock: isMock)
-        }
-    }
-
-    private func checkAgentStatus() {
-        guard !isMock else {
-            isAgentActive = true
-            return
-        }
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            isAgentActive = appDelegate.checkAgentStatus()
-        }
-    }
-
-    private func updateSparkleStatus() {
-        guard !isMock, let appDelegate = NSApp.delegate as? AppDelegate else { return }
-        if let update = appDelegate.pendingUpdate {
-            hasAvailableUpdate = true
-            let displayVer = update.displayVersionString
-            let buildVer = update.versionString
-            if displayVer != buildVer {
-                availableUpdateVersion = "\(displayVer) (\(buildVer))"
-            } else {
-                availableUpdateVersion = displayVer
-            }
-        } else {
-            hasAvailableUpdate = false
-            availableUpdateVersion = ""
         }
     }
 }

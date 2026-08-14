@@ -14,10 +14,7 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 
     var displayName: LocalizedStringKey {
-        switch self {
-        case .stable: return "Stable"
-        case .beta: return "Beta"
-        }
+        LocalizedStringKey(rawValue)
     }
 
     var description: LocalizedStringKey {
@@ -42,12 +39,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 
     var displayName: LocalizedStringKey {
-        switch self {
-        case .general: return "General"
-        case .security: return "Security"
-        case .updates: return "Updates"
-        case .appearance: return "Appearance"
-        }
+        LocalizedStringKey(rawValue)
     }
 
     var iconName: String {

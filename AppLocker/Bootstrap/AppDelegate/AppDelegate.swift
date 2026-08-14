@@ -116,7 +116,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         }
 
         NSApp.appearance = appearance
-        NSAppearance.current = appearance ?? NSApp.effectiveAppearance
         statusItem?.menu?.appearance = appearance
 
         for window in NSApp.windows {

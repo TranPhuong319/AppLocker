@@ -8,10 +8,14 @@
 import SwiftUI
 
 struct GeneralSettingsTab: View {
-    @Binding var isAgentActive: Bool
     let isMock: Bool
 
+    @State private var isAgentActive: Bool = true
     @AppStorage("showBlockedNotifications") private var showNotifications: Bool = true
+
+    init(isMock: Bool = false) {
+        self.isMock = isMock
+    }
 
     var body: some View {
         Form {
@@ -22,30 +26,29 @@ struct GeneralSettingsTab: View {
                         systemImage: isAgentActive ? "shield.checkered" : "exclamationmark.shield"
                     )
                     Spacer()
-                    Group {
-                        if isAgentActive {
-                            #if DEBUG
-                            Text("Active") + Text(" - Debug")
-                            #else
-                            Text("Active")
-                            #endif
-                        } else {
-                            #if DEBUG
-                            Text("Inactive") + Text(" - Debug")
-                            #else
-                            Text("Inactive")
-                            #endif
-                        }
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(isAgentActive ? .green : .red)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill((isAgentActive ? Color.green : Color.red).opacity(0.15))
-                    )
+                    #if DEBUG
+                    Text(isAgentActive ? "Active - Debug" : "Inactive - Debug")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(isAgentActive ? .green : .red)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill((isAgentActive ? Color.green : Color.red).opacity(0.15))
+                        )
+                    #else
+                    Text(isAgentActive ? "Active" : "Inactive")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(isAgentActive ? .green : .red)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill((isAgentActive ? Color.green : Color.red).opacity(0.15))
+                        )
+                    #endif
                 }
 
                 #if DEBUG
@@ -65,6 +68,16 @@ struct GeneralSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear {
+            checkAgentStatus()
+        }
+    }
+
+    private func checkAgentStatus() {
+        guard !isMock else { return }
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            isAgentActive = appDelegate.checkAgentStatus()
+        }
     }
 
     private func repairAgentService() {
@@ -76,5 +89,5 @@ struct GeneralSettingsTab: View {
 }
 
 #Preview {
-    GeneralSettingsTab(isAgentActive: .constant(true), isMock: true)
+    GeneralSettingsTab(isMock: true)
 }

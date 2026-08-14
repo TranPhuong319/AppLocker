@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct SecuritySettingsTab: View {
-    @Binding var isProtectionEnabled: Bool
     let isMock: Bool
 
+    @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
     @AppStorage("batchAuthCountdownSeconds") private var authCountdownSeconds: Double = 30
     @AppStorage("autoLockTimeoutMinutes") private var autoLockTimeoutMinutes: Int = 0
+
+    init(isMock: Bool = false) {
+        self.isMock = isMock
+    }
 
     var body: some View {
         Form {
@@ -54,6 +58,17 @@ struct SecuritySettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear {
+            syncProtectionStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
+            syncProtectionStatus()
+        }
+    }
+
+    private func syncProtectionStatus() {
+        guard !isMock else { return }
+        isProtectionEnabled = !AppState.shared.manager.isProtectionDisabled
     }
 
     private func handleLockToggle(newValue: Bool) {
@@ -83,5 +98,5 @@ struct SecuritySettingsTab: View {
 }
 
 #Preview {
-    SecuritySettingsTab(isProtectionEnabled: .constant(true), isMock: true)
+    SecuritySettingsTab(isMock: true)
 }
