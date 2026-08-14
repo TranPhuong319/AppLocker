@@ -46,7 +46,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private static func createMainAppWindow(with contentVC: NSViewController) -> NSWindow {
-        let size = WindowLayout.Main.size
+        let size = WindowLayout.mainSize
         var config = WindowConfiguration()
         config.title = String(localized: "Manage the application list")
         config.styleMask = [.titled, .closable, .fullSizeContentView]

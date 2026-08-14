@@ -68,7 +68,7 @@ struct BatchAuthView: View {
                     }
                 }
             }
-            .frame(maxHeight: WindowLayout.BatchAuth.maxListHeight)
+            .frame(maxHeight: WindowLayout.batchAuthMaxListHeight)
 
             Divider()
 
@@ -107,7 +107,7 @@ struct BatchAuthView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .frame(width: WindowLayout.BatchAuth.size.width, height: WindowLayout.BatchAuth.size.height)
+        .frame(width: WindowLayout.batchAuthSize.width, height: WindowLayout.batchAuthSize.height)
     }
 
     private func getAppIcon(for path: String) -> NSImage? {
@@ -192,7 +192,7 @@ private struct BatchAuthViewPreviewWrapper: View {
                 print("Mock Cancel triggered")
             }
         )
-        .frame(width: WindowLayout.BatchAuth.size.width, height: WindowLayout.BatchAuth.size.height)
+        .frame(width: WindowLayout.batchAuthSize.width, height: WindowLayout.batchAuthSize.height)
         .onReceive(timer) { _ in
             if server.remainingSeconds > 0 {
                 server.remainingSeconds -= 1

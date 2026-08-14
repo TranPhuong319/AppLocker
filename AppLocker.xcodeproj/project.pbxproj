@@ -80,7 +80,6 @@
 		E0FD765A2F59E37C00D46B31 /* ESMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76262F59E37C00D46B31 /* ESMessage.swift */; };
 		E0FD765B2F59E37C00D46B31 /* ESXPCConnections.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76412F59E37C00D46B31 /* ESXPCConnections.swift */; };
 		E0FD765C2F59E37C00D46B31 /* PathUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763D2F59E37C00D46B31 /* PathUtils.swift */; };
-		E0FD765D2F59E37C00D46B31 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */; };
 		E0FD765E2F59E37C00D46B31 /* AppLauncherUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */; };
 		E0FD76722F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
 		E0FD76742F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
@@ -227,7 +226,6 @@
 		E0FD76362F59E37C00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLauncherUtils.swift; sourceTree = "<group>"; };
-		E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		E0FD763D2F59E37C00D46B31 /* PathUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathUtils.swift; sourceTree = "<group>"; };
 		E0FD76402F59E37C00D46B31 /* ESMachListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESMachListener.swift; sourceTree = "<group>"; };
 		E0FD76412F59E37C00D46B31 /* ESXPCConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCConnections.swift; sourceTree = "<group>"; };
@@ -642,7 +640,6 @@
 			isa = PBXGroup;
 			children = (
 				E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */,
-				E0FD763C2F59E37C00D46B31 /* LanguageManager.swift */,
 				E0FD763D2F59E37C00D46B31 /* PathUtils.swift */,
 			);
 			path = Utils;
@@ -869,7 +866,6 @@
 				E0FD765A2F59E37C00D46B31 /* ESMessage.swift in Sources */,
 				E0FD765B2F59E37C00D46B31 /* ESXPCConnections.swift in Sources */,
 				E0FD765C2F59E37C00D46B31 /* PathUtils.swift in Sources */,
-				E0FD765D2F59E37C00D46B31 /* LanguageManager.swift in Sources */,
 				E0FD765E2F59E37C00D46B31 /* AppLauncherUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

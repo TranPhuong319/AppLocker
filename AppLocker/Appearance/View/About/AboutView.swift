@@ -30,7 +30,7 @@ struct AboutView: View {
 
             // Footer Area
             VStack(spacing: 12) {
-                Text(bundle.detailedVersion)
+                Text("Version \(bundle.fullVersion)")
                     .font(.caption)
                     .foregroundColor(.secondary)
 

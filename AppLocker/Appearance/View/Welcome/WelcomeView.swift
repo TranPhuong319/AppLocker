@@ -116,12 +116,12 @@ struct WelcomeView: View {
                 .foregroundColor(.gray)
                 .padding(.bottom, 16)
         }
-        .frame(minWidth: WindowLayout.Welcome.size.width, minHeight: WindowLayout.Welcome.size.height)
+        .frame(minWidth: WindowLayout.welcomeSize.width, minHeight: WindowLayout.welcomeSize.height)
     }
 }
 
 #Preview {
     WelcomeView(isMock: true)
-        .frame(width: WindowLayout.Welcome.size.width,
-               height: WindowLayout.Welcome.size.height)
+        .frame(width: WindowLayout.welcomeSize.width,
+               height: WindowLayout.welcomeSize.height)
 }

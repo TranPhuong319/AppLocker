@@ -6,12 +6,9 @@
 //
 
 import Foundation
-import Security
 
 extension Data {
     static func random(count: Int) -> Data {
-        var data = Data(count: count)
-        _ = data.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, count, $0.baseAddress!) }
-        return data
+        Data((0..<count).map { _ in UInt8.random(in: 0...255) })
     }
 }

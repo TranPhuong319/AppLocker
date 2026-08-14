@@ -21,31 +21,6 @@ enum WindowLayout {
     static let batchAuthSize = NSSize(width: 440, height: 360)
     static let batchAuthMaxListHeight: CGFloat = 220
     static let aboutSize = NSSize(width: 450, height: 248)
-
-    // Backwards compatibility aliases for sheet layout
-    struct AddApp {
-        static let minSize = WindowLayout.addAppMinSize
-        static let listMaxHeight = WindowLayout.addAppListMaxHeight
-    }
-    struct DeleteQueue {
-        static let minSize = WindowLayout.deleteQueueMinSize
-    }
-    struct LockingPopup {
-        static let minSize = WindowLayout.lockingPopupMinSize
-    }
-    struct BatchAuth {
-        static let size = WindowLayout.batchAuthSize
-        static let maxListHeight = WindowLayout.batchAuthMaxListHeight
-    }
-    struct About {
-        static let size = WindowLayout.aboutSize
-    }
-    struct Main {
-        static let size = WindowLayout.mainSize
-    }
-    struct Welcome {
-        static let size = WindowLayout.welcomeSize
-    }
 }
 
 // MARK: - Liquid Glass Visual Effects & Modifiers

@@ -73,7 +73,7 @@ struct AddAppSheet: View {
                 .scrollIndicators(.hidden)
                 .padding(.horizontal)
                 .frame(maxWidth: .infinity)
-                .frame(maxHeight: WindowLayout.AddApp.listMaxHeight)
+                .frame(maxHeight: WindowLayout.addAppListMaxHeight)
             }
             .contentShape(Rectangle())
             .onTapGesture { unfocus() }
@@ -106,8 +106,8 @@ struct AddAppSheet: View {
             }
         }
         .frame(
-            minWidth: WindowLayout.AddApp.minSize.width,
-            minHeight: WindowLayout.AddApp.minSize.height
+            minWidth: WindowLayout.addAppMinSize.width,
+            minHeight: WindowLayout.addAppMinSize.height
         )
         .onTapGesture { unfocus() }
         .onAppear {
