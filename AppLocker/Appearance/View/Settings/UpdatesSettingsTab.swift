@@ -9,13 +9,17 @@ import SwiftUI
 import Sparkle
 
 struct UpdatesSettingsTab: View {
-    @Binding var hasAvailableUpdate: Bool
-    @Binding var availableUpdateVersion: String
     let isMock: Bool
 
+    @State private var hasAvailableUpdate: Bool = false
+    @State private var availableUpdateVersion: String = ""
     @AppStorage("automaticallyChecksForUpdates") private var autoCheck: Bool = true
     @AppStorage("automaticallyDownloadsUpdates") private var autoDownload: Bool = false
     @AppStorage("updateChannel") private var selectedChannelRaw: String = UpdateChannel.stable.rawValue
+
+    init(isMock: Bool = false) {
+        self.isMock = isMock
+    }
 
     private var selectedChannel: UpdateChannel {
         UpdateChannel(rawValue: selectedChannelRaw) ?? .stable
@@ -65,6 +69,12 @@ struct UpdatesSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear {
+            updateSparkleStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .appLockerPendingUpdateDidChange)) { _ in
+            updateSparkleStatus()
+        }
     }
 
     @ViewBuilder
@@ -82,25 +92,32 @@ struct UpdatesSettingsTab: View {
 
             Spacer()
 
-            if hasAvailableUpdate {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .foregroundColor(.blue)
-                    Text("Version \(availableUpdateVersion) available")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.blue)
-                }
-            } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                    Text("Up to Date")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.green)
-                }
+            HStack(spacing: 4) {
+                Image(systemName: hasAvailableUpdate ? "arrow.down.circle.fill" : "checkmark.circle.fill")
+                    .foregroundColor(hasAvailableUpdate ? .blue : .green)
+                Text(hasAvailableUpdate ? "Version \(availableUpdateVersion) available" : "Up to Date")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(hasAvailableUpdate ? .blue : .green)
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private func updateSparkleStatus() {
+        guard !isMock, let appDelegate = NSApp.delegate as? AppDelegate else { return }
+        if let update = appDelegate.pendingUpdate {
+            hasAvailableUpdate = true
+            let displayVer = update.displayVersionString
+            let buildVer = update.versionString
+            if displayVer != buildVer {
+                availableUpdateVersion = "\(displayVer) (\(buildVer))"
+            } else {
+                availableUpdateVersion = displayVer
+            }
+        } else {
+            hasAvailableUpdate = false
+            availableUpdateVersion = ""
+        }
     }
 
     private func checkForUpdates() {
@@ -110,9 +127,5 @@ struct UpdatesSettingsTab: View {
 }
 
 #Preview {
-    UpdatesSettingsTab(
-        hasAvailableUpdate: .constant(false),
-        availableUpdateVersion: .constant(""),
-        isMock: true
-    )
+    UpdatesSettingsTab(isMock: true)
 }

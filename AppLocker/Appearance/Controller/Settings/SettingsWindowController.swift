@@ -20,21 +20,21 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         }
 
         let hostingController = NSHostingController(rootView: SettingsView())
+        if #available(macOS 14.0, *) {
+            hostingController.sceneBridgingOptions = [.toolbars, .title]
+        }
 
         var config = WindowConfiguration()
-        config.title = String(localized: "Settings")
         config.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         config.titlebarAppearsTransparent = true
-        config.titleVisibility = .visible
-        config.isOpaque = false
-        config.backgroundColor = .clear
+        config.titleVisibility = .hidden
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
+        config.minSize = NSSize(width: 640, height: 440)
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        
         let toolbar = NSToolbar(identifier: "SettingsToolbar")
-        toolbar.showsBaselineSeparator = false
         window.toolbar = toolbar
-        window.toolbarStyle = .unified
 
         let controller = SettingsWindowController(window: window)
         window.delegate = controller
