@@ -5,27 +5,32 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
+import Combine
 import Foundation
 import SystemExtensions
 
-final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
+@MainActor
+final class ExtensionInstaller: NSObject, ObservableObject, OSSystemExtensionRequestDelegate {
     static let shared = ExtensionInstaller()
     private override init() {}
 
+    @Published private(set) var isInstalled: Bool = false
+
     private enum Action {
-        case install
-        case uninstall
+        case install(completion: ((Result<Void, Error>) -> Void)?)
+        case uninstall(completion: ((Result<Void, Error>) -> Void)?)
     }
 
     private var currentAction: Action?
 
-    var onInstalled: (() -> Void)?
-    var onUninstalled: (() -> Void)?
-
     let identifier = "com.TranPhuong319.AppLocker.ESExtension"
 
-    func install() {
-        currentAction = .install
+    func updateInstalledState(_ installed: Bool) {
+        isInstalled = installed
+    }
+
+    func install(completion: ((Result<Void, Error>) -> Void)? = nil) {
+        currentAction = .install(completion: completion)
         let req = OSSystemExtensionRequest.activationRequest(
             forExtensionWithIdentifier: identifier,
             queue: .main
@@ -34,8 +39,8 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         OSSystemExtensionManager.shared.submitRequest(req)
     }
 
-    func uninstall() {
-        currentAction = .uninstall
+    func uninstall(completion: ((Result<Void, Error>) -> Void)? = nil) {
+        currentAction = .uninstall(completion: completion)
         let req = OSSystemExtensionRequest.deactivationRequest(
             forExtensionWithIdentifier: identifier,
             queue: .main
@@ -46,25 +51,31 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     // MARK: - OSSystemExtensionRequestDelegate
 
-    func request(_ request: OSSystemExtensionRequest,
-                 didFinishWithResult result: OSSystemExtensionRequest.Result) {
-        handleFinish(result: result)
+    nonisolated func request(_ request: OSSystemExtensionRequest,
+                             didFinishWithResult result: OSSystemExtensionRequest.Result) {
+        Task { @MainActor in
+            self.handleFinish(result: result)
+        }
     }
 
-    func request(_ request: OSSystemExtensionRequest,
-                 didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
+    nonisolated func request(_ request: OSSystemExtensionRequest,
+                             didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
         Logfile.core.info("[Installer] finished early: \(result.rawValue)")
-        handleFinish(result: result)
+        Task { @MainActor in
+            self.handleFinish(result: result)
+        }
     }
 
     private func handleFinish(result: OSSystemExtensionRequest.Result) {
         guard result == .completed else { return }
 
         switch currentAction {
-        case .install:
-            onInstalled?()
-        case .uninstall:
-            onUninstalled?()
+        case .install(let completion):
+            isInstalled = true
+            completion?(.success(()))
+        case .uninstall(let completion):
+            isInstalled = false
+            completion?(.success(()))
         case .none:
             break
         }
@@ -72,19 +83,37 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         currentAction = nil
     }
 
-    func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
-        currentAction = nil
-        Logfile.core.error("[Installer] failed: \(error.localizedDescription)")
+    nonisolated func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
+        Task { @MainActor in
+            self.isInstalled = false
+            let action = self.currentAction
+            self.currentAction = nil
+
+            switch action {
+            case .install(let completion):
+                Logfile.core.error("[Installer] install failed: \(error.localizedDescription)")
+                completion?(.failure(error))
+            case .uninstall(let completion):
+                Logfile.core.error("[Installer] uninstall failed: \(error.localizedDescription)")
+                completion?(.failure(error))
+            case .none:
+                Logfile.core.error("[Installer] operation failed: \(error.localizedDescription)")
+            }
+        }
     }
 
-    func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
-        Logfile.core.warning("[Installer] needs user approval")
+    nonisolated func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
+        Task { @MainActor in
+            self.isInstalled = false
+            Logfile.core.warning("[Installer] needs user approval")
+        }
     }
 
-    func request(_ request: OSSystemExtensionRequest,
-                 actionForReplacingExtension existing: OSSystemExtensionProperties,
-                 withExtension ext: OSSystemExtensionProperties
+    nonisolated func request(_ request: OSSystemExtensionRequest,
+                             actionForReplacingExtension existing: OSSystemExtensionProperties,
+                             withExtension ext: OSSystemExtensionProperties
     ) -> OSSystemExtensionRequest.ReplacementAction {
         return .replace
     }
 }
+

@@ -26,29 +26,29 @@ struct GeneralSettingsTab: View {
                         systemImage: isAgentActive ? "shield.checkered" : "exclamationmark.shield"
                     )
                     Spacer()
-                    #if DEBUG
-                    Text(isAgentActive ? "Active - Debug" : "Inactive - Debug")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(isAgentActive ? .green : .red)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill((isAgentActive ? Color.green : Color.red).opacity(0.15))
-                        )
-                    #else
-                    Text(isAgentActive ? "Active" : "Inactive")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(isAgentActive ? .green : .red)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill((isAgentActive ? Color.green : Color.red).opacity(0.15))
-                        )
-                    #endif
+                    if isAgentActive {
+                        Text("Active")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.green)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.green.opacity(0.15))
+                            )
+                    } else {
+                        Text("Inactive")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.red.opacity(0.15))
+                            )
+                    }
                 }
 
                 #if DEBUG

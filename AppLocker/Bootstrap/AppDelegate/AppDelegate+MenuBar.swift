@@ -10,7 +10,9 @@ import ServiceManagement
 
 extension AppDelegate: NSMenuDelegate {
     func setupMenuBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        if statusItem == nil {
+            statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        }
 
         if let button = statusItem?.button {
             let image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
@@ -33,6 +35,16 @@ extension AppDelegate: NSMenuDelegate {
                                 keyEquivalent: "")
         infoItem.isEnabled = false
         menu.addItem(infoItem)
+
+        if !ExtensionInstaller.shared.isInstalled {
+            let statusItem = NSMenuItem(
+                title: String(localized: "System Extension Inactive"),
+                action: #selector(openSystemSettingsForExtension),
+                keyEquivalent: ""
+            )
+            menu.addItem(statusItem)
+        }
+
         menu.addItem(.separator())
 
         // MARK: - Primary Actions

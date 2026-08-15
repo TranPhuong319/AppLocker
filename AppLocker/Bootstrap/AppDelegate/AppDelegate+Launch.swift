@@ -11,12 +11,15 @@ import AppKit
 extension AppDelegate {
     @MainActor
     func launchConfig() {
-        ExtensionInstaller.shared.onInstalled = {
-            Logfile.core.log("[App] Setting up UI after extension install")
-            self.setupUIComponents()
-        }
+        Logfile.core.info("Starting UI components on app launch...")
+        self.setupUIComponents()
+
         Logfile.core.log("Installing Endpoint Security extension...")
-        ExtensionInstaller.shared.install()
+        ExtensionInstaller.shared.install { result in
+            if case .success = result {
+                Logfile.core.log("[App] Endpoint Security extension activated successfully.")
+            }
+        }
     }
 
     @MainActor

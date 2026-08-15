@@ -62,10 +62,16 @@ final class ESXPCClient {
             conn.exportedObject = server
 
             conn.invalidationHandler = { [weak self] in
+                DispatchQueue.main.async {
+                    ExtensionInstaller.shared.updateInstalledState(false)
+                }
                 self?.scheduleReconnect(immediate: true)
             }
 
             conn.interruptionHandler = { [weak self] in
+                DispatchQueue.main.async {
+                    ExtensionInstaller.shared.updateInstalledState(false)
+                }
                 self?.scheduleReconnect(immediate: false)
             }
 
@@ -81,6 +87,10 @@ final class ESXPCClient {
                         self.retryCount = 0
                         self.isConnecting = false  // Clear flag on success
 
+                        DispatchQueue.main.async {
+                            ExtensionInstaller.shared.updateInstalledState(true)
+                        }
+
                         if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
                            let primary = langs.first {
                             self.updateLanguage(primary)
@@ -88,6 +98,9 @@ final class ESXPCClient {
                     } else {
                         Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
                         self.isConnecting = false  // Clear flag on failure
+                        DispatchQueue.main.async {
+                            ExtensionInstaller.shared.updateInstalledState(false)
+                        }
                         conn.invalidate()
                         // Reconnect logic will trigger via invalidationHandler
                     }
@@ -168,8 +181,15 @@ final class ESXPCClient {
             self.connection = nil
             self.isConnecting = false  // Allow new connection attempt
 
+            DispatchQueue.main.async {
+                ExtensionInstaller.shared.updateInstalledState(false)
+            }
+
             guard self.retryCount < self.maxRetries else {
                 Logfile.core.error("[ESXPCClient] Max retries reached (\(self.maxRetries))")
+                DispatchQueue.main.async {
+                    ExtensionInstaller.shared.updateInstalledState(false)
+                }
                 return
             }
             self.retryCount += 1
