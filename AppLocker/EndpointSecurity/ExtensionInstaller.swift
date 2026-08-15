@@ -48,7 +48,16 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     func request(_ request: OSSystemExtensionRequest,
                  didFinishWithResult result: OSSystemExtensionRequest.Result) {
+        handleFinish(result: result)
+    }
 
+    func request(_ request: OSSystemExtensionRequest,
+                 didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
+        Logfile.core.info("[Installer] finished early: \(result.rawValue)")
+        handleFinish(result: result)
+    }
+
+    private func handleFinish(result: OSSystemExtensionRequest.Result) {
         guard result == .completed else { return }
 
         switch currentAction {
@@ -70,11 +79,6 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
         Logfile.core.warning("[Installer] needs user approval")
-    }
-
-    func request(_ request: OSSystemExtensionRequest,
-                 didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
-        Logfile.core.info("[Installer] finished early: \(result.rawValue)")
     }
 
     func request(_ request: OSSystemExtensionRequest,
