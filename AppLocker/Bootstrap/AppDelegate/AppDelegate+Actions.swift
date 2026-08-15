@@ -12,17 +12,44 @@ import ServiceManagement
 @MainActor
 extension AppDelegate {
     @objc func openListApp() {
+        guard ExtensionInstaller.shared.isInstalled else {
+            NSApp.activate(ignoringOtherApps: true)
+            let result = AlertShow.show(
+                title: String(localized: "System Extension Required"),
+                message: String(
+                    localized: "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications."
+                ),
+                style: .warning,
+                buttons: [
+                    String(localized: "Open System Settings"),
+                    String(localized: "Cancel")
+                ],
+                cancelIndex: 1,
+                defaultIndex: 0
+            )
+            if case .button(let index, _) = result, index == 0 {
+                SMAppService.openSystemSettingsLoginItems()
+                ExtensionInstaller.shared.install()
+            }
+            return
+        }
+
         AuthenticationManager.authenticate(
             reason: String(localized: "authenticate to open the application list")
         ) { success, error in
-                if success {
-                    AppListWindowController.show()
-                    Logfile.core.debug("Opened AppList")
-                } else {
-                    Logfile.core.error(
-                        "Error opening list app: \(error as NSObject?)")
-                }
+            if success {
+                AppListWindowController.show()
+                Logfile.core.debug("Opened AppList")
+            } else {
+                Logfile.core.error(
+                    "Error opening list app: \(error as NSObject?)")
+            }
         }
+    }
+
+    @objc func openSystemSettingsForExtension() {
+        SMAppService.openSystemSettingsLoginItems()
+        ExtensionInstaller.shared.install()
     }
 
     @objc func openSettings() {
@@ -99,16 +126,29 @@ extension AppDelegate {
     // MARK: - Helper Methods
 
     private func performUninstall() {
-        ExtensionInstaller.shared.onUninstalled = {
-            ESXPCClient.shared.authorizeShutdown(true) { _ in
-                self.manageAgent(plistName: plistName, action: .uninstall)
-                self.removeConfig()
-                self.selfRemoveApp()
-                self.showRestartSheet()
-                NSApp.terminate(nil)
+        ExtensionInstaller.shared.uninstall { result in
+            switch result {
+            case .success:
+                ESXPCClient.shared.authorizeShutdown(true) { _ in
+                    DispatchQueue.main.async {
+                        self.manageAgent(plistName: plistName, action: .uninstall)
+                        self.removeConfig()
+                        self.selfRemoveApp()
+                        self.showRestartSheet()
+                        NSApp.terminate(nil)
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    Logfile.core.error("[Uninstall] Failed to deactivate system extension: \(error.localizedDescription)")
+                    AlertShow.showInfo(
+                        title: String(localized: "System Extension Uninstallation Failed"),
+                        message: error.localizedDescription,
+                        style: .critical
+                    )
+                }
             }
         }
-        ExtensionInstaller.shared.uninstall()
     }
 
     private func performReset() {

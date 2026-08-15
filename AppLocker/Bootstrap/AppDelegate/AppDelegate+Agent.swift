@@ -104,6 +104,12 @@ extension AppDelegate {
         case .installed, .alreadyInstalled:
             return true
         default:
+            SMAppService.openSystemSettingsLoginItems()
+            AlertShow.showInfo(
+                title: String(localized: "Enable Background Service"),
+                message: String(localized: "macOS requires enabling AppLocker in System Settings -> Login Items & Extensions."),
+                style: .informational
+            )
             return false
         }
     }

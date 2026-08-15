@@ -16,9 +16,9 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 
     var displayName: LocalizedStringKey {
         switch self {
-        case .system: return "Tự động"
-        case .light: return "Sáng"
-        case .dark: return "Tối"
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
         }
     }
 }
@@ -34,9 +34,9 @@ struct AppearanceSettingsTab: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Giao diện")) {
+            Section(header: Text("Appearance")) {
                 HStack(alignment: .top) {
-                    Text("Giao diện")
+                    Text("Appearance mode")
                         .font(.system(size: 13, weight: .medium))
 
                     Spacer()

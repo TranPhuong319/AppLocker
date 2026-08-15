@@ -5,11 +5,13 @@
 //  Created by Doe Phương on 18/8/25.
 //
 
+import ServiceManagement
 import SwiftUI
 
 struct SecuritySettingsTab: View {
     let isMock: Bool
 
+    @ObservedObject private var installer = ExtensionInstaller.shared
     @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
     @AppStorage("batchAuthCountdownSeconds") private var authCountdownSeconds: Double = 30
     @AppStorage("autoLockTimeoutMinutes") private var autoLockTimeoutMinutes: Int = 0
@@ -22,17 +24,32 @@ struct SecuritySettingsTab: View {
         Form {
             Section(header: Text("Application Lock Protection")) {
                 Toggle("Application Lock", isOn: Binding(
-                    get: { isProtectionEnabled },
+                    get: { isProtectionEnabled && (isMock || installer.isInstalled) },
                     set: { newValue in
                         handleLockToggle(newValue: newValue)
                     }
                 ))
+                .disabled(!isMock && !installer.isInstalled)
 
                 HStack {
-                    Text(isProtectionEnabled ? "Application Lock is enabled"
-                         : "Application Lock is disabled")
-                        .font(.caption)
-                        .foregroundColor(isProtectionEnabled ? .green : .red)
+                    if !isMock && !installer.isInstalled {
+                        Text("System Extension is disabled. Please enable it in System Settings.")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        Spacer()
+                        Button(action: {
+                            SMAppService.openSystemSettingsLoginItems()
+                            ExtensionInstaller.shared.install()
+                        }, label: {
+                            Text("Enable Extension")
+                        })
+                        .controlSize(.small)
+                    } else {
+                        Text(isProtectionEnabled ? "Application Lock is enabled"
+                             : "Application Lock is disabled")
+                            .font(.caption)
+                            .foregroundColor(isProtectionEnabled ? .green : .red)
+                    }
                 }
             }
 
