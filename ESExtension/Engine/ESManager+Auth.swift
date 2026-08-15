@@ -5,6 +5,7 @@
 //  Created by Doe Phương on 9/1/26.
 //
 
+import CryptoKit
 import Foundation
 import os
 import Security
@@ -132,7 +133,7 @@ extension ESManager: ESAppProtocol {
         }
 
         // 3. Sign Challenge (clientNonce + serverNonce)
-        let serverNonce = Data.random(count: 32)
+        let serverNonce = SymmetricKey(size: .bits256).withUnsafeBytes { Data($0) }
         let combinedData = clientNonce + serverNonce
 
         guard let serverSig = KeychainHelper.shared.sign(data: combinedData, tag: serverTag),
