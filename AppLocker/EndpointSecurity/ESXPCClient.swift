@@ -5,6 +5,7 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
+import CryptoKit
 import Foundation
 import os
 
@@ -125,7 +126,7 @@ final class ESXPCClient {
         }
 
         // 2. Prepare Auth Data
-        let clientNonce = Data.random(count: 32)
+        let clientNonce = SymmetricKey(size: .bits256).withUnsafeBytes { Data($0) }
         guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appTag) else {
             Logfile.core.error("[ESXPCClient] Failed to sign client nonce")
             completion(false)
