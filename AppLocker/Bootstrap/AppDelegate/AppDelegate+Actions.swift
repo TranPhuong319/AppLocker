@@ -126,33 +126,46 @@ extension AppDelegate {
     // MARK: - Helper Methods
 
     private func performUninstall() {
-        ExtensionInstaller.shared.uninstall { result in
-            switch result {
-            case .success:
-                ESXPCClient.shared.authorizeShutdown(true) { _ in
-                    DispatchQueue.main.async {
-                        self.manageAgent(plistName: plistName, action: .uninstall)
-                        self.removeConfig()
-                        self.selfRemoveApp()
-                        self.showRestartSheet()
-                        NSApp.terminate(nil)
-                    }
+        Task {
+            let uninstallResult = await withCheckedContinuation { continuation in
+                ExtensionInstaller.shared.uninstall { result in
+                    continuation.resume(returning: result)
                 }
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    Logfile.core.error("[Uninstall] Failed to deactivate system extension: \(error.localizedDescription)")
+            }
+            
+            switch uninstallResult {
+            case .success:
+                ESXPCClient.shared.disconnect()
+                
+                self.manageAgent(plistName: plistName, action: .uninstall)
+                let configRemoved = self.removeConfig()
+                let appRemoved = await self.selfRemoveApp()
+                
+                if configRemoved && appRemoved {
+                    self.showRestartSheet()
+                    NSApp.terminate(nil)
+                } else {
                     AlertShow.showInfo(
-                        title: String(localized: "System Extension Uninstallation Failed"),
-                        message: error.localizedDescription,
-                        style: .critical
+                        title: String(localized: "Uninstallation Incomplete"),
+                        message: String(
+                            localized: "Could not completely remove application files or configuration."
+                        ),
+                        style: .warning
                     )
                 }
+            case .failure(let error):
+                Logfile.core.error("[Uninstall] Failed to deactivate system extension: \(error.localizedDescription)")
+                AlertShow.showInfo(
+                    title: String(localized: "System Extension Uninstallation Failed"),
+                    message: error.localizedDescription,
+                    style: .critical
+                )
             }
         }
     }
 
     private func performReset() {
-        removeConfig()
+        _ = removeConfig()
         restartApp()
     }
 
