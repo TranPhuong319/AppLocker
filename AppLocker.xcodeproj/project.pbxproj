@@ -48,7 +48,6 @@
 		E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */; };
 		E0FD76142F59E36600D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D02F59E36600D46B31 /* main.swift */; };
 		E0FD76152F59E36600D46B31 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */; };
-		E0FD76162F59E36600D46B31 /* LockedAppButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AC2F59E36600D46B31 /* LockedAppButton.swift */; };
 		E0FD76172F59E36600D46B31 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */; };
 		E0FD76182F59E36600D46B31 /* WindowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */; };
 		E0FD76192F59E36600D46B31 /* WelcomeWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */; };
@@ -89,7 +88,6 @@
 		E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
 		E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */; };
 		E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
-		E0FD76812F59E3BE00D46B31 /* Data+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76692F59E3BE00D46B31 /* Data+Random.swift */; };
 		E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD765F2F59E3BE00D46B31 /* Alert.swift */; };
 		E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
 		E0FD76852F59E3BE00D46B31 /* CDHashHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* CDHashHelper.swift */; };
@@ -98,6 +96,9 @@
 		E0FD76882F59E3BE00D46B31 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0FD76A02F59E47B00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76372F59E37C00D46B31 /* InfoPlist.strings */; };
 		E0FD76A22F59E5F200D46B31 /* com.TranPhuong319.AppLocker.agent.plist in Launch Agents */ = {isa = PBXBuildFile; fileRef = E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E0FD77022F59E36600D46B31 /* AppState+Spotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */; };
+		E0FD77042F59E36600D46B31 /* AppState+AppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */; };
+		E0FD77062F59E36600D46B31 /* AppState+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77052F59E36600D46B31 /* AppState+Preview.swift */; };
 		E0FD79022F59E37C00D46B31 /* ESManager+PendingProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */; };
 		E0FD79042F59E37C00D46B31 /* ESEventNotifyExec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79032F59E37C00D46B31 /* ESEventNotifyExec.swift */; };
 		E0FD79062F59E37C00D46B31 /* ESEventAuthSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79052F59E37C00D46B31 /* ESEventAuthSignal.swift */; };
@@ -239,6 +240,9 @@
 		E0FD766C2F59E3BE00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766D2F59E3BE00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766F2F59E3BE00D46B31 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Spotlight.swift"; sourceTree = "<group>"; };
+		E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+AppPicker.swift"; sourceTree = "<group>"; };
+		E0FD77052F59E36600D46B31 /* AppState+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Preview.swift"; sourceTree = "<group>"; };
 		E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+PendingProcess.swift"; sourceTree = "<group>"; };
 		E0FD79032F59E37C00D46B31 /* ESEventNotifyExec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventNotifyExec.swift; sourceTree = "<group>"; };
 		E0FD79052F59E37C00D46B31 /* ESEventAuthSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthSignal.swift; sourceTree = "<group>"; };
@@ -272,6 +276,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E02E769130315BE700401271 /* AppState */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75DD2F59E36600D46B31 /* AppState.swift */,
+				E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */,
+				E0FD77052F59E36600D46B31 /* AppState+Preview.swift */,
+				E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */,
+			);
+			path = AppState;
+			sourceTree = "<group>";
+		};
 		E07DF9792FA5993F00827F2C /* About */ = {
 			isa = PBXGroup;
 			children = (
@@ -544,9 +559,9 @@
 		E0FD75E52F59E36600D46B31 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				E02E769130315BE700401271 /* AppState */,
 				E0FD75DB2F59E36600D46B31 /* HotKey */,
 				E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */,
-				E0FD75DD2F59E36600D46B31 /* AppState.swift */,
 				E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */,
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
@@ -876,6 +891,9 @@
 				E0FD75FA2F59E36600D46B31 /* DeleteQueueSheet.swift in Sources */,
 				E0FD75FB2F59E36600D46B31 /* AppDelegate+Restart.swift in Sources */,
 				E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */,
+				E0FD77042F59E36600D46B31 /* AppState+AppPicker.swift in Sources */,
+				E0FD77062F59E36600D46B31 /* AppState+Preview.swift in Sources */,
+				E0FD77022F59E36600D46B31 /* AppState+Spotlight.swift in Sources */,
 				E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */,
 				E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */,
 				E0FD76012F59E36600D46B31 /* LockES.swift in Sources */,
@@ -1005,6 +1023,7 @@
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SKIP_INSTALL = YES;
+				STRINGS_FILE_OUTPUT_ENCODING = binary;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1054,6 +1073,7 @@
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SKIP_INSTALL = YES;
+				STRINGS_FILE_OUTPUT_ENCODING = binary;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1219,6 +1239,7 @@
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = /System/Library/PrivateFrameworks;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AppLocker/Info.plist;
@@ -1242,6 +1263,7 @@
 				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				STRINGS_FILE_OUTPUT_ENCODING = binary;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1275,6 +1297,7 @@
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = /System/Library/PrivateFrameworks;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AppLocker/Info.plist;
@@ -1298,6 +1321,7 @@
 				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				STRINGS_FILE_OUTPUT_ENCODING = binary;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;

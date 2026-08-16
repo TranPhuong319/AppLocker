@@ -14,9 +14,11 @@ import SwiftUI
 class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     static let shared = AppState()
 
-    private let selfBundlePath = Bundle.main.bundleURL.path
-    private let selfBundleName = Bundle.main.bundleURL.lastPathComponent
-    private var metadataQuery: NSMetadataQuery?
+    let selfBundlePath = Bundle.main.bundleURL.path
+    let selfBundleName = Bundle.main.bundleURL.lastPathComponent
+    var metadataQuery: NSMetadataQuery?
+    var spotlightWorkItem: DispatchWorkItem?
+    var lastInstalledPathSet: Set<String> = []
     private var cancellables = Set<AnyCancellable>()
     @Published var manager: any LockManagerProtocol
     @Published var showingAddApp = false
@@ -32,8 +34,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     @Published var filteredLockedApps: [InstalledApp] = []
     @Published var filteredUnlockableApps: [InstalledApp] = []
 
-    @Published private(set) var lockedAppObjects: [InstalledApp] = []
-    @Published private(set) var unlockableApps: [InstalledApp] = []
+    @Published var lockedAppObjects: [InstalledApp] = []
+    @Published var unlockableApps: [InstalledApp] = []
 
     var isMock: Bool = false
 
@@ -72,51 +74,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         metadataQuery?.stop()
     }
 
-    private func setupSpotlightQuery() {
-        let query = NSMetadataQuery()
-        self.metadataQuery = query
-
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidFinishGathering,
-            object: query)
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidUpdate,
-            object: query)
-
-        query.predicate = NSPredicate(
-            format:
-                "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
-        )
-        metadataQuery?.searchScopes = ["/Applications", "/System/Applications"]
-        metadataQuery?.start()
-    }
-
-    @objc private func queryDidUpdate(_ notification: Notification) {
-        let results = metadataQuery?.results as? [NSMetadataItem] ?? []
-        let selfPath = Bundle.main.bundleURL.path
-
-        let installedAppsList: [InstalledApp] = results.compactMap { item in
-            guard let path = item.value(forAttribute: "kMDItemPath") as? String,
-                path != selfPath,
-                !path.contains(".app/"),
-                let rawName = item.value(forAttribute: "kMDItemDisplayName") as? String
-            else { return nil }
-
-            let name = rawName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-
-            let bundleID =
-                item.value(forAttribute: "kMDItemBundleIdentifier") as? String ?? ""
-            let source: AppSource = path.hasPrefix("/System") ? .system : .user
-
-            return InstalledApp(name: name, bundleID: bundleID, path: path, source: source)
-        }
-
-        DispatchQueue.main.async {
-            self.manager.allApps = installedAppsList
-            self.refreshAppLists()
-        }
-    }
-
     private func setupSearchPipeline() {
         Publishers.CombineLatest($searchTextLockApps, $lockedAppObjects)
             .map { [weak self] (text, apps) -> [InstalledApp] in
@@ -147,7 +104,7 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         }
     }
 
-    private func refreshAppLists() {
+    func refreshAppLists() {
         let allApps = manager.allApps
         let lockedPathSet = Set(manager.lockedApps.keys)
 
@@ -177,10 +134,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
             .filter { !lockedPathSet.contains($0.path) }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
-        DispatchQueue.main.async {
-            self.lockedAppObjects = lockedAppsList
-            self.unlockableApps = unlockable
-        }
+        self.lockedAppObjects = lockedAppsList
+        self.unlockableApps = unlockable
 
         DispatchQueue.global(qos: .utility).async {
             for app in unlockable.prefix(60) {
@@ -196,8 +151,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     var systemUnlockableApps: [InstalledApp] {
         filteredUnlockableApps.filter { $0.source == .system }
     }
-
-    // Kích thước window/sheet đã chuyển sang WindowLayout.swift
 
     @Published var activeTouchBar: TouchBarType = .mainWindow
 
@@ -258,36 +211,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         addOthersApp(over: NSApp.keyWindow)
     }
 
-    func addOthersApp(over window: NSWindow? = nil) {
-        let panel = NSOpenPanel()
-        panel.delegate = self
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = true
-        panel.allowedContentTypes = [.applicationBundle]
-        panel.message = String(localized: "Select the application to lock")
-        panel.prompt = String(localized: "Lock")
-
-        if let window {
-            panel.beginSheetModal(for: window) { response in
-                if response == .OK {
-                    self.processSelectedPaths(panel.urls.map { $0.path })
-                }
-            }
-        } else {
-            if panel.runModal() == .OK {
-                processSelectedPaths(panel.urls.map { $0.path })
-            }
-        }
-    }
-
-    private func processSelectedPaths(_ paths: [String]) {
-        let pathsSet = Set(paths)
-        if !pathsSet.isEmpty {
-            toggleLockPopup(for: pathsSet, locking: true)
-        }
-    }
-
     @objc func unlockApp() {
         toggleLockPopup(for: deleteQueue, locking: false)
     }
@@ -300,89 +223,5 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     @objc func showDeleteQueuePopup() {
         showingDeleteQueue = true
     }
-
-    // MARK: - NSOpenSavePanelDelegate
-    func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
-        let path = url.path
-
-        // 1. Chặn chính app đang chạy (Dùng cache O(1))
-        if path == selfBundlePath || url.lastPathComponent == selfBundleName {
-            return false
-        }
-
-        // 2. Kiểm tra danh sách đã khóa (O(1) thay vì O(n))
-        if manager.lockedApps[path] != nil {
-            return false
-        }
-
-        // 3. Chặn các thư mục hệ thống nhạy cảm (Tối ưu hóa string prefix)
-        if path.hasPrefix("/System/") {
-            // Chỉ cho phép duyệt trong /System/Applications/
-            if !path.hasPrefix("/System/Applications/") {
-                return false
-            }
-        }
-
-        return true
-    }
 }
 
-// MARK: - Mocking for Previews
-@MainActor
-class MockLockManager: LockManagerProtocol, ObservableObject {
-    @Published var lockedApps: [String: LockedAppConfig] = [:]
-    @Published var allApps: [InstalledApp] = []
-    @Published var isProtectionDisabled: Bool = false
-
-    func toggleLock(for paths: [String]) {
-        for path in paths {
-            if lockedApps[path] != nil {
-                lockedApps.removeValue(forKey: path)
-            } else {
-                lockedApps[path] = LockedAppConfig(
-                    bundleID: "com.mock.app",
-                    path: path,
-                    sha256: "mock_sha256",
-                    execFile: "MockApp",
-                    name: "Mock App"
-                )
-            }
-        }
-    }
-
-    func setProtectionDisabled(_ disabled: Bool) {
-        self.isProtectionDisabled = disabled
-    }
-
-    func isLocked(path: String) -> Bool {
-        lockedApps[path] != nil
-    }
-}
-
-extension AppState {
-    static func preview(locked: [InstalledApp] = [], deleteQueue: Set<String> = []) -> AppState {
-        let mockManager = MockLockManager()
-        mockManager.allApps = InstalledApp.allMocks
-
-        var lockedConfigs: [String: LockedAppConfig] = [:]
-        for app in locked {
-            lockedConfigs[app.path] = .mock(for: app)
-        }
-        mockManager.lockedApps = lockedConfigs
-
-        let state = AppState(manager: mockManager)
-        state.deleteQueue = deleteQueue
-
-        // Populate lists synchronously for instantaneous preview
-        state.lockedAppObjects = locked.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        state.unlockableApps = InstalledApp.allMocks.filter { app in
-            !locked.contains(where: { $0.path == app.path })
-        }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-
-        // Trigger search pipeline update
-        state.filteredLockedApps = state.lockedAppObjects
-        state.filteredUnlockableApps = state.unlockableApps
-
-        return state
-    }
-}
