@@ -10,40 +10,33 @@ import Foundation
 
 extension AppDelegate {
 
-    func selfRemoveApp() {
-        let bundleURL = Bundle.main.bundleURL
-
-        do {
-            try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
-            Logfile.core.info("App successfully moved to Trash")
-        } catch {
-            Logfile.core.error("Failed to move app to Trash: \(error.localizedDescription, privacy: .public)")
+    func selfRemoveApp() async -> Bool {
+        await withCheckedContinuation { continuation in
+            NSWorkspace.shared.recycle([Bundle.main.bundleURL]) { _, error in
+                if let error {
+                    Logfile.core.error("Failed to move app to Trash: \(error.localizedDescription)")
+                    continuation.resume(returning: false)
+                } else {
+                    continuation.resume(returning: true)
+                }
+            }
         }
     }
 
-    func removeConfig() {
-        let sharedFileManager = FileManager.default
-
-        // Always remove UserDefaults regardless of whether config file exists
-        if let bundleIdentifierDomain = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: bundleIdentifierDomain)
-            Logfile.core.info("UserDefaults cleared for domain: \(bundleIdentifierDomain)")
+    func removeConfig() -> Bool {
+        if let domain = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: domain)
+            UserDefaults.standard.synchronize()
         }
-
         do {
-            // Check if config file exists before trying to delete the folder
-            /*
-               ConfigStore.shared.configURL points to .../AppLocker/config.plist
-               deletingLastPathComponent() points to .../AppLocker/
-            */
-            if sharedFileManager.fileExists(atPath: ConfigStore.shared.configURL.path()) {
-                try sharedFileManager.removeItem(
-                    at: ConfigStore.shared.configURL.deletingLastPathComponent())
-                Logfile.core.info("The configuration folder has been successfully deleted.")
+            let url = ConfigStore.shared.configURL
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url.deletingLastPathComponent())
             }
+            return true
         } catch {
-            Logfile.core.error(
-                "Error deleting folder: \(error.localizedDescription)")
+            Logfile.core.error("Error deleting folder: \(error.localizedDescription)")
+            return false
         }
     }
 

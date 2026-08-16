@@ -386,6 +386,16 @@
         }
       }
     },
+    "Could not completely remove application files or configuration." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xoá hoàn toàn các tệp ứng dụng hoặc cấu hình."
+          }
+        }
+      }
+    },
     "Current Version" : {
       "localizations" : {
         "vi" : {
@@ -974,6 +984,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gỡ cài đặt AppLocker"
+          }
+        }
+      }
+    },
+    "Uninstallation Incomplete" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ cài đặt chưa hoàn tất"
           }
         }
       }

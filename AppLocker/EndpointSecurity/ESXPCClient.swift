@@ -16,6 +16,7 @@ final class ESXPCClient {
     private let maxRetries = 10
     private var retryCount = 0
     private var isConnecting = false  // Prevent parallel connection attempts
+    private var shouldReconnect = true
 
     private let xpcQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc.qos",
@@ -47,6 +48,7 @@ final class ESXPCClient {
     func connect() {
         xpcQueue.async { [weak self] in
             guard let self = self else { return }
+            self.shouldReconnect = true
 
             // Prevent multiple concurrent connection attempts
             guard self.connection == nil, !self.isConnecting else {
@@ -106,6 +108,26 @@ final class ESXPCClient {
                         // Reconnect logic will trigger via invalidationHandler
                     }
                 }
+            }
+        }
+    }
+
+    func disconnect() {
+        xpcQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.shouldReconnect = false
+            self.retryCount = 0
+            self.isConnecting = false
+
+            if let oldConn = self.connection {
+                oldConn.invalidationHandler = nil
+                oldConn.interruptionHandler = nil
+                oldConn.invalidate()
+            }
+            self.connection = nil
+
+            DispatchQueue.main.async {
+                ExtensionInstaller.shared.updateInstalledState(false)
             }
         }
     }
@@ -171,7 +193,7 @@ final class ESXPCClient {
 
     private func scheduleReconnect(immediate: Bool) {
         xpcQueue.async { [weak self] in
-            guard let self = self else { return }
+            guard let self = self, self.shouldReconnect else { return }
 
             // Clean up existing connection safely without triggering recursive handler
             if let oldConn = self.connection {
@@ -206,7 +228,8 @@ final class ESXPCClient {
                 "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
             )
             self.xpcQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
-                self?.connect()
+                guard let self = self, self.shouldReconnect else { return }
+                self.connect()
             }
         }
     }

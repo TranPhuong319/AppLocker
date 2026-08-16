@@ -72,9 +72,11 @@ final class ExtensionInstaller: NSObject, ObservableObject, OSSystemExtensionReq
         switch currentAction {
         case .install(let completion):
             isInstalled = true
+            ESXPCClient.shared.connect()
             completion?(.success(()))
         case .uninstall(let completion):
             isInstalled = false
+            ESXPCClient.shared.disconnect()
             completion?(.success(()))
         case .none:
             break
@@ -86,6 +88,7 @@ final class ExtensionInstaller: NSObject, ObservableObject, OSSystemExtensionReq
     nonisolated func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
         Task { @MainActor in
             self.isInstalled = false
+            ESXPCClient.shared.disconnect()
             let action = self.currentAction
             self.currentAction = nil
 
@@ -105,6 +108,7 @@ final class ExtensionInstaller: NSObject, ObservableObject, OSSystemExtensionReq
     nonisolated func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
         Task { @MainActor in
             self.isInstalled = false
+            ESXPCClient.shared.disconnect()
             Logfile.core.warning("[Installer] needs user approval")
         }
     }
