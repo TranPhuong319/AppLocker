@@ -63,7 +63,8 @@ extension ESManager: ESAppProtocol {
               let staticRef = staticCode else { return nil }
 
         var dictionary: CFDictionary?
-        guard SecCodeCopySigningInformation(staticRef, SecCSFlags(rawValue: kSecCSInternalInformation), &dictionary) == errSecSuccess,
+        let flags = SecCSFlags(rawValue: kSecCSInternalInformation)
+        guard SecCodeCopySigningInformation(staticRef, flags, &dictionary) == errSecSuccess,
               let info = dictionary as? [String: Any] else { return nil }
 
         return info[kSecCodeInfoUnique as String] as? Data
@@ -76,7 +77,8 @@ extension ESManager: ESAppProtocol {
               let code = staticCode else { return nil }
 
         var dictionary: CFDictionary?
-        guard SecCodeCopySigningInformation(code, SecCSFlags(rawValue: kSecCSInternalInformation), &dictionary) == errSecSuccess,
+        let flags = SecCSFlags(rawValue: kSecCSInternalInformation)
+        guard SecCodeCopySigningInformation(code, flags, &dictionary) == errSecSuccess,
               let info = dictionary as? [String: Any] else { return nil }
 
         return info[kSecCodeInfoUnique as String] as? Data
@@ -174,4 +176,3 @@ extension ESManager: ESAppProtocol {
         reply(result)
     }
 }
-

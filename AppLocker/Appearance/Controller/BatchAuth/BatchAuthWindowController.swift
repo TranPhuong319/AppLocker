@@ -29,16 +29,20 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
             }
         )
         let hostingController = NSHostingController(rootView: contentView)
-        hostingController.sizingOptions = [.preferredContentSize]
+        if #available(macOS 14.0, *) {
+            hostingController.sceneBridgingOptions = [.toolbars, .title]
+        }
+        hostingController.view.setFrameSize(WindowLayout.batchAuthSize)
+        hostingController.view.layoutSubtreeIfNeeded()
 
         let size = WindowLayout.batchAuthSize
         var config = WindowConfiguration()
-        config.title = ""
+        config.title = String(localized: "Authentication")
         config.styleMask = [.titled, .closable, .fullSizeContentView]
-        config.titleVisibility = .hidden
+        config.titleVisibility = .visible
         config.titlebarAppearsTransparent = true
-        config.isOpaque = true
-        config.backgroundColor = .windowBackgroundColor
+        config.isOpaque = false
+        config.backgroundColor = .clear
         config.isReleasedWhenClosed = false
         config.level = .floating
         config.size = size
@@ -47,6 +51,8 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
         config.center = true
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
+        let toolbar = NSToolbar(identifier: "BatchAuthToolbar")
+        window.toolbar = toolbar
         super.init(window: window)
         window.delegate = self
     }

@@ -67,7 +67,7 @@ struct LiquidGlassCapsuleModifier: ViewModifier {
             content
                 .background(
                     Capsule()
-                        .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                        .fill(Color(NSColor.controlBackgroundColor))
                 )
         }
     }
@@ -94,6 +94,51 @@ struct LiquidGlassCardModifier: ViewModifier {
     }
 }
 
+struct LiquidGlassCircleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: Circle())
+        } else {
+            content
+                .background(
+                    Circle()
+                        .fill(Color(NSColor.controlBackgroundColor))
+                )
+        }
+    }
+}
+
+struct LiquidGlassBarModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: Rectangle())
+        } else {
+            content
+                .background(.bar)
+        }
+    }
+}
+
+struct LiquidGlassContainer<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        if #available(macOS 26.0, *) {
+            GlassEffectContainer {
+                content
+            }
+        } else {
+            content
+        }
+    }
+}
+
 extension View {
     func liquidGlassBackground(
         material: NSVisualEffectView.Material = .hudWindow
@@ -105,8 +150,16 @@ extension View {
         modifier(LiquidGlassCapsuleModifier())
     }
 
+    func liquidGlassCircle() -> some View {
+        modifier(LiquidGlassCircleModifier())
+    }
+
     func liquidGlassCard(isSelected: Bool = true) -> some View {
         modifier(LiquidGlassCardModifier(isSelected: isSelected))
+    }
+
+    func liquidGlassBar() -> some View {
+        modifier(LiquidGlassBarModifier())
     }
 }
 
@@ -133,5 +186,13 @@ struct WindowDragArea<Content: View>: NSViewRepresentable {
                 window.perform(selector, with: event)
             }
         }
+    }
+}
+
+// MARK: - Synchronized Button Width Preference
+struct EqualWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }

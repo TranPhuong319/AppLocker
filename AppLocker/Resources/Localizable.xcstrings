@@ -216,6 +216,16 @@
         }
       }
     },
+    "Authentication" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác thực"
+          }
+        }
+      }
+    },
     "Authentication (%d)" : {
       "localizations" : {
         "vi" : {

@@ -59,12 +59,19 @@ final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sen
         if timeoutMinutes > 0, let lastAuth = XPCServer.lastAuthTimestampsByPath[path] {
             let elapsed = Date().timeIntervalSince(lastAuth)
             if elapsed < Double(timeoutMinutes * 60) {
-                Logfile.core.log("XPCServer: Per-app grace period active (\(Int(elapsed))s / \(timeoutMinutes * 60)s) for \(name). Auto-approving PID \(pid).")
+                Logfile.core.log(
+                    """
+                    XPCServer: Per-app grace period active (\(Int(elapsed))s / \(timeoutMinutes * 60)s) \
+                    for \(name). Auto-approving PID \(pid).
+                    """
+                )
                 ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
                 return
             }
         } else if timeoutMinutes == -1, XPCServer.lastAuthTimestampsByPath[path] != nil {
-            Logfile.core.log("XPCServer: Per-app grace period active (When System Sleeps) for \(name). Auto-approving PID \(pid).")
+            Logfile.core.log(
+                "XPCServer: Per-app grace period active (When System Sleeps) for \(name). Auto-approving PID \(pid)."
+            )
             ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
             return
         }

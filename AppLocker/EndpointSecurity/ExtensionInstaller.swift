@@ -120,4 +120,3 @@ final class ExtensionInstaller: NSObject, ObservableObject, OSSystemExtensionReq
         return .replace
     }
 }
-

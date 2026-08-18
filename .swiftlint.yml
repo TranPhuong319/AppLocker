@@ -1,2 +1,4 @@
 excluded:
-  - build/SourcePackages
+  - build
+  - .build
+  - DerivedData

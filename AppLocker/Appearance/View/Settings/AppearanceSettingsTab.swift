@@ -294,5 +294,3 @@ private struct ThemeThumbnailView: View {
 #Preview {
     AppearanceSettingsTab(isMock: true)
 }
-
-

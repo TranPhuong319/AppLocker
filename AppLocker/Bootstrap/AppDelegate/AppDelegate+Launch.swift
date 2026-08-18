@@ -64,7 +64,12 @@ extension AppDelegate {
         XPCServer.lastAuthTimestampsByPath.removeAll()
         let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
         if timeoutMinutes != 0 {
-            Logfile.core.log("Workspace sleep event detected (autoLockTimeoutMinutes = \(timeoutMinutes)). Re-enabling application lock.")
+            Logfile.core.log(
+                """
+                Workspace sleep event detected (autoLockTimeoutMinutes = \(timeoutMinutes)). \
+                Re-enabling application lock.
+                """
+            )
             AppState.shared.manager.setProtectionDisabled(false)
         }
     }

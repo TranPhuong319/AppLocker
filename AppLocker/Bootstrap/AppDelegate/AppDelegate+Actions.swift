@@ -17,7 +17,10 @@ extension AppDelegate {
             let result = AlertShow.show(
                 title: String(localized: "System Extension Required"),
                 message: String(
-                    localized: "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications."
+                    localized: """
+                    AppLocker requires its Endpoint Security extension to be enabled in \
+                    System Settings to manage applications.
+                    """
                 ),
                 style: .warning,
                 buttons: [
@@ -132,15 +135,15 @@ extension AppDelegate {
                     continuation.resume(returning: result)
                 }
             }
-            
+
             switch uninstallResult {
             case .success:
                 ESXPCClient.shared.disconnect()
-                
+
                 self.manageAgent(plistName: plistName, action: .uninstall)
                 let configRemoved = self.removeConfig()
                 let appRemoved = await self.selfRemoveApp()
-                
+
                 if configRemoved && appRemoved {
                     self.showRestartSheet()
                     NSApp.terminate(nil)

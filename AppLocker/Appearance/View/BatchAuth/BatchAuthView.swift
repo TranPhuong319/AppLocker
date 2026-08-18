@@ -21,6 +21,7 @@ struct BatchAuthView: View {
     @ObservedObject var server: XPCServer
     var onAuthenticate: () -> Void
     var onCancel: () -> Void
+    @State private var maxButtonWidth: CGFloat?
 
     var selectedCount: Int {
         server.pendingApps.filter { $0.isSelected }.count
@@ -36,78 +37,124 @@ struct BatchAuthView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Header inside View (balanced spacing for window titlebar area)
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .center, spacing: 10) {
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.blue)
-                    
-                    Text(headerTitle)
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+        NavigationStack {
+            VStack(spacing: 6) {
+                topHeaderView
 
-                Text(String(format: String(localized: "Automatically close the application after %d seconds"), server.remainingSeconds))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .contentTransition(.numericText())
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 6) {
+                        ForEach($server.pendingApps) { $app in
+                            BatchAppRowView(app: $app, icon: getAppIcon(for: app.path))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 4)
+                }
+                .scrollIndicators(.hidden)
+                .clipped()
+
+                bottomActionBar
             }
-            .padding(.top, 2)
-            .padding(.bottom, 4)
-
-            Divider()
-
-            // List of pending applications
-            ScrollView {
-                VStack(spacing: 8) {
-                    ForEach($server.pendingApps) { $app in
-                        BatchAppRowView(app: $app, icon: getAppIcon(for: app.path))
-                    }
-                }
-            }
-            .frame(maxHeight: WindowLayout.batchAuthMaxListHeight)
-
-            Divider()
-
-            // Action Buttons
-            HStack(spacing: 12) {
-                Button(action: onCancel) {
-                    HStack {
-                        Text(String(localized: "Cancel"))
-                            .font(.system(size: 13, weight: .semibold))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .frame(minWidth: 110)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .keyboardShortcut(.escape, modifiers: [])
-
-                Spacer()
-
-                Button(action: onAuthenticate) {
-                    HStack {
-                        Image(systemName: "touchid")
-                        Text(String(format: String(localized: "Authentication (%d)"), selectedCount))
-                            .font(.system(size: 13, weight: .semibold))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .frame(minWidth: 110)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(selectedCount == 0)
-                .keyboardShortcut(.defaultAction)
+            .padding(.top, -10)
+            .background(
+                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
+                    .ignoresSafeArea()
+            )
+            .navigationTitle("Authentication")
+            .toolbar {
+                // Empty toolbar for Liquid Glass bridging without bordered pill item
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
         .frame(width: WindowLayout.batchAuthSize.width, height: WindowLayout.batchAuthSize.height)
+    }
+
+    @ViewBuilder
+    private var topHeaderView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 10) {
+                Image(systemName: "lock.shield.fill")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundColor(.blue)
+
+                Text(headerTitle)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Text(
+                String(
+                    format: String(localized: "Automatically close the application after %d seconds"),
+                    server.remainingSeconds
+                )
+            )
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.secondary)
+                .contentTransition(.numericText())
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 0)
+        .padding(.bottom, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var bottomActionBar: some View {
+        HStack(spacing: 12) {
+            Button(
+                action: onCancel,
+                label: {
+                    Text(String(localized: "Cancel"))
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .padding(.horizontal, 10)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                            }
+                        )
+                        .frame(minWidth: maxButtonWidth)
+                }
+            )
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .keyboardShortcut(.escape, modifiers: [])
+
+            Spacer()
+
+            Button(
+                action: onAuthenticate,
+                label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "touchid")
+                        Text(String(format: String(localized: "Authentication (%d)"), selectedCount))
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 10)
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                        }
+                    )
+                    .frame(minWidth: maxButtonWidth)
+                }
+            )
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(selectedCount == 0)
+            .keyboardShortcut(.defaultAction)
+        }
+        .onPreferenceChange(EqualWidthKey.self) { width in
+            if width > 0 {
+                self.maxButtonWidth = width
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
     }
 
     private func getAppIcon(for path: String) -> NSImage? {
@@ -151,11 +198,8 @@ struct BatchAppRowView: View {
 
             Spacer()
         }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(app.isSelected ? Color.primary.opacity(0.06) : Color.primary.opacity(0.02))
-        )
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -173,9 +217,27 @@ private struct BatchAuthViewPreviewWrapper: View {
     @StateObject private var server: XPCServer = {
         let xpcServer = XPCServer()
         xpcServer.pendingApps = [
-            PendingAppItem(name: "Safari", path: "/Applications/Safari.app/Contents/MacOS/Safari", cdhash: "abc123hash", pid: 1024, isSelected: true),
-            PendingAppItem(name: "Xcode", path: "/Applications/Xcode.app/Contents/MacOS/Xcode", cdhash: "def456hash", pid: 2048, isSelected: true),
-            PendingAppItem(name: "Telegram", path: "/Applications/Telegram.app/Contents/MacOS/Telegram", cdhash: "ghi789hash", pid: 4096, isSelected: false)
+            PendingAppItem(
+                name: "Safari",
+                path: "/Applications/Safari.app/Contents/MacOS/Safari",
+                cdhash: "abc123hash",
+                pid: 1024,
+                isSelected: true
+            ),
+            PendingAppItem(
+                name: "Xcode",
+                path: "/Applications/Xcode.app/Contents/MacOS/Xcode",
+                cdhash: "def456hash",
+                pid: 2048,
+                isSelected: true
+            ),
+            PendingAppItem(
+                name: "Telegram",
+                path: "/Applications/Telegram.app/Contents/MacOS/Telegram",
+                cdhash: "ghi789hash",
+                pid: 4096,
+                isSelected: false
+            )
         ]
         xpcServer.remainingSeconds = 60
         return xpcServer

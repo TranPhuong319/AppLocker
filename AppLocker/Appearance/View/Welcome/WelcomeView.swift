@@ -24,99 +24,110 @@ struct WelcomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(nsImage: bundle.appIcon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 72, height: 72)
-                .padding(.top, 16)
+        NavigationStack {
+            VStack(spacing: 14) {
+                Image(nsImage: bundle.appIcon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 68, height: 68)
+                    .padding(.top, 4)
 
-            Text("Welcome to \(bundle.appName)")
-                .font(.title2)
-                .fontWeight(.bold)
+                Text("Welcome to \(bundle.appName)")
+                    .font(.title2)
+                    .fontWeight(.bold)
 
-            Text("Please read and agree to the terms of service and license below:")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+                Text("Please read and agree to the terms of service and license below:")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 14)
+
+                ScrollView {
+                    Text(licenseText)
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
+                }
+                .frame(maxWidth: .infinity)
+                .liquidGlassCard(isSelected: true)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                )
                 .padding(.horizontal, 14)
 
-            ScrollView {
-                Text(licenseText)
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
-            }
-            .frame(maxWidth: .infinity)
-            .liquidGlassCard(isSelected: true)
-            .cornerRadius(8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-            )
-            .padding(.horizontal, 14)
-
-            HStack(spacing: 16) {
-                Button(
-                    action: {
-                        NSApp.terminate(nil)
-                    },
-                    label: {
-                        Text("Quit")
-                            .font(.body)
-                            .frame(maxWidth: .infinity)
-                    }
-                )
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-
-                Button(
-                    action: {
-                        let response = AlertShow.show(
-                            title: String(localized: "Confirm"),
-                            message: String(localized: "Do you agree to the terms of service and license above?"),
-                            style: .informational,
-                            buttons: [
-                                String(localized: "Agree"),
-                                String(localized: "Decline")
-                            ],
-                            cancelIndex: 1,
-                            defaultIndex: 0
-                        )
-
-                        if case .button(index: 0, _) = response {
-                            guard !isMock else { return }
-                            UserDefaults.standard.set(false, forKey: "isFirstStart")
-                            NSApp.appDelegate?.registerAgentWithoutImmediateLaunch()
-                            WelcomeWindowController.shared?.isCompletingOnboarding = true
-                            WelcomeWindowController.shared?.window?.close()
-                            NSApp.appDelegate?.launchConfig()
+                HStack(spacing: 16) {
+                    Button(
+                        action: {
+                            NSApp.terminate(nil)
+                        },
+                        label: {
+                            Text("Quit")
+                                .font(.body)
+                                .frame(maxWidth: .infinity)
                         }
-                    },
-                    label: {
-                        Text("Continue")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                    }
-                )
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 8)
+                    )
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
 
-            Spacer(minLength: 10)
+                    Button(
+                        action: {
+                            let response = AlertShow.show(
+                                title: String(localized: "Confirm"),
+                                message: String(localized: "Do you agree to the terms of service and license above?"),
+                                style: .informational,
+                                buttons: [
+                                    String(localized: "Agree"),
+                                    String(localized: "Decline")
+                                ],
+                                cancelIndex: 1,
+                                defaultIndex: 0
+                            )
+
+                            if case .button(index: 0, _) = response {
+                                guard !isMock else { return }
+                                UserDefaults.standard.set(false, forKey: "isFirstStart")
+                                NSApp.appDelegate?.registerAgentWithoutImmediateLaunch()
+                                WelcomeWindowController.shared?.isCompletingOnboarding = true
+                                WelcomeWindowController.shared?.window?.close()
+                                NSApp.appDelegate?.launchConfig()
+                            }
+                        },
+                        label: {
+                            Text("Continue")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                        }
+                    )
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 4)
+
+                Spacer(minLength: 6)
+            }
+            .padding(.top, -10)
+            .background(
+                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
+                    .ignoresSafeArea()
+            )
+            .navigationTitle("Welcome to \(bundle.appName)")
+            .toolbar {
+                // Empty toolbar for Liquid Glass bridging without bordered pill item
+            }
+            .safeAreaInset(edge: .bottom) {
+                Text(bundle.copyright)
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .padding(.bottom, 14)
+            }
         }
-        .safeAreaInset(edge: .bottom) {
-            Text(bundle.copyright)
-                .font(.footnote)
-                .foregroundColor(.gray)
-                .padding(.bottom, 16)
-        }
-        .frame(minWidth: WindowLayout.welcomeSize.width, minHeight: WindowLayout.welcomeSize.height)
+        .frame(width: WindowLayout.welcomeSize.width, height: WindowLayout.welcomeSize.height)
     }
 }
 
