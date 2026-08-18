@@ -40,6 +40,9 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
 
     private static func createHostingController() -> NSHostingController<ContentView> {
         let hostingController = NSHostingController(rootView: ContentView())
+        if #available(macOS 14.0, *) {
+            hostingController.sceneBridgingOptions = [.toolbars, .title]
+        }
         hostingController.view.setFrameSize(WindowLayout.mainSize)
         hostingController.view.layoutSubtreeIfNeeded()
         return hostingController
@@ -48,16 +51,16 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     private static func createMainAppWindow(with contentVC: NSViewController) -> NSWindow {
         let size = WindowLayout.mainSize
         var config = WindowConfiguration()
-        config.title = String(localized: "Manage the application list")
+        config.title = String(localized: "Locked application")
         config.styleMask = [.titled, .closable, .fullSizeContentView]
-        config.titleVisibility = .hidden
+        config.titleVisibility = .visible
         config.titlebarAppearsTransparent = true
         config.level = .floating
         config.size = size
         config.minSize = size
         config.maxSize = size
-        config.isOpaque = true
-        config.backgroundColor = .windowBackgroundColor
+        config.isOpaque = false
+        config.backgroundColor = .clear
 
         return WindowManager.createWindow(contentViewController: contentVC, configuration: config)
     }

@@ -177,5 +177,3 @@ class LockES: LockManagerProtocol {
         return lockedApps[path] != nil
     }
 }
-
-

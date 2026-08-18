@@ -224,4 +224,3 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
         showingDeleteQueue = true
     }
 }
-

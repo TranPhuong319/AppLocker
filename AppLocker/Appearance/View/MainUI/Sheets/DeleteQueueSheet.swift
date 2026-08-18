@@ -13,13 +13,8 @@ struct DeleteQueueSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Application is waiting to be deleted")
-                    .font(.headline)
-                    .padding([.horizontal, .top])
-                    .padding(.bottom)
-
-                Divider()
+            VStack(spacing: 0) {
+                topHeader
 
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
@@ -43,64 +38,18 @@ struct DeleteQueueSheet: View {
                             }
                         }
                     }
+                    .padding(.horizontal)
                     .padding(.vertical, 8)
                 }
                 .scrollIndicators(.hidden)
-                .padding(.horizontal)
-                Divider()
+                .clipped()
 
-                HStack(spacing: 12) {
-                    Spacer()
-
-                    Button(
-                        action: {
-                            appState.deleteAllFromWaitingList()
-                        },
-                        label: {
-                            Text(String(localized: "Cancel"))
-                                .font(.system(size: 13, weight: .medium))
-                                .lineLimit(1)
-                                .padding(.horizontal, 8)
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                                    }
-                                )
-                                .frame(width: maxButtonWidth)
-                        }
-                    )
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-
-                    Button(
-                        action: {
-                            appState.unlockApp()
-                        },
-                        label: {
-                            Text(String(localized: "Unlock"))
-                                .font(.system(size: 13, weight: .semibold))
-                                .lineLimit(1)
-                                .padding(.horizontal, 8)
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                                    }
-                                )
-                                .frame(width: maxButtonWidth)
-                        }
-                    )
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
-                    .controlSize(.large)
-                }
-                .onPreferenceChange(EqualWidthKey.self) { width in
-                    if width > 0 {
-                        self.maxButtonWidth = width
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+                bottomActionBar
             }
+            .background(
+                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
+                    .ignoresSafeArea()
+            )
         }
         .frame(
             minWidth: WindowLayout.deleteQueueMinSize.width,
@@ -118,12 +67,76 @@ struct DeleteQueueSheet: View {
             }
         }
     }
-}
 
-private struct EqualWidthKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
+    @ViewBuilder
+    private var topHeader: some View {
+        HStack {
+            Text("Application is waiting to be deleted")
+                .font(.headline)
+            Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.top, 16)
+        .padding(.bottom, 10)
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var bottomActionBar: some View {
+        HStack(spacing: 12) {
+            Spacer()
+
+            Button(
+                action: {
+                    appState.deleteAllFromWaitingList()
+                },
+                label: {
+                    Text(String(localized: "Cancel"))
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .padding(.horizontal, 10)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                            }
+                        )
+                        .frame(minWidth: maxButtonWidth)
+                }
+            )
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+
+            Button(
+                action: {
+                    appState.unlockApp()
+                },
+                label: {
+                    Text(String(localized: "Unlock"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .padding(.horizontal, 10)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                            }
+                        )
+                        .frame(minWidth: maxButtonWidth)
+                }
+            )
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut(.defaultAction)
+            .controlSize(.large)
+        }
+        .onPreferenceChange(EqualWidthKey.self) { width in
+            if width > 0 {
+                self.maxButtonWidth = width
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
     }
 }
 

@@ -75,7 +75,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      enableThreadSanitizer = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -110,11 +109,6 @@
          <AdditionalOption
             key = "APP_DISTRIBUTOR_ID_OVERRIDE"
             value = "com.apple.AppStore"
-            isEnabled = "YES">
-         </AdditionalOption>
-         <AdditionalOption
-            key = "NSZombieEnabled"
-            value = "YES"
             isEnabled = "YES">
          </AdditionalOption>
       </AdditionalOptions>

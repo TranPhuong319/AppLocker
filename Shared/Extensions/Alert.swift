@@ -79,7 +79,8 @@ enum AlertShow {
         _ = show(title: title, message: message, style: style, buttons: ["OK"])
     }
 
-    /// Chạy alert: chỉ gắn dạng sheet khi có window thực thụ (không phải menu bar/status bar), ngược lại hiện modal độc lập
+    /// Chạy alert: chỉ gắn dạng sheet khi có window thực thụ (không phải menu bar/status bar),
+    /// ngược lại hiện modal độc lập
     @discardableResult
     private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
         let candidateWindows = [NSApp.keyWindow, NSApp.mainWindow].compactMap { $0 } + NSApp.windows

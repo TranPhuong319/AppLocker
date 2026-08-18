@@ -20,8 +20,14 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         }
         let contentView = WelcomeView()
         let hostingController = NSHostingController(rootView: contentView)
+        if #available(macOS 14.0, *) {
+            hostingController.sceneBridgingOptions = [.toolbars, .title]
+        }
 
         let fixedSize = WindowLayout.welcomeSize
+        hostingController.view.setFrameSize(fixedSize)
+        hostingController.view.layoutSubtreeIfNeeded()
+
         let bundle = Bundle.main
 
         var config = WindowConfiguration()
@@ -30,14 +36,17 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         config.titleVisibility = .hidden
         config.titlebarAppearsTransparent = true
         config.wantsLayer = true
-        config.isOpaque = true
-        config.backgroundColor = .windowBackgroundColor
+        config.isOpaque = false
+        config.backgroundColor = .clear
         config.size = fixedSize
         config.minSize = fixedSize
         config.maxSize = fixedSize
+        config.center = true
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        window.isMovableByWindowBackground = true
+        let toolbar = NSToolbar(identifier: "WelcomeToolbar")
+        window.toolbar = toolbar
+        window.isMovableByWindowBackground = false
 
         let controller = WelcomeWindowController(window: window)
         window.delegate = controller

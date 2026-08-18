@@ -47,67 +47,67 @@ final class ESXPCClient {
 
     func connect() {
         xpcQueue.async { [weak self] in
-            guard let self = self else { return }
+            guard let self = self, self.connection == nil, !self.isConnecting else { return }
             self.shouldReconnect = true
-
-            // Prevent multiple concurrent connection attempts
-            guard self.connection == nil, !self.isConnecting else {
-                return
-            }
             self.isConnecting = true
 
             Logfile.core.log("[ESXPCClient] Connecting to MachService")
-
-            let server = XPCServer.shared
-            let conn = NSXPCConnection(machServiceName: self.serviceName)
-            conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
-            conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
-            conn.exportedObject = server
-
-            conn.invalidationHandler = { [weak self] in
-                DispatchQueue.main.async {
-                    ExtensionInstaller.shared.updateInstalledState(false)
-                }
-                self?.scheduleReconnect(immediate: true)
-            }
-
-            conn.interruptionHandler = { [weak self] in
-                DispatchQueue.main.async {
-                    ExtensionInstaller.shared.updateInstalledState(false)
-                }
-                self?.scheduleReconnect(immediate: false)
-            }
-
+            let conn = self.createConnection()
+            self.setupConnectionHandlers(conn: conn)
             conn.resume()
 
-            // Perform Authentication Handshake
             self.performAuth(conn: conn) { [weak self] success in
-                guard let self = self else { return }
-                self.xpcQueue.async {
-                    if success {
-                        Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
-                        self.connection = conn
-                        self.retryCount = 0
-                        self.isConnecting = false  // Clear flag on success
+                self?.handleAuthResult(conn: conn, success: success)
+            }
+        }
+    }
 
-                        DispatchQueue.main.async {
-                            ExtensionInstaller.shared.updateInstalledState(true)
-                        }
+    private func createConnection() -> NSXPCConnection {
+        let conn = NSXPCConnection(machServiceName: serviceName)
+        conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
+        conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
+        conn.exportedObject = XPCServer.shared
+        return conn
+    }
 
-                        if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
-                           let primary = langs.first {
-                            self.updateLanguage(primary)
-                        }
-                    } else {
-                        Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
-                        self.isConnecting = false  // Clear flag on failure
-                        DispatchQueue.main.async {
-                            ExtensionInstaller.shared.updateInstalledState(false)
-                        }
-                        conn.invalidate()
-                        // Reconnect logic will trigger via invalidationHandler
-                    }
+    private func setupConnectionHandlers(conn: NSXPCConnection) {
+        conn.invalidationHandler = { [weak self] in
+            DispatchQueue.main.async {
+                ExtensionInstaller.shared.updateInstalledState(false)
+            }
+            self?.scheduleReconnect(immediate: true)
+        }
+
+        conn.interruptionHandler = { [weak self] in
+            DispatchQueue.main.async {
+                ExtensionInstaller.shared.updateInstalledState(false)
+            }
+            self?.scheduleReconnect(immediate: false)
+        }
+    }
+
+    private func handleAuthResult(conn: NSXPCConnection, success: Bool) {
+        xpcQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.isConnecting = false
+
+            if success {
+                Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
+                self.connection = conn
+                self.retryCount = 0
+                DispatchQueue.main.async {
+                    ExtensionInstaller.shared.updateInstalledState(true)
                 }
+                if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
+                   let primary = langs.first {
+                    self.updateLanguage(primary)
+                }
+            } else {
+                Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                DispatchQueue.main.async {
+                    ExtensionInstaller.shared.updateInstalledState(false)
+                }
+                conn.invalidate()
             }
         }
     }
@@ -233,7 +233,10 @@ final class ESXPCClient {
             }
         }
     }
+}
 
+// MARK: - XPC Request Actions
+extension ESXPCClient {
     func updateLanguage(_ langCode: String) {
         xpcQueue.async { [weak self] in
             guard let self = self, let conn = self.connection else {
@@ -338,5 +341,3 @@ final class ESXPCClient {
         }
     }
 }
-
-

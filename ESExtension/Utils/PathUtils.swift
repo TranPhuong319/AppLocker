@@ -22,7 +22,6 @@ func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
     return string(from: filePtr.pointee.path)
 }
 
-
 extension ESManager {
     // Compute app bundle name for an exec path (best-effort).
     func computeAppName(forExecPath path: String) -> String {
