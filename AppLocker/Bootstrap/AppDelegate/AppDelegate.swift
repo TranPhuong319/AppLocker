@@ -87,6 +87,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
         let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "System"
         applyTheme(theme)
+        setupEditMenu()
 
         if isFirstStart {
             Logfile.core.log("First launch. Showing welcome/ToS screen.")

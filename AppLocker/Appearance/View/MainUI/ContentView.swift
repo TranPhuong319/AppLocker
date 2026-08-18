@@ -17,20 +17,34 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            headerView
-
-            if appState.lockedAppObjects.isEmpty {
-                emptyStateView
-            } else {
-                mainListView
+        NavigationStack {
+            VStack(spacing: 8) {
+                if appState.lockedAppObjects.isEmpty {
+                    emptyStateView
+                } else {
+                    searchBarHeader
+                    mainListView
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 8)
+            .padding(.bottom, 10)
+            .background(
+                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
+                    .ignoresSafeArea()
+            )
+            .navigationTitle("Locked application")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        appState.openAddApp()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .help("Add application to lock")
+                }
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
-        .contentShape(Rectangle())
-        .onTapGesture { isSearchFocused = false }
-
         .sheet(isPresented: $appState.showingAddApp) {
             AddAppSheet(appState: appState, unfocus: unfocus)
         }
@@ -44,14 +58,22 @@ struct ContentView: View {
 
     // MARK: - Subviews / Thành phần con
     @ViewBuilder
-    private var headerView: some View {
+    private var searchBarHeader: some View {
         HStack {
-            Text("Locked application").font(.headline)
-            Spacer()
-            Button { appState.openAddApp() } label: { Image(systemName: "plus") }
-            .help("Add application to lock")
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+                .padding(.leading, 8)
+
+            TextField("Search apps...", text: $appState.searchTextLockApps)
+                .textFieldStyle(.plain)
+                .focused($isSearchFocused)
+                .onSubmit { unfocus() }
+                .onExitCommand { unfocus() }
         }
-        .padding(.horizontal, 8)
+        .padding(7)
+        .contentShape(Capsule())
+        .onTapGesture { isSearchFocused = true }
+        .liquidGlassCapsule()
     }
 
     @ViewBuilder
@@ -64,65 +86,49 @@ struct ContentView: View {
 
     @ViewBuilder
     private var mainListView: some View {
-        VStack(spacing: 9) {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                    .padding(.leading, 8)
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                LazyVStack(alignment: .center, spacing: 6) {
+                    let apps = appState.filteredLockedApps
+                    let userApps = apps.filter { $0.source == .user }
+                    let systemApps = apps.filter { $0.source == .system }
 
-                TextField("Search apps...", text: $appState.searchTextLockApps)
-                    .textFieldStyle(.plain)
-                    .focused($isSearchFocused)
-                    .onSubmit { unfocus() }
-            }
-            .padding(7)
-            .liquidGlassCapsule()
-            .padding(.horizontal, 8)
-
-            ZStack(alignment: .bottom) {
-                ScrollView {
-                    LazyVStack(alignment: .center, spacing: 6) {
-                        let apps = appState.filteredLockedApps
-                        let userApps = apps.filter { $0.source == .user }
-                        let systemApps = apps.filter { $0.source == .system }
-
-                        if !userApps.isEmpty {
-                            SectionHeader(title: "Applications")
-                            ForEach(userApps, id: \.path) { app in
-                                LockedAppButton(
-                                    app: app,
-                                    isDeleting: appState.deleteQueue.contains(app.path),
-                                    onDelete: { _ = appState.deleteQueue.insert(app.path) },
-                                    unfocus: unfocus
-                                )
-                            }
-                        }
-
-                        if !systemApps.isEmpty {
-                            SectionHeader(title: "System Applications")
-                            ForEach(systemApps, id: \.path) { app in
-                                LockedAppButton(
-                                    app: app,
-                                    isDeleting: appState.deleteQueue.contains(app.path),
-                                    onDelete: { _ = appState.deleteQueue.insert(app.path) },
-                                    unfocus: unfocus
-                                )
-                            }
+                    if !userApps.isEmpty {
+                        SectionHeader(title: "Applications")
+                        ForEach(userApps, id: \.path) { app in
+                            LockedAppButton(
+                                app: app,
+                                isDeleting: appState.deleteQueue.contains(app.path),
+                                onDelete: { _ = appState.deleteQueue.insert(app.path) },
+                                unfocus: unfocus
+                            )
                         }
                     }
-                    .padding(.vertical, 4)
-                    .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)
-                }
-                .scrollIndicators(.hidden)
-                .background(Color.clear.contentShape(Rectangle()).onTapGesture { isSearchFocused = false })
-                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                if !appState.deleteQueue.isEmpty {
-                    deleteQueueNotificationBar
+                    if !systemApps.isEmpty {
+                        SectionHeader(title: "System Applications")
+                        ForEach(systemApps, id: \.path) { app in
+                            LockedAppButton(
+                                app: app,
+                                isDeleting: appState.deleteQueue.contains(app.path),
+                                onDelete: { _ = appState.deleteQueue.insert(app.path) },
+                                unfocus: unfocus
+                            )
+                        }
+                    }
                 }
+                .padding(.vertical, 4)
+                .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)
             }
-            .animation(.spring(), value: appState.deleteQueue.isEmpty)
+            .scrollIndicators(.hidden)
+            .background(Color.clear.contentShape(Rectangle()).onTapGesture { isSearchFocused = false })
+            .clipped()
+
+            if !appState.deleteQueue.isEmpty {
+                deleteQueueNotificationBar
+            }
         }
+        .animation(.spring(), value: appState.deleteQueue.isEmpty)
     }
 
     private func unfocus() {
@@ -164,7 +170,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 16)
-        .padding(.bottom, 20)
+        .padding(.bottom, 12)
         .transition(.asymmetric(
             insertion: .move(edge: .bottom).combined(with: .opacity),
             removal: .move(edge: .bottom).combined(with: .opacity)
