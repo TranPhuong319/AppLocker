@@ -71,15 +71,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
 
         #if !DEBUG
         if !launchedByLaunchd() {
-            let agent = SMAppService.agent(plistName: "\(plistName).plist")
-            if agent.status == .enabled {
-                Logfile.core.log("App launched manually. Restarting via launchctl...")
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-                process.arguments = ["start", plistName]
-                try? process.run()
-                NSApp.terminate(nil)
-                return
+            let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
+            if !isFirstStart {
+                if !isAgentLoadedInLaunchd() {
+                    Logfile.core.log("Agent not loaded in launchctl. Registering...")
+                    _ = manageAgent(plistName: plistName, action: .install)
+                }
+
+                if isAgentLoadedInLaunchd() {
+                    Logfile.core.log("App launched manually. Restarting via launchctl...")
+                    let process = Process()
+                    process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                    process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(plistName)"]
+                    try? process.run()
+                    NSApp.terminate(nil)
+                    return
+                }
             }
         }
         #endif

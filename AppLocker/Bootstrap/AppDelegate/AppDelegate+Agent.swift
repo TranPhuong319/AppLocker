@@ -18,6 +18,21 @@ enum AgentManageResult {
 }
 
 extension AppDelegate {
+    func isAgentLoadedInLaunchd() -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["print", "gui/\(getuid())/\(plistName)"]
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
+    }
+
     func registerAgentWithoutImmediateLaunch() {
         #if DEBUG
         Logfile.core.info("Skipping registerAgentWithoutImmediateLaunch in DEBUG mode")
@@ -45,16 +60,19 @@ extension AppDelegate {
             switch action {
 
             case .install:
-                if agent.status == .enabled {
+                if isAgentLoadedInLaunchd() {
                     Logfile.core.info("Agent already enabled")
                     return .alreadyInstalled
+                }
+                if agent.status == .enabled {
+                    try? agent.unregister()
                 }
                 try agent.register()
                 Logfile.core.info("Agent registered")
                 return .installed
 
             case .uninstall:
-                if agent.status != .enabled {
+                if agent.status != .enabled && !isAgentLoadedInLaunchd() {
                     Logfile.core.info("Agent already disabled")
                     return .alreadyUninstalled
                 }
@@ -63,7 +81,7 @@ extension AppDelegate {
                 return .uninstalled
 
             case .check:
-                if agent.status == .enabled {
+                if agent.status == .enabled && isAgentLoadedInLaunchd() {
                     Logfile.core.info("Agent status: enabled")
                     return .alreadyInstalled
                 } else {
