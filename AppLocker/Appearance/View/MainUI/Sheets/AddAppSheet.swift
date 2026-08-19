@@ -13,6 +13,15 @@ struct AddAppSheet: View {
     let unfocus: () -> Void
     @State private var maxButtonWidth: CGFloat?
 
+    private var lockButtonTitle: String {
+        let count = appState.selectedToLock.count
+        if count == 0 {
+            return String(localized: "Lock")
+        } else {
+            return String(format: String(localized: "Lock (%d)"), count)
+        }
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             topSearchHeader
@@ -109,14 +118,14 @@ struct AddAppSheet: View {
             .contentShape(Capsule())
             .onTapGesture { isSearchFocused = true }
             .liquidGlassCapsule()
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
         }
         .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
     private var bottomActionBar: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 12) {
             Button(
                 action: {
                     appState.addOthersApp(over: NSApp.keyWindow)
@@ -166,7 +175,9 @@ struct AddAppSheet: View {
                         appState.lockButton()
                     },
                     label: {
-                        Text("Lock (\(appState.selectedToLock.count))")
+                        Text(lockButtonTitle)
+                            .monospacedDigit()
+                            .numericTextTransition(value: Double(appState.selectedToLock.count))
                             .lineLimit(1)
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(.horizontal, 10)
@@ -182,11 +193,12 @@ struct AddAppSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .controlSize(.large)
                 .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
+                .animation(.snappy(duration: 0.25), value: appState.selectedToLock.count)
             }
         }
         .onPreferenceChange(EqualWidthKey.self) { width in
             if width > 0 {
-                self.maxButtonWidth = width
+                self.maxButtonWidth = max(self.maxButtonWidth ?? 0, width)
             }
         }
         .padding(.horizontal, 16)
