@@ -73,23 +73,21 @@ extension ESManager {
     private func isProcessBlocked(path: String, cdhashData: Data, cdhashHex: String, uid: uid_t) -> Bool {
         let isZeroCDHash = cdhashData.allSatisfy { $0 == 0 }
         return stateLock.withLock { () -> Bool in
-            if !isZeroCDHash {
-                if lockedCDHashes.values.contains(where: { $0.contains(cdhashHex) }) {
-                    return true
-                }
+            if !isZeroCDHash, let userCDHashes = lockedCDHashes[uid], userCDHashes.contains(cdhashHex) {
+                return true
             }
             return isPathInLockedBundle(path: path, uid: uid)
         }
     }
 
     private func isPathInLockedBundle(path: String, uid: uid_t) -> Bool {
+        guard let userBundlePaths = lockedBundlePaths[uid], !userBundlePaths.isEmpty else { return false }
         var url = URL(fileURLWithPath: path)
-        let allPaths = lockedBundlePaths.values
 
         while url.pathComponents.count > 1 {
             let currentPath = url.path
             let stdPath = (currentPath as NSString).standardizingPath
-            if allPaths.contains(where: { $0.contains(currentPath) || $0.contains(stdPath) }) {
+            if userBundlePaths.contains(currentPath) || userBundlePaths.contains(stdPath) {
                 if let bundle = Bundle(url: url), let mainExec = bundle.executablePath {
                     let normPath = (path as NSString).standardizingPath
                     let normMainExec = (mainExec as NSString).standardizingPath
