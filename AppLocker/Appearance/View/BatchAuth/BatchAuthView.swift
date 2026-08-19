@@ -36,6 +36,14 @@ struct BatchAuthView: View {
         }
     }
 
+    var authButtonTitle: String {
+        if selectedCount == 0 {
+            return String(localized: "Authentication")
+        } else {
+            return String(format: String(localized: "Authentication (%d)"), selectedCount)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 6) {
@@ -90,7 +98,9 @@ struct BatchAuthView: View {
             )
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.secondary)
-                .contentTransition(.numericText())
+                .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.snappy(duration: 0.3), value: server.remainingSeconds)
         }
         .padding(.horizontal, 16)
         .padding(.top, 0)
@@ -128,7 +138,9 @@ struct BatchAuthView: View {
                 label: {
                     HStack(spacing: 6) {
                         Image(systemName: "touchid")
-                        Text(String(format: String(localized: "Authentication (%d)"), selectedCount))
+                        Text(authButtonTitle)
+                            .monospacedDigit()
+                            .numericTextTransition(value: Double(selectedCount))
                     }
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(1)
@@ -145,11 +157,12 @@ struct BatchAuthView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .disabled(selectedCount == 0)
+            .animation(.snappy(duration: 0.25), value: selectedCount)
             .keyboardShortcut(.defaultAction)
         }
         .onPreferenceChange(EqualWidthKey.self) { width in
             if width > 0 {
-                self.maxButtonWidth = width
+                self.maxButtonWidth = max(self.maxButtonWidth ?? 0, width)
             }
         }
         .padding(.horizontal, 16)

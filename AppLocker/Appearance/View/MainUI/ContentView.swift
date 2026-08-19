@@ -154,6 +154,9 @@ struct ContentView: View {
                 Text("Waiting to unlock \(appState.deleteQueue.count) application(s)...")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.primary)
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                    .animation(.snappy(duration: 0.25), value: appState.deleteQueue.count)
 
                 Spacer()
 
