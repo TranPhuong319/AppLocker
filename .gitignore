@@ -26,7 +26,7 @@ Carthage/Build/
 .vscode/
 
 # Spec-Kit & AI Agents Configuration
-.agents/
+! .agents/
 .agent/cache/
 .specify/cache/
 .specify/history/
