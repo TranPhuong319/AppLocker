@@ -3,15 +3,10 @@
 **/.DS_Store
 
 # Xcode
-#
-# gitignore contributors: add or remove patterns below to suit your needs.
-#
-# Test reports
 *.releasenotes
 *.apptestresults
 
 # Xcode user data
-#
 *.xcuserstate
 *.xcuserdata/
 AppLocker.xcodeproj/xcuserdata/
@@ -22,23 +17,24 @@ build/
 DerivedData/
 
 # Swift Package Manager
-#
-# Add this line if you want to avoid checking in source code from Swift Packages.
-# .build/
-# Only include the next line if you want to avoid checking in SPM configuration.
 .swiftpm/config/
 
 # Carthage
-#
-# Add this line if you want to avoid checking in source code from Carthage dependencies.
-# Carthage/Checkouts/
 Carthage/Build/
 
 # VSCode
 .vscode/
 
-# Agents behaviors
+# Spec-Kit & AI Agents Configuration
 .agents/
+.agent/cache/
+.specify/cache/
+.specify/history/
+.specify/credentials/
+
+! .spec/
+! .agent/workflows/
+! .specify/templates/
 
 # Secrets & Environment
 .env
