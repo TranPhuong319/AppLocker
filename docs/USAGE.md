@@ -2,23 +2,24 @@
 
 [ English | [Tiếng Việt](USAGE-vi.md) ]
 
-AppLocker is a native macOS security utility that intercepts application launches and requires user authentication (Touch ID or System Password) before execution.
+AppLocker is a native macOS security utility that intercepts application launches and requires user authentication (Touch ID, Apple Watch, or System Password) before execution.
 
 ---
 
-## System Requirements
+## 💻 System Requirements
 
-- **macOS Version**: macOS 13 (Ventura) or later.
-- **System Integrity Protection (SIP)**: Must be **disabled** to allow the Endpoint Security (ES) system extension to load and intercept process launches at kernel level.
+- **macOS Version**: macOS 13.5 (Ventura) or later.
+- **Hardware Architecture**: Apple Silicon (M1/M2/M3/M4) and Intel (x86_64).
+- **System Integrity Protection (SIP)**: Must be **disabled** to allow the Endpoint Security (ES) system extension to load without a paid Apple Developer provisioning profile.
 
 ---
 
-## Initial Setup
+## 🛠️ Initial Setup
 
 ### 1. Disable System Integrity Protection (SIP)
-1. Turn off your Mac.
-2. Boot into Recovery Mode:
-   - **Apple Silicon (M1/M2/M3/M4)**: Press and hold the **Power button** until "Loading startup options" appears, then select **Options > Continue**.
+1. Turn off your Mac completely.
+2. Boot into **Recovery Mode**:
+   - **Apple Silicon (M1/M2/M3/M4)**: Press and hold the **Power button** until *"Loading startup options"* appears $\rightarrow$ select **Options > Continue** $\rightarrow$ Go to the top menu **Utilities > Startup Security Utility** $\rightarrow$ Select your drive $\rightarrow$ Choose **Reduced Security**.
    - **Intel Macs**: Hold `Cmd + R` immediately after powering on until the Apple logo appears.
 3. In the top menu bar, open **Utilities > Terminal**.
 4. Run the command:
@@ -35,10 +36,15 @@ AppLocker is a native macOS security utility that intercepts application launche
 
 ---
 
-## Managing Locked Applications
+## 📋 Managing Locked Applications
 
 Access the management window at any time by clicking the **AppLocker lock icon (`🔒`)** in your macOS menu bar and choosing **Manage the application list…** (or press `Cmd + Shift + L`).  
-*Note: Opening the management window requires authentication.*
+*(Note: Opening the management window requires authentication).*
+
+<div align="center">
+  <img src="images/screenshots/screenshot-main.png" width="80%" alt="Main Management Dashboard" />
+  <p><i>Main locked applications management window</i></p>
+</div>
 
 ### Locking an Application
 1. In the AppLocker main window, click the **`+` (Plus)** button in the header.
@@ -54,16 +60,27 @@ Access the management window at any time by clicking the **AppLocker lock icon (
 
 ---
 
-## Launching a Locked Application
+## 🚀 Launching a Locked Application
 
 1. Open any locked application as normal (via Finder, Dock, Spotlight, or Launchpad).
-2. AppLocker will intercept the launch before the process starts.
-3. An authentication dialog will appear asking for **Touch ID** or your **macOS User Password**.
-4. Upon successful authentication, the application will launch immediately. If authentication fails or is cancelled, the launch is aborted.
+2. AppLocker will intercept and suspend the launch at the Kernel level before any UI is rendered.
+3. An authentication dialog will appear asking for **Touch ID**, **Apple Watch**, or your **macOS User Password**:
+   - **Single-App Authentication**: When launching an individual locked application.
+   - **Batch Authentication**: When opening multiple locked applications at once, AppLocker groups them automatically for a single-pass approval.
+4. Upon successful authentication, the process is resumed (`SIGCONT`). If authentication fails or is cancelled, the process is safely terminated (`SIGKILL`).
+
+| Single-App Authentication | Batch Authentication |
+| :---: | :---: |
+| <img src="images/screenshots/screenshot-auth.png" width="380" alt="Single-App Authentication Dialog" /> | <img src="images/screenshots/screenshot-mutiple-auth.png" width="380" alt="Batch Authentication Dialog" /> |
 
 ---
 
-## Menu Bar Controls & Shortcuts
+## ⚡ Menu Bar Controls & Shortcuts
+
+<div align="center">
+  <img src="images/screenshots/screenshot-menubar.png" width="50%" alt="Menu Bar Access" />
+  <p><i>Quick actions from the macOS Menu Bar</i></p>
+</div>
 
 | Shortcut | Menu Action | Description |
 | :--- | :--- | :--- |
@@ -76,7 +93,7 @@ Access the management window at any time by clicking the **AppLocker lock icon (
 
 ---
 
-## Uninstallation
+## 🗑️ Uninstallation
 
 To cleanly remove AppLocker, its system extension, background agent, and settings:
 
@@ -95,7 +112,7 @@ To cleanly remove AppLocker, its system extension, background agent, and setting
 If you have already deleted `AppLocker.app` manually:
 1. Delete residual configuration and launch agent files:
    ```bash
-   rm -rf ~/Library/Application\ Support/AppLocker
+   sudo rm -rf /Users/Shared/AppLocker
    rm -rf ~/Library/LaunchAgents/com.TranPhuong319.AppLocker.agent.plist
    ```
 2. (Optional) Re-enable System Integrity Protection (SIP) if you no longer require process interception:
@@ -104,17 +121,20 @@ If you have already deleted `AppLocker.app` manually:
 
 ---
 
-## Troubleshooting & Reset
+## 🔧 Troubleshooting & Reset
 
 ### System Extension Blocked
 - Ensure SIP is disabled (`csrutil status` in Terminal should output `System Integrity Protection status: disabled.`).
 - Go to **System Settings > Privacy & Security** and allow the system extension under Security.
 
 ### Reset Configuration
+> [!WARNING]
+> Resetting AppLocker will permanently erase the locked applications list and shared configuration for **all users** on this Mac.
+
 If you need to restore AppLocker to default settings:
 1. Hold `Option` key while opening the menu bar icon `🔒`.
 2. Click **Reset AppLocker…** and authenticate.
-3. Or manually delete the configuration file:
+3. Or manually delete the shared configuration file:
    ```bash
-   rm -rf ~/Library/Application\ Support/AppLocker
+   sudo rm -rf /Users/Shared/AppLocker
    ```
