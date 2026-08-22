@@ -24,7 +24,7 @@ extension ESManager {
 
         let isPending = manager.isPendingVerification(pid: targetPid)
 
-        if isPending {
+        if isPending && sig == SIGCONT {
             let isAuthorizedSender = manager.stateLock.withLock {
                 return senderPid == manager.authenticatedMainAppPID || senderPid == getpid()
             }
@@ -32,7 +32,7 @@ extension ESManager {
             if !isAuthorizedSender {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
                 Logfile.endpointSecurity.log(
-                    "[AUTH_SIGNAL] SECURITY SHIELD: Denied sig \(sig) from PID \(senderPid) to pending PID \(targetPid)"
+                    "[AUTH_SIGNAL] SECURITY SHIELD: Denied SIGCONT from PID \(senderPid) to pending PID \(targetPid)"
                 )
                 return
             }

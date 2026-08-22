@@ -68,10 +68,14 @@ extension ESManager {
             }
 
             if wasPending {
-                // Send SIGKILL to terminate the suspended application
-                let res = kill(pid, SIGKILL)
-                if res == 0 {
-                    Logfile.endpointSecurity.log("Successfully sent SIGKILL to rejected PID \(pid)")
+                // Send SIGKILL followed by SIGCONT to unfreeze XNU kernel dispatch loop
+                // and terminate cleanly without hanging launchd
+                let killRes = kill(pid, SIGKILL)
+                let contRes = kill(pid, SIGCONT)
+                if killRes == 0 {
+                    Logfile.endpointSecurity.log(
+                        "Successfully sent SIGKILL+SIGCONT to rejected PID \(pid) (contRes=\(contRes))"
+                    )
                 } else {
                     Logfile.endpointSecurity.error("Failed to send SIGKILL to PID \(pid): errno \(errno)")
                 }
