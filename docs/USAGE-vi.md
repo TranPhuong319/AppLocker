@@ -98,15 +98,13 @@ Truy cập cửa sổ quản lý bất kỳ lúc nào bằng cách nhấp vào *
 Để gỡ bỏ sạch sẽ AppLocker, system extension, background agent và cài đặt:
 
 ### Cách khuyên dùng (Gỡ cài đặt tự động)
-1. Đảm bảo tất cả ứng dụng bị khóa đã được mở khóa.
-2. Nhấp vào **biểu tượng khóa AppLocker (`🔒`)** trên thanh menu macOS.
-3. Chọn **Uninstall AppLocker…**.
-4. Xác nhận thông báo gỡ cài đặt. AppLocker sẽ tự động:
-   - Hủy ủy quyền và gỡ tải Endpoint Security system extension.
+1. Nhấp vào **biểu tượng khóa AppLocker (`🔒`)** trên thanh menu macOS.
+2. Chọn **Uninstall AppLocker…**.
+3. Xác nhận thông báo gỡ cài đặt. AppLocker sẽ tự động:
+   - Hủy ủy quyền và gỡ tải Endpoint Security system extension (yêu cầu xác thực Admin từ hệ thống).
    - Dừng và gỡ bỏ background agent (`launchd`).
-   - Dọn dẹp các tệp cấu hình của ứng dụng.
+   - Dọn dẹp các tệp cấu hình của ứng dụng (`/Users/Shared/AppLocker`).
    - Di chuyển `AppLocker.app` vào Thùng rác (Trash).
-5. Khởi động lại máy Mac khi được yêu cầu để hoàn tất dọn dẹp hệ thống.
 
 ### Dọn dẹp thủ công
 Nếu bạn đã xóa `AppLocker.app` thủ công trước đó:
