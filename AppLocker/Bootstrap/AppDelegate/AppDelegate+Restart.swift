@@ -23,32 +23,20 @@ extension AppDelegate {
         }
     }
 
-    func removeConfig() -> Bool {
+    func removeConfig(purgeAll: Bool = false) -> Bool {
         if let domain = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: domain)
             UserDefaults.standard.synchronize()
         }
         do {
-            let url = ConfigStore.shared.configURL
-            if FileManager.default.fileExists(atPath: url.path) {
-                try FileManager.default.removeItem(at: url.deletingLastPathComponent())
+            let targetURL = purgeAll ? ConfigStore.baseDirectoryURL : ConfigStore.shared.userDirectoryURL
+            if FileManager.default.fileExists(atPath: targetURL.path) {
+                try FileManager.default.removeItem(at: targetURL)
             }
             return true
         } catch {
-            Logfile.core.error("Error deleting folder: \(error.localizedDescription)")
+            Logfile.core.error("Error deleting config directory: \(error.localizedDescription)")
             return false
-        }
-    }
-
-    func showRestartSheet() {
-        let appleScriptSource = "tell application \"loginwindow\" to «event aevtrrst»"
-        let restartProcess = Process()
-        restartProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        restartProcess.arguments = ["-e", appleScriptSource]
-        do {
-            try restartProcess.run()
-        } catch {
-            Logfile.core.error("Error running osascript: \(error.localizedDescription)")
         }
     }
 

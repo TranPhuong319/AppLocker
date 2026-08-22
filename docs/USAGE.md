@@ -98,15 +98,13 @@ Access the management window at any time by clicking the **AppLocker lock icon (
 To cleanly remove AppLocker, its system extension, background agent, and settings:
 
 ### Recommended (Automatic Uninstall)
-1. Make sure all locked applications have been unlocked.
-2. Click the **AppLocker lock icon (`🔒`)** in your macOS menu bar.
-3. Select **Uninstall AppLocker…**.
-4. Confirm the uninstallation prompt. AppLocker will automatically:
-   - Deauthorize and unload the Endpoint Security system extension.
+1. Click the **AppLocker lock icon (`🔒`)** in your macOS menu bar.
+2. Select **Uninstall AppLocker…**.
+3. Confirm the uninstallation prompt. AppLocker will automatically:
+   - Deauthorize and unload the Endpoint Security system extension (prompts for admin authorization).
    - Stop and remove the background agent (`launchd`).
-   - Clean up application configuration files.
+   - Clean up application configuration files (`/Users/Shared/AppLocker`).
    - Move `AppLocker.app` to Trash.
-5. Restart your Mac when prompted to finalize system cleanup.
 
 ### Manual Cleanup
 If you have already deleted `AppLocker.app` manually:

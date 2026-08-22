@@ -67,9 +67,10 @@ extension AppDelegate {
         let uninstallConfirmation = AlertShow.show(
             title: String(localized: "Uninstall AppLocker") + "?",
             message: String(localized: """
-                You are about to uninstall AppLocker. Please make sure that all apps are unlocked!
+                You are about to uninstall AppLocker. This action will delete application locking preferences \
+                for all users on this Mac.
 
-                Your Mac will restart after Successful Uninstall
+                Do you want to continue?
                 """),
             style: .critical,
             buttons: [String(localized: "Uninstall"), String(localized: "Cancel")],
@@ -141,11 +142,10 @@ extension AppDelegate {
                 ESXPCClient.shared.disconnect()
 
                 self.manageAgent(plistName: plistName, action: .uninstall)
-                let configRemoved = self.removeConfig()
+                let configRemoved = self.removeConfig(purgeAll: true)
                 let appRemoved = await self.selfRemoveApp()
 
                 if configRemoved && appRemoved {
-                    self.showRestartSheet()
                     NSApp.terminate(nil)
                 } else {
                     AlertShow.showInfo(
@@ -168,7 +168,7 @@ extension AppDelegate {
     }
 
     private func performReset() {
-        _ = removeConfig()
+        _ = removeConfig(purgeAll: false)
         restartApp()
     }
 
