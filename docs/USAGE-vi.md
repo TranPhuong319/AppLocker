@@ -8,7 +8,7 @@ AppLocker là một công cụ bảo mật native dành cho macOS, giúp can thi
 
 ## 💻 Yêu cầu hệ thống
 
-- **Phiên bản macOS**: macOS 13.5 (Ventura) trở lên.
+- **Phiên bản macOS**: macOS 14.0 (Sonoma) trở lên.
 - **Kiến trúc phần cứng**: Apple Silicon (M1/M2/M3/M4) và Intel (x86_64).
 - **System Integrity Protection (SIP)**: Cần được **tắt** (do extension Endpoint Security trong bản phát triển local chưa có chứng chỉ trả phí từ Apple).
 
