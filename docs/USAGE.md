@@ -8,7 +8,7 @@ AppLocker is a native macOS security utility that intercepts application launche
 
 ## 💻 System Requirements
 
-- **macOS Version**: macOS 13.5 (Ventura) or later.
+- **macOS Version**: macOS 14.0 (Sonoma) or later.
 - **Hardware Architecture**: Apple Silicon (M1/M2/M3/M4) and Intel (x86_64).
 - **System Integrity Protection (SIP)**: Must be **disabled** to allow the Endpoint Security (ES) system extension to load without a paid Apple Developer provisioning profile.
 

@@ -13,7 +13,7 @@
   ![GitHub issues](https://img.shields.io/github/issues/TranPhuong319/AppLocker)
   ![GitHub pull requests](https://img.shields.io/github/issues-pr/TranPhuong319/AppLocker)
   ![Last Commit](https://img.shields.io/github/last-commit/TranPhuong319/AppLocker)
-  ![Platform](https://img.shields.io/badge/platform-macOS%2013.5%2B-blue?logo=apple)
+  ![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue?logo=apple)
   ![Swift](https://img.shields.io/badge/Swift-6.0%2B-orange?logo=swift)
   ![License](https://img.shields.io/badge/license-Apache%202.0-green)
 
@@ -117,7 +117,7 @@ sequenceDiagram
 
 ## 💻 System Requirements
 
-- **Operating System**: macOS 13.5 (Ventura) or later.
+- **Operating System**: macOS 14.0 (Sonoma) or later.
 - **Architecture**: Apple Silicon (M1/M2/M3/M4) and Intel (x86_64).
 - **Entitlements Notice**: 
   > [!NOTE]

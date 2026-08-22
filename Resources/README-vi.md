@@ -13,7 +13,7 @@
   ![GitHub issues](https://img.shields.io/github/issues/TranPhuong319/AppLocker)
   ![GitHub pull requests](https://img.shields.io/github/issues-pr/TranPhuong319/AppLocker)
   ![Last Commit](https://img.shields.io/github/last-commit/TranPhuong319/AppLocker)
-  ![Nền tảng](https://img.shields.io/badge/platform-macOS%2013%2B-blue?logo=apple)
+  ![Nền tảng](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue?logo=apple)
   ![Swift](https://img.shields.io/badge/Swift-6.0%2B-orange?logo=swift)
   ![Giấy phép](https://img.shields.io/badge/license-Apache%202.0-green)
 
@@ -117,7 +117,7 @@ sequenceDiagram
 
 ## 💻 Yêu Cầu Hệ Thống
 
-- **Hệ Điều Hành**: Tối thiểu là macOS 13.5 (Ventura)
+- **Hệ Điều Hành**: Tối thiểu là macOS 14.0 (Sonoma) trở lên.
 - **Kiến Trúc Phần Cứng**: Apple Silicon (M1/M2/M3/M4) và Intel (x86_64).
 - **Lưu Ý Về Entitlements**: 
   > [!NOTE]
