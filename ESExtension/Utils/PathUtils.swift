@@ -48,7 +48,8 @@ extension ESManager {
 
     static func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
         guard let path = string(from: esPath) else { return false }
-        return path.hasSuffix("/AppLocker/config.plist")
+        return (path.hasPrefix("/Users/Shared/AppLocker/") && path.hasSuffix("/config.plist"))
+            || path == "/Users/Shared/AppLocker/config.plist"
     }
 
     static func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {

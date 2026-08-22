@@ -297,7 +297,6 @@ class ESTamper: ESClientObject {
         // Santa Pattern: Mute target paths using TARGET_LITERAL
         // In Inverted Mode, 'Mute' actually means 'Watch'
         let paths: [(path: String, type: es_mute_path_type_t)] = [
-            ("/Users/Shared/AppLocker/config.plist", ES_MUTE_PATH_TYPE_TARGET_LITERAL),
             ("/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
             ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
         ]

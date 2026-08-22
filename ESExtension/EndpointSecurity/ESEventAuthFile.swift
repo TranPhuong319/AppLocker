@@ -82,70 +82,86 @@ extension ESManager {
         let path = ESSafetyValve.getPath(message)
         let esPath = message.pointee.event.open.file.pointee.path
 
-        // 1. Check App Bundle Protection
-        if isAppBundlePath(esPath) {
-             guard let manager = ESManager.sharedInstanceForCallbacks else {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                return
-            }
+        guard let manager = ESManager.sharedInstanceForCallbacks else {
+            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+            return
+        }
 
-            // FULL ACCESS for authorized apps (AppLocker, Sparkle)
+        if isAppBundlePath(esPath) {
+            handleAppBundleAuthOpen(manager: manager, path: path, message: message, valve: valve)
+        } else if isProtectedConfigPath(esPath) {
+            handleConfigFileAuthOpen(manager: manager, path: path, message: message, valve: valve)
+        } else if isInsideProtectedFolder(esPath) {
+            handleProtectedFolderAuthOpen(manager: manager, path: path, message: message, valve: valve)
+        } else {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+        }
+    }
+
+    private static func handleAppBundleAuthOpen(
+        manager: ESManager,
+        path: String,
+        message: ESMessage,
+        valve: ESSafetyValve
+    ) {
+        if isAuthorized(manager, message) {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+            // swiftlint:disable:next line_length
+            Logfile.endpointSecurity.log("SELF_PROT [OPEN] ALLOW (Authorized): \(path) (Process: \(getSigningID(message)))")
+            return
+        }
+
+        let fflag = message.pointee.event.open.fflag
+        let fWrite = Int32(0x00000002)
+        let modifyBits = Int32(O_CREAT) | Int32(O_TRUNC) | Int32(O_APPEND)
+        let isWriteIntent = (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
+
+        if !isWriteIntent {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            // swiftlint:disable:next line_length
+            Logfile.endpointSecurity.log("SELF_PROT [OPEN] ALLOW (Read-only): \(path) (Process: \(getSigningID(message)))")
+            return
+        }
+
+        _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        let sigID = getSigningID(message)
+        Logfile.endpointSecurity.log("SELF_PROT [OPEN] DENY (Write-Intent): \(path) (Process: \(sigID))")
+    }
+
+    private static func handleConfigFileAuthOpen(
+        manager: ESManager,
+        path: String,
+        message: ESMessage,
+        valve: ESSafetyValve
+    ) {
+        if isAuthorized(manager, message) {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+            return
+        }
+        _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        Logfile.endpointSecurity.log("PRIVACY_LOCK [OPEN] DENY access to config: \(path)")
+    }
+
+    private static func handleProtectedFolderAuthOpen(
+        manager: ESManager,
+        path: String,
+        message: ESMessage,
+        valve: ESSafetyValve
+    ) {
+        let fflag = message.pointee.event.open.fflag
+        let fWrite = Int32(0x00000002)
+        let modifyBits = Int32(O_CREAT) | Int32(O_TRUNC) | Int32(O_APPEND)
+        let isWriteIntent = (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
+
+        if isWriteIntent {
             if isAuthorized(manager, message) {
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                // swiftlint:disable:next line_length
-                Logfile.endpointSecurity.log("SELF_PROT [OPEN] ALLOW (Authorized): \(path) (Process: \(getSigningID(message)))")
                 return
             }
 
-            // READ-ONLY ACCESS for everyone else
-            let fflag = message.pointee.event.open.fflag
-
-            // In the Darwin kernel (and ES), the flags are:
-            // FREAD  = 0x00000001
-            // FWRITE = 0x00000002
-            // O_CREAT, O_TRUNC, O_APPEND etc. are higher bits.
-            let fWrite = Int32(0x00000002) // FWRITE bit
-            let modifyBits = Int32(O_CREAT) | Int32(O_TRUNC) | Int32(O_APPEND)
-
-            let isWriteIntent = (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
-
-            if !isWriteIntent {
-                // Allow anyone to read (needed for Spotlight, Finder icons, etc.)
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
-                // swiftlint:disable:next line_length
-                Logfile.endpointSecurity.log("SELF_PROT [OPEN] ALLOW (Read-only): \(path) (Process: \(getSigningID(message)))")
-                return
-            }
-
-            // Everything else (Unauthorized WRITE attempt) -> Deny
             _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
             let sigID = getSigningID(message)
-            // swiftlint:disable:next line_length
-            Logfile.endpointSecurity.log("SELF_PROT [OPEN] DENY (Write-Intent): \(path) (Process: \(sigID), Flags: 0x\(String(fflag, radix: 16)))")
-            return
-        }
-
-        // 2. Check Config File Protection
-        if isProtectedConfigPath(esPath) {
-            guard let manager = ESManager.sharedInstanceForCallbacks else {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                return
-            }
-
-            // FULL LOCKDOWN: Always deny any access (including READ) if not authorized
-            if isAuthorized(manager, message) {
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                return
-            }
-
-            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            Logfile.endpointSecurity.log("PRIVACY_LOCK [OPEN] DENY access to config: \(path)")
-            return
-        }
-
-        // 3. System Folder Safety Check (Muting redundant folders)
-        if isInsideProtectedFolder(esPath) {
-            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            Logfile.endpointSecurity.log("SELF_PROT [OPEN] DENY folder write-intent: \(path) (Process: \(sigID))")
             return
         }
 
@@ -231,7 +247,7 @@ extension ESManager {
             let filenameToken = renameEvent.destination.new_path.filename
             if let nameStr = string(from: filenameToken) {
                 let isParentProtected = isInsideProtectedFolder(renameEvent.destination.new_path.dir.pointee.path)
-                if nameStr == "config.plist" && isParentProtected {
+                if isParentProtected {
                     return true
                 } else if nameStr == "AppLocker.app" {
                     let dirToken = renameEvent.destination.new_path.dir.pointee.path

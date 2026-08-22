@@ -15,13 +15,26 @@ struct ConfigLoadResult {
 
 final class ConfigStore {
     static let shared = ConfigStore()
-    let configURL = URL(fileURLWithPath: "/Users/Shared/AppLocker/config.plist")
+    static let baseDirectoryURL = URL(fileURLWithPath: "/Users/Shared/AppLocker")
+    static let legacyConfigURL = URL(fileURLWithPath: "/Users/Shared/AppLocker/config.plist")
+
+    var userDirectoryURL: URL {
+        Self.baseDirectoryURL.appendingPathComponent(String(getuid()), isDirectory: true)
+    }
+
+    var configURL: URL {
+        userDirectoryURL.appendingPathComponent("config.plist")
+    }
 
     private init() {
-        let directory = configURL.deletingLastPathComponent()
+        ensureDirectoryExists(Self.baseDirectoryURL)
+        ensureDirectoryExists(userDirectoryURL)
+    }
+
+    private func ensureDirectoryExists(_ url: URL) {
         let attributes: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
         try? FileManager.default.createDirectory(
-            at: directory,
+            at: url,
             withIntermediateDirectories: true,
             attributes: attributes
         )
@@ -35,6 +48,8 @@ final class ConfigStore {
     }
 
     func load() -> ConfigLoadResult {
+        migrateLegacyConfigIfNeeded()
+
         var result: [String: LockedAppConfig] = [:]
         var isDisabled = false
         var isLegacyFormat = false
@@ -45,15 +60,12 @@ final class ConfigStore {
         }
 
         let decoder = PropertyListDecoder()
-        let uid = String(getuid())
-        if let userConfigMap = try? decoder.decode([String: UserConfig].self, from: plistData),
-           let config = userConfigMap[uid] {
+        if let config = try? decoder.decode(UserConfig.self, from: plistData) {
             for app in config.apps {
                 result[app.path] = app
             }
             isDisabled = config.isDisabled
-        } else if let userBlockedAppsMap = try? decoder.decode([String: [LockedAppConfig]].self, from: plistData),
-           let apps = userBlockedAppsMap[uid] {
+        } else if let apps = try? decoder.decode([LockedAppConfig].self, from: plistData) {
             isLegacyFormat = true
             for app in apps {
                 result[app.path] = app
@@ -68,39 +80,69 @@ final class ConfigStore {
         encoder.outputFormat = .binary
 
         do {
-            let userID = String(getuid())
-            var fullConfig: [String: UserConfig] = [:]
+            ensureDirectoryExists(userDirectoryURL)
 
-            // 1. Read existing config to avoid overwriting other users
-            if FileManager.default.fileExists(atPath: configURL.path),
-               let existingData = try? Data(contentsOf: configURL) {
-                let decoder = PropertyListDecoder()
-                if let decoded = try? decoder.decode([String: UserConfig].self, from: existingData) {
-                    fullConfig = decoded
-                } else if let oldFormat = try? decoder.decode([String: [LockedAppConfig]].self, from: existingData) {
-                    for (key, apps) in oldFormat {
-                        fullConfig[key] = UserConfig(isDisabled: false, apps: apps)
-                    }
-                }
-            }
-
-            // 2. Update current user's rules
-            fullConfig[userID] = UserConfig(isDisabled: isDisabled, apps: Array(map.values))
-
-            // 3. Encode and save
-            let plistData = try encoder.encode(fullConfig)
+            let userConfig = UserConfig(isDisabled: isDisabled, apps: Array(map.values))
+            let plistData = try encoder.encode(userConfig)
             try plistData.write(to: configURL, options: .atomic)
 
-            // 4. Set permissions to 0o666 for multi-user access
             var attributes = [FileAttributeKey: Any]()
             attributes[.posixPermissions] = 0o666
             try? FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
 
             Logfile.core.debug(
-                "ConfigStore.save ES: updated \(map.count) apps for uid \(userID). Total users: \(fullConfig.count)"
+                "ConfigStore.save: updated \(map.count) apps for uid \(getuid()) at \(self.configURL.path)"
             )
         } catch {
             Logfile.core.error("ConfigStore.save failed: \(error.localizedDescription)")
+        }
+    }
+
+    private func migrateLegacyConfigIfNeeded() {
+        let legacyPath = Self.legacyConfigURL.path
+        guard FileManager.default.fileExists(atPath: legacyPath),
+              let legacyData = try? Data(contentsOf: Self.legacyConfigURL) else {
+            return
+        }
+
+        let decoder = PropertyListDecoder()
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+
+        var configsToMigrate: [String: UserConfig] = [:]
+        if let fullConfig = try? decoder.decode([String: UserConfig].self, from: legacyData) {
+            configsToMigrate = fullConfig
+        } else if let oldFormat = try? decoder.decode([String: [LockedAppConfig]].self, from: legacyData) {
+            for (key, apps) in oldFormat {
+                configsToMigrate[key] = UserConfig(isDisabled: false, apps: apps)
+            }
+        }
+
+        guard !configsToMigrate.isEmpty else { return }
+
+        var allSucceeded = true
+        for (uidString, userConfig) in configsToMigrate {
+            let targetDir = Self.baseDirectoryURL.appendingPathComponent(uidString, isDirectory: true)
+            ensureDirectoryExists(targetDir)
+            let targetURL = targetDir.appendingPathComponent("config.plist")
+
+            do {
+                let data = try encoder.encode(userConfig)
+                try data.write(to: targetURL, options: .atomic)
+                var attributes = [FileAttributeKey: Any]()
+                attributes[.posixPermissions] = 0o666
+                try? FileManager.default.setAttributes(attributes, ofItemAtPath: targetURL.path)
+            } catch {
+                allSucceeded = false
+                Logfile.core.error("Migration failed for uid \(uidString): \(error.localizedDescription)")
+            }
+        }
+
+        if allSucceeded {
+            try? FileManager.default.removeItem(at: Self.legacyConfigURL)
+            Logfile.core.log(
+                "Legacy config successfully migrated to \(configsToMigrate.count) user directories and deleted."
+            )
         }
     }
 }
