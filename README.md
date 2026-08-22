@@ -76,7 +76,7 @@ Starting with zero prior experience in low-level systems programming, I research
 AppLocker is structured into three decoupled layers:
 
 1. **`AppLocker` (Main Application)**: User-space GUI (SwiftUI + AppKit) managing app configurations, `LocalAuthentication`, Menu Bar status, and Batch Auth window dispatch on `@MainActor`.
-2. **`ESExtension` (Endpoint Security Daemon)**: Privileged System Extension running as root. Handles `AUTH_EXEC`, `NOTIFY_EXEC`, `NOTIFY_EXIT`, and anti-tamper events (`AUTH_SIGNAL`, `AUTH_FILE`).
+2. **`ESExtension` (Endpoint Security Daemon)**: Privileged System Extension running as root. Handles `NOTIFY_EXEC`, `NOTIFY_EXIT`, and anti-tamper events (`AUTH_SIGNAL`, `AUTH_FILE`).
 3. **`Shared Core`**: Shared XPC protocol contracts (`ESAppProtocol`, `ESXPCProtocol`), ECDSA P-256 cryptography helpers (`KeychainHelper`), CDHash verification (`CDHashHelper`), and unified logging (`os.Logger`).
 
 ### 🔄 Interception Flow
@@ -92,8 +92,6 @@ sequenceDiagram
 
     User->>TargetApp: Launch App
     TargetApp->>Kernel: execve()
-    Kernel->>ESExt: AUTH_EXEC Event
-    ESExt-->>Kernel: ES_AUTH_RESULT_ALLOW (Assigns real PID)
     Kernel->>ESExt: NOTIFY_EXEC Event (PID > 0 & CDHash available)
     ESExt->>TargetApp: POSIX kill(PID, SIGSTOP) [Process Frozen]
     ESExt->>AppLocker: XPC notifyBlockedExec(name, path, cdhash, pid)
@@ -108,8 +106,9 @@ sequenceDiagram
     end
 ```
 
-### 🔐 Security & Cryptography
+### 🔐 Security & Anti-Tampering
 
+- **Signal Interception & Anti-Tamper (`AUTH_SIGNAL`)**: Monitors and denies unauthorized external POSIX signals (`SIGCONT`, `SIGKILL`, `SIGSTOP`) directed at suspended target apps, the daemon, or AppLocker, preventing unauthorized bypasses.
 - **Mutual ECDSA P-256 Authentication**: XPC communication between `AppLocker` and `ESExtension` is protected by cryptographic challenge-response handshakes using `CryptoKit` (`P256.Signing`).
 - **Binary Integrity Verification**: The caller's `audit_token` is verified against executable CDHashes to prevent process spoofing and unauthorized Mach service invocations.
 
@@ -119,11 +118,11 @@ sequenceDiagram
 
 - **Operating System**: macOS 14.0 (Sonoma) or later.
 - **Architecture**: Apple Silicon (M1/M2/M3/M4) and Intel (x86_64).
-- **Entitlements Notice**: 
-  > [!NOTE]
-  > Apple requires a paid **Apple Developer Program** account and explicit approval for the `com.apple.developer.endpoint-security.client` entitlement.
-  > 
-  > For local development and open-source testing without a paid provisioning profile, **System Integrity Protection (SIP)** must be disabled (`csrutil disable` in Recovery Mode for Intel, and Reduced Security mode for Apple Silicon) to allow the System Extension to register.
+
+> [!NOTE]
+> **Entitlements Notice**: Apple requires a paid **Apple Developer Program** account and explicit approval for the `com.apple.developer.endpoint-security.client` entitlement.
+> 
+> For local development and open-source testing without a paid provisioning profile, **System Integrity Protection (SIP)** must be disabled (`csrutil disable` in Recovery Mode for Intel, and Reduced Security mode for Apple Silicon) to allow the System Extension to register.
 
 ---
 

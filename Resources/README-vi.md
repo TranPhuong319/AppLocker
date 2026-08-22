@@ -76,7 +76,7 @@ Bắt đầu từ con số 0 về lập trình hệ thống, mình đã tự tì
 AppLocker được phân tách thành 3 tầng thành phần rõ ràng:
 
 1. **`AppLocker` (Ứng Dụng Chính)**: Giao diện người dùng (SwiftUI + AppKit) quản lý cấu hình, `LocalAuthentication`, Menu Bar và điều phối cửa sổ Batch Auth trên `@MainActor`.
-2. **`ESExtension` (Endpoint Security Daemon)**: System Extension chạy với quyền root (System Daemon). Xử lý các sự kiện `AUTH_EXEC`, `NOTIFY_EXEC`, `NOTIFY_EXIT`, và sự kiện chống can thiệp (`AUTH_SIGNAL`, `AUTH_FILE`).
+2. **`ESExtension` (Endpoint Security Daemon)**: System Extension chạy với quyền root (System Daemon). Xử lý các sự kiện `NOTIFY_EXEC`, `NOTIFY_EXIT`, và sự kiện chống can thiệp (`AUTH_SIGNAL`, `AUTH_FILE`).
 3. **`Shared Core`**: Chia sẻ các giao thức XPC (`ESAppProtocol`, `ESXPCProtocol`), mật mã học ECDSA P-256 (`KeychainHelper`), trích xuất CDHash (`CDHashHelper`) và hệ thống ghi log tập trung (`os.Logger`).
 
 ### 🔄 Quy Trình Chặn Bắt & Mở Khóa
@@ -92,8 +92,6 @@ sequenceDiagram
 
     User->>TargetApp: Mở ứng dụng
     TargetApp->>Kernel: execve()
-    Kernel->>ESExt: Sự kiện AUTH_EXEC
-    ESExt-->>Kernel: ES_AUTH_RESULT_ALLOW (Để Kernel cấp phát PID hợp lệ)
     Kernel->>ESExt: Sự kiện NOTIFY_EXEC (Nhận PID > 0 & CDHash)
     ESExt->>TargetApp: POSIX kill(PID, SIGSTOP) [Đóng băng tiến trình]
     ESExt->>AppLocker: Gửi XPC notifyBlockedExec(name, path, cdhash, pid)
@@ -108,8 +106,9 @@ sequenceDiagram
     end
 ```
 
-### 🔐 An Ninh & Mật Mã Học
+### 🔐 An Ninh & Chống Can Thiệp
 
+- **Chặn Tín Hiệu & Chống Can Thiệp (`AUTH_SIGNAL`)**: Giám sát và từ chối các tín hiệu POSIX trái phép (`SIGCONT`, `SIGKILL`, `SIGSTOP`) từ bên ngoài nhắm vào các ứng dụng đang bị đóng băng, Daemon bảo mật hoặc AppLocker, ngăn chặn tuyệt đối việc vượt rào bảo vệ.
 - **Xác Thực Hai Chiều ECDSA P-256 (Mutual Authentication)**: Giao tiếp XPC giữa `AppLocker` và `ESExtension` được bảo vệ bằng cơ chế bắt tay mã hóa sinh khóa ngẫu nhiên (Nonce) qua `CryptoKit` (`P256.Signing`).
 - **Xác Minh Tính Toàn Vẹn CDHash**: Trích xuất `audit_token` của tiến trình gọi từ Kernel và đối chiếu với CDHash của file nhị phân trên đĩa nhằm ngăn chặn giả mạo kết nối XPC.
 
@@ -119,11 +118,11 @@ sequenceDiagram
 
 - **Hệ Điều Hành**: Tối thiểu là macOS 14.0 (Sonoma) trở lên.
 - **Kiến Trúc Phần Cứng**: Apple Silicon (M1/M2/M3/M4) và Intel (x86_64).
-- **Lưu Ý Về Entitlements**: 
-  > [!NOTE]
-  > Apple yêu cầu tài khoản **Apple Developer Program** trả phí ($99/năm) và xét duyệt thủ công cho quyền `com.apple.developer.endpoint-security.client`.
-  > 
-  > Để phát triển cục bộ và thử nghiệm mã nguồn mở mà không cần profile trả phí, cần tắt **System Integrity Protection (SIP)** (`csrutil disable` trong Recovery Mode đối với Intel và Hạ cấp bảo mật đối với Apple Silicon) để System Extension có thể đăng ký vào hệ thống.
+
+> [!NOTE]
+> **Lưu Ý Về Entitlements**: Apple yêu cầu tài khoản **Apple Developer Program** trả phí ($99/năm) và xét duyệt thủ công cho quyền `com.apple.developer.endpoint-security.client`.
+> 
+> Để phát triển cục bộ và thử nghiệm mã nguồn mở mà không cần profile trả phí, cần tắt **System Integrity Protection (SIP)** (`csrutil disable` trong Recovery Mode đối với Intel và Hạ cấp bảo mật đối với Apple Silicon) để System Extension có thể đăng ký vào hệ thống.
 
 ---
 
