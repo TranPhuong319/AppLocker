@@ -9,82 +9,112 @@ import Foundation
 import os
 
 extension ESManager {
-    static let configPath = "/Users/Shared/AppLocker/config.plist"
+    static let baseConfigDirectory = "/Users/Shared/AppLocker"
+    static let legacyConfigPath = "/Users/Shared/AppLocker/config.plist"
 
-    /// Đọc cấu hình từ file và cập nhật vào bộ nhớ
-    /// Đọc cấu hình từ file và cập nhật vào bộ nhớ ngay lập tức
+    /// Đọc cấu hình từ tất cả các file /Users/Shared/AppLocker/<UID>/config.plist và cập nhật vào bộ nhớ ngay lập tức
     func loadInitialConfigSync() {
-        let url = URL(fileURLWithPath: ESManager.configPath)
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            Logfile.endpointSecurity.log("Config file not found at \(ESManager.configPath). Skipping initial load.")
+        let fileManager = FileManager.default
+        let baseDir = ESManager.baseConfigDirectory
+        guard fileManager.fileExists(atPath: baseDir) else {
+            Logfile.endpointSecurity.log("Base config directory not found at \(baseDir). Skipping load.")
             return
         }
 
-        do {
-            let data = try Data(contentsOf: url, options: .mappedIfSafe)
-            let (newCDHashes, newBundlePaths) = self.parseConfigData(data)
+        var newCDHashes: [uid_t: Set<String>] = [:]
+        var newBundlePaths: [uid_t: Set<String>] = [:]
 
-            // Atomic Swap
-            self.stateLock.withLock {
-                self.lockedCDHashes = newCDHashes
-                self.lockedBundlePaths = newBundlePaths
+        // 1. Quét các thư mục con tương ứng với từng UID
+        if let subpaths = try? fileManager.contentsOfDirectory(atPath: baseDir) {
+            let decoder = PropertyListDecoder()
+            for item in subpaths {
+                guard let uid = uid_t(item) else { continue }
+                let userConfigPath = (baseDir as NSString).appendingPathComponent("\(item)/config.plist")
+                guard fileManager.fileExists(atPath: userConfigPath),
+                      let data = try? Data(contentsOf: URL(fileURLWithPath: userConfigPath), options: .mappedIfSafe),
+                      let userConfig = try? decoder.decode(UserConfig.self, from: data) else {
+                    continue
+                }
+
+                guard !userConfig.isDisabled else { continue }
+                let (cdhashes, bundlePaths) = extractHashesAndPaths(from: userConfig.apps)
+                newCDHashes[uid] = cdhashes
+                newBundlePaths[uid] = bundlePaths
             }
-
-            let totalApps = newBundlePaths.values.reduce(0) { $0 + $1.count }
-            Logfile.endpointSecurity.log(
-                "ESManager: Loaded \(totalApps) apps for \(newCDHashes.count) users from config."
-            )
-
-        } catch {
-            Logfile.endpointSecurity.error("ESManager: Failed to load config: \(error.localizedDescription)")
         }
+
+        // 2. Dự phòng: Nếu chưa có file con nào nhưng có file legacy config.plist
+        if newCDHashes.isEmpty && fileManager.fileExists(atPath: ESManager.legacyConfigPath) {
+            if let legacyData = try? Data(
+                contentsOf: URL(fileURLWithPath: ESManager.legacyConfigPath),
+                options: .mappedIfSafe
+            ) {
+                let (legacyCDHashes, legacyBundlePaths) = parseLegacyConfigData(legacyData)
+                newCDHashes = legacyCDHashes
+                newBundlePaths = legacyBundlePaths
+            }
+        }
+
+        // Atomic Swap
+        self.stateLock.withLock {
+            self.lockedCDHashes = newCDHashes
+            self.lockedBundlePaths = newBundlePaths
+        }
+
+        let totalApps = newBundlePaths.values.reduce(0) { $0 + $1.count }
+        Logfile.endpointSecurity.log(
+            "ESManager: Loaded \(totalApps) apps for \(newCDHashes.count) users from per-user configs."
+        )
     }
 
-    private func parseConfigData(_ data: Data) -> ([uid_t: Set<String>], [uid_t: Set<String>]) {
+    private func extractHashesAndPaths(from apps: [LockedAppConfig]) -> (Set<String>, Set<String>) {
+        var cdhashes = Set<String>()
+        var bundlePaths = Set<String>()
+
+        for app in apps {
+            let path1 = app.path
+            let path2 = (path1 as NSString).standardizingPath
+            let realPath = URL(fileURLWithPath: path1).resolvingSymlinksInPath().path
+            bundlePaths.insert(path1)
+            bundlePaths.insert(path2)
+            bundlePaths.insert(realPath)
+
+            let resolvedCDHash = app.cdhash ?? extractCDHash(forPath: path1)
+            if let hash = resolvedCDHash, !hash.isEmpty {
+                cdhashes.insert(hash.lowercased())
+            }
+        }
+
+        return (cdhashes, bundlePaths)
+    }
+
+    private func parseLegacyConfigData(_ data: Data) -> ([uid_t: Set<String>], [uid_t: Set<String>]) {
         let decoder = PropertyListDecoder()
         var newCDHashes: [uid_t: Set<String>] = [:]
         var newBundlePaths: [uid_t: Set<String>] = [:]
 
-        let processAppsForUser: (uid_t, [LockedAppConfig]) -> Void = { uid, apps in
-            var cdhashes = Set<String>()
-            var bundlePaths = Set<String>()
-
-            for app in apps {
-                let path1 = app.path
-                let path2 = (path1 as NSString).standardizingPath
-                let realPath = URL(fileURLWithPath: path1).resolvingSymlinksInPath().path
-                bundlePaths.insert(path1)
-                bundlePaths.insert(path2)
-                bundlePaths.insert(realPath)
-
-                let resolvedCDHash = app.cdhash ?? extractCDHash(forPath: path1)
-                if let hash = resolvedCDHash, !hash.isEmpty {
-                    cdhashes.insert(hash.lowercased())
-                }
-            }
-
-            newCDHashes[uid] = cdhashes
-            newBundlePaths[uid] = bundlePaths
-        }
-
         if let rawConfig = try? decoder.decode([String: UserConfig].self, from: data) {
             for (uidString, userConfig) in rawConfig {
                 guard let uid = uid_t(uidString), !userConfig.isDisabled else { continue }
-                processAppsForUser(uid, userConfig.apps)
+                let (hashes, paths) = extractHashesAndPaths(from: userConfig.apps)
+                newCDHashes[uid] = hashes
+                newBundlePaths[uid] = paths
             }
         } else if let oldConfig = try? decoder.decode([String: [LockedAppConfig]].self, from: data) {
             for (uidString, apps) in oldConfig {
                 guard let uid = uid_t(uidString) else { continue }
-                processAppsForUser(uid, apps)
+                let (hashes, paths) = extractHashesAndPaths(from: apps)
+                newCDHashes[uid] = hashes
+                newBundlePaths[uid] = paths
             }
         }
 
         return (newCDHashes, newBundlePaths)
     }
 
-    /// Theo dõi thay đổi của thư mục chứa cấu hình để bắt được sự kiện Atomic Write (Rename/Delete)
+    /// Theo dõi thay đổi của thư mục chứa cấu hình để bắt được sự kiện Atomic Write (Rename/Delete/Create)
     func startConfigMonitoring() {
-        let configDir = URL(fileURLWithPath: ESManager.configPath).deletingLastPathComponent().path
+        let configDir = ESManager.baseConfigDirectory
 
         configMonitorSource?.cancel()
         configMonitorSource = nil
@@ -101,7 +131,7 @@ extension ESManager {
 
         let source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileDescriptor,
-            eventMask: [.write], // Directory write covers file create/delete/rename
+            eventMask: [.write], // Directory write covers file create/delete/rename in folder
             queue: backgroundProcessingQueue
         )
 
