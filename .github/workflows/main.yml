@@ -63,14 +63,19 @@ jobs:
             | head -n 1 \
             | sed -E 's/.*= *"?([^";]+)"?;.*/\1/')
 
+          DEPLOYMENT_TARGET=$(grep "MACOSX_DEPLOYMENT_TARGET" AppLocker.xcodeproj/project.pbxproj \
+            | grep -v '\$' \
+            | head -n 1 \
+            | sed -E 's/.*= *"?([^";]+)"?;.*/\1/')
+
           sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = \"${GITHUB_RUN_NUMBER}\";/g" AppLocker.xcodeproj/project.pbxproj
           echo "VER=$MARKETING_VERSION" >> $GITHUB_ENV
+          echo "MIN_OS=${DEPLOYMENT_TARGET:-14.0}" >> $GITHUB_ENV
           echo "OLD_PRE_TAG=${CUR_TAG:-NULL}" >> $GITHUB_ENV
         shell: zsh {0}
 
       - name: Lint Code
-        run: swiftlint lint --reporter github-actions-logging
-        continue-on-error: true
+        run: swiftlint lint --strict --reporter github-actions-logging
 
       - name: i18n Stats
         run: python .github/scripts/check_localization.py
@@ -165,7 +170,7 @@ jobs:
                       <pubDate>${PUBDATE}</pubDate>
                       <sparkle:version>${GITHUB_RUN_NUMBER}</sparkle:version>
                       <sparkle:shortVersionString>${VER}</sparkle:shortVersionString>
-                      <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>
+                      <sparkle:minimumSystemVersion>${MIN_OS}</sparkle:minimumSystemVersion>
                       ${CRITICAL_TAG}
                       <description><![CDATA[
                           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/19.4.0/primer.min.css">
