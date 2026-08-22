@@ -18,7 +18,7 @@ struct PendingAppItem: Identifiable, Hashable {
 }
 
 struct BatchAuthView: View {
-    @ObservedObject var server: XPCServer
+    @Bindable var server: XPCServer
     var onAuthenticate: () -> Void
     var onCancel: () -> Void
     @State private var maxButtonWidth: CGFloat?
@@ -227,7 +227,7 @@ struct BatchAppRowView: View {
 }
 
 private struct BatchAuthViewPreviewWrapper: View {
-    @StateObject private var server: XPCServer = {
+    @State private var server: XPCServer = {
         let xpcServer = XPCServer()
         xpcServer.pendingApps = [
             PendingAppItem(

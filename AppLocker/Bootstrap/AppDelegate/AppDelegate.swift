@@ -150,7 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
                 Activating existing instance and terminating this new instance.
                 """
             )
-            otherApps.first?.activate(options: [.activateIgnoringOtherApps])
+            otherApps.first?.activate()
             NSApp.terminate(nil)
         }
     }

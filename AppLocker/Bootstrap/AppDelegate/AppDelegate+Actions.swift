@@ -13,7 +13,7 @@ import ServiceManagement
 extension AppDelegate {
     @objc func openListApp() {
         guard ExtensionInstaller.shared.isInstalled else {
-            NSApp.activate(ignoringOtherApps: true)
+            NSApp.activate()
             let result = AlertShow.show(
                 title: String(localized: "System Extension Required"),
                 message: String(
@@ -56,13 +56,13 @@ extension AppDelegate {
     }
 
     @objc func openSettings() {
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         SettingsWindowController.show()
     }
 
     @objc func uninstall() {
         Logfile.core.debug("Uninstall Clicked")
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         let uninstallConfirmation = AlertShow.show(
             title: String(localized: "Uninstall AppLocker") + "?",
@@ -85,7 +85,7 @@ extension AppDelegate {
 
     @objc func resetApp() {
         Logfile.core.debug("Reset App Clicked")
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         let resetConfirmation = AlertShow.show(
             title: String(localized: "Reset AppLocker"),
             message: String(localized: """
@@ -116,7 +116,7 @@ extension AppDelegate {
 
     @objc func checkUpdate() {
         AppUpdater.shared.manualCheckForUpdates()
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.bringFrontmostWindow(matching: "SU") // SPUpdater or SUUpdater
         }

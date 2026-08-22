@@ -5,13 +5,14 @@
 //  Created by Doe Phương on 5/9/25.
 //
 
-import Combine
 import CoreServices
 import Foundation
+import Observation
 import SwiftUI
 
+@Observable
 @MainActor
-class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
+class AppState: NSObject, NSOpenSavePanelDelegate {
     static let shared = AppState()
 
     let selfBundlePath = Bundle.main.bundleURL.path
@@ -19,25 +20,45 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
     var metadataQuery: NSMetadataQuery?
     var spotlightWorkItem: DispatchWorkItem?
     var lastInstalledPathSet: Set<String> = []
-    private var cancellables = Set<AnyCancellable>()
-    @Published var manager: any LockManagerProtocol
-    @Published var showingAddApp = false
-    @Published var showingDeleteQueue = false
-    @Published var selectedToLock: Set<String> = []
-    @Published var deleteQueue: Set<String> = []
-    @Published var isLocking = false
-    @Published var showingLockingPopup = false
-    @Published var lockingMessage = ""
-    @Published var searchTextLockApps = ""
-    @Published var searchTextUnlockaleApps: String = ""
 
-    @Published var filteredLockedApps: [InstalledApp] = []
-    @Published var filteredUnlockableApps: [InstalledApp] = []
+    @ObservationIgnored
+    private var searchUnlockableAppsTask: Task<Void, Never>?
 
-    @Published var lockedAppObjects: [InstalledApp] = []
-    @Published var unlockableApps: [InstalledApp] = []
+    var manager: any LockManagerProtocol
+    var showingAddApp = false
+    var showingDeleteQueue = false
+    var selectedToLock: Set<String> = []
+    var deleteQueue: Set<String> = []
+    var isLocking = false
+    var showingLockingPopup = false
+    var lockingMessage = ""
+
+    var searchTextLockApps = "" {
+        didSet {
+            filterLockedApps()
+        }
+    }
+
+    var searchTextUnlockaleApps: String = "" {
+        didSet {
+            debounceFilterUnlockableApps()
+        }
+    }
+
+    var filteredLockedApps: [InstalledApp] = []
+    var filteredUnlockableApps: [InstalledApp] = []
+
+    var lockedAppObjects: [InstalledApp] = []
+    var unlockableApps: [InstalledApp] = []
 
     var isMock: Bool = false
+    var activeTouchBar: TouchBarType = .mainWindow
+
+    enum TouchBarType {
+        case mainWindow
+        case addAppPopup
+        case deleteQueuePopup
+    }
 
     init(manager: (any LockManagerProtocol)? = nil) {
         if let manager = manager {
@@ -49,20 +70,12 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
         super.init()
 
-        // After super.init, it's safe to use 'self' and access instance properties like 'cancellables'
         if let esManager = self.manager as? LockES {
-            esManager.bootstrap()
-
-            // AppState must observe changes because LockES loads asynchronously
-            esManager.$lockedApps
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    self?.refreshAppLists()
-                }
-                .store(in: &cancellables)
+            esManager.bootstrap { [weak self] in
+                self?.refreshAppLists()
+            }
         }
 
-        setupSearchPipeline()
         if !isMock {
             setupSpotlightQuery()
             refreshAppLists()
@@ -71,26 +84,22 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
-        metadataQuery?.stop()
     }
 
-    private func setupSearchPipeline() {
-        Publishers.CombineLatest($searchTextLockApps, $lockedAppObjects)
-            .map { [weak self] (text, apps) -> [InstalledApp] in
-                guard let self = self else { return [] }
-                return self.performFilter(text: text, apps: apps)
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$filteredLockedApps)
+    private func filterLockedApps() {
+        filteredLockedApps = performFilter(text: searchTextLockApps, apps: lockedAppObjects)
+    }
 
-        Publishers.CombineLatest($searchTextUnlockaleApps, $unlockableApps)
-            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
-            .map { [weak self] (text, apps) -> [InstalledApp] in
-                guard let self = self else { return [] }
-                return self.performFilter(text: text, apps: apps)
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$filteredUnlockableApps)
+    private func debounceFilterUnlockableApps() {
+        searchUnlockableAppsTask?.cancel()
+        searchUnlockableAppsTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled, let self = self else { return }
+            self.filteredUnlockableApps = self.performFilter(
+                text: self.searchTextUnlockaleApps,
+                apps: self.unlockableApps
+            )
+        }
     }
 
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
@@ -136,6 +145,8 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
         self.lockedAppObjects = lockedAppsList
         self.unlockableApps = unlockable
+        self.filteredLockedApps = self.performFilter(text: self.searchTextLockApps, apps: lockedAppsList)
+        self.filteredUnlockableApps = self.performFilter(text: self.searchTextUnlockaleApps, apps: unlockable)
 
         DispatchQueue.global(qos: .utility).async {
             for app in unlockable.prefix(60) {
@@ -150,14 +161,6 @@ class AppState: NSObject, ObservableObject, NSOpenSavePanelDelegate {
 
     var systemUnlockableApps: [InstalledApp] {
         filteredUnlockableApps.filter { $0.source == .system }
-    }
-
-    @Published var activeTouchBar: TouchBarType = .mainWindow
-
-    enum TouchBarType {
-        case mainWindow
-        case addAppPopup
-        case deleteQueuePopup
     }
 
     func toggleLockPopup(for apps: Set<String>, locking: Bool) {

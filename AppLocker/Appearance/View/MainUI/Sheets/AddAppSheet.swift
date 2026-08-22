@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AddAppSheet: View {
-    @ObservedObject var appState: AppState
+    @Bindable var appState: AppState
     @FocusState var isSearchFocused: Bool
     let unfocus: () -> Void
     @State private var maxButtonWidth: CGFloat?

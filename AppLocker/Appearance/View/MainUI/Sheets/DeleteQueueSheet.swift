@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DeleteQueueSheet: View {
-    @ObservedObject var appState: AppState
+    var appState: AppState
     @State private var maxButtonWidth: CGFloat?
 
     var body: some View {

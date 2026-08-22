@@ -6,14 +6,16 @@
 //
 
 import Foundation
+import Observation
 import SwiftUI
 
 // MARK: - Mocking for Previews
+@Observable
 @MainActor
-class MockLockManager: LockManagerProtocol, ObservableObject {
-    @Published var lockedApps: [String: LockedAppConfig] = [:]
-    @Published var allApps: [InstalledApp] = []
-    @Published var isProtectionDisabled: Bool = false
+class MockLockManager: LockManagerProtocol {
+    var lockedApps: [String: LockedAppConfig] = [:]
+    var allApps: [InstalledApp] = []
+    var isProtectionDisabled: Bool = false
 
     func toggleLock(for paths: [String]) {
         for path in paths {

@@ -11,7 +11,7 @@ import SwiftUI
 struct SecuritySettingsTab: View {
     let isMock: Bool
 
-    @ObservedObject private var installer = ExtensionInstaller.shared
+    private var installer = ExtensionInstaller.shared
     @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
     @AppStorage("batchAuthCountdownSeconds") private var authCountdownSeconds: Double = 30
     @AppStorage("autoLockTimeoutMinutes") private var autoLockTimeoutMinutes: Int = 0

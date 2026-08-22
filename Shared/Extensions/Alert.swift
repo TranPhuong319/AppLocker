@@ -51,7 +51,7 @@ enum AlertShow {
             }
         }
 
-        NSApplication.shared.activate(ignoringOtherApps: true)
+        NSApplication.shared.activate()
         let response = runAlert(alert)
 
         let index: Int

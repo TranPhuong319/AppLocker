@@ -5,19 +5,19 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
-import AppKit
-import Combine
 import Foundation
+import Observation
 import os
 import UserNotifications
 
-final class XPCServer: NSObject, ESXPCProtocol, ObservableObject, @unchecked Sendable {
+@Observable
+final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     static let shared = XPCServer()
     @MainActor static var lastAuthTimestampsByPath: [String: Date] = [:]
 
-    @Published var authError: String?
-    @Published var pendingApps: [PendingAppItem] = []
-    @Published var remainingSeconds: Int = 60
+    var authError: String?
+    var pendingApps: [PendingAppItem] = []
+    var remainingSeconds: Int = 60
 
     private var pendingDebounceTimer: Timer?
     private var countdownTimer: Timer?

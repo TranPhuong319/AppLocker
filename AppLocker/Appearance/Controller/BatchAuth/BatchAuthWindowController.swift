@@ -33,7 +33,6 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
             hostingController.sceneBridgingOptions = [.toolbars, .title]
         }
         hostingController.view.setFrameSize(WindowLayout.batchAuthSize)
-        hostingController.view.layoutSubtreeIfNeeded()
 
         let size = WindowLayout.batchAuthSize
         var config = WindowConfiguration()
@@ -68,8 +67,8 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
             window.center()
         }
 
-        NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
-        NSApp.activate(ignoringOtherApps: true)
+        NSRunningApplication.current.activate()
+        NSApp.activate()
         window.orderFrontRegardless()
         window.makeKeyAndOrderFront(nil)
     }

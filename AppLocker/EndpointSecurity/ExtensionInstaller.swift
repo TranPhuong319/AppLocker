@@ -5,16 +5,17 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
-import Combine
 import Foundation
+import Observation
 import SystemExtensions
 
+@Observable
 @MainActor
-final class ExtensionInstaller: NSObject, ObservableObject, OSSystemExtensionRequestDelegate {
+final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     static let shared = ExtensionInstaller()
     private override init() {}
 
-    @Published private(set) var isInstalled: Bool = false
+    private(set) var isInstalled: Bool = false
 
     private enum Action {
         case install(completion: ((Result<Void, Error>) -> Void)?)

@@ -25,7 +25,7 @@ struct AppIconView: View {
         .frame(width: size, height: size)
         .cornerRadius(6)
         .onAppear { loadIcon() }
-        .onChange(of: path) { _ in loadIcon() }
+        .onChange(of: path) { _, _ in loadIcon() }
     }
 
     private func loadIcon() {

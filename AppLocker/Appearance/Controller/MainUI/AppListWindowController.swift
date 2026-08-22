@@ -12,7 +12,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     static var shared: AppListWindowController?
 
     static func show() {
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         if let controller = shared {
             activateExistingWindow(controller)
@@ -35,7 +35,7 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     private static func activateExistingWindow(_ controller: NSWindowController) {
         controller.showWindow(nil)
         controller.window?.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 
     private static func createHostingController() -> NSHostingController<ContentView> {
@@ -44,7 +44,6 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
             hostingController.sceneBridgingOptions = [.toolbars, .title]
         }
         hostingController.view.setFrameSize(WindowLayout.mainSize)
-        hostingController.view.layoutSubtreeIfNeeded()
         return hostingController
     }
 
