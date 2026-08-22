@@ -31,7 +31,7 @@ struct UpdatesSettingsTab: View {
                 currentVersionRow
 
                 Toggle("Automatically check for updates", isOn: $autoCheck)
-                    .onChange(of: autoCheck) { newValue in
+                    .onChange(of: autoCheck) { _, newValue in
                         if !newValue {
                             autoDownload = false
                         }
@@ -46,7 +46,7 @@ struct UpdatesSettingsTab: View {
 
                 Toggle("Automatically download new updates", isOn: $autoDownload)
                     .disabled(!autoCheck)
-                    .onChange(of: autoDownload) { newValue in
+                    .onChange(of: autoDownload) { _, newValue in
                         if !isMock {
                             let updater = AppUpdater.shared.updaterController.updater
                             updater.automaticallyDownloadsUpdates = newValue

@@ -61,7 +61,7 @@ struct SettingsView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .frame(minWidth: 640, minHeight: 440)
-        .onChange(of: selectedTab) { newTab in
+        .onChange(of: selectedTab) { _, newTab in
             handleTabChange(to: newTab)
         }
     }

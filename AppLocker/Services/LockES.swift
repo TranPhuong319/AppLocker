@@ -8,18 +8,25 @@
 import AppKit
 import CryptoKit
 import Foundation
+import Observation
 
+@Observable
 @MainActor
 class LockES: LockManagerProtocol {
-    @Published var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
-    @Published var allApps: [InstalledApp] = []
-    @Published var isProtectionDisabled: Bool = false
+    var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
+    var allApps: [InstalledApp] = []
+    var isProtectionDisabled: Bool = false
+
+    var onConfigUpdated: (() -> Void)?
 
     init() {
         // Defer loading to bootstrap() to allow ES Handshake first
     }
 
-    func bootstrap() {
+    func bootstrap(onUpdate: (() -> Void)? = nil) {
+        if let onUpdate = onUpdate {
+            self.onConfigUpdated = onUpdate
+        }
         ConfigStore.shared.performHandshake { [weak self] success in
             guard let self = self else { return }
             Logfile.core.info("ES Handshake finished (success=\(success)). Proceeeding to load config.")
@@ -30,6 +37,7 @@ class LockES: LockManagerProtocol {
             DispatchQueue.main.async {
                 self.lockedApps = loaded.apps
                 self.isProtectionDisabled = loaded.isDisabled
+                self.onConfigUpdated?()
                 self.migrateLegacyConfigsIfNeeded(appsToMigrate: loaded.apps, isLegacyFormat: loaded.isLegacyFormat)
             }
         }

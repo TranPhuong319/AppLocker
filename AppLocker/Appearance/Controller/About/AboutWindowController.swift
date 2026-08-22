@@ -35,6 +35,6 @@ class AboutWindowController: NSWindowController {
         }
 
         shared?.window?.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 }

@@ -15,7 +15,7 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
     static func show() {
         if let controller = shared {
             controller.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
+            NSApp.activate()
             return
         }
         let contentView = WelcomeView()
@@ -26,7 +26,6 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
 
         let fixedSize = WindowLayout.welcomeSize
         hostingController.view.setFrameSize(fixedSize)
-        hostingController.view.layoutSubtreeIfNeeded()
 
         let bundle = Bundle.main
 
@@ -52,7 +51,7 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = controller
         shared = controller
 
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
     }

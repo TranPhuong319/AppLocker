@@ -46,7 +46,7 @@ struct AddAppButton: View {
 
 struct DeleteAppButton: View {
     let app: InstalledApp
-    @ObservedObject var appState: AppState
+    var appState: AppState
 
     var body: some View {
         HStack(spacing: 12) {

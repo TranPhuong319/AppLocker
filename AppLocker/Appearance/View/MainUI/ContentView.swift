@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var appState: AppState
+    @Bindable var appState: AppState
     @FocusState var isSearchFocused: Bool
 
     @MainActor

@@ -15,7 +15,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if let controller = shared {
             controller.window?.center()
             controller.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
+            NSApp.activate()
             return
         }
 
@@ -46,7 +46,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 
     func windowWillClose(_ notification: Notification) {

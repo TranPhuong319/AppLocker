@@ -6,30 +6,32 @@
 //
 
 import AppKit
-import Combine
+import Observation
 
 @MainActor
 class TouchBarManager: NSObject, NSTouchBarDelegate {
     static let shared = TouchBarManager()
     let appState = AppState.shared
-    private var cancellables = Set<AnyCancellable>()
 
     private var items: [NSTouchBarItem.Identifier: () -> NSView] = [:]
 
     override init() {
         super.init()
+        observeActiveTouchBar()
+    }
 
-        // When activeTouchBar changes -> apply corresponding touchBar
-        appState.$activeTouchBar
-            .receive(on: RunLoop.main)
-            .sink { [weak self] type in
-                guard let self = self else { return }
-                let windows = NSApp.windows.filter { $0.isVisible }
-                for window in windows {
-                    self.apply(to: window, type: type)
-                }
+    private func observeActiveTouchBar() {
+        withObservationTracking {
+            let type = appState.activeTouchBar
+            let windows = NSApp.windows.filter { $0.isVisible }
+            for window in windows {
+                self.apply(to: window, type: type)
             }
-            .store(in: &cancellables)
+        } onChange: {
+            Task { @MainActor [weak self] in
+                self?.observeActiveTouchBar()
+            }
+        }
     }
 
     // NSTouchBarDelegate
@@ -243,8 +245,6 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
 @MainActor
 class DeleteQueueTouchBarButton: NSButton {
-    private var cancellables = Set<AnyCancellable>()
-
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupObservation()
@@ -257,22 +257,22 @@ class DeleteQueueTouchBarButton: NSButton {
 
     private func setupObservation() {
         // Only update title; visibility handled by TouchBarManager layout.
-        AppState.shared.$deleteQueue
-            .receive(on: RunLoop.main)
-            .sink { [weak self] queue in
-                self?.isHidden = queue.isEmpty
-                self?.title = String(
-                    localized: "Waiting to unlock \(queue.count) application(s)..."
-                )
+        withObservationTracking {
+            let queue = AppState.shared.deleteQueue
+            self.isHidden = queue.isEmpty
+            self.title = String(
+                localized: "Waiting to unlock \(queue.count) application(s)..."
+            )
+        } onChange: {
+            Task { @MainActor [weak self] in
+                self?.setupObservation()
             }
-            .store(in: &cancellables)
+        }
     }
 }
 
 @MainActor
 class LockTouchBarButton: NSButton {
-    private var cancellables = Set<AnyCancellable>()
-
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupObservation()
@@ -284,14 +284,16 @@ class LockTouchBarButton: NSButton {
     }
 
     private func setupObservation() {
-        AppState.shared.$selectedToLock
-            .combineLatest(AppState.shared.$isLocking)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] selected, isLocking in
-                self?.title = String(localized: "Lock")
-                self?.isEnabled = !selected.isEmpty && !isLocking
+        withObservationTracking {
+            let selected = AppState.shared.selectedToLock
+            let isLocking = AppState.shared.isLocking
+            self.title = String(localized: "Lock")
+            self.isEnabled = !selected.isEmpty && !isLocking
+        } onChange: {
+            Task { @MainActor [weak self] in
+                self?.setupObservation()
             }
-            .store(in: &cancellables)
+        }
     }
 }
 
