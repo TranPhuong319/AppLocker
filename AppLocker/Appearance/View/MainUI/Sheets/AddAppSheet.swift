@@ -177,7 +177,7 @@ struct AddAppSheet: View {
                     label: {
                         Text(lockButtonTitle)
                             .monospacedDigit()
-                            .numericTextTransition(value: Double(appState.selectedToLock.count))
+                            .contentTransition(.numericText(value: Double(appState.selectedToLock.count)))
                             .lineLimit(1)
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(.horizontal, 10)

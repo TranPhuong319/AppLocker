@@ -57,12 +57,9 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func addHeaderMenuItems(to menu: NSMenu) {
-        let infoItem = NSMenuItem(
-            title: "AppLocker v\(Bundle.main.fullVersion)",
-            action: nil,
-            keyEquivalent: ""
+        let infoItem = NSMenuItem.sectionHeader(
+            title: "AppLocker v\(Bundle.main.fullVersion)"
         )
-        infoItem.isEnabled = false
         menu.addItem(infoItem)
 
         if !ExtensionInstaller.shared.isInstalled {

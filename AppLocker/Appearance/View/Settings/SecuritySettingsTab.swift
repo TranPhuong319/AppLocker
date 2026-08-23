@@ -61,7 +61,7 @@ struct SecuritySettingsTab: View {
                         Text("\(Int(authCountdownSeconds)) seconds")
                             .foregroundColor(.secondary)
                             .monospacedDigit()
-                            .numericTextTransition(value: authCountdownSeconds)
+                            .contentTransition(.numericText(value: authCountdownSeconds))
                             .animation(.snappy(duration: 0.2), value: authCountdownSeconds)
                     }
                     Slider(value: $authCountdownSeconds, in: 10...60, step: 5)

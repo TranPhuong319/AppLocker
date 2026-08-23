@@ -116,8 +116,6 @@ Always follow this commit message format and guidelines when making commits:
   - *Pattern A (Optical Blur Behind Header)*: Use `ScrollView { ... }.safeAreaInset(edge: .top, spacing: 0) { headerView }` where `headerView` has `.background(Rectangle().fill(.ultraThinMaterial.opacity(0.6)).ignoresSafeArea(edges: .top))`. Note: in this pattern, content scrolls continuously underneath the header all the way to `y = 0`.
   - *Pattern B (Clean Bound / Zero Collision)*: Use `VStack(spacing: ...) { headerView; ScrollView { ... }.clipped() }` to strictly confine the scrolling area below the header without content peeking into the titlebar or traffic lights.
 
----
-
 ## Localization & String Catalog Guidelines
 
 - **English Base Keys & Static String Literals**:
@@ -126,6 +124,10 @@ Always follow this commit message format and guidelines when making commits:
   - For enums requiring localized display names, use explicit `switch self` statements returning String literals (e.g. `case .general: return "General"`).
   - Strings wrapped inside conditional compilation blocks (e.g. `#if DEBUG`) might be marked as `stale` during standard Release builds by Xcode's static extractor. Remove `"extractionState": "stale"` if the string is intentionally kept for DEBUG builds.
 
+---
 
+## Language & Communication Style Guidelines
 
+- **Primary Language**: Always communicate, explain, and interact with the user in **Vietnamese (Tiếng Việt)**.
+- **Technical Terms**: Keep industry-standard, framework, and programming terminology in **English (Thuật ngữ Tiếng Anh)** (e.g., *deployment target, view modifier, content transition, background tasks, thread isolation, dependency injection, runtime checks, audit token, mutual authentication*).
 
