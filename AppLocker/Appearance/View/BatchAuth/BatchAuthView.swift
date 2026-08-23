@@ -99,7 +99,7 @@ struct BatchAuthView: View {
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.secondary)
                 .monospacedDigit()
-                .contentTransition(.numericText(countsDown: true))
+                .contentTransition(.numericText(value: Double(server.remainingSeconds)))
                 .animation(.snappy(duration: 0.3), value: server.remainingSeconds)
         }
         .padding(.horizontal, 16)
@@ -140,7 +140,7 @@ struct BatchAuthView: View {
                         Image(systemName: "touchid")
                         Text(authButtonTitle)
                             .monospacedDigit()
-                            .numericTextTransition(value: Double(selectedCount))
+                            .contentTransition(.numericText(value: Double(selectedCount)))
                     }
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(1)

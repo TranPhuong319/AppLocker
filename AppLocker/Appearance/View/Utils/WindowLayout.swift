@@ -161,15 +161,6 @@ extension View {
     func liquidGlassBar() -> some View {
         modifier(LiquidGlassBarModifier())
     }
-
-    @ViewBuilder
-    func numericTextTransition(value: Double) -> some View {
-        if #available(macOS 14.0, *) {
-            self.contentTransition(.numericText(value: value))
-        } else {
-            self.contentTransition(.numericText())
-        }
-    }
 }
 
 // MARK: - Window Dragging Area Helper
