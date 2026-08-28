@@ -14,11 +14,28 @@ extension ESManager {
 
     /// Đọc cấu hình từ tất cả các file /Users/Shared/AppLocker/<UID>/config.plist và cập nhật vào bộ nhớ ngay lập tức
     func loadInitialConfigSync() {
+        guard let (loadedCDHashes, loadedBundlePaths) = readConfigsFromDisk() else {
+            return
+        }
+
+        // Atomic Swap
+        self.stateLock.withLock {
+            self.lockedCDHashes = loadedCDHashes
+            self.lockedBundlePaths = loadedBundlePaths
+        }
+
+        let totalApps = loadedBundlePaths.values.reduce(0) { $0 + $1.count }
+        Logfile.endpointSecurity.log(
+            "ESManager: Loaded \(totalApps) apps for \(loadedCDHashes.count) users from per-user configs."
+        )
+    }
+
+    private func readConfigsFromDisk() -> ([uid_t: Set<String>], [uid_t: Set<String>])? {
         let fileManager = FileManager.default
         let baseDir = ESManager.baseConfigDirectory
         guard fileManager.fileExists(atPath: baseDir) else {
             Logfile.endpointSecurity.log("Base config directory not found at \(baseDir). Skipping load.")
-            return
+            return nil
         }
 
         var newCDHashes: [uid_t: Set<String>] = [:]
@@ -49,22 +66,11 @@ extension ESManager {
                 contentsOf: URL(fileURLWithPath: ESManager.legacyConfigPath),
                 options: .mappedIfSafe
             ) {
-                let (legacyCDHashes, legacyBundlePaths) = parseLegacyConfigData(legacyData)
-                newCDHashes = legacyCDHashes
-                newBundlePaths = legacyBundlePaths
+                return parseLegacyConfigData(legacyData)
             }
         }
 
-        // Atomic Swap
-        self.stateLock.withLock {
-            self.lockedCDHashes = newCDHashes
-            self.lockedBundlePaths = newBundlePaths
-        }
-
-        let totalApps = newBundlePaths.values.reduce(0) { $0 + $1.count }
-        Logfile.endpointSecurity.log(
-            "ESManager: Loaded \(totalApps) apps for \(newCDHashes.count) users from per-user configs."
-        )
+        return (newCDHashes, newBundlePaths)
     }
 
     private func extractHashesAndPaths(from apps: [LockedAppConfig]) -> (Set<String>, Set<String>) {
