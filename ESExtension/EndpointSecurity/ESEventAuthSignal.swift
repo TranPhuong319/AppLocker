@@ -31,8 +31,11 @@ extension ESManager {
 
             if !isAuthorizedSender {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                Logfile.endpointSecurity.log(
-                    "[AUTH_SIGNAL] SECURITY SHIELD: Denied SIGCONT from PID \(senderPid) to pending PID \(targetPid)"
+                Logfile.endpointSecurity.warning(
+                    """
+                    [AuthSignal] SECURITY SHIELD: Denied SIGCONT from PID \(senderPid, privacy: .public) \
+                    to pending PID \(targetPid, privacy: .public)
+                    """
                 )
                 return
             }

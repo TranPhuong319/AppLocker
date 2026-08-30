@@ -42,10 +42,10 @@ extension AppDelegate {
         ) { success, error in
             if success {
                 AppListWindowController.show()
-                Logfile.core.debug("Opened AppList")
+                Logfile.app.debug("[Actions] Opened AppList")
             } else {
-                Logfile.core.error(
-                    "Error opening list app: \(error as NSObject?)")
+                Logfile.app.error(
+                    "[Actions] Error opening list app: \(error as NSObject?)")
             }
         }
     }
@@ -61,11 +61,11 @@ extension AppDelegate {
     }
 
     @objc func uninstall() {
-        Logfile.core.debug("Uninstall Clicked")
+        Logfile.app.debug("[Actions] Uninstall Clicked")
         NSApp.activate()
 
         let uninstallConfirmation = AlertShow.show(
-            title: String(localized: "Uninstall AppLocker") + "?",
+            title: String(localized: "Uninstall AppLocker"),
             message: String(localized: """
                 You are about to uninstall AppLocker. This action will delete application locking preferences \
                 for all users on this Mac.
@@ -79,13 +79,13 @@ extension AppDelegate {
             defaultIndex: 1
         )
 
-        if case .button(index: 0, title: String(localized: "Uninstall")) = uninstallConfirmation {
+        if case .button(index: 0, _) = uninstallConfirmation {
             performUninstall()
         }
     }
 
     @objc func resetApp() {
-        Logfile.core.debug("Reset App Clicked")
+        Logfile.app.debug("[Actions] Reset App Clicked")
         NSApp.activate()
         let resetConfirmation = AlertShow.show(
             title: String(localized: "Reset AppLocker"),
@@ -102,14 +102,16 @@ extension AppDelegate {
             defaultIndex: 1
         )
 
-        if case .button(index: 0, title: String(localized: "Reset")) = resetConfirmation {
+        if case .button(index: 0, _) = resetConfirmation {
             AuthenticationManager.authenticate(
                 reason: String(localized: "authenticate to reset AppLocker")
             ) { [weak self] success, error in
                 if success {
                     self?.performReset()
                 } else if let error = error {
-                    Logfile.core.error("Authentication failed for reset: \(error.localizedDescription)")
+                    Logfile.app.error(
+                        "[Actions] Authentication failed for reset: \(error.localizedDescription)"
+                    )
                 }
             }
         }
@@ -157,7 +159,9 @@ extension AppDelegate {
                     )
                 }
             case .failure(let error):
-                Logfile.core.error("[Uninstall] Failed to deactivate system extension: \(error.localizedDescription)")
+                Logfile.app.error(
+                    "[Actions] Failed to deactivate system extension: \(error.localizedDescription)"
+                )
                 AlertShow.showInfo(
                     title: String(localized: "System Extension Uninstallation Failed"),
                     message: error.localizedDescription,

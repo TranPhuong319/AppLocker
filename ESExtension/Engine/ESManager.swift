@@ -74,7 +74,7 @@ final class ESManager: NSObject {
 
     override init() {
         super.init()
-        Logfile.endpointSecurity.log("ESManager initializing...")
+        Logfile.endpointSecurity.info("[ESManager] Initializing Endpoint Security manager...")
 
         ESManager.sharedInstanceForCallbacks = self
 
@@ -90,7 +90,7 @@ final class ESManager: NSObject {
 
         // 2. Start Clients (Calls createClient -> MuteSelf internally)
         if authorizer.start() && tamper.start() {
-            Logfile.endpointSecurity.log("Modular ES Clients created and self-muted.")
+            Logfile.endpointSecurity.info("[ESManager] Modular ES Clients created and self-muted.")
 
             // 3. Pre-generate EC P-256 Authentication Keys (Fast ~0.1ms)
             prepareAuthenticationKeys()
@@ -107,10 +107,10 @@ final class ESManager: NSObject {
             authorizer.enable()
             tamper.enable()
 
-            Logfile.endpointSecurity.log("Modular ES Clients enabled and active.")
+            Logfile.endpointSecurity.notice("[ESManager] Modular ES Clients enabled and active.")
 
         } else {
-            Logfile.endpointSecurity.error("Failed to start modular ES Clients.")
+            Logfile.endpointSecurity.error("[ESManager] Failed to start modular ES Clients.")
         }
     }
 
@@ -139,7 +139,9 @@ final class ESManager: NSObject {
             reply(false)
             return
         }
-        Logfile.endpointSecurity.log("Handshake/ConfigAccess requested (Muted via AuditToken) for pid=\(processID)")
+        Logfile.endpointSecurity.debug(
+            "[ESManager] Handshake/ConfigAccess requested for PID \(processID, privacy: .public)"
+        )
         reply(true)
     }
 
@@ -151,7 +153,9 @@ final class ESManager: NSObject {
         stateLock.withLock {
             self.isShutdownAuthorized = authorized
         }
-        Logfile.endpointSecurity.log("Authorized shutdown status updated to: \(authorized)")
+        Logfile.endpointSecurity.info(
+            "[ESManager] Authorized shutdown status updated to: \(authorized, privacy: .public)"
+        )
         reply(true)
     }
 
@@ -189,15 +193,15 @@ final class ESManager: NSObject {
 
         // Mute for Authorizer
         if es_mute_process(client, token) == ES_RETURN_SUCCESS {
-            Logfile.endpointSecurity.log("Muted AppLocker PID (Authorizer): Success")
+            Logfile.endpointSecurity.debug("[ESManager] Muted AppLocker PID (Authorizer): Success")
         } else {
-            Logfile.endpointSecurity.error("Mute AppLocker PID (Authorizer): Failed")
+            Logfile.endpointSecurity.error("[ESManager] Mute AppLocker PID (Authorizer): Failed")
         }
 
         // Mute for Tamper too if needed (though Tamper usually monitors only config writes)
         if let tamperClient = tamper?.client {
             if es_mute_process(tamperClient, token) == ES_RETURN_SUCCESS {
-                Logfile.endpointSecurity.log("Muted AppLocker PID (Tamper): Success")
+                Logfile.endpointSecurity.debug("[ESManager] Muted AppLocker PID (Tamper): Success")
             }
         }
     }
@@ -222,7 +226,7 @@ final class ESManager: NSObject {
         let serverTag = KeychainHelper.Keys.extensionPublic
 
         if !KeychainHelper.shared.hasKey(tag: serverTag) {
-            Logfile.endpointSecurity.log("Auth: Pre-generating server keys at startup...")
+            Logfile.esSecurity.debug("[Auth] Pre-generating server keys at startup...")
             let startTime = mach_absolute_time()
 
             do {
@@ -231,12 +235,15 @@ final class ESManager: NSObject {
                 let elapsedNanos = ESManager.machTimeToNanos(mach_absolute_time() - startTime)
                 let elapsedMs = Double(elapsedNanos) / 1_000_000.0
 
-                Logfile.endpointSecurity.log("Auth: Keys generated in \(String(format: "%.1f", elapsedMs))ms")
+                let formattedMs = String(format: "%.1f", elapsedMs)
+                Logfile.esSecurity.debug(
+                    "[Auth] Server keys generated in \(formattedMs, privacy: .public)ms"
+                )
             } catch {
-                Logfile.endpointSecurity.error("Auth: Pre-generation failed: \(error)")
+                Logfile.esSecurity.error("[Auth] Server key pre-generation failed: \(error.localizedDescription)")
             }
         } else {
-            Logfile.endpointSecurity.log("Auth: Server keys already exist")
+            Logfile.esSecurity.debug("[Auth] Server keys already exist")
         }
     }
 

@@ -19,7 +19,7 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
         // Only notify immediately if we are NOT automatically downloading updates in the background.
         // If we are auto-downloading, we wait for didDownloadUpdate to show the "Ready to Install" notification.
         if !AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates {
-            Logfile.core.debug("New update found! (silent check)")
+            Logfile.app.info("[Updater] New update found (silent check)")
             let request = buildUpdateNotification()
             UNUserNotificationCenter.current().add(request)
         }
@@ -31,7 +31,7 @@ extension AppDelegate: AppUpdaterBridgeDelegate {
     }
 
     func didNotFindUpdate() {
-        Logfile.core.debug("No update found (silent check)")
+        Logfile.app.debug("[Updater] No update found (silent check)")
         pendingUpdate = nil
         NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
         NSApp.dockTile.badgeLabel = nil

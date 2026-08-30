@@ -35,10 +35,12 @@ final class ESXPCClient {
         onError: @escaping () -> Void = {}
     ) -> ESAppProtocol? {
         guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.core.error("\(actionName) failed: \(String(describing: error))")
+            Logfile.appXPC.error(
+                "[ESXPCClient] \(actionName, privacy: .public) failed: \(String(describing: error))"
+            )
             onError()
         }) as? ESAppProtocol else {
-            Logfile.core.error("[ESXPCClient] No valid proxy for \(actionName)")
+            Logfile.appXPC.error("[ESXPCClient] No valid proxy for \(actionName, privacy: .public)")
             onError()
             return nil
         }
@@ -51,7 +53,7 @@ final class ESXPCClient {
             self.shouldReconnect = true
             self.isConnecting = true
 
-            Logfile.core.log("[ESXPCClient] Connecting to MachService")
+            Logfile.appXPC.debug("[ESXPCClient] Connecting to MachService")
             let conn = self.createConnection()
             self.setupConnectionHandlers(conn: conn)
             conn.resume()
@@ -92,7 +94,7 @@ final class ESXPCClient {
             self.isConnecting = false
 
             if success {
-                Logfile.core.log("[ESXPCClient] Authentication successful. Connection ready.")
+                Logfile.appXPC.info("[ESXPCClient] Authentication successful. Connection ready.")
                 self.connection = conn
                 self.retryCount = 0
                 DispatchQueue.main.async {
@@ -103,7 +105,7 @@ final class ESXPCClient {
                     self.updateLanguage(primary)
                 }
             } else {
-                Logfile.core.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
                 DispatchQueue.main.async {
                     ExtensionInstaller.shared.updateInstalledState(false)
                 }
@@ -137,11 +139,11 @@ final class ESXPCClient {
 
         // 1. Ensure Client Keys
         if !KeychainHelper.shared.hasKey(tag: appTag) {
-            Logfile.core.log("[ESXPCClient] Client keys missing, generating...")
+            Logfile.appXPC.debug("[ESXPCClient] Client keys missing, generating...")
             do {
                 try KeychainHelper.shared.generateKeys(tag: appTag)
             } catch {
-                Logfile.core.error("[ESXPCClient] Key gen failed: \(error.localizedDescription)")
+                Logfile.appXPC.error("[ESXPCClient] Key gen failed: \(error.localizedDescription)")
                 completion(false)
                 return
             }
@@ -150,14 +152,14 @@ final class ESXPCClient {
         // 2. Prepare Auth Data
         let clientNonce = SymmetricKey(size: .bits256).withUnsafeBytes { Data($0) }
         guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appTag) else {
-            Logfile.core.error("[ESXPCClient] Failed to sign client nonce")
+            Logfile.appXPC.error("[ESXPCClient] Failed to sign client nonce")
             completion(false)
             return
         }
 
         // 2b. Export Public Key
         guard let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: appTag) else {
-            Logfile.core.error("[ESXPCClient] Failed to export public key")
+            Logfile.appXPC.error("[ESXPCClient] Failed to export public key")
             completion(false)
             return
         }
@@ -173,7 +175,7 @@ final class ESXPCClient {
             guard success, let serverNonce = serverNonce, let serverSig = serverSig,
                 let serverPubKey = serverPubKey
             else {
-                Logfile.core.error("[ESXPCClient] Server rejected auth or invalid response")
+                Logfile.appXPC.error("[ESXPCClient] Server rejected auth or invalid response")
                 completion(false)
                 return
             }
@@ -185,7 +187,7 @@ final class ESXPCClient {
                 signature: serverSig, originalData: combined, publicKeyData: serverPubKey) {
                 completion(true)
             } else {
-                Logfile.core.error("[ESXPCClient] Server signature verification failed!")
+                Logfile.appXPC.error("[ESXPCClient] Server signature verification failed!")
                 completion(false)
             }
         }
@@ -209,7 +211,7 @@ final class ESXPCClient {
             }
 
             guard self.retryCount < self.maxRetries else {
-                Logfile.core.error("[ESXPCClient] Max retries reached (\(self.maxRetries))")
+                Logfile.appXPC.error("[ESXPCClient] Max retries reached (\(self.maxRetries, privacy: .public))")
                 DispatchQueue.main.async {
                     ExtensionInstaller.shared.updateInstalledState(false)
                 }
@@ -224,8 +226,11 @@ final class ESXPCClient {
                 delay = min(0.5 * Double(self.retryCount), 1.0)  // gentle backoff but small cap
             }
 
-            Logfile.core.log(
-                "[ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s (attempt \(self.retryCount))"
+            Logfile.appXPC.debug(
+                """
+                [ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s \
+                (attempt \(self.retryCount, privacy: .public))
+                """
             )
             self.xpcQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
                 guard let self = self, self.shouldReconnect else { return }
@@ -240,13 +245,13 @@ extension ESXPCClient {
     func updateLanguage(_ langCode: String) {
         xpcQueue.async { [weak self] in
             guard let self = self, let conn = self.connection else {
-                Logfile.core.log("[ESXPCClient] Connection not ready, skipping language update")
+                Logfile.appXPC.debug("[ESXPCClient] Connection not ready, skipping language update")
                 return
             }
 
             guard let proxy = self.proxy(conn: conn, actionName: "updateLanguage") else { return }
             proxy.updateLanguage(to: langCode)
-            Logfile.core.log("updateLanguage sent: \(langCode)")
+            Logfile.appXPC.debug("[ESXPCClient] updateLanguage sent: \(langCode, privacy: .public)")
         }
     }
 
@@ -259,7 +264,7 @@ extension ESXPCClient {
             }
 
             guard retry <= 10 else {
-                Logfile.core.error("[ESXPCClient] allowConfigAccess: Max retries reached, giving up.")
+                Logfile.appXPC.error("[ESXPCClient] allowConfigAccess: Max retries reached, giving up.")
                 completion(false)
                 return
             }
@@ -275,8 +280,13 @@ extension ESXPCClient {
             else { return }
 
             proxy.allowConfigAccess(processID) { success in
-                Logfile.core.log(
-                    "allowConfigAccess reply: \(success ? "success" : "fail") for PID=\(processID)")
+                let replyStatus = success ? "success" : "fail"
+                Logfile.appXPC.debug(
+                    """
+                    [ESXPCClient] allowConfigAccess reply: \(replyStatus, privacy: .public) \
+                    for PID=\(processID, privacy: .public)
+                    """
+                )
                 completion(success)
             }
         }
@@ -293,7 +303,7 @@ extension ESXPCClient {
             else { return }
 
             proxy.authorizeShutdown(authorized) { success in
-                Logfile.core.log("authorizeShutdown reply: \(success)")
+                Logfile.appXPC.debug("[ESXPCClient] authorizeShutdown reply: \(success, privacy: .public)")
                 completion(success)
             }
         }
@@ -312,7 +322,7 @@ extension ESXPCClient {
             }
 
             guard retry <= 5 else {
-                Logfile.core.error("processPendingApps retry limit reached (connection unavailable)")
+                Logfile.appXPC.error("[ESXPCClient] processPendingApps retry limit reached (connection unavailable)")
                 completion(false)
                 return
             }
@@ -333,8 +343,11 @@ extension ESXPCClient {
             else { return }
 
             proxy.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { success in
-                Logfile.core.log(
-                    "processPendingApps reply: \(success) (Approved: \(approvedPIDs), Rejected: \(rejectedPIDs))"
+                Logfile.appXPC.debug(
+                    """
+                    [ESXPCClient] processPendingApps reply: \(success, privacy: .public) \
+                    (Approved: \(approvedPIDs, privacy: .public), Rejected: \(rejectedPIDs, privacy: .public))
+                    """
                 )
                 completion(success)
             }

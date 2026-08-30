@@ -65,7 +65,7 @@ final class ESSafetyValve {
                 let path = ESSafetyValve.getPath(self.message)
                 Logfile.endpointSecurity.error(
                 """
-                es_respond failed [\(status.rawValue, privacy: .public)] \
+                [SafetyValve] es_respond failed [\(status.rawValue, privacy: .public)] \
                 for \(path, privacy: .public) \
                 (Type: \(self.message.pointee.event_type.rawValue, privacy: .public))
                 """
@@ -87,8 +87,11 @@ final class ESSafetyValve {
         // Santa-style: We usually fail-open (ALLOW) in emergency to prevent system freeze.
         if respond(ES_AUTH_RESULT_ALLOW, cache: true) {
              let path = ESSafetyValve.getPath(message)
-             Logfile.endpointSecurity.error(
-                 "SAFETY VALVE: Deadline reached for [\(path)]! Forced ALLOW to prevent SIGKILL."
+             Logfile.endpointSecurity.fault(
+                 """
+                 [SafetyValve] Deadline reached for [\(path, privacy: .public)]! \
+                 Forced ALLOW to prevent SIGKILL.
+                 """
              )
         }
     }

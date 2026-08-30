@@ -65,7 +65,9 @@ extension AppDelegate {
 
         NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, error in
             if let error = error {
-                Logfile.core.error("Application restart error in Applications: \(error.localizedDescription)")
+                Logfile.app.error(
+                    "[DirectoryCheck] Application restart error in Applications: \(error.localizedDescription)"
+                )
             }
             DispatchQueue.main.async {
                 NSApp.terminate(nil)
@@ -84,13 +86,16 @@ extension AppDelegate {
             try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
 
             try? FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
-            Logfile.core.log("Moved application to /Applications via FileManager. Restarting…")
+            Logfile.app.info("[DirectoryCheck] Moved application to /Applications via FileManager. Restarting…")
             relaunchApp(from: destinationURL)
             return
 
         } catch {
-            Logfile.core.warning(
-                "FileManager move failed: \(error.localizedDescription), falling back to privileged AppleScript"
+            Logfile.app.warning(
+                """
+                [DirectoryCheck] FileManager move failed: \(error.localizedDescription), \
+                falling back to privileged AppleScript
+                """
             )
         }
 
@@ -109,7 +114,9 @@ extension AppDelegate {
             _ = scriptObject.executeAndReturnError(&errorDict)
 
             if errorDict != nil {
-                Logfile.core.error("AppleScript privileged move failed: \(String(describing: errorDict))")
+                Logfile.app.error(
+                    "[DirectoryCheck] AppleScript privileged move failed: \(String(describing: errorDict))"
+                )
                 let msg = """
                 Could not move the application to /Applications automatically. Please move it manually to continue.
                 """
@@ -120,7 +127,9 @@ extension AppDelegate {
                 )
                 NSApp.terminate(nil)
             } else {
-                Logfile.core.log("Moved application to /Applications via AppleScript. Restarting…")
+                Logfile.app.info(
+                    "[DirectoryCheck] Moved application to /Applications via AppleScript. Restarting…"
+                )
                 relaunchApp(from: destinationURL)
             }
         }

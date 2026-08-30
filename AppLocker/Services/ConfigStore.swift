@@ -90,11 +90,14 @@ final class ConfigStore {
             attributes[.posixPermissions] = 0o666
             try? FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
 
-            Logfile.core.debug(
-                "ConfigStore.save: updated \(map.count) apps for uid \(getuid()) at \(self.configURL.path)"
+            Logfile.policy.debug(
+                """
+                [ConfigStore] Saved \(map.count, privacy: .public) apps for uid \
+                \(getuid(), privacy: .public) at \(self.configURL.path, privacy: .public)
+                """
             )
         } catch {
-            Logfile.core.error("ConfigStore.save failed: \(error.localizedDescription)")
+            Logfile.policy.error("[ConfigStore] Save failed: \(error.localizedDescription)")
         }
     }
 
@@ -134,14 +137,22 @@ final class ConfigStore {
                 try? FileManager.default.setAttributes(attributes, ofItemAtPath: targetURL.path)
             } catch {
                 allSucceeded = false
-                Logfile.core.error("Migration failed for uid \(uidString): \(error.localizedDescription)")
+                Logfile.policy.error(
+                    """
+                    [ConfigStore] Migration failed for uid \(uidString, privacy: .public): \
+                    \(error.localizedDescription)
+                    """
+                )
             }
         }
 
         if allSucceeded {
             try? FileManager.default.removeItem(at: Self.legacyConfigURL)
-            Logfile.core.log(
-                "Legacy config successfully migrated to \(configsToMigrate.count) user directories and deleted."
+            Logfile.policy.info(
+                """
+                [ConfigStore] Legacy config successfully migrated to \
+                \(configsToMigrate.count, privacy: .public) user directories and deleted.
+                """
             )
         }
     }

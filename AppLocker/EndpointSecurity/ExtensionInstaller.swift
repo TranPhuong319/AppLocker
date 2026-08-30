@@ -61,7 +61,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     nonisolated func request(_ request: OSSystemExtensionRequest,
                              didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
-        Logfile.core.info("[Installer] finished early: \(result.rawValue)")
+        Logfile.app.debug("[Installer] Finished early: \(result.rawValue, privacy: .public)")
         Task { @MainActor in
             self.handleFinish(result: result)
         }
@@ -95,13 +95,13 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
             switch action {
             case .install(let completion):
-                Logfile.core.error("[Installer] install failed: \(error.localizedDescription)")
+                Logfile.app.error("[Installer] Install failed: \(error.localizedDescription)")
                 completion?(.failure(error))
             case .uninstall(let completion):
-                Logfile.core.error("[Installer] uninstall failed: \(error.localizedDescription)")
+                Logfile.app.error("[Installer] Uninstall failed: \(error.localizedDescription)")
                 completion?(.failure(error))
             case .none:
-                Logfile.core.error("[Installer] operation failed: \(error.localizedDescription)")
+                Logfile.app.error("[Installer] Operation failed: \(error.localizedDescription)")
             }
         }
     }
@@ -110,7 +110,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         Task { @MainActor in
             self.isInstalled = false
             ESXPCClient.shared.disconnect()
-            Logfile.core.warning("[Installer] needs user approval")
+            Logfile.app.warning("[Installer] Extension requires user approval in System Settings")
         }
     }
 

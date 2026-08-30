@@ -25,8 +25,11 @@ extension ESManager {
         }
 
         let totalApps = loadedBundlePaths.values.reduce(0) { $0 + $1.count }
-        Logfile.endpointSecurity.log(
-            "ESManager: Loaded \(totalApps) apps for \(loadedCDHashes.count) users from per-user configs."
+        Logfile.endpointSecurity.info(
+            """
+            [ESConfig] Loaded \(totalApps, privacy: .public) apps for \
+            \(loadedCDHashes.count, privacy: .public) users from per-user configs.
+            """
         )
     }
 
@@ -34,7 +37,9 @@ extension ESManager {
         let fileManager = FileManager.default
         let baseDir = ESManager.baseConfigDirectory
         guard fileManager.fileExists(atPath: baseDir) else {
-            Logfile.endpointSecurity.log("Base config directory not found at \(baseDir). Skipping load.")
+            Logfile.endpointSecurity.debug(
+                "[ESConfig] Base config directory not found at \(baseDir, privacy: .public). Skipping load."
+            )
             return nil
         }
 
@@ -128,7 +133,9 @@ extension ESManager {
         let fileDescriptor = open(configDir, O_EVTONLY)
 
         guard fileDescriptor != -1 else {
-            Logfile.endpointSecurity.error("ESManager: Failed to open config directory for monitoring: \(configDir)")
+            Logfile.endpointSecurity.error(
+                "[ESConfig] Failed to open config directory for monitoring: \(configDir, privacy: .public)"
+            )
             backgroundProcessingQueue.asyncAfter(deadline: .now() + 5) { [weak self] in
                 self?.startConfigMonitoring()
             }
@@ -150,7 +157,7 @@ extension ESManager {
             let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)
             timer.schedule(deadline: .now() + 0.05) // Debounce 50ms for instant update
             timer.setEventHandler { [weak self] in
-                Logfile.endpointSecurity.log("ESManager: Directory change detected, reloading config...")
+                Logfile.endpointSecurity.debug("[ESConfig] Directory change detected, reloading config...")
                 self?.loadInitialConfigSync()
                 timer.cancel()
             }
@@ -164,7 +171,7 @@ extension ESManager {
 
         self.configMonitorSource = source
         source.resume()
-        Logfile.endpointSecurity.log("ESManager: Started directory monitoring for \(configDir)")
+        Logfile.endpointSecurity.info("[ESConfig] Started directory monitoring for \(configDir, privacy: .public)")
     }
 
     // MARK: - Language Configuration
@@ -172,14 +179,14 @@ extension ESManager {
     // Force the extension process to use a specific language.
     @objc func updateLanguage(to code: String) {
         guard isCurrentConnectionAuthenticated() else {
-            Logfile.endpointSecurity.error("Unauthorized call to updateLanguage")
+            Logfile.endpointSecurity.error("[ESConfig] Unauthorized call to updateLanguage")
             return
         }
         stateLock.withLock {
             self.currentLanguage = code
             UserDefaults.standard.set([code], forKey: "AppleLanguages")
             UserDefaults.standard.synchronize()
-            Logfile.endpointSecurity.log("ES Process language forced to: \(code)")
+            Logfile.endpointSecurity.debug("[ESConfig] ES process language updated to: \(code, privacy: .public)")
         }
     }
 

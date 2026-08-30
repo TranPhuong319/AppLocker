@@ -9,20 +9,35 @@ import OSLog
 import Foundation
 
 public enum Logfile {
-    public static let core = Logger(
+    // MARK: - Main App Subsystem (com.TranPhuong319.AppLocker)
+    public static let app = Logger(
         subsystem: "com.TranPhuong319.AppLocker",
-        category: "AppLocker"
+        category: "App"
     )
-    public static let launcher = Logger(
-        subsystem: "com.TranPhuong319.AppLocker.Launcher",
-        category: "AppLocker.Launcher"
+    public static let policy = Logger(
+        subsystem: "com.TranPhuong319.AppLocker",
+        category: "Policy"
     )
+    public static let appXPC = Logger(
+        subsystem: "com.TranPhuong319.AppLocker",
+        category: "XPC"
+    )
+    public static let security = Logger(
+        subsystem: "com.TranPhuong319.AppLocker",
+        category: "Security"
+    )
+
+    // MARK: - ESExtension Subsystem (com.TranPhuong319.AppLocker.ESExtension)
     public static let endpointSecurity = Logger(
         subsystem: "com.TranPhuong319.AppLocker.ESExtension",
-        category: "AppLocker.ESExtension"
+        category: "EndpointSecurity"
     )
-    public static let keychain = Logger(
+    public static let esXPC = Logger(
         subsystem: "com.TranPhuong319.AppLocker.ESExtension",
-        category: "AppLocker.KeychainAccess"
+        category: "XPC"
+    )
+    public static let esSecurity = Logger(
+        subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+        category: "Security"
     )
 }

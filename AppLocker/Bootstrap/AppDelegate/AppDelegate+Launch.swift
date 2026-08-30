@@ -11,20 +11,20 @@ import AppKit
 extension AppDelegate {
     @MainActor
     func launchConfig() {
-        Logfile.core.info("Starting UI components on app launch...")
+        Logfile.app.debug("[Launch] Starting UI components on app launch...")
         self.setupUIComponents()
 
-        Logfile.core.log("Installing Endpoint Security extension...")
+        Logfile.app.info("[Launch] Installing Endpoint Security extension...")
         ExtensionInstaller.shared.install { result in
             if case .success = result {
-                Logfile.core.log("[App] Endpoint Security extension activated successfully.")
+                Logfile.app.notice("[Launch] Endpoint Security extension activated successfully.")
             }
         }
     }
 
     @MainActor
     func setupUIComponents() {
-        Logfile.core.info("Starting menu bar and Notification")
+        Logfile.app.debug("[Launch] Starting menu bar and Notification setup")
         self.setupMenuBar()
 
         AppUpdater.shared.setBridgeDelegate(self)
@@ -34,14 +34,16 @@ extension AppDelegate {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.badge, .sound, .alert]) { _, error in
                 if let error = error {
-                    Logfile.core.error("Notification error: \(error)")
+                    Logfile.app.error(
+                        "[Launch] Notification authorization error: \(error.localizedDescription)"
+                    )
                 }
             }
 
-        Logfile.core.log("Setting up hotkey manager...")
+        Logfile.app.debug("[Launch] Setting up hotkey manager...")
         self.hotkey = HotKeyManager()
 
-        Logfile.core.log("Setting up Touch Bar...")
+        Logfile.app.debug("[Launch] Setting up Touch Bar...")
         if let window = NSApp.windows.first {
             TouchBarManager.shared.apply(to: window, type: .mainWindow)
         }
@@ -60,13 +62,15 @@ extension AppDelegate {
         )
     }
 
-    @objc @MainActor private func handleWorkspaceSleep() {
+    @objc
+    @MainActor
+    private func handleWorkspaceSleep() {
         XPCServer.lastAuthTimestampsByPath.removeAll()
         let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
         if timeoutMinutes != 0 {
-            Logfile.core.log(
+            Logfile.app.info(
                 """
-                Workspace sleep event detected (autoLockTimeoutMinutes = \(timeoutMinutes)). \
+                [Launch] Workspace sleep event detected (autoLockTimeoutMinutes = \(timeoutMinutes)). \
                 Re-enabling application lock.
                 """
             )

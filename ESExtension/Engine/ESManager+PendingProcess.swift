@@ -33,9 +33,15 @@ extension ESManager {
     // MARK: - Batch Execution (SIGCONT / SIGKILL)
 
     func processPendingBatch(approved: [Int32], rejected: [Int32]) -> Bool {
-        var processedCount = 0
+        let approvedCount = processApprovedPIDs(approved)
+        let rejectedCount = processRejectedPIDs(rejected)
+        let processedCount = approvedCount + rejectedCount
 
-        // Process Approved PIDs (SIGCONT)
+        return processedCount > 0 || (approved.isEmpty && rejected.isEmpty)
+    }
+
+    private func processApprovedPIDs(_ approved: [Int32]) -> Int {
+        var processedCount = 0
         for rawPID in approved {
             let pid = pid_t(rawPID)
             // ponytail: Safety guard: never pass pid <= 0 to kill() to prevent process group signals
@@ -49,15 +55,25 @@ extension ESManager {
                 // Send SIGCONT to resume the suspended application
                 let res = kill(pid, SIGCONT)
                 if res == 0 {
-                    Logfile.endpointSecurity.log("Successfully sent SIGCONT to approved PID \(pid)")
+                    Logfile.endpointSecurity.debug(
+                        "[PendingProcess] Successfully sent SIGCONT to approved PID \(pid, privacy: .public)"
+                    )
                 } else {
-                    Logfile.endpointSecurity.error("Failed to send SIGCONT to PID \(pid): errno \(errno)")
+                    Logfile.endpointSecurity.error(
+                        """
+                        [PendingProcess] Failed to send SIGCONT to PID \(pid, privacy: .public): \
+                        errno \(errno, privacy: .public)
+                        """
+                    )
                 }
                 processedCount += 1
             }
         }
+        return processedCount
+    }
 
-        // Process Rejected PIDs (SIGKILL)
+    private func processRejectedPIDs(_ rejected: [Int32]) -> Int {
+        var processedCount = 0
         for rawPID in rejected {
             let pid = pid_t(rawPID)
             // ponytail: Safety guard: never pass pid <= 0 to kill() to prevent process group signals
@@ -73,16 +89,23 @@ extension ESManager {
                 let killRes = kill(pid, SIGKILL)
                 let contRes = kill(pid, SIGCONT)
                 if killRes == 0 {
-                    Logfile.endpointSecurity.log(
-                        "Successfully sent SIGKILL+SIGCONT to rejected PID \(pid) (contRes=\(contRes))"
+                    Logfile.endpointSecurity.debug(
+                        """
+                        [PendingProcess] Successfully sent SIGKILL+SIGCONT to rejected \
+                        PID \(pid, privacy: .public) (contRes=\(contRes, privacy: .public))
+                        """
                     )
                 } else {
-                    Logfile.endpointSecurity.error("Failed to send SIGKILL to PID \(pid): errno \(errno)")
+                    Logfile.endpointSecurity.error(
+                        """
+                        [PendingProcess] Failed to send SIGKILL to PID \(pid, privacy: .public): \
+                        errno \(errno, privacy: .public)
+                        """
+                    )
                 }
                 processedCount += 1
             }
         }
-
-        return processedCount > 0 || (approved.isEmpty && rejected.isEmpty)
+        return processedCount
     }
 }

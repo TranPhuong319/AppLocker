@@ -29,14 +29,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Build-in Relaunch Wait: Check for -waitForPID argument
         let args = CommandLine.arguments
-        Logfile.core.debug("Launch Arguments: \(args)")
+        Logfile.app.debug("[Bootstrap] Launch Arguments: \(args, privacy: .public)")
 
         if let index = args.firstIndex(of: "-waitForPID"),
             index + 1 < args.count,
             let pidString = args[index + 1] as String?,
             let parentProcessID = Int32(pidString) {
 
-            Logfile.core.log("Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
+            Logfile.app.debug("[Bootstrap] Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
 
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 var attempts = 0
@@ -46,9 +46,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
                 }
                 DispatchQueue.main.async {
                     if attempts >= 30 {
-                        Logfile.core.warning("Wait timed out after 3 seconds. Proceeding anyway.")
+                        Logfile.app.warning("[Bootstrap] Wait timed out after 3 seconds. Proceeding anyway.")
                     } else {
-                        Logfile.core.log("Parent process exited.")
+                        Logfile.app.debug("[Bootstrap] Parent process exited.")
                     }
                     self?.applicationExactlyOneInstance(ignoringPID: parentProcessID)
                     self?.finishLaunchSetup()
@@ -67,19 +67,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         checkAndMoveToApplications()
         #endif
 
-        Logfile.core.log("AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
+        Logfile.app.info("[Bootstrap] AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
         #if !DEBUG
         if !launchedByLaunchd() {
             let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
             if !isFirstStart {
                 if !isAgentLoadedInLaunchd() {
-                    Logfile.core.log("Agent not loaded in launchctl. Registering...")
+                    Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
                     _ = manageAgent(plistName: plistName, action: .install)
                 }
 
                 if isAgentLoadedInLaunchd() {
-                    Logfile.core.log("App launched manually. Restarting via launchctl...")
+                    Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
                     let process = Process()
                     process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
                     process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(plistName)"]
@@ -97,10 +97,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         setupEditMenu()
 
         if isFirstStart {
-            Logfile.core.log("First launch. Showing welcome/ToS screen.")
+            Logfile.app.info("[Bootstrap] First launch. Showing welcome/ToS screen.")
             WelcomeWindowController.show()
         } else {
-            Logfile.core.log("Not first launch. Running normal launch configuration.")
+            Logfile.app.info("[Bootstrap] Not first launch. Running normal launch configuration.")
             launchConfig()
         }
     }
@@ -143,9 +143,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         }
 
         if !otherApps.isEmpty {
-            Logfile.core.warning(
+            Logfile.app.warning(
                 """
-                Another instance is running \
+                [Bootstrap] Another instance is running \
                 (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
                 Activating existing instance and terminating this new instance.
                 """

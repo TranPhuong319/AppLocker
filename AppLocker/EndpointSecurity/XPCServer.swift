@@ -19,10 +19,10 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     var pendingApps: [PendingAppItem] = []
     var remainingSeconds: Int = 60
 
-    private var pendingDebounceTimer: Timer?
-    private var countdownTimer: Timer?
-    private var isAuthenticating: Bool = false
-    private var isUpgradingToBatch: Bool = false
+    var pendingDebounceTimer: Timer?
+    var countdownTimer: Timer?
+    var isAuthenticating: Bool = false
+    var isUpgradingToBatch: Bool = false
 
     override init() {
         super.init()
@@ -31,19 +31,24 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     // MARK: - Luồng Phụ (Background XPC Receiver)
     // Extension -> App notification when exec attempted and app suspended for pending verification
     func notifyBlockedExec(name: String, path: String, cdhash: String, pid: Int32) {
-        Logfile.core.log(
+        Logfile.appXPC.notice(
             """
-            Endpoint Security Pending Exec App added:
-            Name:   \(name)
-            Path:   \(path)
-            CDHash: \(cdhash.prefix(8))
-            PID:    \(pid)
+            [Auth] Pending execution blocked: \
+            Name: \(name, privacy: .public), \
+            PID: \(pid, privacy: .public), \
+            CDHash: \(cdhash.prefix(8), privacy: .public), \
+            Path: \(path, privacy: .public)
             """
         )
 
         DispatchQueue.main.async { [weak self] in
             if AppState.shared.manager.isProtectionDisabled {
-                Logfile.core.log("XPCServer: Protection is disabled. Auto-approving PID \(pid) (\(name))")
+                Logfile.appXPC.info(
+                    """
+                    [Auth] Protection is disabled. \
+                    Auto-approving PID \(pid, privacy: .public) (\(name, privacy: .public))
+                    """
+                )
                 ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
                 return
             }
@@ -54,25 +59,37 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     // MARK: - Luồng Main Chính (UI State & Batch Auth)
 
     @MainActor
-    func addPendingAuth(name: String, path: String, cdhash: String, pid: Int32) {
+    private func checkGracePeriod(name: String, path: String, pid: Int32) -> Bool {
         let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
         if timeoutMinutes > 0, let lastAuth = XPCServer.lastAuthTimestampsByPath[path] {
             let elapsed = Date().timeIntervalSince(lastAuth)
             if elapsed < Double(timeoutMinutes * 60) {
-                Logfile.core.log(
+                Logfile.appXPC.info(
                     """
-                    XPCServer: Per-app grace period active (\(Int(elapsed))s / \(timeoutMinutes * 60)s) \
-                    for \(name). Auto-approving PID \(pid).
+                    [Auth] Per-app grace period active \
+                    (\(Int(elapsed), privacy: .public)s / \(timeoutMinutes * 60, privacy: .public)s) \
+                    for \(name, privacy: .public). Auto-approving PID \(pid, privacy: .public).
                     """
                 )
                 ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
-                return
+                return true
             }
         } else if timeoutMinutes == -1, XPCServer.lastAuthTimestampsByPath[path] != nil {
-            Logfile.core.log(
-                "XPCServer: Per-app grace period active (When System Sleeps) for \(name). Auto-approving PID \(pid)."
+            Logfile.appXPC.info(
+                """
+                [Auth] Per-app grace period active (When System Sleeps) \
+                for \(name, privacy: .public). Auto-approving PID \(pid, privacy: .public).
+                """
             )
             ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+            return true
+        }
+        return false
+    }
+
+    @MainActor
+    func addPendingAuth(name: String, path: String, cdhash: String, pid: Int32) {
+        if checkGracePeriod(name: name, path: path, pid: pid) {
             return
         }
 
@@ -82,7 +99,12 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
         if !exists {
             let item = PendingAppItem(name: name, path: path, cdhash: cdhash, pid: pid, isSelected: true)
             self.pendingApps.append(item)
-            Logfile.core.log("XPCServer: Added PID \(pid) (\(name)) to pending queue. Total: \(self.pendingApps.count)")
+            Logfile.appXPC.debug(
+                """
+                [Auth] Added PID \(pid, privacy: .public) (\(name, privacy: .public)) \
+                to pending queue. Total: \(self.pendingApps.count, privacy: .public)
+                """
+            )
 
             let showNotifications = UserDefaults.standard.object(forKey: "showBlockedNotifications") as? Bool ?? true
             if showNotifications {
@@ -118,7 +140,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     }
 
     @MainActor
-    private func processIncomingQueue() {
+    func processIncomingQueue() {
         pendingDebounceTimer?.invalidate()
         pendingDebounceTimer = nil
 
@@ -132,40 +154,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             let reason = String(format: String(localized: "open %@"), app.name)
             AuthenticationManager.authenticate(reason: reason) { [weak self] success, _ in
                 DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    self.isAuthenticating = false
-
-                    // If single app Touch ID prompt was invalidated to upgrade to BatchAuthWindow:
-                    if self.isUpgradingToBatch {
-                        self.isUpgradingToBatch = false
-                        if success {
-                            if let idx = self.pendingApps.firstIndex(where: { $0.id == app.id }) {
-                                self.pendingApps.remove(at: idx)
-                            }
-                            ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
-                        }
-                        if !self.pendingApps.isEmpty {
-                            self.processIncomingQueue()
-                        }
-                        return
-                    }
-
-                    if let idx = self.pendingApps.firstIndex(where: { $0.id == app.id }) {
-                        self.pendingApps.remove(at: idx)
-                    }
-
-                    if success {
-                        XPCServer.lastAuthTimestampsByPath[app.path] = Date()
-                        Logfile.core.log("SingleAppAuth: Succeeded for \(app.name) (PID: \(app.pid))")
-                        ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
-                    } else {
-                        Logfile.core.error("SingleAppAuth: Failed/Cancelled for \(app.name) (PID: \(app.pid))")
-                        ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: [app.pid]) { _ in }
-                    }
-
-                    if !self.pendingApps.isEmpty {
-                        self.processIncomingQueue()
-                    }
+                    self?.handleSingleAppAuthResult(app: app, success: success)
                 }
             }
         } else {
@@ -175,6 +164,57 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
         }
     }
 
+    @MainActor
+    private func handleSingleAppAuthResult(app: PendingAppItem, success: Bool) {
+        self.isAuthenticating = false
+
+        // If single app Touch ID prompt was invalidated to upgrade to BatchAuthWindow:
+        if self.isUpgradingToBatch {
+            self.isUpgradingToBatch = false
+            if success {
+                if let idx = self.pendingApps.firstIndex(where: { $0.id == app.id }) {
+                    self.pendingApps.remove(at: idx)
+                }
+                ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
+            }
+            if !self.pendingApps.isEmpty {
+                self.processIncomingQueue()
+            }
+            return
+        }
+
+        if let idx = self.pendingApps.firstIndex(where: { $0.id == app.id }) {
+            self.pendingApps.remove(at: idx)
+        }
+
+        if success {
+            XPCServer.lastAuthTimestampsByPath[app.path] = Date()
+            Logfile.appXPC.notice(
+                """
+                [Auth] SingleAppAuth succeeded for \(app.name, privacy: .public) \
+                (PID: \(app.pid, privacy: .public))
+                """
+            )
+            ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
+        } else {
+            Logfile.appXPC.warning(
+                """
+                [Auth] SingleAppAuth failed/cancelled for \(app.name, privacy: .public) \
+                (PID: \(app.pid, privacy: .public))
+                """
+            )
+            ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: [app.pid]) { _ in }
+        }
+
+        if !self.pendingApps.isEmpty {
+            self.processIncomingQueue()
+        }
+    }
+}
+
+// MARK: - Batch Authentication & Notifications Extension
+
+extension XPCServer {
     @MainActor
     func startOrResetCountdownTimer() {
         countdownTimer?.invalidate()
@@ -187,14 +227,14 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
                 if self.remainingSeconds > 0 {
                     self.remainingSeconds -= 1
                 } else {
-                    Logfile.core.warning("XPCServer: Timeout reached! Auto cancelling all pending PIDs.")
+                    Logfile.appXPC.warning("[Auth] Timeout reached! Auto cancelling all pending PIDs.")
                     self.handleCancel()
                 }
             }
         }
     }
 
-    private func sendBlockedNotification(appName: String) {
+    func sendBlockedNotification(appName: String) {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Application Lock")
         content.body = String(format: String(localized: "%@ has been blocked from launching."), appName)
@@ -239,8 +279,11 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
                     for item in currentApps where item.isSelected {
                         XPCServer.lastAuthTimestampsByPath[item.path] = now
                     }
-                    Logfile.core.log(
-                        "XPCServer: Batch auth succeeded. Approved: \(approvedPIDs), Rejected: \(rejectedPIDs)"
+                    Logfile.appXPC.notice(
+                        """
+                        [Auth] Batch auth succeeded. Approved: \(approvedPIDs, privacy: .public), \
+                        Rejected: \(rejectedPIDs, privacy: .public)
+                        """
                     )
                     ESXPCClient.shared.processPendingApps(
                         approvedPIDs: approvedPIDs,
@@ -248,7 +291,9 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
                     ) { _ in }
                 } else {
                     let allPIDs = currentApps.map { $0.pid }
-                    Logfile.core.error("XPCServer: Batch auth failed or cancelled. Rejecting all PIDs: \(allPIDs)")
+                    Logfile.appXPC.warning(
+                        "[Auth] Batch auth failed or cancelled. Rejecting all PIDs: \(allPIDs, privacy: .public)"
+                    )
                     ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: allPIDs) { _ in }
                 }
 
@@ -269,7 +314,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
         pendingApps.removeAll()
 
         if !allPIDs.isEmpty {
-            Logfile.core.log("XPCServer: Cancelled. Rejecting all PIDs: \(allPIDs)")
+            Logfile.appXPC.info("[Auth] Cancelled by user. Rejecting all PIDs: \(allPIDs, privacy: .public)")
             ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: allPIDs) { _ in }
         }
     }
