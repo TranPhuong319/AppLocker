@@ -14,7 +14,7 @@ extension AppDelegate {
         await withCheckedContinuation { continuation in
             NSWorkspace.shared.recycle([Bundle.main.bundleURL]) { _, error in
                 if let error {
-                    Logfile.core.error("Failed to move app to Trash: \(error.localizedDescription)")
+                    Logfile.app.error("[Lifecycle] Failed to move app to Trash: \(error.localizedDescription)")
                     continuation.resume(returning: false)
                 } else {
                     continuation.resume(returning: true)
@@ -35,7 +35,7 @@ extension AppDelegate {
             }
             return true
         } catch {
-            Logfile.core.error("Error deleting config directory: \(error.localizedDescription)")
+            Logfile.app.error("[Lifecycle] Error deleting config directory: \(error.localizedDescription)")
             return false
         }
     }
@@ -50,7 +50,7 @@ extension AppDelegate {
 
         NSWorkspace.shared.openApplication(at: bundleURL, configuration: configuration) { _, error in
             if let error = error {
-                Logfile.core.error("App restart error: \(error.localizedDescription)")
+                Logfile.app.error("[Lifecycle] App restart error: \(error.localizedDescription)")
             }
             DispatchQueue.main.async {
                 NSApp.terminate(nil)

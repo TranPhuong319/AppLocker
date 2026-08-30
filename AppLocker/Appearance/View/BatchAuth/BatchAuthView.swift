@@ -261,10 +261,11 @@ private struct BatchAuthViewPreviewWrapper: View {
         BatchAuthView(
             server: server,
             onAuthenticate: {
-                print("Mock Authenticate triggered for \(server.pendingApps.filter(\.isSelected).count) apps")
+                let count = server.pendingApps.filter(\.isSelected).count
+                Logfile.appXPC.debug("[Preview] Mock Authenticate triggered for \(count, privacy: .public) apps")
             },
             onCancel: {
-                print("Mock Cancel triggered")
+                Logfile.appXPC.debug("[Preview] Mock Cancel triggered")
             }
         )
         .frame(width: WindowLayout.batchAuthSize.width, height: WindowLayout.batchAuthSize.height)

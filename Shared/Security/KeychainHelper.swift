@@ -37,7 +37,7 @@ final class KeychainHelper {
         publicKeys[tag] = publicKeyData
         cacheLock.unlock()
 
-        Logfile.keychain.log("KeychainHelper: Generated and cached ephemeral EC keys for \(tag)")
+        Logfile.security.debug("[Keychain] Generated and cached ephemeral EC keys for \(tag, privacy: .public)")
     }
 
     // MARK: - Sign & Verify
@@ -48,7 +48,7 @@ final class KeychainHelper {
         cacheLock.unlock()
 
         guard let key = privateKey else {
-            Logfile.keychain.error("KeychainHelper: Private key not found in cache for: \(tag)")
+            Logfile.security.error("[Keychain] Private key not found in cache for: \(tag, privacy: .public)")
             return nil
         }
 
@@ -56,7 +56,9 @@ final class KeychainHelper {
             let signature = try key.signature(for: data)
             return signature.derRepresentation
         } catch {
-            Logfile.keychain.error("KeychainHelper: Signing failed: \(error)")
+            Logfile.security.error(
+                "[Keychain] Signing failed for tag \(tag, privacy: .public): \(error.localizedDescription)"
+            )
             return nil
         }
     }
@@ -67,7 +69,7 @@ final class KeychainHelper {
             let sig = try P256.Signing.ECDSASignature(derRepresentation: signature)
             return pubKey.isValidSignature(sig, for: originalData)
         } catch {
-            Logfile.keychain.error("KeychainHelper: Verify error: \(error)")
+            Logfile.security.error("[Keychain] Signature verification error: \(error.localizedDescription)")
             return false
         }
     }

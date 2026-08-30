@@ -21,9 +21,9 @@ extension ESManager: NSXPCListenerDelegate {
             listen.delegate = self
             listen.resume()
             listener = listen
-            Logfile.endpointSecurity.log(
+            Logfile.esXPC.info(
                 """
-                MachService XPC listener resumed: \
+                [ESMachListener] MachService XPC listener resumed: \
                 endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc
                 """
             )
@@ -35,10 +35,10 @@ extension ESManager: NSXPCListenerDelegate {
         shouldAcceptNewConnection newConnection: NSXPCConnection
     ) -> Bool {
 
-        Logfile.endpointSecurity.log(
+        Logfile.esXPC.debug(
             """
-            Incoming XPC connection attempt \
-            (pid=\(newConnection.processIdentifier))
+            [ESMachListener] Incoming XPC connection attempt \
+            (pid=\(newConnection.processIdentifier, privacy: .public))
             """
         )
 
@@ -51,14 +51,16 @@ extension ESManager: NSXPCListenerDelegate {
 
         newConnection.invalidationHandler = { [weak self, weak newConnection] in
             guard let self, let conn = newConnection else { return }
-            Logfile.endpointSecurity.log("Incoming XPC connection invalidated")
+            Logfile.esXPC.debug("[ESMachListener] Incoming XPC connection invalidated")
 
             // Clear main app PID if this was the main app connection
             let processID = conn.processIdentifier
             self.processIDLock.withLock {
                 if let mainPID = self.authenticatedMainAppPID, pid_t(processID) == mainPID {
                     self.authenticatedMainAppPID = nil
-                    Logfile.endpointSecurity.log("Cleared authenticated main app PID on connection invalidation")
+                    Logfile.esXPC.debug(
+                        "[ESMachListener] Cleared authenticated main app PID on connection invalidation"
+                    )
                 }
             }
 
@@ -66,13 +68,13 @@ extension ESManager: NSXPCListenerDelegate {
         }
 
         newConnection.interruptionHandler = {
-            Logfile.endpointSecurity.log("Incoming XPC connection interrupted")
+            Logfile.esXPC.warning("[ESMachListener] Incoming XPC connection interrupted")
         }
 
         storeIncomingConnection(newConnection)
         newConnection.resume()
 
-        Logfile.endpointSecurity.log("Accepted new XPC connection from client")
+        Logfile.esXPC.debug("[ESMachListener] Accepted new XPC connection from client")
         return true
     }
 }

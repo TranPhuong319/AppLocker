@@ -35,7 +35,7 @@ extension AppDelegate {
 
     func registerAgentWithoutImmediateLaunch() {
         #if DEBUG
-        Logfile.core.info("Skipping registerAgentWithoutImmediateLaunch in DEBUG mode")
+        Logfile.app.debug("[Agent] Skipping registerAgentWithoutImmediateLaunch in DEBUG mode")
         #else
         manageAgent(plistName: plistName, action: .install)
         let process = Process()
@@ -51,7 +51,7 @@ extension AppDelegate {
         action: AgentAction
     ) -> AgentManageResult {
         #if DEBUG
-        Logfile.core.info("Skipping agent manage in DEBUG mode")
+        Logfile.app.debug("[Agent] Skipping agent manage in DEBUG mode")
         return .alreadyInstalled
         #else
         let agent = SMAppService.agent(plistName: "\(plistName).plist")
@@ -61,40 +61,40 @@ extension AppDelegate {
 
             case .install:
                 if isAgentLoadedInLaunchd() {
-                    Logfile.core.info("Agent already enabled")
+                    Logfile.app.debug("[Agent] Agent already enabled in launchd")
                     return .alreadyInstalled
                 }
                 if agent.status == .enabled {
                     try? agent.unregister()
                 }
                 try agent.register()
-                Logfile.core.info("Agent registered")
+                Logfile.app.info("[Agent] Agent registered successfully")
                 return .installed
 
             case .uninstall:
                 if agent.status != .enabled && !isAgentLoadedInLaunchd() {
-                    Logfile.core.info("Agent already disabled")
+                    Logfile.app.debug("[Agent] Agent already disabled")
                     return .alreadyUninstalled
                 }
                 try agent.unregister()
-                Logfile.core.info("Agent unregistered")
+                Logfile.app.info("[Agent] Agent unregistered successfully")
                 return .uninstalled
 
             case .check:
                 if agent.status == .enabled && isAgentLoadedInLaunchd() {
-                    Logfile.core.info("Agent status: enabled")
+                    Logfile.app.debug("[Agent] Agent status: enabled")
                     return .alreadyInstalled
                 } else {
-                    Logfile.core.info("Agent status: disabled")
+                    Logfile.app.debug("[Agent] Agent status: disabled")
                     return .alreadyUninstalled
                 }
             }
 
         } catch {
             let nsError = error as NSError
-            Logfile.core.error(
+            Logfile.app.error(
                 """
-                Agent manage failed: \(nsError.domain) \
+                [Agent] Agent manage failed: \(nsError.domain) \
                 \(nsError.code) \
                 \(nsError.localizedDescription)
                 """

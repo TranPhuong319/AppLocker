@@ -40,23 +40,6 @@ extension ESManager {
             return
         }
 
-        let alreadyPending = manager.isPendingVerification(pid: targetPid)
-        guard !alreadyPending else {
-            Logfile.endpointSecurity.log("[NOTIFY_EXEC] PID \(targetPid) already pending (\(path))")
-            return
-        }
-
-        // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
-        manager.markPendingVerification(pid: targetPid)
-        let result = kill(targetPid, SIGSTOP)
-        Logfile.endpointSecurity.log("Marked PID \(targetPid) as pending verification")
-
-        if result == 0 {
-            Logfile.endpointSecurity.log("[NOTIFY_EXEC] SIGSTOP sent to target PID \(targetPid) (\(path))")
-        } else {
-            Logfile.endpointSecurity.error("[NOTIFY_EXEC] SIGSTOP failed for PID \(targetPid): errno \(errno)")
-        }
-
         let name = manager.computeAppName(forExecPath: path)
         let notification = BlockedNotification(
             name: name,
@@ -67,6 +50,47 @@ extension ESManager {
             signingID: signingID,
             targetPid: targetPid
         )
+
+        suspendAndNotifyBlockedProcess(manager: manager, notification: notification, targetPid: targetPid)
+    }
+
+    private static func suspendAndNotifyBlockedProcess(
+        manager: ESManager,
+        notification: BlockedNotification,
+        targetPid: pid_t
+    ) {
+        let alreadyPending = manager.isPendingVerification(pid: targetPid)
+        guard !alreadyPending else {
+            Logfile.endpointSecurity.debug(
+                """
+                [NotifyExec] PID \(targetPid, privacy: .public) already pending \
+                (\(notification.path, privacy: .public))
+                """
+            )
+            return
+        }
+
+        // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
+        manager.markPendingVerification(pid: targetPid)
+        let result = kill(targetPid, SIGSTOP)
+        Logfile.endpointSecurity.debug("[NotifyExec] Marked PID \(targetPid, privacy: .public) as pending verification")
+
+        if result == 0 {
+            Logfile.endpointSecurity.info(
+                """
+                [NotifyExec] SIGSTOP sent to target PID \(targetPid, privacy: .public) \
+                (\(notification.path, privacy: .public))
+                """
+            )
+        } else {
+            Logfile.endpointSecurity.error(
+                """
+                [NotifyExec] SIGSTOP failed for PID \(targetPid, privacy: .public): \
+                errno \(errno, privacy: .public)
+                """
+            )
+        }
+
         manager.sendBlockedNotifications(notification: notification)
     }
 

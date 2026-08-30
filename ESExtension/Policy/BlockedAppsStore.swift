@@ -22,8 +22,8 @@ extension ESManager {
             xpcConnectionLock.withLock {
                 Logfile.endpointSecurity.warning(
                     """
-                    No XPC connection available. Queueing notification and \
-                    forcing App wake-up for UID \(notification.uid)...
+                    [BlockedStore] No XPC connection available. Queueing notification and \
+                    forcing App wake-up for UID \(notification.uid, privacy: .public)...
                     """
                 )
                 self.pendingNotifications.append(notification)
@@ -41,13 +41,20 @@ extension ESManager {
     ) {
         let rawPID = Int32(targetPid)
         if let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.endpointSecurity.error(
-                "XPC notify (async) error: \(String(describing: error))")
+            Logfile.esXPC.error(
+                "[BlockedStore] XPC notify error: \(String(describing: error))")
         }) as? ESXPCProtocol {
             proxy.notifyBlockedExec(name: name, path: path, cdhash: cdhash, pid: rawPID)
-            Logfile.endpointSecurity.log("Notified app (async) about blocked exec: \(path) (PID: \(rawPID))")
+            Logfile.esXPC.debug(
+                """
+                [BlockedStore] Notified app about blocked exec: \(path, privacy: .public) \
+                (PID: \(rawPID, privacy: .public))
+                """
+            )
         } else {
-            Logfile.endpointSecurity.error("Failed to notify app: Could not obtain valid XPC proxy for ESXPCProtocol")
+            Logfile.esXPC.error(
+                "[BlockedStore] Failed to notify app: Could not obtain valid XPC proxy for ESXPCProtocol"
+            )
         }
     }
 }

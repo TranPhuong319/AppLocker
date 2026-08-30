@@ -17,7 +17,7 @@ extension ESManager {
             return self.activeConnections.count
         }
 
-        Logfile.endpointSecurity.log("Stored incoming XPC connection — total=\(count)")
+        Logfile.esXPC.debug("[ESConnections] Stored incoming XPC connection - total=\(count, privacy: .public)")
     }
 
     // Flush pending notifications to a specific connection (called after Auth)
@@ -29,7 +29,12 @@ extension ESManager {
         }
 
         if !pendingToFlush.isEmpty {
-            Logfile.endpointSecurity.log("Auth complete. Flushing \(pendingToFlush.count) pending notifications...")
+            Logfile.esXPC.debug(
+                """
+                [ESConnections] Auth complete. \
+                Flushing \(pendingToFlush.count, privacy: .public) pending notifications...
+                """
+            )
             DispatchQueue.global(qos: .utility).async { [weak self] in
                 for item in pendingToFlush {
                     self?.performNotifyBlockRequest(
@@ -53,7 +58,7 @@ extension ESManager {
             self.authenticatedConnections.remove(connID)
             return self.activeConnections.count
         }
-        Logfile.endpointSecurity.log("Removed XPC connection — total=\(count)")
+        Logfile.esXPC.debug("[ESConnections] Removed XPC connection - total=\(count, privacy: .public)")
     }
 
     // Pick the first available active connection.

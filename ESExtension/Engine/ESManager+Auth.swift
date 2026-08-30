@@ -18,31 +18,42 @@ extension ESManager: ESAppProtocol {
 
         // 1. Get process path
         guard let callerPath = getProcessPath(for: pid) else {
-            Logfile.endpointSecurity.error("Auth: Failed to retrieve process path for pid=\(pid)")
+            Logfile.esSecurity.error("[Auth] Failed to retrieve process path for PID \(pid, privacy: .public)")
             return false
         }
 
         // 2. Validate path (Must belong to AppLocker executable)
         guard callerPath.hasSuffix("/Contents/MacOS/AppLocker") else {
-            Logfile.endpointSecurity.error("Auth: Rejected XPC caller with unauthorized path: \(callerPath)")
+            Logfile.esSecurity.error(
+                "[Auth] Rejected XPC caller with unauthorized path: \(callerPath, privacy: .public)"
+            )
             return false
         }
 
         // 3. Retrieve caller CDHash from OS Kernel via auditToken
         guard let callerCDHash = getCDHash(for: connection) else {
-            Logfile.endpointSecurity.error("Auth: Failed to retrieve caller CDHash from auditToken")
+            Logfile.esSecurity.error(
+                "[Auth] Failed to retrieve caller CDHash from auditToken for PID \(pid, privacy: .public)"
+            )
             return false
         }
 
         // 4. Retrieve CDHash of the app binary on disk at the verified path
         guard let diskCDHash = getCDHash(forFilePath: callerPath) else {
-            Logfile.endpointSecurity.error("Auth: Failed to retrieve disk binary CDHash for path: \(callerPath)")
+            Logfile.esSecurity.error(
+                "[Auth] Failed to retrieve disk binary CDHash for path: \(callerPath, privacy: .public)"
+            )
             return false
         }
 
         // 5. Dynamic match check
         guard callerCDHash == diskCDHash else {
-            Logfile.endpointSecurity.error("Auth: CDHash mismatch between running process and disk binary!")
+            Logfile.esSecurity.fault(
+                """
+                [Auth] CDHash mismatch between running process and disk binary \
+                for path: \(callerPath, privacy: .public)!
+                """
+            )
             return false
         }
 
@@ -99,16 +110,18 @@ extension ESManager: ESAppProtocol {
         withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void
     ) {
         guard let conn = NSXPCConnection.current() else {
-            Logfile.endpointSecurity.error("Auth: No current XPC connection")
+            Logfile.esSecurity.error("[Auth] No current XPC connection")
             reply(nil, nil, nil, false)
             return
         }
 
-        Logfile.endpointSecurity.log("Auth: Received authentication request from pid=\(conn.processIdentifier)")
+        Logfile.esSecurity.debug(
+            "[Auth] Received authentication request from PID \(conn.processIdentifier, privacy: .public)"
+        )
 
         // 0. Validate caller binary and dynamic CDHash
         guard isCallerBinaryValid(connection: conn) else {
-            Logfile.endpointSecurity.error("Auth: Caller binary or CDHash validation failed!")
+            Logfile.esSecurity.error("[Auth] Caller binary or CDHash validation failed!")
             reply(nil, nil, nil, false)
             return
         }
@@ -117,7 +130,7 @@ extension ESManager: ESAppProtocol {
         guard KeychainHelper.shared.verify(
             signature: clientSig, originalData: clientNonce, publicKeyData: clientPublicKey
         ) else {
-            Logfile.endpointSecurity.error("Auth: Client signature verification failed!")
+            Logfile.esSecurity.error("[Auth] Client signature verification failed!")
             reply(nil, nil, nil, false)
             return
         }
@@ -128,7 +141,7 @@ extension ESManager: ESAppProtocol {
             do {
                 try KeychainHelper.shared.generateKeys(tag: serverTag)
             } catch {
-                Logfile.endpointSecurity.error("Auth: Key generation failed: \(error)")
+                Logfile.esSecurity.error("[Auth] Server key generation failed: \(error.localizedDescription)")
                 reply(nil, nil, nil, false)
                 return
             }
@@ -140,7 +153,7 @@ extension ESManager: ESAppProtocol {
 
         guard let serverSig = KeychainHelper.shared.sign(data: combinedData, tag: serverTag),
               let serverPubKeyData = KeychainHelper.shared.exportPublicKey(tag: serverTag) else {
-            Logfile.endpointSecurity.error("Auth: Failed to sign server response.")
+            Logfile.esSecurity.error("[Auth] Failed to sign server response.")
             reply(nil, nil, nil, false)
             return
         }
@@ -152,7 +165,7 @@ extension ESManager: ESAppProtocol {
         }
 
         cacheMainAppPID(from: conn)
-        Logfile.endpointSecurity.log("Auth: Connection authenticated.")
+        Logfile.esSecurity.info("[Auth] Connection authenticated successfully.")
 
         // Flush pending notifications NOW that the connection is fully authenticated.
         flushPendingNotifications(to: conn)
@@ -166,12 +179,17 @@ extension ESManager: ESAppProtocol {
         withReply reply: @escaping (Bool) -> Void
     ) {
         guard isCurrentConnectionAuthenticated() else {
-            Logfile.endpointSecurity.error("processPendingApps: Connection not authenticated")
+            Logfile.esSecurity.error("[Auth] processPendingApps rejected: Connection not authenticated")
             reply(false)
             return
         }
 
-        Logfile.endpointSecurity.log("processPendingApps: Approved PIDs \(approvedPIDs), Rejected PIDs \(rejectedPIDs)")
+        Logfile.esSecurity.debug(
+            """
+            [Auth] processPendingApps: Approved PIDs \(approvedPIDs, privacy: .public), \
+            Rejected PIDs \(rejectedPIDs, privacy: .public)
+            """
+        )
         let result = processPendingBatch(approved: approvedPIDs, rejected: rejectedPIDs)
         reply(result)
     }

@@ -29,7 +29,9 @@ class LockES: LockManagerProtocol {
         }
         ConfigStore.shared.performHandshake { [weak self] success in
             guard let self = self else { return }
-            Logfile.core.info("ES Handshake finished (success=\(success)). Proceeeding to load config.")
+            Logfile.policy.info(
+                "[LockES] ES Handshake finished (success=\(success, privacy: .public)). Proceeding to load config."
+            )
 
             // Safe to load config now (we are Muted or Launcher mode)
             let loaded = ConfigStore.shared.load()
@@ -64,7 +66,9 @@ class LockES: LockManagerProtocol {
                     guard let self = self else { return }
                     self.lockedApps = updatedApps
                     self.save()
-                    Logfile.core.info("Auto-migrated legacy app configs to unified ES format and saved to disk.")
+                    Logfile.policy.info(
+                        "[LockES] Auto-migrated legacy app configs to unified ES format and saved to disk."
+                    )
                 }
             }
         }
@@ -82,7 +86,12 @@ class LockES: LockManagerProtocol {
                 appConfig.sha256 = nil
                 let appName = appConfig.name ?? defaultPath
                 let prefix = String(cdhash.prefix(8))
-                Logfile.core.info("Migrated legacy config for \(appName): cdhash (\(prefix))")
+                Logfile.policy.debug(
+                    """
+                    [LockES] Migrated legacy config for \(appName, privacy: .public): \
+                    cdhash (\(prefix, privacy: .public))
+                    """
+                )
                 return true
             }
         } else if appConfig.sha256 != nil {
@@ -133,7 +142,7 @@ class LockES: LockManagerProtocol {
                 hasConfigChanged = true
             } else {
                 guard let bundle = Bundle(url: URL(fileURLWithPath: path)) else {
-                    Logfile.core.error("Cannot create Bundle for \(path)")
+                    Logfile.policy.error("[LockES] Cannot create Bundle for \(path, privacy: .public)")
                     continue
                 }
 
@@ -150,7 +159,7 @@ class LockES: LockManagerProtocol {
                 }
 
                 guard let execPath = resolvedExecPath else {
-                    Logfile.core.error("Cannot resolve executable path for \(path)")
+                    Logfile.policy.error("[LockES] Cannot resolve executable path for \(path, privacy: .public)")
                     continue
                 }
 

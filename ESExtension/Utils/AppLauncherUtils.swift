@@ -28,23 +28,30 @@ struct AppLauncherUtils {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             if let output = String(data: data, encoding: .utf8), !output.isEmpty {
                 let trimmed = output.trimmingCharacters(in: .whitespacesAndNewlines)
-                Logfile.endpointSecurity.log("Auto-Wake output: \(trimmed)")
+                Logfile.endpointSecurity.debug("[AutoWake] Command output: \(trimmed, privacy: .public)")
             }
 
             if task.terminationStatus == 0 {
-                Logfile.endpointSecurity.log("Auto-Wake: Command executed successfully.")
+                Logfile.endpointSecurity.debug("[AutoWake] Command executed successfully.")
             } else {
-                Logfile.endpointSecurity.error("Auto-Wake: Command failed with status \(task.terminationStatus)")
+                Logfile.endpointSecurity.error(
+                    "[AutoWake] Command failed with status \(task.terminationStatus, privacy: .public)"
+                )
             }
         } catch {
-            Logfile.endpointSecurity.error("Auto-Wake: Failed to run process: \(error.localizedDescription)")
+            Logfile.endpointSecurity.error("[AutoWake] Failed to run process: \(error.localizedDescription)")
         }
     }
 
     static func forceEnableAndRestartAgent(for uid: uid_t) {
         let uidStr = String(uid)
 
-        Logfile.endpointSecurity.log("Guardian: Forcing enable and kickstart for \(agentLabel) (UID: \(uidStr))")
+        Logfile.endpointSecurity.info(
+            """
+            [Guardian] Forcing enable and kickstart for \(agentLabel, privacy: .public) \
+            (UID: \(uidStr, privacy: .public))
+            """
+        )
 
         // 1. Force enable (overrides System Settings Off state)
         let enableArgs = ["asuser", uidStr, "launchctl", "enable", "gui/\(uidStr)/\(agentLabel)"]

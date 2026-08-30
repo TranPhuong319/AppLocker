@@ -75,13 +75,17 @@ class ESClientObject {
         }
 
         if result != ES_NEW_CLIENT_RESULT_SUCCESS {
-            Logfile.endpointSecurity.log("[\(self.name)] Failed to create client: \(result.rawValue)")
+            let resCode = result.rawValue
+            Logfile.endpointSecurity.error(
+                "[ESClient] [\(self.name, privacy: .public)] Failed to create client: \(resCode, privacy: .public)"
+            )
             return false
         }
 
         if let client = self.client {
-            Logfile.endpointSecurity.log(
-                "[\(self.name)] Client created at Addr: \(String(format: "%p", Int(bitPattern: client)))"
+            let addrStr = String(format: "%p", Int(bitPattern: client))
+            Logfile.endpointSecurity.debug(
+                "[ESClient] [\(self.name, privacy: .public)] Client created at Addr: \(addrStr, privacy: .public)"
             )
         }
 
@@ -191,7 +195,12 @@ class ESClientObject {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
 
                 let path = ESSafetyValve.getPath(message)
-                Logfile.endpointSecurity.error("DEADLINE REACHED [DENY]: \(path) (Budget: \(finalProcessingBudget)ns)")
+                Logfile.endpointSecurity.error(
+                    """
+                    [ESClient] DEADLINE REACHED [DENY]: \(path, privacy: .public) \
+                    (Budget: \(finalProcessingBudget, privacy: .public)ns)
+                    """
+                )
 
                 // Signal that we are done responding
                 // The valve itself handles the signal internally when respond() is called.
@@ -220,10 +229,12 @@ class ESClientObject {
 
         let muteRes = es_mute_process(client, &token)
         if muteRes == ES_RETURN_SUCCESS {
-            Logfile.endpointSecurity.log("[\(self.name)] Mute self result: Success")
+            Logfile.endpointSecurity.debug("[ESClient] [\(self.name, privacy: .public)] Mute self result: Success")
             return true
         } else {
-            Logfile.endpointSecurity.error("[\(self.name)] Mute self result: \(muteRes.rawValue)")
+            Logfile.endpointSecurity.error(
+                "[ESClient] [\(self.name, privacy: .public)] Mute self result: \(muteRes.rawValue, privacy: .public)"
+            )
             return false
         }
     }
@@ -231,7 +242,9 @@ class ESClientObject {
     func subscribe(_ events: [es_event_type_t]) -> Bool {
         guard let client = client else { return false }
         let result = es_subscribe(client, events, UInt32(events.count))
-        Logfile.endpointSecurity.log("[\(self.name)] Subscribe result: \(result.rawValue)")
+        Logfile.endpointSecurity.debug(
+            "[ESClient] [\(self.name, privacy: .public)] Subscribe result: \(result.rawValue, privacy: .public)"
+        )
         return result == ES_RETURN_SUCCESS
     }
 }
@@ -265,18 +278,22 @@ class ESTamper: ESClientObject {
 
     func enable() {
         #if DEBUG
-        Logfile.endpointSecurity.log("Skip enable ESTamper (Debug mode)")
+        Logfile.endpointSecurity.debug("[ESClient] Skip enable ESTamper (Debug mode)")
         #else
         self.muteSelf()
 
         // Santa Pattern: Inverted Muting for target paths
-        Logfile.endpointSecurity.log("[\(self.name)] Enabling Inverted Muting (Santa-Style)...")
+        Logfile.endpointSecurity.debug(
+            "[ESClient] [\(self.name, privacy: .public)] Enabling Inverted Muting (Santa-Style)..."
+        )
 
         if let client = self.client {
             _ = es_unmute_all_target_paths(client)
 
             let invRes = es_invert_muting(client, ES_MUTE_INVERSION_TYPE_TARGET_PATH)
-            Logfile.endpointSecurity.log("[\(self.name)] Invert muting result: \(invRes.rawValue)")
+            Logfile.endpointSecurity.debug(
+                "[ESClient] [\(self.name, privacy: .public)] Invert muting result: \(invRes.rawValue, privacy: .public)"
+            )
         }
 
         self.setupAllowlist()
@@ -304,7 +321,14 @@ class ESTamper: ESClientObject {
         if let client = self.client {
             for item in paths {
                 let res = es_mute_path(client, item.path, item.type)
-                Logfile.endpointSecurity.log("[\(self.name)] Allowlist [\(item.path)] result: \(res.rawValue)")
+                let itemPath = item.path
+                let resVal = res.rawValue
+                Logfile.endpointSecurity.debug(
+                    """
+                    [ESClient] [\(self.name, privacy: .public)] Allowlist [\(itemPath, privacy: .public)] \
+                    result: \(resVal, privacy: .public)
+                    """
+                )
             }
         }
     }
