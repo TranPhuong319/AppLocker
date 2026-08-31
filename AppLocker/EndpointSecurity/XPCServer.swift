@@ -19,8 +19,8 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     var pendingApps: [PendingAppItem] = []
     var remainingSeconds: Int = 60
 
-    var pendingDebounceTimer: Timer?
-    var countdownTimer: Timer?
+    var pendingDebounceTask: Task<Void, Never>?
+    var countdownTask: Task<Void, Never>?
     var isAuthenticating: Bool = false
     var isUpgradingToBatch: Bool = false
 
@@ -84,10 +84,10 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
 
             // If BatchAuthWindow is open and no apps left, dismiss window
             if self.pendingApps.isEmpty {
-                self.countdownTimer?.invalidate()
-                self.countdownTimer = nil
-                self.pendingDebounceTimer?.invalidate()
-                self.pendingDebounceTimer = nil
+                self.countdownTask?.cancel()
+                self.countdownTask = nil
+                self.pendingDebounceTask?.cancel()
+                self.pendingDebounceTask = nil
                 BatchAuthWindowController.shared.hideWindow()
             }
         }
@@ -158,26 +158,26 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             // If 2+ apps are now pending, cancel the single Touch ID prompt and upgrade to BatchAuthWindow!
             if self.pendingApps.count >= 2 {
                 self.isUpgradingToBatch = true
-                self.pendingDebounceTimer?.invalidate()
-                self.pendingDebounceTimer = nil
+                self.pendingDebounceTask?.cancel()
+                self.pendingDebounceTask = nil
                 AuthenticationManager.cancelCurrentAuthentication()
             }
             return
         }
 
         // Debounce for 0.25s for instant response time on single app launches
-        self.pendingDebounceTimer?.invalidate()
-        self.pendingDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: false) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.processIncomingQueue()
-            }
+        self.pendingDebounceTask?.cancel()
+        self.pendingDebounceTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else { return }
+            self?.processIncomingQueue()
         }
     }
 
     @MainActor
     func processIncomingQueue() {
-        pendingDebounceTimer?.invalidate()
-        pendingDebounceTimer = nil
+        pendingDebounceTask?.cancel()
+        pendingDebounceTask = nil
 
         guard !pendingApps.isEmpty, !isAuthenticating, !BatchAuthWindowController.shared.isWindowVisible else { return }
 
@@ -252,19 +252,20 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
 extension XPCServer {
     @MainActor
     func startOrResetCountdownTimer() {
-        countdownTimer?.invalidate()
+        countdownTask?.cancel()
         let configuredSeconds = UserDefaults.standard.integer(forKey: "batchAuthCountdownSeconds")
         remainingSeconds = configuredSeconds > 0 ? configuredSeconds : 30
 
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                if self.remainingSeconds > 0 {
-                    self.remainingSeconds -= 1
-                } else {
-                    Logfile.appXPC.warning("[Auth] Timeout reached! Auto cancelling all pending PIDs.")
-                    self.handleCancel()
-                }
+        countdownTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            while !Task.isCancelled && self.remainingSeconds > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { break }
+                self.remainingSeconds -= 1
+            }
+            if !Task.isCancelled && self.remainingSeconds == 0 {
+                Logfile.appXPC.warning("[Auth] Timeout reached! Auto cancelling all pending PIDs.")
+                self.handleCancel()
             }
         }
     }
@@ -285,8 +286,8 @@ extension XPCServer {
 
     @MainActor
     func stopCountdownTimer() {
-        countdownTimer?.invalidate()
-        countdownTimer = nil
+        countdownTask?.cancel()
+        countdownTask = nil
     }
 
     @MainActor
