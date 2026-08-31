@@ -36,7 +36,7 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     var pendingNotifications: [BlockedNotification] = []
     let pendingPIDLock = OSAllocatedUnfairLock()
-    var pendingVerificationPIDs: Set<pid_t> = []
+    var pendingVerificationProcesses: [pid_t: audit_token_t] = [:]
 
     struct XPCConn: @unchecked Sendable, Equatable {
         let connection: NSXPCConnection

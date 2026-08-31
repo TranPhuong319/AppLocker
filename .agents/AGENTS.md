@@ -42,10 +42,16 @@ Always follow this commit message format and guidelines when making commits:
 - In `AUTH_EXEC` events, macOS Kernel has not completed process instantiation. `audit_token_to_pid` returns **PID = 0**.
 - **DO NOT** invoke `kill(0, signal)`. In POSIX/macOS C, `kill(0, signal)` sends the signal to **the entire process group of the caller (`ESExtension`)**, which disrupts XPC connection (`NSCocoaErrorDomain Code=4097`).
 
-### 2. Standard Process Interception Pattern
-- **`AUTH_EXEC`**: Mark pending path in `pendingVerificationPaths` and return `ES_AUTH_RESULT_ALLOW` so the Kernel creates the process and assigns a real PID.
-- **`NOTIFY_EXEC`**: Read the real PID (> 0) from `message.process.audit_token`, execute `kill(targetPid, SIGSTOP)` to freeze the target process in `STOPPED` state, and notify `AppLocker` with the valid PID (> 0).
-- **Safety Guard**: Always enforce `guard pid > 0 else { continue }` before any `kill(pid, SIGCONT)` or `kill(pid, SIGKILL)` call.
+### 2. Pre-Exec vs Post-Exec Audit Token (`NOTIFY_EXEC`)
+- In `NOTIFY_EXEC` events (`es_event_exec_t`):
+  - `message.process.audit_token` represents the **pre-exec** process state (before binary loading).
+  - `message.event.exec.target.audit_token` represents the **post-exec** process state (after `execve()` has completed).
+  - **`pidversion` Increment Rule**: Darwin XNU Kernel increments `pidversion` by 1 upon every successful `execve()`.
+  - **MANDATORY**: Always extract PID and `audit_token_t` from **`message.event.exec.target.pointee.audit_token`** when registering pending processes. Using `message.process` will cause `pidversion` mismatch (`expected != current`) and falsely trigger PID recycling aborts.
+
+### 3. POSIX Liveness & PID Recycling Guard
+- **Liveness Check**: Always enforce `guard pid > 0, kill(pid, 0) == 0 else { continue }` before issuing any signal to safely skip dead or terminated processes.
+- **PID Recycling Defense**: Compare `audit_token_to_pidversion` of the currently running process (via `task_info(TASK_AUDIT_TOKEN)`) with the stored `audit_token_t` from `NOTIFY_EXEC` before invoking `kill(pid, SIGCONT)` or `kill(pid, SIGKILL)` to prevent sending signals to a recycled process ID.
 
 ---
 
