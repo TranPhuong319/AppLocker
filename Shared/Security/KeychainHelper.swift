@@ -9,7 +9,7 @@ import Foundation
 import CryptoKit
 import os
 
-final class KeychainHelper: @unchecked Sendable {
+final class KeychainHelper: Sendable {
     static let shared = KeychainHelper()
 
     // Identifiers
@@ -18,10 +18,13 @@ final class KeychainHelper: @unchecked Sendable {
         static let extensionPublic = "com.TranPhuong319.AppLocker.ESExtension.public"
     }
 
-    // Ephemeral Cache (Memory only)
-    private var privateKeys: [String: P256.Signing.PrivateKey] = [:]
-    private var publicKeys: [String: Data] = [:]
-    private let cacheLock = NSLock()
+    private struct State {
+        var privateKeys: [String: P256.Signing.PrivateKey] = [:]
+        var publicKeys: [String: Data] = [:]
+    }
+
+    // Ephemeral Cache (Memory only) protected by native OSAllocatedUnfairLock
+    private let state = OSAllocatedUnfairLock(initialState: State())
 
     private init() {}
 
@@ -32,10 +35,10 @@ final class KeychainHelper: @unchecked Sendable {
         let privateKey = P256.Signing.PrivateKey()
         let publicKeyData = privateKey.publicKey.x963Representation
 
-        cacheLock.lock()
-        privateKeys[tag] = privateKey
-        publicKeys[tag] = publicKeyData
-        cacheLock.unlock()
+        state.withLock {
+            $0.privateKeys[tag] = privateKey
+            $0.publicKeys[tag] = publicKeyData
+        }
 
         Logfile.security.debug("[Keychain] Generated and cached ephemeral EC keys for \(tag, privacy: .public)")
     }
@@ -43,9 +46,7 @@ final class KeychainHelper: @unchecked Sendable {
     // MARK: - Sign & Verify
 
     func sign(data: Data, tag: String) -> Data? {
-        cacheLock.lock()
-        let privateKey = privateKeys[tag]
-        cacheLock.unlock()
+        let privateKey = state.withLock { $0.privateKeys[tag] }
 
         guard let key = privateKey else {
             Logfile.security.error("[Keychain] Private key not found in cache for: \(tag, privacy: .public)")
@@ -77,14 +78,10 @@ final class KeychainHelper: @unchecked Sendable {
     // MARK: - Exports & Utils
 
     func exportPublicKey(tag: String) -> Data? {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        return publicKeys[tag]
+        state.withLock { $0.publicKeys[tag] }
     }
 
     func hasKey(tag: String) -> Bool {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        return privateKeys[tag] != nil
+        state.withLock { $0.privateKeys[tag] != nil }
     }
 }

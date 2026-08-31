@@ -30,7 +30,7 @@ struct GeneralSettingsTab: View {
                         Text("Active")
                             .font(.caption)
                             .fontWeight(.semibold)
-                            .foregroundColor(.green)
+                            .foregroundStyle(.green)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(
@@ -41,7 +41,7 @@ struct GeneralSettingsTab: View {
                         Text("Inactive")
                             .font(.caption)
                             .fontWeight(.semibold)
-                            .foregroundColor(.red)
+                            .foregroundStyle(.red)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(

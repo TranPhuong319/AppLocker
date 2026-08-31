@@ -37,9 +37,7 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
     // MARK: - Helper Methods
     private static func createHostingController() -> NSHostingController<ContentView> {
         let hostingController = NSHostingController(rootView: ContentView())
-        if #available(macOS 14.0, *) {
-            hostingController.sceneBridgingOptions = [.toolbars, .title]
-        }
+        hostingController.sceneBridgingOptions = [.toolbars, .title]
         hostingController.view.setFrameSize(WindowLayout.mainSize)
         return hostingController
     }

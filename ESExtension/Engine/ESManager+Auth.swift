@@ -61,7 +61,7 @@ extension ESManager: ESAppProtocol {
     }
 
     private func getCDHash(for connection: NSXPCConnection) -> Data? {
-        var auditToken = connection.esAuditToken
+        var auditToken = connection.auditToken
         let tokenData = Data(bytes: &auditToken, count: MemoryLayout<audit_token_t>.size)
         let attributes = [kSecGuestAttributeAudit: tokenData] as CFDictionary
 

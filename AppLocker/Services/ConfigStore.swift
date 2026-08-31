@@ -13,7 +13,7 @@ struct ConfigLoadResult {
     let isLegacyFormat: Bool
 }
 
-final class ConfigStore: @unchecked Sendable {
+final class ConfigStore: Sendable {
     static let shared = ConfigStore()
     static let baseDirectoryURL = URL(fileURLWithPath: "/Users/Shared/AppLocker")
     static let legacyConfigURL = URL(fileURLWithPath: "/Users/Shared/AppLocker/config.plist")

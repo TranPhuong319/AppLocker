@@ -14,9 +14,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     private init() {
         let hostingController = NSHostingController(rootView: SettingsView())
-        if #available(macOS 14.0, *) {
-            hostingController.sceneBridgingOptions = [.toolbars, .title]
-        }
+        hostingController.sceneBridgingOptions = [.toolbars, .title]
 
         var config = WindowConfiguration()
         config.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]

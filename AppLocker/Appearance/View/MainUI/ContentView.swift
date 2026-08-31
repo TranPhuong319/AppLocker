@@ -61,7 +61,7 @@ struct ContentView: View {
     private var searchBarHeader: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .padding(.leading, 8)
 
             TextField("Search apps...", text: $appState.searchTextLockApps)
@@ -79,7 +79,7 @@ struct ContentView: View {
     @ViewBuilder
     private var emptyStateView: some View {
         Text("There is no locked application.")
-            .foregroundColor(.secondary)
+            .foregroundStyle(.secondary)
             .font(.title3)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }

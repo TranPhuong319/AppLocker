@@ -20,9 +20,7 @@ class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         }
         let contentView = WelcomeView()
         let hostingController = NSHostingController(rootView: contentView)
-        if #available(macOS 14.0, *) {
-            hostingController.sceneBridgingOptions = [.toolbars, .title]
-        }
+        hostingController.sceneBridgingOptions = [.toolbars, .title]
 
         let fixedSize = WindowLayout.welcomeSize
         hostingController.view.setFrameSize(fixedSize)

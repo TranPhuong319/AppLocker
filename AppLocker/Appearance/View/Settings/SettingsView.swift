@@ -31,7 +31,7 @@ struct SettingsView: View {
                         .font(.system(size: 13, weight: .medium))
                 } icon: {
                     Image(systemName: tab.iconName)
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                 }
                 .tag(tab)
             }

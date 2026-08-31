@@ -35,7 +35,7 @@ struct SecuritySettingsTab: View {
                     if !isMock && !installer.isInstalled {
                         Text("System Extension is disabled. Please enable it in System Settings.")
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundStyle(.red)
                         Spacer()
                         Button(action: {
                             SMAppService.openSystemSettingsLoginItems()
@@ -48,7 +48,7 @@ struct SecuritySettingsTab: View {
                         Text(isProtectionEnabled ? "Application Lock is enabled"
                              : "Application Lock is disabled")
                             .font(.caption)
-                            .foregroundColor(isProtectionEnabled ? .green : .red)
+                            .foregroundStyle(isProtectionEnabled ? .green : .red)
                     }
                 }
             }
@@ -59,7 +59,7 @@ struct SecuritySettingsTab: View {
                         Text("Popup Countdown:")
                         Spacer()
                         Text("\(Int(authCountdownSeconds)) seconds")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .monospacedDigit()
                             .contentTransition(.numericText(value: authCountdownSeconds))
                             .animation(.snappy(duration: 0.2), value: authCountdownSeconds)

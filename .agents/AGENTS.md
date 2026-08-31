@@ -31,6 +31,10 @@ Always follow this commit message format and guidelines when making commits:
 ## Ponytail & Clean Architecture Guidelines
 
 - **Lazy Senior Dev Mode (YAGNI)**: Always prefer Apple native platform APIs and Swift standard library over custom helper classes or third-party abstractions.
+- **No KVC / Selector Reflection**:
+  - Do NOT use Objective-C runtime reflection (`value(forKey:)`, `setValue(_:forKey:)`, `NSSelectorFromString`, `performSelector`) to access SDK properties or private methods.
+  - Always prefer native Swift platform APIs (e.g. `window.performDrag(with:)`).
+  - When accessing non-public SDK properties that exist at the C/ObjC layer (such as `auditToken` on `NSXPCConnection`), declare the interface category in the target's `Bridging-Header.h` so the Swift Clang Importer provides first-class, type-safe native Swift syntax with zero runtime reflection overhead.
 - **CryptoKit**: Use `CryptoKit` (`P256.Signing`) for all EC key generation, ECDSA signing, and signature verification. Avoid legacy C-style `SecKey` / `Security` framework APIs.
 - **App Icon Caching**: Always load app icons via `AppIconProvider.shared.icon(forPath:size:)` to leverage the in-memory `NSCache` system and avoid redundant disk read operations.
 
@@ -197,7 +201,7 @@ Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and dis
   - Always provide top padding (`~14pt`) and leading inset (`54–68pt`) in top window headers to cleanly isolate traffic light buttons (close/minimize/zoom) from clipping window corners or content text.
 - **Titlebar Drag Isolation**:
   - Enforce `isMovableByWindowBackground = false` on `NSWindow` instances.
-  - Wrap top header views in `WindowDragArea` using `NSSelectorFromString("performWindowDragWithEvent:")` so dragging is strictly isolated to the titlebar region.
+  - Wrap top header views in `WindowDragArea` using native `window.performDrag(with:)` so dragging is strictly isolated to the titlebar region.
 - **AppKit Skeleton with SwiftUI Hosting**:
   - When wrapping SwiftUI views in AppKit `NSWindowController` / `NSWindow`, enable
     `sceneBridgingOptions = [.toolbars, .title]` on `NSHostingController` (macOS 14+) AND assign an `NSToolbar`

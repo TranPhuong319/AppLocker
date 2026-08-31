@@ -38,21 +38,21 @@ struct WelcomeView: View {
 
                 Text("Please read and agree to the terms of service and license below:")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 14)
 
                 ScrollView {
                     Text(licenseText)
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(12)
                 }
                 .frame(maxWidth: .infinity)
                 .liquidGlassCard(isSelected: true)
-                .cornerRadius(8)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.gray.opacity(0.2), lineWidth: 1)
@@ -123,7 +123,7 @@ struct WelcomeView: View {
             .safeAreaInset(edge: .bottom) {
                 Text(bundle.copyright)
                     .font(.footnote)
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.secondary)
                     .padding(.bottom, 14)
             }
         }

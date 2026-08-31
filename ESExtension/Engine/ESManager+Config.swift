@@ -148,7 +148,6 @@ extension ESManager {
         stateLock.withLock {
             self.currentLanguage = code
             UserDefaults.standard.set([code], forKey: "AppleLanguages")
-            UserDefaults.standard.synchronize()
             Logfile.endpointSecurity.debug("[ESConfig] ES process language updated to: \(code, privacy: .public)")
         }
     }
