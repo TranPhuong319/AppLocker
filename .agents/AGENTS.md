@@ -132,6 +132,9 @@ Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and dis
 
 ## Concurrency & Thread Isolation Rules
 
+- **Minimize `nonisolated(unsafe)` & Prefer Instance Methods**:
+  - Minimize the usage of `nonisolated(unsafe)` as much as possible. Only use it as a last resort when no safer concurrency solution exists without disrupting existing features or code stability.
+  - Strongly prefer **Instance Methods (`self`)** and Dependency Injection over `static` methods and global singleton references (e.g. `sharedInstanceForCallbacks`). This ensures clean actor/thread ownership, eliminates global mutable state, and guarantees full Swift 6 Strict Concurrency safety.
 - **Main Thread (`@MainActor`)**:
   - `XPCServer`, `BatchAuthWindowController`, `AppState`, and all `@Published` properties MUST be executed on `@MainActor`.
   - All UI state changes and window operations must originate from `@MainActor` methods.
@@ -151,6 +154,7 @@ Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and dis
 
 ## Swift Quality & Linting Rules
 
+- **Zero Deprecated API Tolerance**: ALWAYS verify that any Apple platform API, SDK enum case, or Swift standard library feature is NOT deprecated for the current deployment target (macOS 14+). Always use the modern, active replacement (e.g. `TaskPriority.high` instead of `.userInteractive`, `.task` instead of `.onAppear`, `SMAppService` instead of `SMJobBless`).
 - **Mandatory SwiftLint Execution**: ALWAYS execute `swiftlint lint` after any code modification or refactoring to verify 0 errors and 0 warnings before concluding work. Fix any lint issues immediately.
 - **Type Nesting**: Do NOT nest types (structs/enums/classes) more than 1 level deep (e.g. use `WindowLayout.AddApp` instead of `WindowLayout.Sheet.AddApp`).
 - **Cyclomatic Complexity**: Keep function cyclomatic complexity $\le 10$. Extract helper methods for complex branching or dispatch logic.

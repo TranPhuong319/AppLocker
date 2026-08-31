@@ -13,7 +13,7 @@ struct ConfigLoadResult {
     let isLegacyFormat: Bool
 }
 
-final class ConfigStore {
+final class ConfigStore: @unchecked Sendable {
     static let shared = ConfigStore()
     static let baseDirectoryURL = URL(fileURLWithPath: "/Users/Shared/AppLocker")
     static let legacyConfigURL = URL(fileURLWithPath: "/Users/Shared/AppLocker/config.plist")
@@ -40,7 +40,7 @@ final class ConfigStore {
         )
     }
 
-    func performHandshake(completion: @escaping (Bool) -> Void) {
+    func performHandshake(completion: @escaping @Sendable (Bool) -> Void) {
         let currentProcessID = getpid()
         ESXPCClient.shared.allowConfigAccess(currentProcessID) { success in
             completion(success)

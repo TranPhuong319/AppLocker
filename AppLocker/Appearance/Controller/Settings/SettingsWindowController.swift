@@ -8,17 +8,11 @@
 import SwiftUI
 import AppKit
 
+@MainActor
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
-    static var shared: SettingsWindowController?
+    static let shared = SettingsWindowController()
 
-    static func show() {
-        if let controller = shared {
-            controller.window?.center()
-            controller.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate()
-            return
-        }
-
+    private init() {
         let hostingController = NSHostingController(rootView: SettingsView())
         if #available(macOS 14.0, *) {
             hostingController.sceneBridgingOptions = [.toolbars, .title]
@@ -35,22 +29,24 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
         let toolbar = NSToolbar(identifier: "SettingsToolbar")
         window.toolbar = toolbar
-
-        let controller = SettingsWindowController(window: window)
-        window.delegate = controller
-        shared = controller
-
         window.setContentSize(NSSize(width: 640, height: 440))
         window.minSize = NSSize(width: 640, height: 440)
         window.center()
 
-        controller.showWindow(nil)
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate()
+        super.init(window: window)
+        window.delegate = self
     }
 
-    func windowWillClose(_ notification: Notification) {
-        SettingsWindowController.shared = nil
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    static func show() {
+        guard let window = shared.window else { return }
+        window.center()
+        shared.showWindow(nil)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate()
     }
 
     func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {

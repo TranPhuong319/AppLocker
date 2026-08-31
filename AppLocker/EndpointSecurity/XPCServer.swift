@@ -41,7 +41,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             """
         )
 
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             if AppState.shared.manager.isProtectionDisabled {
                 Logfile.appXPC.info(
                     """
@@ -133,7 +133,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
         // Debounce for 0.25s for instant response time on single app launches
         self.pendingDebounceTimer?.invalidate()
         self.pendingDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: false) { [weak self] _ in
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.processIncomingQueue()
             }
         }
@@ -153,7 +153,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
 
             let reason = String(format: String(localized: "open %@"), app.name)
             AuthenticationManager.authenticate(reason: reason) { [weak self] success, _ in
-                DispatchQueue.main.async {
+                Task { @MainActor [weak self] in
                     self?.handleSingleAppAuthResult(app: app, success: success)
                 }
             }
@@ -222,8 +222,8 @@ extension XPCServer {
         remainingSeconds = configuredSeconds > 0 ? configuredSeconds : 30
 
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 if self.remainingSeconds > 0 {
                     self.remainingSeconds -= 1
                 } else {
@@ -270,8 +270,8 @@ extension XPCServer {
         let reason = String(format: String(localized: "open %d application(s)"), approvedPIDs.count)
 
         AuthenticationManager.authenticate(reason: reason) { [weak self] success, _ in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 self.isAuthenticating = false
 
                 if success {

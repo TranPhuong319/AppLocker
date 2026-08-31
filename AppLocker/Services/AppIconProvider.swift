@@ -8,7 +8,7 @@
 import AppKit
 import Foundation
 
-class AppIconProvider {
+final class AppIconProvider: @unchecked Sendable {
     static let shared = AppIconProvider()
 
     private let cache = NSCache<NSString, NSImage>()

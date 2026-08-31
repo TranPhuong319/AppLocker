@@ -22,6 +22,7 @@ enum UpdateDownloadState {
 
 // MARK: - Bridge
 
+@MainActor
 protocol AppUpdaterBridgeDelegate: AnyObject {
     func didFindUpdate(_ item: SUAppcastItem)
     func didDownloadUpdate()
@@ -51,27 +52,28 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
     // MARK: Sparkle callbacks
 
     func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             self.downloadState = .notDownloaded
             self.bridgeDelegate?.didFindUpdate(item)
         }
     }
 
     func updater(_ updater: SPUUpdater, didDownloadUpdate item: SUAppcastItem) {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             self.downloadState = .downloaded
             self.bridgeDelegate?.didDownloadUpdate()
         }
     }
 
     func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             self.bridgeDelegate?.didNotFindUpdate()
         }
     }
 }
 
 // MARK: - AppUpdater (OWNER OF DELEGATE)
+@MainActor
 final class AppUpdater: NSObject {
 
     static let shared = AppUpdater()
@@ -126,7 +128,9 @@ final class AppUpdater: NSObject {
     func startAutoCheck(interval: TimeInterval = 6 * 60 * 60) {
         updateTimer?.invalidate()
         updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            self?.silentCheckForUpdates()
+            Task { @MainActor in
+                self?.silentCheckForUpdates()
+            }
         }
         updateTimer?.tolerance = 10
     }
@@ -154,7 +158,7 @@ final class AppUpdater: NSObject {
         if delegate.channel == .beta {
             fetchLatestBeta { [weak self] success in
                 guard success, let self else { return }
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     self.guardedCheck { updater in
                         if updater.automaticallyDownloadsUpdates {
                             updater.checkForUpdatesInBackground()
@@ -188,7 +192,7 @@ final class AppUpdater: NSObject {
             if delegate.channel == .beta {
                 fetchLatestBeta { [weak self] success in
                     guard success else { return }
-                    DispatchQueue.main.async {
+                    Task { @MainActor in
                         self?.updaterController.checkForUpdates(nil)
                     }
                 }
@@ -217,11 +221,11 @@ final class AppUpdater: NSObject {
 
     // MARK: - Beta appcast fetch
 
-    private func fetchLatestBeta(completion: @escaping (Bool) -> Void) {
+    private func fetchLatestBeta(completion: @MainActor @escaping (Bool) -> Void) {
         let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases")!
         URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
             guard let data, error == nil else {
-                completion(false)
+                Task { @MainActor in completion(false) }
                 return
             }
 
@@ -229,13 +233,15 @@ final class AppUpdater: NSObject {
                 let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
                 if let beta = releases.first(where: { $0.isPrerelease }),
                     let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
-                    self?.delegate.betaFeedURL = appcast.browserDownloadUrl
-                    completion(true)
+                    Task { @MainActor in
+                        self?.delegate.betaFeedURL = appcast.browserDownloadUrl
+                        completion(true)
+                    }
                 } else {
-                    completion(false)
+                    Task { @MainActor in completion(false) }
                 }
             } catch {
-                completion(false)
+                Task { @MainActor in completion(false) }
             }
         }.resume()
     }

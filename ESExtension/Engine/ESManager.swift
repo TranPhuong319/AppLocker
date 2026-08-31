@@ -13,8 +13,7 @@ import SystemConfiguration
 import os
 
 @objcMembers
-final class ESManager: NSObject {
-    static var sharedInstanceForCallbacks: ESManager?
+final class ESManager: NSObject, @unchecked Sendable {
     var authorizer: ESAuthorizer?
     var tamper: ESTamper?
 
@@ -76,8 +75,6 @@ final class ESManager: NSObject {
         super.init()
         Logfile.endpointSecurity.info("[ESManager] Initializing Endpoint Security manager...")
 
-        ESManager.sharedInstanceForCallbacks = self
-
         // 1. Setup Clients
         let authorizer = ESAuthorizer()
         let tamper = ESTamper()
@@ -117,11 +114,6 @@ final class ESManager: NSObject {
     deinit {
         authorizer = nil
         tamper = nil
-        // SURGICAL: Only clear singleton if it's still us.
-        // This prevents a new instance's pointer from being cleared by an old instance's deinit.
-        if ESManager.sharedInstanceForCallbacks === self {
-            ESManager.sharedInstanceForCallbacks = nil
-        }
     }
 
     func isCurrentConnectionAuthenticated() -> Bool {
@@ -248,7 +240,7 @@ final class ESManager: NSObject {
     }
 
     // MARK: - Time Utilities
-    private static var timebaseInfo: mach_timebase_info_data_t = {
+    private static let timebaseInfo: mach_timebase_info_data_t = {
         var info = mach_timebase_info_data_t()
         mach_timebase_info(&info)
         return info

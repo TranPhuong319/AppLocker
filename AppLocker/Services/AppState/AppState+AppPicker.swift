@@ -16,7 +16,11 @@ extension AppState {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = true
-        panel.allowedContentTypes = [.applicationBundle]
+        panel.allowedContentTypes = [.application, .applicationBundle]
+        panel.treatsFilePackagesAsDirectories = false
+        panel.directoryURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
+        panel.showsHiddenFiles = false
+        panel.resolvesAliases = true
         panel.message = String(localized: "Select the application to lock")
         panel.prompt = String(localized: "Lock")
 
@@ -42,6 +46,11 @@ extension AppState {
 
     // MARK: - NSOpenSavePanelDelegate
     func panel(_ sender: Any, shouldEnable url: URL) -> Bool {
+        if url.hasDirectoryPath && url.pathExtension != "app" {
+            let path = url.path
+            return !path.hasPrefix("/System/") || path.hasPrefix("/System/Applications")
+        }
+
         let path = url.path
 
         // 1. Chặn chính app đang chạy (Dùng cache O(1))
@@ -54,12 +63,9 @@ extension AppState {
             return false
         }
 
-        // 3. Chặn các thư mục hệ thống nhạy cảm (Tối ưu hóa string prefix)
-        if path.hasPrefix("/System/") {
-            // Chỉ cho phép duyệt trong /System/Applications/
-            if !path.hasPrefix("/System/Applications/") {
-                return false
-            }
+        // 3. Chặn các thư mục hệ thống nhạy cảm
+        if path.hasPrefix("/System/") && !path.hasPrefix("/System/Applications/") {
+            return false
         }
 
         return true

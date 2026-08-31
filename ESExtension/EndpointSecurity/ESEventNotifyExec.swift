@@ -11,11 +11,11 @@ import Foundation
 import os
 
 extension ESManager {
-    static func handleNotifyExec(client: OpaquePointer, message: ESMessage) {
+    func handleNotifyExec(client: OpaquePointer, message: ESMessage) {
         let messagePtr = message.pointee
         let targetPid = audit_token_to_pid(messagePtr.process.pointee.audit_token)
 
-        guard targetPid > 0, let manager = ESManager.sharedInstanceForCallbacks else {
+        guard targetPid > 0 else {
             return
         }
 
@@ -36,11 +36,11 @@ extension ESManager {
         let cdhashData = Data(bytes: &targetProcess.cdhash, count: 20)
         let cdhashHex = cdhashData.map { String(format: "%02x", $0) }.joined()
 
-        guard manager.isProcessBlocked(path: path, cdhashData: cdhashData, cdhashHex: cdhashHex, uid: uid) else {
+        guard isProcessBlocked(path: path, cdhashData: cdhashData, cdhashHex: cdhashHex, uid: uid) else {
             return
         }
 
-        let name = manager.computeAppName(forExecPath: path)
+        let name = computeAppName(forExecPath: path)
         let notification = BlockedNotification(
             name: name,
             path: path,
@@ -51,15 +51,14 @@ extension ESManager {
             targetPid: targetPid
         )
 
-        suspendAndNotifyBlockedProcess(manager: manager, notification: notification, targetPid: targetPid)
+        suspendAndNotifyBlockedProcess(notification: notification, targetPid: targetPid)
     }
 
-    private static func suspendAndNotifyBlockedProcess(
-        manager: ESManager,
+    private func suspendAndNotifyBlockedProcess(
         notification: BlockedNotification,
         targetPid: pid_t
     ) {
-        let alreadyPending = manager.isPendingVerification(pid: targetPid)
+        let alreadyPending = isPendingVerification(pid: targetPid)
         guard !alreadyPending else {
             Logfile.endpointSecurity.debug(
                 """
@@ -71,7 +70,7 @@ extension ESManager {
         }
 
         // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
-        manager.markPendingVerification(pid: targetPid)
+        markPendingVerification(pid: targetPid)
         let result = kill(targetPid, SIGSTOP)
         Logfile.endpointSecurity.debug("[NotifyExec] Marked PID \(targetPid, privacy: .public) as pending verification")
 
@@ -91,7 +90,7 @@ extension ESManager {
             )
         }
 
-        manager.sendBlockedNotifications(notification: notification)
+        sendBlockedNotifications(notification: notification)
     }
 
     private func isProcessBlocked(path: String, cdhashData: Data, cdhashHex: String, uid: uid_t) -> Bool {
@@ -125,7 +124,7 @@ extension ESManager {
     }
 
     func sendBlockedNotifications(notification: BlockedNotification) {
-        DispatchQueue.global(qos: .userInteractive).async {
+        Task.detached(priority: .high) {
             TTYNotifier.notify(
                 parentPid: notification.parentPid,
                 blockedPath: notification.path,
@@ -133,7 +132,7 @@ extension ESManager {
                 identifier: notification.signingID
             )
         }
-        DispatchQueue.global(qos: .utility).async { [weak self] in
+        Task.detached(priority: .low) { [weak self] in
             self?.sendBlockedNotificationToApp(notification: notification)
         }
     }

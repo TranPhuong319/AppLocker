@@ -9,7 +9,7 @@ import Foundation
 import CryptoKit
 import os
 
-final class KeychainHelper {
+final class KeychainHelper: @unchecked Sendable {
     static let shared = KeychainHelper()
 
     // Identifiers

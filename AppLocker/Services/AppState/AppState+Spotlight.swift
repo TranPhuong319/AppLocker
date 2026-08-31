@@ -31,10 +31,12 @@ extension AppState {
     }
 
     @objc func queryDidUpdate(_ notification: Notification) {
-        spotlightWorkItem?.cancel()
+        spotlightTask?.cancel()
 
-        let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
+        spotlightTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(1500))
+            guard let self = self, !Task.isCancelled else { return }
+
             let results = self.metadataQuery?.results as? [NSMetadataItem] ?? []
 
             let installedAppsList: [InstalledApp] = results.compactMap { item in
@@ -58,8 +60,5 @@ extension AppState {
                 self.refreshAppLists()
             }
         }
-
-        spotlightWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: workItem)
     }
 }

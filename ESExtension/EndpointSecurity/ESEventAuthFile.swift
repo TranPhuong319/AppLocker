@@ -12,13 +12,13 @@ import Darwin
 
 extension ESManager {
 
-    static func isAuthorized(_ manager: ESManager, _ message: ESMessage) -> Bool {
+    func isAuthorized(_ message: ESMessage) -> Bool {
         let mainAppID = "com.TranPhuong319.AppLocker"
         let extensionID = "com.TranPhuong319.AppLocker.ESExtension"
 
         // 1. Check PID (Fast Cache)
         let processPid = audit_token_to_pid(message.pointee.process.pointee.audit_token)
-        if manager.processIDLock.withLock({ processPid == manager.authenticatedMainAppPID }) {
+        if processIDLock.withLock({ processPid == authenticatedMainAppPID }) {
             return true
         }
 
@@ -38,7 +38,7 @@ extension ESManager {
 
                  let parentAuditToken = message.pointee.process.pointee.parent_audit_token
                  let parentPid = audit_token_to_pid(parentAuditToken)
-                 let mainAppPid = manager.processIDLock.withLock({ manager.authenticatedMainAppPID })
+                 let mainAppPid = processIDLock.withLock({ authenticatedMainAppPID })
 
                  if parentPid != -1 && parentPid == mainAppPid {
                      if procPath.contains("/Library/Caches/") ||
@@ -67,7 +67,7 @@ extension ESManager {
         return "Unsigned/Unknown"
     }
 
-    static func handleAuthOpen(
+    func handleAuthOpen(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve
@@ -75,31 +75,25 @@ extension ESManager {
         let path = ESSafetyValve.getPath(message)
         let esPath = message.pointee.event.open.file.pointee.path
 
-        guard let manager = ESManager.sharedInstanceForCallbacks else {
-            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            return
-        }
-
         if isAppBundlePath(esPath) {
-            handleAppBundleAuthOpen(manager: manager, path: path, message: message, valve: valve)
+            handleAppBundleAuthOpen(path: path, message: message, valve: valve)
         } else if isProtectedConfigPath(esPath) {
-            handleConfigFileAuthOpen(manager: manager, path: path, message: message, valve: valve)
+            handleConfigFileAuthOpen(path: path, message: message, valve: valve)
         } else if isInsideProtectedFolder(esPath) {
-            handleProtectedFolderAuthOpen(manager: manager, path: path, message: message, valve: valve)
+            handleProtectedFolderAuthOpen(path: path, message: message, valve: valve)
         } else {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
         }
     }
 
-    private static func handleAppBundleAuthOpen(
-        manager: ESManager,
+    private func handleAppBundleAuthOpen(
         path: String,
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        if isAuthorized(manager, message) {
+        if isAuthorized(message) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-            let sigID = getSigningID(message)
+            let sigID = Self.getSigningID(message)
             Logfile.endpointSecurity.debug(
                 """
                 [AuthFile] SELF_PROT [OPEN] ALLOW (Authorized): \(path, privacy: .public) \
@@ -116,7 +110,7 @@ extension ESManager {
 
         if !isWriteIntent {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
-            let sigID = getSigningID(message)
+            let sigID = Self.getSigningID(message)
             Logfile.endpointSecurity.debug(
                 """
                 [AuthFile] SELF_PROT [OPEN] ALLOW (Read-only): \(path, privacy: .public) \
@@ -127,7 +121,7 @@ extension ESManager {
         }
 
         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-        let sigID = getSigningID(message)
+        let sigID = Self.getSigningID(message)
         Logfile.endpointSecurity.warning(
             """
             [AuthFile] SELF_PROT [OPEN] DENY (Write-Intent): \(path, privacy: .public) \
@@ -136,13 +130,12 @@ extension ESManager {
         )
     }
 
-    private static func handleConfigFileAuthOpen(
-        manager: ESManager,
+    private func handleConfigFileAuthOpen(
         path: String,
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        if isAuthorized(manager, message) {
+        if isAuthorized(message) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             return
         }
@@ -152,8 +145,7 @@ extension ESManager {
         )
     }
 
-    private static func handleProtectedFolderAuthOpen(
-        manager: ESManager,
+    private func handleProtectedFolderAuthOpen(
         path: String,
         message: ESMessage,
         valve: ESSafetyValve
@@ -164,12 +156,12 @@ extension ESManager {
         let isWriteIntent = (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
 
         if isWriteIntent {
-            if isAuthorized(manager, message) {
+            if isAuthorized(message) {
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 return
             }
             _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            let sigID = getSigningID(message)
+            let sigID = Self.getSigningID(message)
             Logfile.endpointSecurity.warning(
                 """
                 [AuthFile] SELF_PROT [OPEN] DENY folder write-intent: \(path, privacy: .public) \
@@ -181,7 +173,7 @@ extension ESManager {
         _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
     }
 
-    static func handleAuthUnlink(
+    func handleAuthUnlink(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve
@@ -193,13 +185,9 @@ extension ESManager {
 
         if isFileProtected || isFolderProtected || isAppProtected {
             let path = ESSafetyValve.getPath(message)
-            guard let manager = ESManager.sharedInstanceForCallbacks else {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                return
-            }
-            if isAuthorized(manager, message) {
+            if isAuthorized(message) {
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                let sigID = getSigningID(message)
+                let sigID = Self.getSigningID(message)
                 Logfile.endpointSecurity.debug(
                     """
                     [AuthFile] SELF_PROT [UNLINK] ALLOW (Authorized): \(path, privacy: .public) \
@@ -209,7 +197,7 @@ extension ESManager {
                 return
             }
             _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            let procID = getSigningID(message)
+            let procID = Self.getSigningID(message)
             Logfile.endpointSecurity.warning(
                 """
                 [AuthFile] SELF_PROT [UNLINK] DENY (Protected): \(path, privacy: .public) \
@@ -221,7 +209,7 @@ extension ESManager {
         }
     }
 
-    static func handleAuthRename(
+    func handleAuthRename(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve
@@ -234,12 +222,8 @@ extension ESManager {
         let dstIsProtected = isRenameDestinationProtected(renameEvent)
 
         if srcIsProtected || dstIsProtected {
-            guard let manager = ESManager.sharedInstanceForCallbacks else {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                return
-            }
-            let procID = getSigningID(message)
-            if isAuthorized(manager, message) {
+            let procID = Self.getSigningID(message)
+            if isAuthorized(message) {
                 let path = ESSafetyValve.getPath(message)
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 Logfile.endpointSecurity.debug(
@@ -259,7 +243,7 @@ extension ESManager {
         }
     }
 
-    private static func isRenameDestinationProtected(_ renameEvent: es_event_rename_t) -> Bool {
+    private func isRenameDestinationProtected(_ renameEvent: es_event_rename_t) -> Bool {
         if renameEvent.destination_type == ES_DESTINATION_TYPE_EXISTING_FILE {
             let dstToken = renameEvent.destination.existing_file.pointee.path
             return isProtectedConfigPath(dstToken) ||
@@ -282,19 +266,15 @@ extension ESManager {
         return false
     }
 
-    static func handleAuthTruncate(
+    func handleAuthTruncate(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve
     ) {
         let targetToken = message.pointee.event.truncate.target.pointee.path
         if isProtectedConfigPath(targetToken) || isInsideProtectedFolder(targetToken) || isAppBundlePath(targetToken) {
-            guard let manager = ESManager.sharedInstanceForCallbacks else {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                return
-            }
-            let procID = getSigningID(message)
-            if isAuthorized(manager, message) {
+            let procID = Self.getSigningID(message)
+            if isAuthorized(message) {
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 Logfile.endpointSecurity.debug(
                     "[AuthFile] SELF_PROT [TRUNCATE] ALLOW (Authorized): (Process: \(procID, privacy: .public))"
@@ -316,15 +296,15 @@ extension ESManager {
 
     // MARK: - Extended Events (Santa Style Protection)
 
-    private static func handleProtectedMutationAuth(
+    private func handleProtectedMutationAuth(
         message: ESMessage,
         valve: ESSafetyValve,
         isTargetProtected: Bool,
         operationName: String
     ) {
         if isTargetProtected {
-            let procID = getSigningID(message)
-            guard let manager = ESManager.sharedInstanceForCallbacks, isAuthorized(manager, message) else {
+            let procID = Self.getSigningID(message)
+            guard isAuthorized(message) else {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
                 Logfile.endpointSecurity.warning(
                     """
@@ -346,7 +326,7 @@ extension ESManager {
         _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
     }
 
-    static func handleAuthExchangedata(
+    func handleAuthExchangedata(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve
@@ -364,7 +344,7 @@ extension ESManager {
         )
     }
 
-    static func handleAuthClone(
+    func handleAuthClone(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve
@@ -379,7 +359,7 @@ extension ESManager {
         )
     }
 
-    static func handleAuthLink(
+    func handleAuthLink(
         client: OpaquePointer,
         message: ESMessage,
         valve: ESSafetyValve

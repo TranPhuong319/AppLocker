@@ -55,13 +55,12 @@ struct DeleteQueueSheet: View {
             minWidth: WindowLayout.deleteQueueMinSize.width,
             minHeight: WindowLayout.deleteQueueMinSize.height
         )
-        .onAppear {
-            DispatchQueue.main.async {
-                appState.activeTouchBar = .deleteQueuePopup
-            }
+        .task {
+            appState.activeTouchBar = .deleteQueuePopup
         }
         .onDisappear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(100))
                 appState.activeTouchBar = .mainWindow
                 appState.searchTextLockApps = ""
             }

@@ -13,7 +13,7 @@ final class AuthenticationManager {
     private static var currentContext: LAContext?
 
     static func authenticate(reason: String,
-                             completion: @escaping (Bool, Error?) -> Void) {
+                             completion: @MainActor @escaping (Bool, Error?) -> Void) {
         let context = LAContext()
         self.currentContext = context
 
@@ -28,7 +28,7 @@ final class AuthenticationManager {
 
         let contextID = ObjectIdentifier(context)
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, evalError in
-            Task { @MainActor in
+            Task(priority: .high) { @MainActor in
                 if let currentContext = self.currentContext, ObjectIdentifier(currentContext) == contextID {
                     self.currentContext = nil
                 }

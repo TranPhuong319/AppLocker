@@ -120,7 +120,8 @@ extension AppDelegate {
     @objc func checkUpdate() {
         AppUpdater.shared.manualCheckForUpdates()
         NSApp.activate()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
             self.bringFrontmostWindow(matching: "SU") // SPUpdater or SUUpdater
         }
     }

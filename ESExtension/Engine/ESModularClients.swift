@@ -9,7 +9,7 @@ import EndpointSecurity
 import Foundation
 import os
 
-class ESClientObject {
+class ESClientObject: @unchecked Sendable {
     var client: OpaquePointer?
     let name: String
     let queue: DispatchQueue
@@ -31,7 +31,7 @@ class ESClientObject {
     func createClient() -> Bool {
         // 1. Create New Client
         let result = es_new_client(&(self.client)) { [weak self] (esClient, esMessage) in
-            guard let self = self else {
+            guard let self else {
                 // If self is nil, just respond allow to not block invalid state
                 if esMessage.pointee.action_type == ES_ACTION_TYPE_AUTH {
                     es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
@@ -48,11 +48,11 @@ class ESClientObject {
                     if esMessage.pointee.event_type == ES_EVENT_TYPE_NOTIFY_EXEC {
                         // Handle NOTIFY_EXEC synchronously (0ms latency) to send SIGSTOP immediately
                         let handler = self.makeAuthHandler(for: message)
-                        handler(esClient, message, ESSafetyValve(message: message, manager: manager))
+                        handler(message.client, message, ESSafetyValve(message: message, manager: manager))
                     } else {
                         manager.authorizationProcessingQueue.async {
                             let handler = self.makeAuthHandler(for: message)
-                            handler(esClient, message, ESSafetyValve(message: message, manager: manager))
+                            handler(message.client, message, ESSafetyValve(message: message, manager: manager))
                         }
                     }
                 }
@@ -96,7 +96,9 @@ class ESClientObject {
         return true
     }
 
-    private func makeAuthHandler(for message: ESMessage) -> (OpaquePointer, ESMessage, ESSafetyValve) -> Void {
+    private func makeAuthHandler(
+        for message: ESMessage
+    ) -> @Sendable (OpaquePointer, ESMessage, ESSafetyValve) -> Void {
         let eventType = message.pointee.event_type
         return { (client, msg, valve) in
             if !self.dispatchProcessEvent(eventType, client: client, msg: msg, valve: valve) {
@@ -111,15 +113,16 @@ class ESClientObject {
         msg: ESMessage,
         valve: ESSafetyValve
     ) -> Bool {
+        guard let manager = self.manager else { return false }
         switch eventType {
         case ES_EVENT_TYPE_AUTH_SIGNAL:
-            ESManager.handleAuthSignal(client: client, message: msg, valve: valve)
+            manager.handleAuthSignal(client: client, message: msg, valve: valve)
             return true
         case ES_EVENT_TYPE_NOTIFY_EXEC:
-            ESManager.handleNotifyExec(client: client, message: msg)
+            manager.handleNotifyExec(client: client, message: msg)
             return true
         case ES_EVENT_TYPE_NOTIFY_EXIT:
-            ESManager.handleNotifyExit(client: client, message: msg)
+            manager.handleNotifyExit(client: client, message: msg)
             return true
         default:
             return false
@@ -132,33 +135,52 @@ class ESClientObject {
         msg: ESMessage,
         valve: ESSafetyValve
     ) {
-        switch eventType {
-        case ES_EVENT_TYPE_AUTH_OPEN:
-            ESManager.handleAuthOpen(client: client, message: msg, valve: valve)
-        case ES_EVENT_TYPE_AUTH_UNLINK:
-            ESManager.handleAuthUnlink(client: client, message: msg, valve: valve)
-        case ES_EVENT_TYPE_AUTH_RENAME:
-            ESManager.handleAuthRename(client: client, message: msg, valve: valve)
-        case ES_EVENT_TYPE_AUTH_TRUNCATE:
-            ESManager.handleAuthTruncate(client: client, message: msg, valve: valve)
-        case ES_EVENT_TYPE_AUTH_EXCHANGEDATA:
-            ESManager.handleAuthExchangedata(client: client, message: msg, valve: valve)
-        case ES_EVENT_TYPE_AUTH_CLONE:
-            ESManager.handleAuthClone(client: client, message: msg, valve: valve)
-        case ES_EVENT_TYPE_AUTH_LINK:
-            ESManager.handleAuthLink(client: client, message: msg, valve: valve)
-        default:
+        guard let manager = self.manager else {
+            if msg.pointee.action_type == ES_ACTION_TYPE_AUTH {
+                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            }
+            return
+        }
+        if !dispatchFileMutationEvent(eventType, manager: manager, client: client, msg: msg, valve: valve) {
             if msg.pointee.action_type == ES_ACTION_TYPE_AUTH {
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             }
         }
     }
 
+    private func dispatchFileMutationEvent(
+        _ eventType: es_event_type_t,
+        manager: ESManager,
+        client: OpaquePointer,
+        msg: ESMessage,
+        valve: ESSafetyValve
+    ) -> Bool {
+        switch eventType {
+        case ES_EVENT_TYPE_AUTH_OPEN:
+            manager.handleAuthOpen(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_UNLINK:
+            manager.handleAuthUnlink(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_RENAME:
+            manager.handleAuthRename(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_TRUNCATE:
+            manager.handleAuthTruncate(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_EXCHANGEDATA:
+            manager.handleAuthExchangedata(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_CLONE:
+            manager.handleAuthClone(client: client, message: msg, valve: valve)
+        case ES_EVENT_TYPE_AUTH_LINK:
+            manager.handleAuthLink(client: client, message: msg, valve: valve)
+        default:
+            return false
+        }
+        return true
+    }
+
     private func handleMessageWithDeadline(
         esClient: OpaquePointer,
         message: ESMessage,
         manager: ESManager,
-        handler: @escaping (OpaquePointer, ESMessage, ESSafetyValve) -> Void
+        handler: @escaping @Sendable (OpaquePointer, ESMessage, ESSafetyValve) -> Void
     ) {
         let valve = ESSafetyValve(message: message, manager: manager)
 
@@ -210,7 +232,7 @@ class ESClientObject {
         // --- PROCESSING TASK ---
         manager.authorizationProcessingQueue.async {
             // Do the work (calls valve.respond internally)
-            handler(esClient, message, valve)
+            handler(message.client, message, valve)
 
             // Try to acquire token.
             if processingSema.wait(timeout: .now()) == .success {
@@ -249,7 +271,7 @@ class ESClientObject {
     }
 }
 
-class ESAuthorizer: ESClientObject {
+final class ESAuthorizer: ESClientObject, @unchecked Sendable {
     init() {
         super.init(name: "Authorizer")
     }
@@ -267,7 +289,7 @@ class ESAuthorizer: ESClientObject {
     }
 }
 
-class ESTamper: ESClientObject {
+final class ESTamper: ESClientObject, @unchecked Sendable {
     init() {
         super.init(name: "TamperResistance")
     }

@@ -151,7 +151,7 @@ extension ESManager {
         var debounceTimer: DispatchSourceTimer?
 
         source.setEventHandler { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
 
             debounceTimer?.cancel()
             let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)

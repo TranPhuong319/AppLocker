@@ -10,7 +10,7 @@ import Foundation
 
 /// RAII Wrapper for es_message_t, following Santa's pattern.
 /// Retains the message on initialization (on the kernel thread) and releases it on deinitialization.
-class ESMessage {
+final class ESMessage: @unchecked Sendable {
     let rawMessage: UnsafePointer<es_message_t>
     let client: OpaquePointer
 

@@ -18,7 +18,8 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     let selfBundlePath = Bundle.main.bundleURL.path
     let selfBundleName = Bundle.main.bundleURL.lastPathComponent
     var metadataQuery: NSMetadataQuery?
-    var spotlightWorkItem: DispatchWorkItem?
+    @ObservationIgnored
+    var spotlightTask: Task<Void, Never>?
     var lastInstalledPathSet: Set<String> = []
 
     @ObservationIgnored
@@ -148,7 +149,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         self.filteredLockedApps = self.performFilter(text: self.searchTextLockApps, apps: lockedAppsList)
         self.filteredUnlockableApps = self.performFilter(text: self.searchTextUnlockaleApps, apps: unlockable)
 
-        DispatchQueue.global(qos: .utility).async {
+        Task(priority: .low) {
             for app in unlockable.prefix(60) {
                 _ = AppIconProvider.shared.icon(forPath: app.path, size: 32)
             }

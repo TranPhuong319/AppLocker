@@ -25,6 +25,7 @@ struct WindowConfiguration {
     var backgroundColor: NSColor? = .windowBackgroundColor
 }
 
+@MainActor
 class WindowManager {
     static func createWindow(
         contentViewController: NSViewController,

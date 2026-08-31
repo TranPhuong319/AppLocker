@@ -8,36 +8,33 @@
 import AppKit
 import SwiftUI
 
-class AppListWindowController: NSWindowController, NSWindowDelegate {
-    static var shared: AppListWindowController?
+@MainActor
+final class AppListWindowController: NSWindowController, NSWindowDelegate {
+    static let shared = AppListWindowController()
+
+    private init() {
+        let hostingController = Self.createHostingController()
+        let window = Self.createMainAppWindow(with: hostingController)
+        super.init(window: window)
+        window.delegate = self
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     static func show() {
-        NSApp.activate()
+        guard let window = shared.window else { return }
 
-        if let controller = shared {
-            activateExistingWindow(controller)
-            return
-        }
-
-        let hostingController = createHostingController()
-        let window = createMainAppWindow(with: hostingController)
-
-        let controller = AppListWindowController(window: window)
-        window.delegate = controller
-        shared = controller
-
-        controller.showWindow(nil)
+        shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
-        window.makeFirstResponder(hostingController)
+        if let hostingController = window.contentViewController {
+            window.makeFirstResponder(hostingController)
+        }
+        NSApp.activate()
     }
 
     // MARK: - Helper Methods
-    private static func activateExistingWindow(_ controller: NSWindowController) {
-        controller.showWindow(nil)
-        controller.window?.makeKeyAndOrderFront(nil)
-        NSApp.activate()
-    }
-
     private static func createHostingController() -> NSHostingController<ContentView> {
         let hostingController = NSHostingController(rootView: ContentView())
         if #available(macOS 14.0, *) {
@@ -65,12 +62,12 @@ class AppListWindowController: NSWindowController, NSWindowDelegate {
     }
 
     // MARK: - NSWindowDelegate
-    func windowWillClose(_ notification: Notification) {
-        AppListWindowController.shared = nil
-    }
-
     func windowDidResignKey(_ notification: Notification) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        Task { @MainActor [weak self] in
+            // Delay 0,1 second
+            try? await Task.sleep(for: .milliseconds(100))
+            guard let self else { return }
+
             let stillHasKeyWindow = NSApp.windows.contains(where: { $0.isKeyWindow })
             if !stillHasKeyWindow {
                 self.close()

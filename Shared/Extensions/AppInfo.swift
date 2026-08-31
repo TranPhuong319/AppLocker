@@ -82,6 +82,7 @@ extension Bundle {
         object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? "No information available"
     }
 
+    @MainActor
     var appIcon: NSImage {
         NSApplication.shared.applicationIconImage ?? NSImage(named: NSImage.applicationIconName) ?? NSImage()
     }

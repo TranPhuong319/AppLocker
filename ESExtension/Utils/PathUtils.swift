@@ -41,18 +41,18 @@ extension ESManager {
     // MARK: - Protected Paths & Verification
 
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker
-    static func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
+    func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
         guard let path = string(from: esPath) else { return false }
         return path == "/Users/Shared/AppLocker" || path.hasPrefix("/Users/Shared/AppLocker/")
     }
 
-    static func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
+    func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
         guard let path = string(from: esPath) else { return false }
         return (path.hasPrefix("/Users/Shared/AppLocker/") && path.hasSuffix("/config.plist"))
             || path == "/Users/Shared/AppLocker/config.plist"
     }
 
-    static func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {
+    func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {
         guard let path = string(from: esPath) else { return false }
         return path == "/Applications/AppLocker.app" || path.hasPrefix("/Applications/AppLocker.app/")
     }

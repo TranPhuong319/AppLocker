@@ -13,6 +13,7 @@ enum AlertResult {
     case cancelled                         // Người dùng hủy (Cancel, ESC, đóng bằng X)
 }
 
+@MainActor
 enum AlertShow {
     /// Hiển thị Alert với nhiều nút (tối đa 3)
     /// - Nếu có window đang hiển thị và ứng dụng đang active → hiện dạng sheet

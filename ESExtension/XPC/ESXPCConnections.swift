@@ -35,16 +35,14 @@ extension ESManager {
                 Flushing \(pendingToFlush.count, privacy: .public) pending notifications...
                 """
             )
-            DispatchQueue.global(qos: .utility).async { [weak self] in
-                for item in pendingToFlush {
-                    self?.performNotifyBlockRequest(
-                        conn: conn,
-                        name: item.name,
-                        path: item.path,
-                        cdhash: item.cdhash,
-                        targetPid: item.targetPid
-                    )
-                }
+            for item in pendingToFlush {
+                self.performNotifyBlockRequest(
+                    conn: conn,
+                    name: item.name,
+                    path: item.path,
+                    cdhash: item.cdhash,
+                    targetPid: item.targetPid
+                )
             }
         }
     }

@@ -68,7 +68,7 @@ struct GeneralSettingsTab: View {
             }
         }
         .formStyle(.grouped)
-        .onAppear {
+        .task {
             checkAgentStatus()
         }
     }
