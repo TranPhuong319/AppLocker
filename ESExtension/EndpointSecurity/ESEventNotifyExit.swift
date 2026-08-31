@@ -13,7 +13,18 @@ extension ESManager {
     func handleNotifyExit(client: OpaquePointer, message: ESMessage) {
         let process = message.pointee.process
         let exitingPID = audit_token_to_pid(process.pointee.audit_token)
-        removePendingVerification(pid: exitingPID)
+        let wasPending = removePendingVerification(pid: exitingPID)
+
+        // Notify Main App to remove the exited process from pending auth queue
+        if wasPending, exitingPID > 0 {
+            if let conn = pickAppConnection(),
+               let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+                   Logfile.esXPC.error("[ESExit] XPC notifyProcessExited error: \(String(describing: error))")
+               }) as? ESXPCProtocol {
+                proxy.notifyProcessExited(pid: Int32(exitingPID))
+                Logfile.esXPC.debug("[ESExit] Notified app about exited pending PID: \(exitingPID, privacy: .public)")
+            }
+        }
 
         // 1. Check if it's our main app
         guard isMainAppProcess(process) else {
