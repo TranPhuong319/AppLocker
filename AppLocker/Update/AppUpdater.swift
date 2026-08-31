@@ -142,7 +142,9 @@ final class AppUpdater: NSObject {
             // In Release, we rely on Sparkle's default internal scheduler.
             // If we are on Beta channel, we need to fetch the feed URL once at startup.
             if delegate.channel == .beta {
-                fetchLatestBeta { _ in }
+                Task {
+                    _ = await fetchLatestBeta()
+                }
             }
         #endif
     }
@@ -156,15 +158,15 @@ final class AppUpdater: NSObject {
         guard !updater.sessionInProgress else { return }
 
         if delegate.channel == .beta {
-            fetchLatestBeta { [weak self] success in
-                guard success, let self else { return }
-                Task { @MainActor in
-                    self.guardedCheck { updater in
-                        if updater.automaticallyDownloadsUpdates {
-                            updater.checkForUpdatesInBackground()
-                        } else {
-                            updater.checkForUpdateInformation()
-                        }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let success = await self.fetchLatestBeta()
+                guard success else { return }
+                self.guardedCheck { updater in
+                    if updater.automaticallyDownloadsUpdates {
+                        updater.checkForUpdatesInBackground()
+                    } else {
+                        updater.checkForUpdateInformation()
                     }
                 }
             }
@@ -190,11 +192,11 @@ final class AppUpdater: NSObject {
     func manualCheckForUpdates() {
         guardedCheck { _ in
             if delegate.channel == .beta {
-                fetchLatestBeta { [weak self] success in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    let success = await self.fetchLatestBeta()
                     guard success else { return }
-                    Task { @MainActor in
-                        self?.updaterController.checkForUpdates(nil)
-                    }
+                    self.updaterController.checkForUpdates(nil)
                 }
             } else {
                 updaterController.checkForUpdates(nil)
@@ -221,29 +223,22 @@ final class AppUpdater: NSObject {
 
     // MARK: - Beta appcast fetch
 
-    private func fetchLatestBeta(completion: @MainActor @escaping (Bool) -> Void) {
-        let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases")!
-        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
-            guard let data, error == nil else {
-                Task { @MainActor in completion(false) }
-                return
+    private func fetchLatestBeta() async -> Bool {
+        guard let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases") else {
+            return false
+        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
+            if let beta = releases.first(where: { $0.isPrerelease }),
+               let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
+                self.delegate.betaFeedURL = appcast.browserDownloadUrl
+                return true
             }
-
-            do {
-                let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
-                if let beta = releases.first(where: { $0.isPrerelease }),
-                    let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
-                    Task { @MainActor in
-                        self?.delegate.betaFeedURL = appcast.browserDownloadUrl
-                        completion(true)
-                    }
-                } else {
-                    Task { @MainActor in completion(false) }
-                }
-            } catch {
-                Task { @MainActor in completion(false) }
-            }
-        }.resume()
+        } catch {
+            Logfile.app.warning("[Updater] Failed to fetch beta releases: \(error.localizedDescription)")
+        }
+        return false
     }
 
     // MARK: - Exposed state (READ ONLY)

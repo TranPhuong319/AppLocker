@@ -29,9 +29,7 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
             }
         )
         let hostingController = NSHostingController(rootView: contentView)
-        if #available(macOS 14.0, *) {
-            hostingController.sceneBridgingOptions = [.toolbars, .title]
-        }
+        hostingController.sceneBridgingOptions = [.toolbars, .title]
         hostingController.view.setFrameSize(WindowLayout.batchAuthSize)
 
         let size = WindowLayout.batchAuthSize

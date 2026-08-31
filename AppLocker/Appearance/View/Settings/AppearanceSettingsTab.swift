@@ -94,7 +94,7 @@ private struct ThemeThumbnailView: View {
 
             Text(mode.displayName)
                 .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
-                .foregroundColor(isSelected ? .primary : .secondary)
+                .foregroundStyle(isSelected ? .primary : .secondary)
         }
         .contentShape(Rectangle())
     }
@@ -236,7 +236,7 @@ private struct ThemeThumbnailView: View {
             if showLogo {
                 Image(systemName: "apple.logo")
                     .font(.system(size: 4))
-                    .foregroundColor(isDark ? .white.opacity(0.8) : .black.opacity(0.6))
+                    .foregroundStyle(isDark ? .white.opacity(0.8) : .black.opacity(0.6))
                     .padding(.leading, 3)
             }
             Spacer()

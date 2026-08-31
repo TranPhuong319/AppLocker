@@ -25,13 +25,13 @@ struct AddAppButton: View {
 
                 Text(app.name)
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(.tint)
                         .font(.title3)
                 }
             }
@@ -59,7 +59,7 @@ struct DeleteAppButton: View {
                     if appState.deleteQueue.isEmpty { appState.showingDeleteQueue = false }
                 }
             } label: {
-                Image(systemName: "minus.circle").foregroundColor(.red)
+                Image(systemName: "minus.circle").foregroundStyle(.red)
             }
             .buttonStyle(BorderlessButtonStyle())
         }
@@ -89,7 +89,7 @@ struct LockedAppButton: View {
                 }
             } label: {
                 Image(systemName: "minus.circle")
-                    .foregroundColor(.red)
+                    .foregroundStyle(.red)
             }
             .buttonStyle(BorderlessButtonStyle())
             .disabled(isDeleting)

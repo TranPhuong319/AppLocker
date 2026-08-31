@@ -160,7 +160,7 @@ final class ESManager: NSObject, @unchecked Sendable {
         let processID = connection.processIdentifier
         processIDLock.withLock { self.authenticatedMainAppPID = pid_t(processID) }
 
-        var auditToken = connection.esAuditToken
+        var auditToken = connection.auditToken
         let userUID = audit_token_to_euid(auditToken)
         stateLock.withLock {
             self.activeUserUID = userUID
@@ -248,13 +248,5 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     static func machTimeToNanos(_ machTime: UInt64) -> UInt64 {
         return machTime * UInt64(timebaseInfo.numer) / UInt64(timebaseInfo.denom)
-    }
-}
-
-extension NSXPCConnection {
-    var esAuditToken: audit_token_t {
-        var token = audit_token_t()
-        if let value = self.value(forKey: "auditToken") as? NSValue { value.getValue(&token) }
-        return token
     }
 }

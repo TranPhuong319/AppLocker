@@ -23,7 +23,7 @@ struct AppIconView: View {
             }
         }
         .frame(width: size, height: size)
-        .cornerRadius(6)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
         .task(id: path) {
             if let cached = AppIconProvider.shared.cachedIcon(forPath: path, size: size) {
                 self.image = cached

@@ -26,7 +26,6 @@ extension AppDelegate {
     func removeConfig(purgeAll: Bool = false) -> Bool {
         if let domain = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: domain)
-            UserDefaults.standard.synchronize()
         }
         do {
             let targetURL = purgeAll ? ConfigStore.baseDirectoryURL : ConfigStore.shared.userDirectoryURL

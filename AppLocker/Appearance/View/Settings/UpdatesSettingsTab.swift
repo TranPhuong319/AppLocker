@@ -61,7 +61,7 @@ struct UpdatesSettingsTab: View {
 
                 Text(selectedChannel.description)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
 
                 Button(action: checkForUpdates, label: {
                     Label("Check for Updates Now", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
@@ -83,21 +83,21 @@ struct UpdatesSettingsTab: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Current Version")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Text("Version \(Bundle.main.fullVersion)")
                     .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             HStack(spacing: 4) {
                 Image(systemName: hasAvailableUpdate ? "arrow.down.circle.fill" : "checkmark.circle.fill")
-                    .foregroundColor(hasAvailableUpdate ? .blue : .green)
+                    .foregroundStyle(hasAvailableUpdate ? .blue : .green)
                 Text(hasAvailableUpdate ? "Version \(availableUpdateVersion) available" : "Up to Date")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(hasAvailableUpdate ? .blue : .green)
+                    .foregroundStyle(hasAvailableUpdate ? .blue : .green)
             }
         }
         .padding(.vertical, 4)

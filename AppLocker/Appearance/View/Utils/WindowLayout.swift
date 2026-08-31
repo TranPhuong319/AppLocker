@@ -42,34 +42,13 @@ struct VisualEffectView: NSViewRepresentable {
     }
 }
 
-struct LiquidGlassBackgroundModifier: ViewModifier {
-    var material: NSVisualEffectView.Material
-
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Rectangle())
-        } else {
-            content
-                .background(
-                    VisualEffectView(material: material, blendingMode: .behindWindow)
-                )
-        }
-    }
-}
-
 struct LiquidGlassCapsuleModifier: ViewModifier {
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Capsule())
-        } else {
-            content
-                .background(
-                    Capsule()
-                        .fill(Color(NSColor.controlBackgroundColor))
-                )
-        }
+        content
+            .background(
+                Capsule()
+                    .fill(Color(NSColor.controlBackgroundColor))
+            )
     }
 }
 
@@ -77,89 +56,25 @@ struct LiquidGlassCardModifier: ViewModifier {
     var isSelected: Bool
 
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: RoundedRectangle(cornerRadius: 10))
-        } else {
-            content
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(
-                            isSelected
-                                ? Color(NSColor.controlBackgroundColor)
-                                : Color(NSColor.controlBackgroundColor).opacity(0.35)
-                        )
-                )
-        }
-    }
-}
-
-struct LiquidGlassCircleModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Circle())
-        } else {
-            content
-                .background(
-                    Circle()
-                        .fill(Color(NSColor.controlBackgroundColor))
-                )
-        }
-    }
-}
-
-struct LiquidGlassBarModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Rectangle())
-        } else {
-            content
-                .background(.bar)
-        }
-    }
-}
-
-struct LiquidGlassContainer<Content: View>: View {
-    @ViewBuilder let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-
-    var body: some View {
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer {
-                content
-            }
-        } else {
-            content
-        }
+        content
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(
+                        isSelected
+                            ? Color(NSColor.controlBackgroundColor)
+                            : Color(NSColor.controlBackgroundColor).opacity(0.35)
+                    )
+            )
     }
 }
 
 extension View {
-    func liquidGlassBackground(
-        material: NSVisualEffectView.Material = .hudWindow
-    ) -> some View {
-        modifier(LiquidGlassBackgroundModifier(material: material))
-    }
-
     func liquidGlassCapsule() -> some View {
         modifier(LiquidGlassCapsuleModifier())
     }
 
-    func liquidGlassCircle() -> some View {
-        modifier(LiquidGlassCircleModifier())
-    }
-
     func liquidGlassCard(isSelected: Bool = true) -> some View {
         modifier(LiquidGlassCardModifier(isSelected: isSelected))
-    }
-
-    func liquidGlassBar() -> some View {
-        modifier(LiquidGlassBarModifier())
     }
 }
 
@@ -181,10 +96,7 @@ struct WindowDragArea<Content: View>: NSViewRepresentable {
 
     private class DragHostingView<V: View>: NSHostingView<V> {
         override func mouseDown(with event: NSEvent) {
-            let selector = NSSelectorFromString("performWindowDragWithEvent:")
-            if let window = window, window.responds(to: selector) {
-                window.perform(selector, with: event)
-            }
+            window?.performDrag(with: event)
         }
     }
 }

@@ -32,19 +32,19 @@ struct AboutView: View {
             VStack(spacing: 12) {
                 Text("Version \(bundle.fullVersion)")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
 
                 HStack {
                     Text(bundle.copyright)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
 
                     Spacer()
 
                     Link("Website", destination: URL(string: "https://github.com/TranPhuong319/AppLocker")!)
                         .font(.caption)
                         .buttonStyle(.plain)
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                 }
             }
             .padding(.horizontal, 20)

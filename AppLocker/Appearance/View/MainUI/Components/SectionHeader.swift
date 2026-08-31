@@ -14,7 +14,7 @@ struct SectionHeader: View {
         HStack(spacing: 10) {
             Text(title)
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundColor(.secondary.opacity(0.8))
+                .foregroundStyle(.secondary.opacity(0.8))
                 .layoutPriority(1)
 
             Rectangle()

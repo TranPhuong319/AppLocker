@@ -101,7 +101,7 @@ struct AddAppSheet: View {
 
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .padding(.leading, 4)
 
                 TextField(
