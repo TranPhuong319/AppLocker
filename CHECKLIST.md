@@ -31,17 +31,13 @@ Checklist này tổng hợp các hạng mục cần rà soát, dọn dẹp (prun
 
 ## 🛡️ 3. Gia cố Xử lý POSIX Signals & PID Safety (Hardening)
 
-- [ ] **Thêm POSIX Liveness Check trước khi gửi Signal**:
-  - **File:** `ESExtension/Engine/ESManager+PendingProcess.swift`
-  - **Hành động:** Trong `processApprovedPIDs` và `processRejectedPIDs`, bổ sung điều kiện `kill(pid, 0) == 0`:
-    ```swift
-    guard pid > 0, kill(pid, 0) == 0 else { continue }
-    ```
-  - **Lý do:** Ngăn chặn việc gửi `SIGCONT`/`SIGKILL` nhầm nếu tiến trình đã chết và PID bị kernel tái sử dụng (PID recycling).
-
-- [ ] **Đánh giá Bổ sung `audit_token` / `pidversion` Tracking**:
-  - **File:** `ESExtension/Engine/ESManager+PendingProcess.swift`
-  - **Hành động:** Lưu trữ `audit_token_t` cùng với `pid_t` trong `pendingVerificationPIDs` để xác thực danh tính tuyệt đối khi batch approval diễn ra sau thời gian chờ dài.
+- [x] **Thêm POSIX Liveness Check & Chống PID Recycling (`audit_token`)**:
+  - **Files:** `ESExtension/Engine/ESManager.swift`, `ESExtension/Engine/ESManager+PendingProcess.swift`, `ESExtension/EndpointSecurity/ESEventNotifyExec.swift`
+  - **Hành động:** 
+    - Lưu `audit_token_t` cùng `pid_t` trong `pendingVerificationProcesses: [pid_t: audit_token_t]`.
+    - Kiểm tra liveness `guard pid > 0, kill(pid, 0) == 0 else { continue }` trước khi gửi signal.
+    - Đối chiếu `audit_token_to_pidversion` của process hiện tại với token lúc chặn, tự động abort nếu phát hiện PID recycling.
+  - **Lý do:** Ngăn chặn việc gửi `SIGCONT`/`SIGKILL` nhầm nếu tiến trình đã chết và PID bị kernel tái sử dụng cho ứng dụng khác.
 
 ---
 

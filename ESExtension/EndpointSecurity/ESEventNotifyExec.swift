@@ -13,13 +13,15 @@ import os
 extension ESManager {
     func handleNotifyExec(client: OpaquePointer, message: ESMessage) {
         let messagePtr = message.pointee
-        let targetPid = audit_token_to_pid(messagePtr.process.pointee.audit_token)
+        let targetPid = audit_token_to_pid(messagePtr.event.exec.target.pointee.audit_token)
 
         guard targetPid > 0 else {
             return
         }
 
-        guard let path = safePath(fromFilePointer: messagePtr.event.exec.target.pointee.executable) else {
+        guard let path = safePath(
+            fromFilePointer: messagePtr.event.exec.target.pointee.executable
+        ) else {
             return
         }
 
@@ -51,12 +53,17 @@ extension ESManager {
             targetPid: targetPid
         )
 
-        suspendAndNotifyBlockedProcess(notification: notification, targetPid: targetPid)
+        suspendAndNotifyBlockedProcess(
+            notification: notification,
+            targetPid: targetPid,
+            token: messagePtr.event.exec.target.pointee.audit_token
+        )
     }
 
     private func suspendAndNotifyBlockedProcess(
         notification: BlockedNotification,
-        targetPid: pid_t
+        targetPid: pid_t,
+        token: audit_token_t
     ) {
         let alreadyPending = isPendingVerification(pid: targetPid)
         guard !alreadyPending else {
@@ -70,9 +77,15 @@ extension ESManager {
         }
 
         // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
-        markPendingVerification(pid: targetPid)
+        markPendingVerification(pid: targetPid, token: token)
         let result = kill(targetPid, SIGSTOP)
-        Logfile.endpointSecurity.debug("[NotifyExec] Marked PID \(targetPid, privacy: .public) as pending verification")
+        let version = audit_token_to_pidversion(token)
+        Logfile.endpointSecurity.debug(
+            """
+            [NotifyExec] Marked PID \(targetPid, privacy: .public) (version: \(version, privacy: .public)) \
+            as pending verification
+            """
+        )
 
         if result == 0 {
             Logfile.endpointSecurity.info(
