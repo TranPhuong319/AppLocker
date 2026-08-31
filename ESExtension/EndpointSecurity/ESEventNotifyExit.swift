@@ -10,15 +10,13 @@ import Foundation
 import os
 
 extension ESManager {
-    static func handleNotifyExit(client: OpaquePointer, message: ESMessage) {
-        guard let manager = sharedInstanceForCallbacks else { return }
-
+    func handleNotifyExit(client: OpaquePointer, message: ESMessage) {
         let process = message.pointee.process
         let exitingPID = audit_token_to_pid(process.pointee.audit_token)
-        manager.removePendingVerification(pid: exitingPID)
+        removePendingVerification(pid: exitingPID)
 
         // 1. Check if it's our main app
-        guard manager.isMainAppProcess(process) else {
+        guard isMainAppProcess(process) else {
             return
         }
 
@@ -26,7 +24,7 @@ extension ESManager {
         Logfile.endpointSecurity.info("[Guardian] Main App (PID: \(pid, privacy: .public)) exited.")
 
         // 2. Check if shutdown was authorized
-        let isAuthorized = manager.stateLock.withLock { manager.isShutdownAuthorized }
+        let isAuthorized = stateLock.withLock { isShutdownAuthorized }
 
         if isAuthorized {
             Logfile.endpointSecurity.info("[Guardian] Shutdown was authorized. Watchdog standing down.")
@@ -36,18 +34,21 @@ extension ESManager {
         // 3. Unauthorized exit detected -> Self-Healing with 10s delay
         Logfile.endpointSecurity.warning("[Guardian] Unauthorized exit detected! Launching watchdog (10s delay)...")
 
-        let uid = manager.stateLock.withLock { manager.activeUserUID }
+        let uid = stateLock.withLock { activeUserUID }
         guard let userUID = uid else {
             Logfile.endpointSecurity.error("[Guardian] No active User UID found. Cannot kickstart.")
             return
         }
 
-        // Schedule kickstart after 10 seconds
-        manager.authorizationProcessingQueue.asyncAfter(deadline: .now() + 10.0) {
+        // Schedule kickstart after 10 seconds via Swift Concurrency Task
+        Task.detached(priority: .utility) { [weak self] in
+            try? await Task.sleep(for: .seconds(10))
+            guard let self else { return }
             Logfile.endpointSecurity.debug("[Guardian] Watchdog checking if Main App has recovered...")
 
-            // Check if app is already running (launchd might have restarted it via KeepAlive)
-            if manager.authenticatedMainAppPID != nil {
+            // Thread-safe atomic check via processIDLock
+            let isAppRunning = self.processIDLock.withLock { self.authenticatedMainAppPID != nil }
+            if isAppRunning {
                 Logfile.endpointSecurity.info("[Guardian] Main App recovered via launchd. Watchdog cancelled.")
             } else {
                 Logfile.endpointSecurity.warning(

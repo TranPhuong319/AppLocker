@@ -7,7 +7,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : ""
           }
         }
@@ -18,7 +18,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ has been blocked from launching."
           }
         },
@@ -34,7 +34,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lld seconds"
           }
         },
@@ -50,7 +50,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "A new beta version is available. Do you want to update?"
           }
         },
@@ -66,7 +66,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "A new stable version is available. Do you want to update?"
           }
         },
@@ -82,7 +82,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "About AppLocker"
           }
         },
@@ -98,7 +98,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Active"
           }
         },
@@ -114,7 +114,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Add application to lock"
           }
         },
@@ -130,7 +130,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "After 5 minutes"
           }
         },
@@ -146,7 +146,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "After 15 minutes"
           }
         },
@@ -162,7 +162,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Agree"
           }
         },
@@ -178,7 +178,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Appearance"
           }
         },
@@ -194,7 +194,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Appearance mode"
           }
         },
@@ -210,7 +210,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Application is waiting to be deleted"
           }
         },
@@ -226,7 +226,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Application Lock"
           }
         },
@@ -242,7 +242,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Application Lock is disabled"
           }
         },
@@ -258,7 +258,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Application Lock is enabled"
           }
         },
@@ -274,7 +274,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Application Lock Protection"
           }
         },
@@ -290,7 +290,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Applications"
           }
         },
@@ -306,7 +306,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications."
           }
         },
@@ -322,7 +322,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "authenticate to open the application list"
           }
         },
@@ -338,7 +338,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "authenticate to reset AppLocker"
           }
         },
@@ -354,7 +354,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Authentication"
           }
         },
@@ -370,7 +370,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Authentication (%d)"
           }
         },
@@ -386,7 +386,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Authentication Popup Timeout"
           }
         },
@@ -402,7 +402,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Auto-Lock Duration"
           }
         },
@@ -418,7 +418,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Automatically check for updates"
           }
         },
@@ -434,7 +434,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Automatically close the application after %d seconds"
           }
         },
@@ -450,7 +450,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Automatically download new updates"
           }
         },
@@ -466,7 +466,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Background Agent Status"
           }
         },
@@ -482,7 +482,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Background Security Service"
           }
         },
@@ -498,7 +498,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Beta"
           }
         },
@@ -514,7 +514,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Beta Ready to Install"
           }
         },
@@ -530,7 +530,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Beta Update Available"
           }
         },
@@ -546,7 +546,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Cancel"
           }
         },
@@ -562,7 +562,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Check for Updates Now"
           }
         },
@@ -578,7 +578,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Check for Updates…"
           }
         },
@@ -594,7 +594,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Close"
           }
         },
@@ -610,7 +610,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Confirm"
           }
         },
@@ -626,7 +626,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Continue"
           }
         },
@@ -642,7 +642,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Could not completely remove application files or configuration."
           }
         },
@@ -658,7 +658,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Current Version"
           }
         },
@@ -674,7 +674,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Dark"
           }
         },
@@ -690,7 +690,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Decline"
           }
         },
@@ -706,7 +706,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "disable application lock"
           }
         },
@@ -722,7 +722,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Do you agree to the terms of service and license above?"
           }
         },
@@ -738,7 +738,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Do you want to launch these %d applications?"
           }
         },
@@ -754,7 +754,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Do you want to launch this application?"
           }
         },
@@ -770,7 +770,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Enable Background Service"
           }
         },
@@ -786,7 +786,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Enable Extension"
           }
         },
@@ -802,7 +802,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Failed to Move Application"
           }
         },
@@ -818,7 +818,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "General"
           }
         },
@@ -834,7 +834,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Get experimental updates.\nNote: Experimental updates are often unstable."
           }
         },
@@ -850,7 +850,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Get official, stable updates."
           }
         },
@@ -866,7 +866,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Immediately"
           }
         },
@@ -882,7 +882,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Inactive"
           }
         },
@@ -898,7 +898,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Light"
           }
         },
@@ -914,7 +914,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Lock"
           }
         },
@@ -930,7 +930,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Lock (%d)"
           }
         },
@@ -946,7 +946,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Lock Session Timeout"
           }
         },
@@ -962,7 +962,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Locked application"
           }
         },
@@ -978,7 +978,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Locking %lld apps..."
           }
         },
@@ -994,7 +994,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "macOS requires enabling AppLocker in System Settings -> Login Items & Extensions."
           }
         },
@@ -1010,7 +1010,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Manage the application list"
           }
         },
@@ -1026,7 +1026,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Move to Applications"
           }
         },
@@ -1042,7 +1042,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Notifications"
           }
         },
@@ -1058,7 +1058,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "open %@"
           }
         },
@@ -1074,7 +1074,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "open %d application(s)"
           }
         },
@@ -1090,7 +1090,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Open System Settings"
           }
         },
@@ -1106,7 +1106,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Others…"
           }
         },
@@ -1122,7 +1122,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Please read and agree to the terms of service and license below:"
           }
         },
@@ -1138,7 +1138,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Popup Countdown:"
           }
         },
@@ -1154,7 +1154,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Quit"
           }
         },
@@ -1171,7 +1171,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Quit AppLocker"
           }
         },
@@ -1187,7 +1187,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Re-register launchctl agent service"
           }
         },
@@ -1203,7 +1203,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ready to Install"
           }
         },
@@ -1219,7 +1219,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Repair Agent Service"
           }
         },
@@ -1235,7 +1235,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Requires running in the Applications folder"
           }
         },
@@ -1251,7 +1251,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Reset"
           }
         },
@@ -1267,7 +1267,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Reset AppLocker"
           }
         },
@@ -1283,7 +1283,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Search apps..."
           }
         },
@@ -1299,7 +1299,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Security"
           }
         },
@@ -1315,7 +1315,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Select the application to lock"
           }
         },
@@ -1331,7 +1331,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Settings"
           }
         },
@@ -1347,14 +1347,14 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Show notifications when an app is blocked"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hiển thị thông báo khi một ứng dụng bị khóa"
+            "value" : "Hiển thị thông báo khi một ứng dụng bị chặn"
           }
         }
       }
@@ -1363,7 +1363,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Software Updates"
           }
         },
@@ -1379,7 +1379,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Stable"
           }
         },
@@ -1395,7 +1395,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "System"
           }
         },
@@ -1411,7 +1411,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "System Applications"
           }
         },
@@ -1427,7 +1427,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "System Extension Inactive"
           }
         },
@@ -1443,7 +1443,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "System Extension is disabled. Please enable it in System Settings."
           }
         },
@@ -1459,7 +1459,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "System Extension Required"
           }
         },
@@ -1475,7 +1475,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "System Extension Uninstallation Failed"
           }
         },
@@ -1491,7 +1491,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "The beta update has been downloaded. Install now?"
           }
         },
@@ -1507,7 +1507,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "The currently running application is at %@.\n\nAppLocker must be moved to the /Applications folder to function correctly."
           }
         },
@@ -1524,7 +1524,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "The update has been downloaded. Install now?"
           }
         },
@@ -1540,7 +1540,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "There is no locked application."
           }
         },
@@ -1556,7 +1556,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.\n\nDo you want to continue?"
           }
         },
@@ -1572,7 +1572,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Uninstall"
           }
         },
@@ -1588,7 +1588,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Uninstall AppLocker"
           }
         },
@@ -1604,7 +1604,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Uninstallation Incomplete"
           }
         },
@@ -1620,7 +1620,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Unlock"
           }
         },
@@ -1636,7 +1636,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Unlocking %lld apps..."
           }
         },
@@ -1652,7 +1652,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Up to Date"
           }
         },
@@ -1668,7 +1668,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Update Available"
           }
         },
@@ -1684,7 +1684,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Update Channel"
           }
         },
@@ -1700,7 +1700,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Updates"
           }
         },
@@ -1716,7 +1716,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Version %@"
           }
         },
@@ -1732,7 +1732,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Version %@ available"
           }
         },
@@ -1748,7 +1748,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Waiting to unlock %lld application(s)..."
           }
         },
@@ -1764,7 +1764,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Website"
           }
         },
@@ -1780,7 +1780,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Welcome to %@"
           }
         },
@@ -1796,7 +1796,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "When System Sleeps"
           }
         },

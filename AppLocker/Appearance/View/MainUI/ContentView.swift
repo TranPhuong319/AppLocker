@@ -133,9 +133,7 @@ struct ContentView: View {
 
     private func unfocus() {
         isSearchFocused = false
-        DispatchQueue.main.async {
-            NSApp.keyWindow?.makeFirstResponder(nil)
-        }
+        NSApp.keyWindow?.makeFirstResponder(nil)
     }
 
     @ViewBuilder

@@ -45,7 +45,7 @@ final class HotKeyManager {
                               &id)
 
             if id.id == 1 {
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     NSApp.appDelegate?.openListApp()
                 }
             }

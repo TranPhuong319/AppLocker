@@ -28,7 +28,7 @@ class LockES: LockManagerProtocol {
             self.onConfigUpdated = onUpdate
         }
         ConfigStore.shared.performHandshake { [weak self] success in
-            guard let self = self else { return }
+            guard let self else { return }
             Logfile.policy.info(
                 "[LockES] ES Handshake finished (success=\(success, privacy: .public)). Proceeding to load config."
             )
@@ -36,7 +36,8 @@ class LockES: LockManagerProtocol {
             // Safe to load config now (we are Muted or Launcher mode)
             let loaded = ConfigStore.shared.load()
 
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 self.lockedApps = loaded.apps
                 self.isProtectionDisabled = loaded.isDisabled
                 self.onConfigUpdated?()
@@ -46,7 +47,7 @@ class LockES: LockManagerProtocol {
     }
 
     private func migrateLegacyConfigsIfNeeded(appsToMigrate: [String: LockedAppConfig], isLegacyFormat: Bool) {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        Task(priority: .high) { [weak self] in
             var needsSave = isLegacyFormat
             var updatedApps = appsToMigrate
 
@@ -62,8 +63,8 @@ class LockES: LockManagerProtocol {
             }
 
             if needsSave {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
                     self.lockedApps = updatedApps
                     self.save()
                     Logfile.policy.info(

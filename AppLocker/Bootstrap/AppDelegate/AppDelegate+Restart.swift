@@ -52,7 +52,7 @@ extension AppDelegate {
             if let error = error {
                 Logfile.app.error("[Lifecycle] App restart error: \(error.localizedDescription)")
             }
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 NSApp.terminate(nil)
             }
         }

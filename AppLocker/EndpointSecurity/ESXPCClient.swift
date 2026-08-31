@@ -9,9 +9,10 @@ import CryptoKit
 import Foundation
 import os
 
-final class ESXPCClient {
+final class ESXPCClient: @unchecked Sendable {
     static let shared = ESXPCClient()
     private var connection: NSXPCConnection?
+    private var pendingConnection: NSXPCConnection?
     private let serviceName = "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc"
     private let maxRetries = 10
     private var retryCount = 0
@@ -32,7 +33,7 @@ final class ESXPCClient {
     private func proxy(
         conn: NSXPCConnection,
         actionName: String,
-        onError: @escaping () -> Void = {}
+        onError: @escaping @Sendable () -> Void = {}
     ) -> ESAppProtocol? {
         guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
             Logfile.appXPC.error(
@@ -57,9 +58,10 @@ final class ESXPCClient {
             let conn = self.createConnection()
             self.setupConnectionHandlers(conn: conn)
             conn.resume()
+            self.pendingConnection = conn
 
             self.performAuth(conn: conn) { [weak self] success in
-                self?.handleAuthResult(conn: conn, success: success)
+                self?.handleAuthResult(success: success)
             }
         }
     }
@@ -74,30 +76,32 @@ final class ESXPCClient {
 
     private func setupConnectionHandlers(conn: NSXPCConnection) {
         conn.invalidationHandler = { [weak self] in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 ExtensionInstaller.shared.updateInstalledState(false)
             }
             self?.scheduleReconnect(immediate: true)
         }
 
         conn.interruptionHandler = { [weak self] in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 ExtensionInstaller.shared.updateInstalledState(false)
             }
             self?.scheduleReconnect(immediate: false)
         }
     }
 
-    private func handleAuthResult(conn: NSXPCConnection, success: Bool) {
+    private func handleAuthResult(success: Bool) {
         xpcQueue.async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.isConnecting = false
+            guard let pendingConn = self.pendingConnection else { return }
+            self.pendingConnection = nil
 
             if success {
                 Logfile.appXPC.info("[ESXPCClient] Authentication successful. Connection ready.")
-                self.connection = conn
+                self.connection = pendingConn
                 self.retryCount = 0
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     ExtensionInstaller.shared.updateInstalledState(true)
                 }
                 if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
@@ -106,20 +110,27 @@ final class ESXPCClient {
                 }
             } else {
                 Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     ExtensionInstaller.shared.updateInstalledState(false)
                 }
-                conn.invalidate()
+                pendingConn.invalidate()
             }
         }
     }
 
     func disconnect() {
         xpcQueue.async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.shouldReconnect = false
             self.retryCount = 0
             self.isConnecting = false
+
+            if let pending = self.pendingConnection {
+                pending.invalidationHandler = nil
+                pending.interruptionHandler = nil
+                pending.invalidate()
+                self.pendingConnection = nil
+            }
 
             if let oldConn = self.connection {
                 oldConn.invalidationHandler = nil
@@ -128,13 +139,13 @@ final class ESXPCClient {
             }
             self.connection = nil
 
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 ExtensionInstaller.shared.updateInstalledState(false)
             }
         }
     }
 
-    private func performAuth(conn: NSXPCConnection, completion: @escaping (Bool) -> Void) {
+    private func performAuth(conn: NSXPCConnection, completion: @escaping @Sendable (Bool) -> Void) {
         let appTag = KeychainHelper.Keys.appPublic
 
         // 1. Ensure Client Keys
@@ -206,13 +217,13 @@ final class ESXPCClient {
             self.connection = nil
             self.isConnecting = false  // Allow new connection attempt
 
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 ExtensionInstaller.shared.updateInstalledState(false)
             }
 
             guard self.retryCount < self.maxRetries else {
                 Logfile.appXPC.error("[ESXPCClient] Max retries reached (\(self.maxRetries, privacy: .public))")
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     ExtensionInstaller.shared.updateInstalledState(false)
                 }
                 return
@@ -256,9 +267,9 @@ extension ESXPCClient {
     }
 
     // App requests extension to allow config access once (with reply ack)
-    func allowConfigAccess(_ processID: Int32, retry: Int = 0, completion: @escaping (Bool) -> Void) {
+    func allowConfigAccess(_ processID: Int32, retry: Int = 0, completion: @escaping @Sendable (Bool) -> Void) {
         xpcQueue.async { [weak self] in
-            guard let self = self else {
+            guard let self else {
                 completion(false)
                 return
             }
@@ -292,7 +303,7 @@ extension ESXPCClient {
         }
     }
 
-    func authorizeShutdown(_ authorized: Bool, completion: @escaping (Bool) -> Void) {
+    func authorizeShutdown(_ authorized: Bool, completion: @escaping @Sendable (Bool) -> Void) {
         xpcQueue.async { [weak self] in
             guard let self = self, let conn = self.connection else {
                 completion(false)
@@ -313,10 +324,10 @@ extension ESXPCClient {
         approvedPIDs: [Int32],
         rejectedPIDs: [Int32],
         retry: Int = 0,
-        completion: @escaping (Bool) -> Void
+        completion: @escaping @Sendable (Bool) -> Void
     ) {
         xpcQueue.async { [weak self] in
-            guard let self = self else {
+            guard let self else {
                 completion(false)
                 return
             }

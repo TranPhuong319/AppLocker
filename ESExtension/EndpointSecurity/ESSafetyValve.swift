@@ -12,7 +12,7 @@ import os
 /// ESSafetyValve implements the "Dual-Block Race" pattern (Santa-style).
 /// It uses a DispatchSemaphore to ensure that either the main logic worker
 /// OR the emergency timer responds to the ES message, but never both.
-final class ESSafetyValve {
+final class ESSafetyValve: @unchecked Sendable {
     private let lock = OSAllocatedUnfairLock()
     private let deadlineExpiredSema = DispatchSemaphore(value: 0)
     private let message: ESMessage

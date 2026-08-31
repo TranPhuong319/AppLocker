@@ -20,6 +20,7 @@ enum AgentAction {
 
 let plistName = "com.TranPhuong319.AppLocker.agent"
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
     var statusItem: NSStatusItem?
     var pendingUpdate: SUAppcastItem?
@@ -38,13 +39,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
 
             Logfile.app.debug("[Bootstrap] Waiting for PID: \(parentProcessID, privacy: .public) to exit...")
 
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            Task(priority: .high) { [weak self] in
                 var attempts = 0
                 while kill(parentProcessID, 0) == 0 && attempts < 30 {
-                    Thread.sleep(forTimeInterval: 0.1)
+                    try? await Task.sleep(for: .milliseconds(100))
                     attempts += 1
                 }
-                DispatchQueue.main.async {
+                await MainActor.run { [weak self] in
                     if attempts >= 30 {
                         Logfile.app.warning("[Bootstrap] Wait timed out after 3 seconds. Proceeding anyway.")
                     } else {

@@ -69,7 +69,7 @@ extension AppDelegate {
                     "[DirectoryCheck] Application restart error in Applications: \(error.localizedDescription)"
                 )
             }
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 NSApp.terminate(nil)
             }
         }

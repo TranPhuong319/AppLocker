@@ -11,22 +11,17 @@ import Foundation
 import os
 
 extension ESManager {
-    static func handleAuthSignal(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve) {
+    func handleAuthSignal(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve) {
         let messagePtr = message.pointee
         let targetPid = audit_token_to_pid(messagePtr.event.signal.target.pointee.audit_token)
         let senderPid = audit_token_to_pid(messagePtr.process.pointee.audit_token)
         let sig = messagePtr.event.signal.sig
 
-        guard let manager = ESManager.sharedInstanceForCallbacks else {
-            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-            return
-        }
-
-        let isPending = manager.isPendingVerification(pid: targetPid)
+        let isPending = isPendingVerification(pid: targetPid)
 
         if isPending && sig == SIGCONT {
-            let isAuthorizedSender = manager.stateLock.withLock {
-                return senderPid == manager.authenticatedMainAppPID || senderPid == getpid()
+            let isAuthorizedSender = stateLock.withLock {
+                return senderPid == authenticatedMainAppPID || senderPid == getpid()
             }
 
             if !isAuthorizedSender {

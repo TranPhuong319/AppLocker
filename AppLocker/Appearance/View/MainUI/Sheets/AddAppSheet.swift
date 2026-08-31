@@ -76,17 +76,15 @@ struct AddAppSheet: View {
             minWidth: WindowLayout.addAppMinSize.width,
             minHeight: WindowLayout.addAppMinSize.height
         )
-        .onAppear {
+        .task {
             unfocus()
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                NSApp.keyWindow?.makeFirstResponder(nil)
-                appState.activeTouchBar = .addAppPopup
-            }
+            try? await Task.sleep(for: .milliseconds(100))
+            NSApp.keyWindow?.makeFirstResponder(nil)
+            appState.activeTouchBar = .addAppPopup
         }
         .onDisappear {
-            // Thêm độ trễ nhỏ để đảm bảo window chính đã trở thành key trước khi apply lại Touch Bar
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(100))
                 appState.searchTextUnlockaleApps = ""
                 appState.activeTouchBar = .mainWindow
             }

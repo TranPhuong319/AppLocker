@@ -78,7 +78,7 @@ struct SecuritySettingsTab: View {
             }
         }
         .formStyle(.grouped)
-        .onAppear {
+        .task {
             syncProtectionStatus()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
@@ -101,7 +101,7 @@ struct SecuritySettingsTab: View {
             AuthenticationManager.authenticate(
                 reason: String(localized: "disable application lock")
             ) { success, _ in
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     if success {
                         AppState.shared.manager.setProtectionDisabled(true)
                         self.isProtectionEnabled = false

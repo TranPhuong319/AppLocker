@@ -69,7 +69,7 @@ struct UpdatesSettingsTab: View {
             }
         }
         .formStyle(.grouped)
-        .onAppear {
+        .task {
             updateSparkleStatus()
         }
         .onReceive(NotificationCenter.default.publisher(for: .appLockerPendingUpdateDidChange)) { _ in
