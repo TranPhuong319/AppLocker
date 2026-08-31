@@ -10,7 +10,6 @@ import os
 
 extension ESManager {
     static let baseConfigDirectory = "/Users/Shared/AppLocker"
-    static let legacyConfigPath = "/Users/Shared/AppLocker/config.plist"
 
     /// Đọc cấu hình từ tất cả các file /Users/Shared/AppLocker/<UID>/config.plist và cập nhật vào bộ nhớ ngay lập tức
     func loadInitialConfigSync() {
@@ -46,7 +45,6 @@ extension ESManager {
         var newCDHashes: [uid_t: Set<String>] = [:]
         var newBundlePaths: [uid_t: Set<String>] = [:]
 
-        // 1. Quét các thư mục con tương ứng với từng UID
         if let subpaths = try? fileManager.contentsOfDirectory(atPath: baseDir) {
             let decoder = PropertyListDecoder()
             for item in subpaths {
@@ -62,16 +60,6 @@ extension ESManager {
                 let (cdhashes, bundlePaths) = extractHashesAndPaths(from: userConfig.apps)
                 newCDHashes[uid] = cdhashes
                 newBundlePaths[uid] = bundlePaths
-            }
-        }
-
-        // 2. Dự phòng: Nếu chưa có file con nào nhưng có file legacy config.plist
-        if newCDHashes.isEmpty && fileManager.fileExists(atPath: ESManager.legacyConfigPath) {
-            if let legacyData = try? Data(
-                contentsOf: URL(fileURLWithPath: ESManager.legacyConfigPath),
-                options: .mappedIfSafe
-            ) {
-                return parseLegacyConfigData(legacyData)
             }
         }
 
@@ -99,31 +87,6 @@ extension ESManager {
         return (cdhashes, bundlePaths)
     }
 
-    private func parseLegacyConfigData(_ data: Data) -> ([uid_t: Set<String>], [uid_t: Set<String>]) {
-        let decoder = PropertyListDecoder()
-        var newCDHashes: [uid_t: Set<String>] = [:]
-        var newBundlePaths: [uid_t: Set<String>] = [:]
-
-        if let rawConfig = try? decoder.decode([String: UserConfig].self, from: data) {
-            for (uidString, userConfig) in rawConfig {
-                guard let uid = uid_t(uidString), !userConfig.isDisabled else { continue }
-                let (hashes, paths) = extractHashesAndPaths(from: userConfig.apps)
-                newCDHashes[uid] = hashes
-                newBundlePaths[uid] = paths
-            }
-        } else if let oldConfig = try? decoder.decode([String: [LockedAppConfig]].self, from: data) {
-            for (uidString, apps) in oldConfig {
-                guard let uid = uid_t(uidString) else { continue }
-                let (hashes, paths) = extractHashesAndPaths(from: apps)
-                newCDHashes[uid] = hashes
-                newBundlePaths[uid] = paths
-            }
-        }
-
-        return (newCDHashes, newBundlePaths)
-    }
-
-    /// Theo dõi thay đổi của thư mục chứa cấu hình để bắt được sự kiện Atomic Write (Rename/Delete/Create)
     func startConfigMonitoring() {
         let configDir = ESManager.baseConfigDirectory
 
