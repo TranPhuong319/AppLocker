@@ -24,9 +24,10 @@ extension ESManager {
         }
     }
 
-    func removePendingVerification(pid: pid_t) {
-        _ = pendingPIDLock.withLock {
-            pendingVerificationPIDs.remove(pid)
+    @discardableResult
+    func removePendingVerification(pid: pid_t) -> Bool {
+        return pendingPIDLock.withLock {
+            pendingVerificationPIDs.remove(pid) != nil
         }
     }
 

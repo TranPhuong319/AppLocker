@@ -56,7 +56,42 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
         }
     }
 
+    func notifyProcessExited(pid: Int32) {
+        Task { @MainActor [weak self] in
+            self?.removePendingProcess(pid: pid)
+        }
+    }
+
     // MARK: - Luồng Main Chính (UI State & Batch Auth)
+
+    @MainActor
+    func removePendingProcess(pid: Int32) {
+        guard pid > 0 else { return }
+        if let idx = self.pendingApps.firstIndex(where: { $0.pid == pid }) {
+            let removedApp = self.pendingApps.remove(at: idx)
+            Logfile.appXPC.info(
+                """
+                [Auth] Pending app process exited externally: \(removedApp.name, privacy: .public) \
+                (PID: \(pid, privacy: .public)). Removed from queue.
+                """
+            )
+
+            // If single app Touch ID prompt was for this app and queue is empty, cancel auth
+            if self.isAuthenticating && self.pendingApps.isEmpty {
+                self.isAuthenticating = false
+                AuthenticationManager.cancelCurrentAuthentication()
+            }
+
+            // If BatchAuthWindow is open and no apps left, dismiss window
+            if self.pendingApps.isEmpty {
+                self.countdownTimer?.invalidate()
+                self.countdownTimer = nil
+                self.pendingDebounceTimer?.invalidate()
+                self.pendingDebounceTimer = nil
+                BatchAuthWindowController.shared.hideWindow()
+            }
+        }
+    }
 
     @MainActor
     private func checkGracePeriod(name: String, path: String, pid: Int32) -> Bool {

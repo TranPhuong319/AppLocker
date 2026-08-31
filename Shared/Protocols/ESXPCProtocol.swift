@@ -9,4 +9,5 @@ import Foundation
 
 @objc public protocol ESXPCProtocol {
     func notifyBlockedExec(name: String, path: String, cdhash: String, pid: Int32)
+    func notifyProcessExited(pid: Int32)
 }
