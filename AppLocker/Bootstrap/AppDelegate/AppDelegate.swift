@@ -51,12 +51,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
                     } else {
                         Logfile.app.debug("[Bootstrap] Parent process exited.")
                     }
-                    self?.applicationExactlyOneInstance(ignoringPID: parentProcessID)
+                    self?.enforceSingleInstance(ignoringPID: parentProcessID)
                     self?.finishLaunchSetup()
                 }
             }
         } else {
-            applicationExactlyOneInstance()
+            enforceSingleInstance()
             finishLaunchSetup()
         }
     }
@@ -132,7 +132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         }
     }
 
-    func applicationExactlyOneInstance(ignoringPID: Int32? = nil) {
+    func enforceSingleInstance(ignoringPID: Int32? = nil) {
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
 
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)

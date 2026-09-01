@@ -31,7 +31,7 @@ extension ESManager {
         }
     }
 
-    func getCurrentAuditToken(for pid: pid_t) -> audit_token_t? {
+    func auditToken(for pid: pid_t) -> audit_token_t? {
         var token = audit_token_t()
         var size = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
         var task: mach_port_name_t = 0
@@ -79,7 +79,7 @@ extension ESManager {
 
         guard let expectedToken = savedToken else { return nil }
 
-        if let currentToken = getCurrentAuditToken(for: pid) {
+        if let currentToken = auditToken(for: pid) {
             let expectedVersion = audit_token_to_pidversion(expectedToken)
             let currentVersion = audit_token_to_pidversion(currentToken)
             guard expectedVersion == currentVersion else {

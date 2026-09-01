@@ -32,9 +32,4 @@ final class ESMessage: @unchecked Sendable {
     var pointee: es_message_t {
         return rawMessage.pointee
     }
-
-    /// Accessor for the raw pointer (use carefully)
-    var pointer: UnsafePointer<es_message_t> {
-        return rawMessage
-    }
 }

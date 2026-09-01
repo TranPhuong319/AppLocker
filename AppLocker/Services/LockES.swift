@@ -48,31 +48,35 @@ class LockES: LockManagerProtocol {
 
     private func migrateLegacyConfigsIfNeeded(appsToMigrate: [String: LockedAppConfig], isLegacyFormat: Bool) {
         Task(priority: .high) { [weak self] in
-            var needsSave = isLegacyFormat
-            var updatedApps = appsToMigrate
+            let result = LockES.performMigration(appsToMigrate: appsToMigrate, isLegacyFormat: isLegacyFormat)
+            guard let self, result.needsSave else { return }
 
-            for (path, var appConfig) in updatedApps {
-                var updated = LockES.migrateCDHash(for: &appConfig, defaultPath: path)
-                if LockES.migrateExecFile(for: &appConfig) { updated = true }
-                if LockES.migrateName(for: &appConfig, path: path) { updated = true }
+            self.lockedApps = result.apps
+            self.save()
+            Logfile.policy.info(
+                "[LockES] Auto-migrated legacy app configs to unified ES format and saved to disk."
+            )
+        }
+    }
 
-                if updated {
-                    updatedApps[path] = appConfig
-                    needsSave = true
-                }
-            }
+    private nonisolated static func performMigration(
+        appsToMigrate: [String: LockedAppConfig],
+        isLegacyFormat: Bool
+    ) -> (apps: [String: LockedAppConfig], needsSave: Bool) {
+        var needsSave = isLegacyFormat
+        var updatedApps = appsToMigrate
 
-            if needsSave {
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    self.lockedApps = updatedApps
-                    self.save()
-                    Logfile.policy.info(
-                        "[LockES] Auto-migrated legacy app configs to unified ES format and saved to disk."
-                    )
-                }
+        for (path, var appConfig) in updatedApps {
+            var updated = LockES.migrateCDHash(for: &appConfig, defaultPath: path)
+            if LockES.migrateExecFile(for: &appConfig) { updated = true }
+            if LockES.migrateName(for: &appConfig, path: path) { updated = true }
+
+            if updated {
+                updatedApps[path] = appConfig
+                needsSave = true
             }
         }
+        return (updatedApps, needsSave)
     }
 
     private nonisolated static func migrateCDHash(for appConfig: inout LockedAppConfig, defaultPath: String) -> Bool {

@@ -11,7 +11,7 @@ import ServiceManagement
 
 @MainActor
 extension AppDelegate {
-    @objc func openListApp() {
+    @objc func openAppList() {
         guard ExtensionInstaller.shared.isInstalled else {
             NSApp.activate()
             let result = AlertShow.show(
@@ -75,7 +75,6 @@ extension AppDelegate {
             style: .critical,
             buttons: [String(localized: "Uninstall"), String(localized: "Cancel")],
             cancelIndex: 1,
-            destructiveIndex: 0,
             defaultIndex: 1
         )
 
@@ -98,7 +97,6 @@ extension AppDelegate {
             style: .critical,
             buttons: [String(localized: "Reset"), String(localized: "Cancel")],
             cancelIndex: 1,
-            destructiveIndex: 0,
             defaultIndex: 1
         )
 
@@ -117,7 +115,7 @@ extension AppDelegate {
         }
     }
 
-    @objc func checkUpdate() {
+    @objc func checkForUpdates() {
         AppUpdater.shared.manualCheckForUpdates()
         NSApp.activate()
         Task { @MainActor in
@@ -126,7 +124,7 @@ extension AppDelegate {
         }
     }
 
-    @objc func about() {
+    @objc func showAboutWindow() {
         AboutWindowController.show()
     }
 

@@ -78,16 +78,12 @@ struct AddAppSheet: View {
         )
         .task {
             unfocus()
-            try? await Task.sleep(for: .milliseconds(100))
             NSApp.keyWindow?.makeFirstResponder(nil)
             appState.activeTouchBar = .addAppPopup
         }
         .onDisappear {
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(100))
-                appState.searchTextUnlockaleApps = ""
-                appState.activeTouchBar = .mainWindow
-            }
+            appState.searchTextUnlockableApps = ""
+            appState.activeTouchBar = .mainWindow
         }
     }
 
@@ -105,7 +101,7 @@ struct AddAppSheet: View {
                     .padding(.leading, 4)
 
                 TextField(
-                    "Search apps...", text: $appState.searchTextUnlockaleApps
+                    "Search apps...", text: $appState.searchTextUnlockableApps
                 )
                 .textFieldStyle(.plain)
                 .focused($isSearchFocused)
@@ -126,7 +122,7 @@ struct AddAppSheet: View {
         HStack(spacing: 12) {
             Button(
                 action: {
-                    appState.addOthersApp(over: NSApp.keyWindow)
+                    appState.addOtherApps(over: NSApp.keyWindow)
                 },
                 label: {
                     Text(String(localized: "Others…"))
@@ -149,7 +145,7 @@ struct AddAppSheet: View {
             HStack(spacing: 10) {
                 Button(
                     action: {
-                        appState.closeAddPopup()
+                        appState.dismissAddAppSheet()
                     },
                     label: {
                         Text(String(localized: "Close"))
@@ -170,7 +166,7 @@ struct AddAppSheet: View {
 
                 Button(
                     action: {
-                        appState.lockButton()
+                        appState.lockSelectedApps()
                     },
                     label: {
                         Text(lockButtonTitle)

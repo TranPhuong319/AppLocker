@@ -46,7 +46,7 @@ final class HotKeyManager {
 
             if id.id == 1 {
                 Task { @MainActor in
-                    NSApp.appDelegate?.openListApp()
+                    NSApp.appDelegate?.openAppList()
                 }
             }
             return noErr

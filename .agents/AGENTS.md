@@ -30,6 +30,10 @@ Always follow this commit message format and guidelines when making commits:
 
 ## Ponytail & Clean Architecture Guidelines
 
+- **Inviolable Rule: Never Break Userspace Experience & Visual Integrity (Linus's Law)**:
+  - Code refactoring, optimization, or linting cleanups MUST NEVER degrade, alter, or break the user-facing experience, feature behavior, UI visuals, glass materials, animations, or platform availability checks (`#available`).
+  - **Zero Speculative Visual/Feature Stripping**: Do NOT remove visual treatments (e.g. Liquid Glass effects, `.ultraThinMaterial`, custom gradients, window drag isolation, traffic light insets) or platform-specific workarounds under the guise of "simplification" or "clean code".
+  - **Strict Behavioral Invariance**: Refactoring must remain strictly internal and behavior-preserving. If a logic branch or check exists to handle an edge case or platform nuance, keep it intact.
 - **Lazy Senior Dev Mode (YAGNI)**: Always prefer Apple native platform APIs and Swift standard library over custom helper classes or third-party abstractions.
 - **No KVC / Selector Reflection**:
   - Do NOT use Objective-C runtime reflection (`value(forKey:)`, `setValue(_:forKey:)`, `NSSelectorFromString`, `performSelector`) to access SDK properties or private methods.
@@ -146,7 +150,7 @@ Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and dis
   - Minimize the usage of `nonisolated(unsafe)` as much as possible. Only use it as a last resort when no safer concurrency solution exists without disrupting existing features or code stability.
   - Strongly prefer **Instance Methods (`self`)** and Dependency Injection over `static` methods and global singleton references (e.g. `sharedInstanceForCallbacks`). This ensures clean actor/thread ownership, eliminates global mutable state, and guarantees full Swift 6 Strict Concurrency safety.
 - **Main Thread (`@MainActor`)**:
-  - `XPCServer`, `BatchAuthWindowController`, `AppState`, and all `@Published` properties MUST be executed on `@MainActor`.
+  - `XPCServer`, `BatchAuthWindowController`, `AppState`, and all `@Observable` UI state models MUST be executed on `@MainActor`.
   - All UI state changes and window operations must originate from `@MainActor` methods.
 - **Background Queues**:
   - SHA256 computation, file I/O, `CryptoKit` signatures, and ES event processing MUST run on background queues (`authorizationProcessingQueue`, `xpcQueue`).
@@ -172,6 +176,27 @@ Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and dis
 - **Line Length**: Limit lines to $\le 120$ characters. Format function calls, declarations, and log messages across multiple lines or use multiline strings.
 - **Identifier Naming**: All variable and function names MUST be $\ge 3$ characters long. Use `// swiftlint:disable:next identifier_name` strictly when overriding AppKit/macOS private selectors (e.g. `_registerWithIntentsFramework()`).
 - **Trailing Closures**: Do NOT use trailing closure syntax when passing multiple closure arguments (e.g. for `Button(action:label:)`, explicitly pass `label: { ... }`).
+
+---
+
+## Swift Naming & Fluent English API Guidelines
+
+- **Fluent English Phrasing (Clarity at Point of Use)**:
+  - Code must read like grammatical, natural English prose at the call site (e.g. `fuzzyMatch(tokens, in: app.name)` rather than `fuzzyMatch(tokens: tokens, target: app.name)`).
+  - Use appropriate English prepositions (`in:`, `for:`, `to:`, `from:`, `with:`, `by:`) for secondary argument labels.
+  - Omit the first argument label (`_`) when the function base name and first parameter form a natural phrase or when the first parameter is the obvious primary subject (e.g. `contains(_:)`, `icon(forPath:size:)`).
+- **Verbs vs. Nouns (Side Effects vs. Pure Getters)**:
+  - **Functions with Side Effects**: Name with imperative verb phrases (e.g. `lockSelectedApps()`, `save()`, `connect()`, `dismissAddAppSheet()`, `clearDeleteQueue()`).
+  - **Pure Getters / Non-Mutating Value Return**: Name with noun phrases (e.g. `cdHash(for:)`, `processPath(for:)`, `selfAuditToken()`).
+  - **Zero `get` Prefix**: Do NOT prefix pure getter functions with `get...` (use `auditToken(for:)` instead of `getCurrentAuditToken(for:)`, `cdHash(for:)` instead of `getCDHash(for:)`).
+- **Boolean Properties & Methods**:
+  - Name as assertions using `is`, `has`, `can`, `should` (e.g. `isLocked`, `hasAvailableUpdate`, `shouldEnable`, `isMock`).
+- **UI Actions & Selector Methods (`@objc func`)**:
+  - Name after the **intended action or user intent**, NEVER after the UI widget type (e.g. use `lockSelectedApps()`, `chooseCustomApp()`, `showDeleteQueueSheet()` instead of `lockButton()`, `addAnotherApp()`, `deleteQueuePopup()`).
+- **Standard English Grammar & Pluralization**:
+  - Adhere to correct English plural forms and adjective rules (e.g. `addOtherApps` instead of `addOthersApp`, `searchTextUnlockableApps` instead of `searchTextUnlockaleApps`).
+- **Clarity Over Brevity**:
+  - Avoid cryptic truncations. Only use universally accepted industry acronyms (e.g. `PID`, `URL`, `XPC`, `ID`, `CDHash`).
 
 ---
 
@@ -210,6 +235,61 @@ Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and dis
 - **Scrollable Header Optical Blur vs. Strict Clipping Patterns**:
   - *Pattern A (Optical Blur Behind Header)*: Use `ScrollView { ... }.safeAreaInset(edge: .top, spacing: 0) { headerView }` where `headerView` has `.background(Rectangle().fill(.ultraThinMaterial.opacity(0.6)).ignoresSafeArea(edges: .top))`. Note: in this pattern, content scrolls continuously underneath the header all the way to `y = 0`.
   - *Pattern B (Clean Bound / Zero Collision)*: Use `VStack(spacing: ...) { headerView; ScrollView { ... }.clipped() }` to strictly confine the scrolling area below the header without content peeking into the titlebar or traffic lights.
+
+---
+
+## XPC Resilience & IPC Lifecycle Rules
+
+- **Connection Invalidation & Auto-Reconnect**:
+  - Never retain or reuse an `NSXPCConnection` once invalidated. Reset internal connection variables to `nil` in `invalidationHandler` so the next call lazily reinstantiates a healthy connection.
+  - Clear `interruptionHandler` and `invalidationHandler` before calling `.invalidate()` to avoid recursive or dangling invalidation events.
+- **Safe Proxy Invocations**:
+  - Always invoke remote proxies via `remoteObjectProxyWithErrorHandler:` or `synchronousRemoteObjectProxyWithErrorHandler:` to catch communication failures and timeouts proactively instead of failing silently.
+
+---
+
+## Fail-Safe & Process Recovery Rules
+
+- **Watchdog / Extension Safety Valve**:
+  - ESExtension must maintain an internal timeout/watchdog for pending blocked processes. If the Main App crashes or does not respond within the safety window (e.g. 30–60s), unfreeze or safely handle pending processes to prevent permanent system freeze.
+- **Graceful Termination & Pending Queue Flush**:
+  - When Main App terminates (`applicationWillTerminate` or receiving termination signal), notify the Extension to flush pending queues and resume paused processes if appropriate.
+
+---
+
+## Error Handling & Silent Failure Ban
+
+- **Zero Unlogged `try?` on Critical Paths**:
+  - Never use `try?` on authentication, I/O, Keychain, CDHash extraction, or XPC serialization without a clear fallback and logging.
+  - When `try?` is used for non-critical fallback branches, always log the result or reason at `.debug` or `.warning` level.
+- **Strongly Typed App Errors**:
+  - Use strongly typed error enums conforming to `LocalizedError` / `CustomNSError` for structured domain errors rather than generic String errors.
+
+---
+
+## Memory Management & Task Lifetime Rules
+
+- **Escaping Closures & Retain Cycles**:
+  - Always use `[weak self]` in escaping closures, long-running asynchronous `Task` blocks, and notification observers referencing `NSWindowController`, `NSViewController`, or `AppState`.
+- **Structured Task Cancellation**:
+  - Hold references to long-running asynchronous tasks (`Task<Void, Never>?`) and explicitly cancel them (`task?.cancel()`) in `deinit` or during view/window teardown.
+
+---
+
+## Security-Scoped Bookmarks & File Access Integrity
+
+- **Persistent User-Selected Paths**:
+  - Use Security-Scoped Bookmarks (`bookmarkData(options:includingResourceValuesForKeys:relativeTo:)`) when storing custom user-selected binary or application paths across application relaunches.
+- **Safe Streamed I/O**:
+  - For large file inspection and hashing, stream chunks through `FileHandle` / memory mapping rather than reading multi-gigabyte binary files into RAM at once.
+
+---
+
+## Modern State Management Rules
+
+- **Observation Framework over Combine for UI State**:
+  - For macOS 14+ view state models, prefer the Swift `@Observable` macro over `ObservableObject` / `@Published` to reduce boilerplate and optimize granular view re-rendering.
+  - Reserve `Combine` strictly for complex asynchronous stream transformations (e.g. `.debounce`, `.throttle`, `.combineLatest`).
 
 ---
 

@@ -68,7 +68,6 @@
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
 		E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76402F59E37C00D46B31 /* ESMachListener.swift */; };
 		E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */; };
-		E0FD76512F59E37C00D46B31 /* BlockedAppsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */; };
 		E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */; };
 		E0FD76532F59E37C00D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762E2F59E37C00D46B31 /* main.swift */; };
 		E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */; };
@@ -218,7 +217,6 @@
 		E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESModularClients.swift; sourceTree = "<group>"; };
 		E0FD762E2F59E37C00D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTYNotifier.swift; sourceTree = "<group>"; };
-		E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedAppsStore.swift; sourceTree = "<group>"; };
 		E0FD76352F59E37C00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD76362F59E37C00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -627,14 +625,6 @@
 			path = Notify;
 			sourceTree = "<group>";
 		};
-		E0FD76342F59E37C00D46B31 /* Policy */ = {
-			isa = PBXGroup;
-			children = (
-				E0FD76322F59E37C00D46B31 /* BlockedAppsStore.swift */,
-			);
-			path = Policy;
-			sourceTree = "<group>";
-		};
 		E0FD76392F59E37C00D46B31 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -668,7 +658,6 @@
 				E0FD76282F59E37C00D46B31 /* EndpointSecurity */,
 				E0FD762F2F59E37C00D46B31 /* Engine */,
 				E0FD76312F59E37C00D46B31 /* Notify */,
-				E0FD76342F59E37C00D46B31 /* Policy */,
 				E0FD76392F59E37C00D46B31 /* Resources */,
 				E0FD763F2F59E37C00D46B31 /* Utils */,
 				E0FD76422F59E37C00D46B31 /* XPC */,
@@ -860,7 +849,6 @@
 				E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */,
 				E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */,
 				E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */,
-				E0FD76512F59E37C00D46B31 /* BlockedAppsStore.swift in Sources */,
 				E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */,
 				E0FD76532F59E37C00D46B31 /* main.swift in Sources */,
 				E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */,
@@ -1133,6 +1121,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1199,6 +1188,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

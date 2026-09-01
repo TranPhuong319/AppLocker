@@ -17,16 +17,43 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
 
     override init() {
         super.init()
+        registerDefaultBuilders()
         observeActiveTouchBar()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleWindowDidBecomeKey(_:)),
+            name: NSWindow.didBecomeKeyNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    private func registerDefaultBuilders() {
+        let appState = self.appState
+        registerOrUpdateItem(id: .mainButtonGroup) {
+            TouchBarManager.buildMainButtonGroup(appState: appState)
+        }
+        registerOrUpdateItem(id: .addAppButtons) {
+            TouchBarManager.buildAddAppTouchBarContent(appState: appState)
+        }
+        registerOrUpdateItem(id: .deleteQueueButtons) {
+            TouchBarManager.buildDeleteQueueButtons(appState: appState)
+        }
+    }
+
+    @objc private func handleWindowDidBecomeKey(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow, window.isVisible else { return }
+        apply(to: window, type: appState.activeTouchBar)
     }
 
     private func observeActiveTouchBar() {
         withObservationTracking {
             let type = appState.activeTouchBar
-            let windows = NSApp.windows.filter { $0.isVisible }
-            for window in windows {
-                self.apply(to: window, type: type)
-            }
+            let targetWindow = NSApp.keyWindow ?? NSApp.mainWindow
+            self.apply(to: targetWindow, type: type)
         } onChange: {
             Task { @MainActor [weak self] in
                 self?.observeActiveTouchBar()
@@ -56,63 +83,30 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
     }
 
     func makeTouchBar(for type: AppState.TouchBarType) -> NSTouchBar {
-        items.removeAll()
-
         let touchBar = NSTouchBar()
         touchBar.delegate = self
 
         switch type {
         case .mainWindow:
-            configureMainWindowTouchBar(touchBar)
+            touchBar.principalItemIdentifier = .mainButtonGroup
+            touchBar.defaultItemIdentifiers = [.mainButtonGroup]
         case .addAppPopup:
-            configureAddAppPopupTouchBar(touchBar)
+            touchBar.principalItemIdentifier = .addAppButtons
+            touchBar.defaultItemIdentifiers = [
+                .flexibleSpace,
+                .addAppButtons,
+                .flexibleSpace
+            ]
         case .deleteQueuePopup:
-            configureDeleteQueuePopupTouchBar(touchBar)
+            touchBar.principalItemIdentifier = .deleteQueueButtons
+            touchBar.defaultItemIdentifiers = [
+                .flexibleSpace,
+                .deleteQueueButtons,
+                .flexibleSpace
+            ]
         }
 
         return touchBar
-    }
-
-    // MARK: - Configuration (register builders that DON'T capture self)
-    private func configureMainWindowTouchBar(_ touchBar: NSTouchBar) {
-        // capture appState locally (singleton) — closure does not capture self
-        let appState = self.appState
-        registerOrUpdateItem(id: .mainButtonGroup) {
-            return TouchBarManager.buildMainButtonGroup(appState: appState)
-        }
-
-        touchBar.principalItemIdentifier = .mainButtonGroup
-        touchBar.defaultItemIdentifiers = [.mainButtonGroup]
-    }
-
-    private func configureAddAppPopupTouchBar(_ touchBar: NSTouchBar) {
-        let appState = self.appState
-
-        registerOrUpdateItem(id: .addAppButtons) {
-            return TouchBarManager.buildAddAppTouchBarContent(appState: appState)
-        }
-
-        touchBar.principalItemIdentifier = .addAppButtons
-        touchBar.defaultItemIdentifiers = [
-            .flexibleSpace,
-            .addAppButtons,
-            .flexibleSpace
-        ]
-    }
-
-    private func configureDeleteQueuePopupTouchBar(_ touchBar: NSTouchBar) {
-        let appState = self.appState
-
-        registerOrUpdateItem(id: .deleteQueueButtons) {
-            return TouchBarManager.buildDeleteQueueButtons(appState: appState)
-        }
-
-        touchBar.principalItemIdentifier = .deleteQueueButtons
-        touchBar.defaultItemIdentifiers = [
-            .flexibleSpace,
-            .deleteQueueButtons,
-            .flexibleSpace
-        ]
     }
 
     // MARK: - Static Builders (no capturing of self)
@@ -138,7 +132,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let otherButton = NSButton(
             title: String(localized: "Others…"),
             target: appState,
-            action: #selector(AppState.addAnotherApp)
+            action: #selector(AppState.chooseCustomApp)
         )
         otherButton.bezelStyle = .rounded
         let width = otherButton.intrinsicContentSize.width + 80
@@ -149,7 +143,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let closeButton = NSButton(
             title: String(localized: "Close"),
             target: appState,
-            action: #selector(AppState.closeAddPopup)
+            action: #selector(AppState.dismissAddAppSheet)
         )
         closeButton.isBordered = true
         closeButton.bezelStyle = .rounded
@@ -157,7 +151,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let lockButton = LockTouchBarButton(
             title: String(localized: "Lock"),
             target: appState,
-            action: #selector(AppState.lockButton)
+            action: #selector(AppState.lockSelectedApps)
         )
         lockButton.isBordered = true
         lockButton.bezelStyle = .rounded
@@ -186,7 +180,7 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let unlockButton = NSButton(
             title: String(localized: "Unlock"),
             target: appState,
-            action: #selector(AppState.unlockApp)
+            action: #selector(AppState.unlockQueuedApps)
         )
         unlockButton.isBordered = true
         unlockButton.bezelStyle = .rounded
@@ -195,10 +189,15 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let clearButton = NSButton(
             title: String(localized: "Cancel"),
             target: appState,
-            action: #selector(AppState.deleteAllFromWaitingList)
+            action: #selector(AppState.clearDeleteQueue)
         )
         clearButton.isBordered = true
         clearButton.bezelStyle = .rounded
+
+        let width = max(unlockButton.intrinsicContentSize.width, clearButton.intrinsicContentSize.width) + 80
+        clearButton.widthAnchor
+            .constraint(equalToConstant: width)
+            .isActive = true
 
         let stack = NSStackView(views: [clearButton, unlockButton])
         stack.orientation = .horizontal
@@ -218,11 +217,11 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         let button = DeleteQueueTouchBarButton(
             title: "",
             target: AppState.shared,
-            action: #selector(AppState.showDeleteQueuePopup)
+            action: #selector(AppState.showDeleteQueueSheet)
         )
 
         button.isBordered = false
-        button.contentTintColor = .white
+        button.contentTintColor = NSColor.white
         button.wantsLayer = true
         button.layer?.backgroundColor = NSColor.systemRed.cgColor
         button.layer?.cornerRadius = 6

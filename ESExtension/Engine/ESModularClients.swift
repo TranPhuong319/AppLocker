@@ -247,7 +247,7 @@ class ESClientObject: @unchecked Sendable {
 
     @discardableResult
     func muteSelf() -> Bool {
-        guard let client = client, var token = ESManager.getSelfAuditToken() else { return false }
+        guard let client = client, var token = ESManager.selfAuditToken() else { return false }
 
         let muteRes = es_mute_process(client, &token)
         if muteRes == ES_RETURN_SUCCESS {

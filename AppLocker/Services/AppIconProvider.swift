@@ -89,8 +89,4 @@ final class AppIconProvider {
         }
         return path
     }
-
-    func clearCache() {
-        cache.removeAllObjects()
-    }
 }

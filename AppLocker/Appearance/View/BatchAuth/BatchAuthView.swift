@@ -52,7 +52,7 @@ struct BatchAuthView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach($server.pendingApps) { $app in
-                            BatchAppRowView(app: $app, icon: getAppIcon(for: app.path))
+                            BatchAppRowView(app: $app, icon: appIcon(for: app.path))
                         }
                     }
                     .padding(.horizontal, 16)
@@ -170,7 +170,7 @@ struct BatchAuthView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func getAppIcon(for path: String) -> NSImage? {
+    private func appIcon(for path: String) -> NSImage? {
         return AppIconProvider.shared.icon(forPath: path, size: 40)
     }
 }

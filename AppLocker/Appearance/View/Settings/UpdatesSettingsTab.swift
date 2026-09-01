@@ -122,7 +122,7 @@ struct UpdatesSettingsTab: View {
 
     private func checkForUpdates() {
         guard !isMock else { return }
-        (NSApp.delegate as? AppDelegate)?.checkUpdate()
+        (NSApp.delegate as? AppDelegate)?.checkForUpdates()
     }
 }
 

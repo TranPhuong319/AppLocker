@@ -59,11 +59,8 @@ struct DeleteQueueSheet: View {
             appState.activeTouchBar = .deleteQueuePopup
         }
         .onDisappear {
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(100))
-                appState.activeTouchBar = .mainWindow
-                appState.searchTextLockApps = ""
-            }
+            appState.activeTouchBar = .mainWindow
+            appState.searchTextLockApps = ""
         }
     }
 
@@ -87,7 +84,7 @@ struct DeleteQueueSheet: View {
 
             Button(
                 action: {
-                    appState.deleteAllFromWaitingList()
+                    appState.clearDeleteQueue()
                 },
                 label: {
                     Text(String(localized: "Cancel"))
@@ -108,7 +105,7 @@ struct DeleteQueueSheet: View {
 
             Button(
                 action: {
-                    appState.unlockApp()
+                    appState.unlockQueuedApps()
                 },
                 label: {
                     Text(String(localized: "Unlock"))

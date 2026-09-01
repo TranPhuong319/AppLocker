@@ -42,13 +42,35 @@ struct VisualEffectView: NSViewRepresentable {
     }
 }
 
+struct LiquidGlassBackgroundModifier: ViewModifier {
+    var material: NSVisualEffectView.Material
+
+    func body(content: Content) -> some View {
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: Rectangle())
+        } else {
+            content
+                .background(
+                    VisualEffectView(material: material, blendingMode: .behindWindow)
+                )
+        }
+    }
+}
+
 struct LiquidGlassCapsuleModifier: ViewModifier {
     func body(content: Content) -> some View {
-        content
-            .background(
-                Capsule()
-                    .fill(Color(NSColor.controlBackgroundColor))
-            )
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: Capsule())
+        } else {
+            content
+                .background(.ultraThinMaterial, in: Capsule())
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5)
+                )
+        }
     }
 }
 
@@ -56,25 +78,90 @@ struct LiquidGlassCardModifier: ViewModifier {
     var isSelected: Bool
 
     func body(content: Content) -> some View {
-        content
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(
-                        isSelected
-                            ? Color(NSColor.controlBackgroundColor)
-                            : Color(NSColor.controlBackgroundColor).opacity(0.35)
-                    )
-            )
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: RoundedRectangle(cornerRadius: 10))
+        } else {
+            content
+                .background(
+                    .ultraThinMaterial.opacity(isSelected ? 1.0 : 0.4),
+                    in: RoundedRectangle(cornerRadius: 10)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(Color.white.opacity(isSelected ? 0.15 : 0.05), lineWidth: 0.5)
+                )
+        }
+    }
+}
+
+struct LiquidGlassCircleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: Circle())
+        } else {
+            content
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(
+                    Circle()
+                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5)
+                )
+        }
+    }
+}
+
+struct LiquidGlassBarModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 26.0, *) {
+            content
+                .glassEffect(in: Rectangle())
+        } else {
+            content
+                .background(.bar)
+        }
+    }
+}
+
+struct LiquidGlassContainer<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        if #available(macOS 26.0, *) {
+            GlassEffectContainer {
+                content
+            }
+        } else {
+            content
+        }
     }
 }
 
 extension View {
+    func liquidGlassBackground(
+        material: NSVisualEffectView.Material = .hudWindow
+    ) -> some View {
+        modifier(LiquidGlassBackgroundModifier(material: material))
+    }
+
     func liquidGlassCapsule() -> some View {
         modifier(LiquidGlassCapsuleModifier())
     }
 
+    func liquidGlassCircle() -> some View {
+        modifier(LiquidGlassCircleModifier())
+    }
+
     func liquidGlassCard(isSelected: Bool = true) -> some View {
         modifier(LiquidGlassCardModifier(isSelected: isSelected))
+    }
+
+    func liquidGlassBar() -> some View {
+        modifier(LiquidGlassBarModifier())
     }
 }
 
