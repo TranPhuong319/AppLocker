@@ -77,7 +77,7 @@ extension AppDelegate: NSMenuDelegate {
     private func addPrimaryMenuItems(to menu: NSMenu) {
         let manageItem = NSMenuItem(
             title: String(localized: "Manage the application list") + "…",
-            action: #selector(openListApp),
+            action: #selector(openAppList),
             keyEquivalent: "l"
         )
         manageItem.keyEquivalentModifierMask = [.command, .shift]
@@ -98,7 +98,7 @@ extension AppDelegate: NSMenuDelegate {
     private func addMaintenanceMenuItems(to menu: NSMenu) {
         let updateItem = NSMenuItem(
             title: String(localized: "Check for Updates…"),
-            action: #selector(checkUpdate),
+            action: #selector(checkForUpdates),
             keyEquivalent: ""
         )
         updateItem.image = NSImage(
@@ -109,7 +109,7 @@ extension AppDelegate: NSMenuDelegate {
 
         let aboutItem = NSMenuItem(
             title: String(localized: "About AppLocker"),
-            action: #selector(about),
+            action: #selector(showAboutWindow),
             keyEquivalent: ""
         )
         aboutItem.image = NSImage(systemSymbolName: "info.circle", accessibilityDescription: nil)

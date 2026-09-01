@@ -15,12 +15,16 @@ struct WelcomeView: View {
         self.isMock = isMock
     }
 
-    private var licenseText: String {
+    private static let licenseContent: String = {
         if let url = Bundle.main.url(forResource: "License", withExtension: "txt"),
            let content = try? String(contentsOf: url, encoding: .utf8) {
             return content
         }
         return "License agreement details..."
+    }()
+
+    private var licenseText: String {
+        Self.licenseContent
     }
 
     var body: some View {

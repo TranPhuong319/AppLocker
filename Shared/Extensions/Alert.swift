@@ -31,7 +31,6 @@ enum AlertShow {
         style: NSAlert.Style,
         buttons: [String],
         cancelIndex: Int? = nil,
-        destructiveIndex: Int? = nil,
         defaultIndex: Int? = nil
     ) -> AlertResult {
         let alert = NSAlert()

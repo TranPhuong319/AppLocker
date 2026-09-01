@@ -10,7 +10,7 @@ import Foundation
 import UniformTypeIdentifiers
 
 extension AppState {
-    func addOthersApp(over window: NSWindow? = nil) {
+    func addOtherApps(over window: NSWindow? = nil) {
         let panel = NSOpenPanel()
         panel.delegate = self
         panel.canChooseFiles = true

@@ -17,7 +17,7 @@ extension ESManager: ESAppProtocol {
         let pid = connection.processIdentifier
 
         // 1. Get process path
-        guard let callerPath = getProcessPath(for: pid) else {
+        guard let callerPath = processPath(for: pid) else {
             Logfile.esSecurity.error("[Auth] Failed to retrieve process path for PID \(pid, privacy: .public)")
             return false
         }
@@ -31,7 +31,7 @@ extension ESManager: ESAppProtocol {
         }
 
         // 3. Retrieve caller CDHash from OS Kernel via auditToken
-        guard let callerCDHash = getCDHash(for: connection) else {
+        guard let callerCDHash = cdHash(for: connection) else {
             Logfile.esSecurity.error(
                 "[Auth] Failed to retrieve caller CDHash from auditToken for PID \(pid, privacy: .public)"
             )
@@ -39,7 +39,7 @@ extension ESManager: ESAppProtocol {
         }
 
         // 4. Retrieve CDHash of the app binary on disk at the verified path
-        guard let diskCDHash = getCDHash(forFilePath: callerPath) else {
+        guard let diskCDHash = cdHash(forPath: callerPath) else {
             Logfile.esSecurity.error(
                 "[Auth] Failed to retrieve disk binary CDHash for path: \(callerPath, privacy: .public)"
             )
@@ -60,7 +60,7 @@ extension ESManager: ESAppProtocol {
         return true
     }
 
-    private func getCDHash(for connection: NSXPCConnection) -> Data? {
+    private func cdHash(for connection: NSXPCConnection) -> Data? {
         var auditToken = connection.auditToken
         let tokenData = Data(bytes: &auditToken, count: MemoryLayout<audit_token_t>.size)
         let attributes = [kSecGuestAttributeAudit: tokenData] as CFDictionary
@@ -81,7 +81,7 @@ extension ESManager: ESAppProtocol {
         return info[kSecCodeInfoUnique as String] as? Data
     }
 
-    private func getCDHash(forFilePath path: String) -> Data? {
+    private func cdHash(forPath path: String) -> Data? {
         let url = URL(fileURLWithPath: path)
         var staticCode: SecStaticCode?
         guard SecStaticCodeCreateWithPath(url as CFURL, [], &staticCode) == errSecSuccess,
@@ -95,7 +95,7 @@ extension ESManager: ESAppProtocol {
         return info[kSecCodeInfoUnique as String] as? Data
     }
 
-    private func getProcessPath(for pid: pid_t) -> String? {
+    private func processPath(for pid: pid_t) -> String? {
         let pathBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(MAXPATHLEN))
         defer { pathBuffer.deallocate() }
         let length = proc_pidpath(pid, pathBuffer, UInt32(MAXPATHLEN))

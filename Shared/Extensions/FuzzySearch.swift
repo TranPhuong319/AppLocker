@@ -7,9 +7,9 @@
 
 import Foundation
 
-func fuzzyMatch(query: String, target: String) -> Bool {
+func fuzzyMatch<S: StringProtocol>(_ tokens: some Sequence<S>, in target: String) -> Bool {
     let normalizedTarget = target.normalized
-    return query.normalized.split(separator: " ").allSatisfy { normalizedTarget.contains($0) }
+    return tokens.allSatisfy { normalizedTarget.contains($0) }
 }
 
 extension String {

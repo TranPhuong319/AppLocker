@@ -26,6 +26,7 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
     static func show() {
         guard let window = shared.window else { return }
 
+        TouchBarManager.shared.apply(to: window, type: AppState.shared.activeTouchBar)
         shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         if let hostingController = window.contentViewController {

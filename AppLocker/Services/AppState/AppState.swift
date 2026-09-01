@@ -40,7 +40,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         }
     }
 
-    var searchTextUnlockaleApps: String = "" {
+    var searchTextUnlockableApps: String = "" {
         didSet {
             debounceFilterUnlockableApps()
         }
@@ -97,7 +97,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             try? await Task.sleep(for: .milliseconds(200))
             guard !Task.isCancelled, let self = self else { return }
             self.filteredUnlockableApps = self.performFilter(
-                text: self.searchTextUnlockaleApps,
+                text: self.searchTextUnlockableApps,
                 apps: self.unlockableApps
             )
         }
@@ -106,11 +106,13 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
         let query = text.normalized
         guard !query.isEmpty else { return apps }
+        let tokens = query.split(separator: " ")
+        guard !tokens.isEmpty else { return apps }
 
         return apps.filter { app in
-            fuzzyMatch(query: query, target: app.name)
-                || fuzzyMatch(query: query, target: app.bundleID)
-                || fuzzyMatch(query: query, target: app.path)
+            fuzzyMatch(tokens, in: app.name)
+                || fuzzyMatch(tokens, in: app.bundleID)
+                || fuzzyMatch(tokens, in: app.path)
         }
     }
 
@@ -147,7 +149,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         self.lockedAppObjects = lockedAppsList
         self.unlockableApps = unlockable
         self.filteredLockedApps = self.performFilter(text: self.searchTextLockApps, apps: lockedAppsList)
-        self.filteredUnlockableApps = self.performFilter(text: self.searchTextUnlockaleApps, apps: unlockable)
+        self.filteredUnlockableApps = self.performFilter(text: self.searchTextUnlockableApps, apps: unlockable)
 
         Task(priority: .low) {
             for app in unlockable.prefix(60) {
@@ -201,30 +203,30 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         showingAddApp = true
     }
 
-    @objc func lockButton() {
+    @objc func lockSelectedApps() {
         toggleLockPopup(for: selectedToLock, locking: true)
     }
 
-    @objc func closeAddPopup() {
+    @objc func dismissAddAppSheet() {
         showingAddApp = false
         selectedToLock.removeAll()
         searchTextLockApps = ""
     }
 
-    @objc func addAnotherApp() {
-        addOthersApp(over: NSApp.keyWindow)
+    @objc func chooseCustomApp() {
+        addOtherApps(over: NSApp.keyWindow)
     }
 
-    @objc func unlockApp() {
+    @objc func unlockQueuedApps() {
         toggleLockPopup(for: deleteQueue, locking: false)
     }
 
-    @objc func deleteAllFromWaitingList() {
+    @objc func clearDeleteQueue() {
         deleteQueue.removeAll()
         showingDeleteQueue = false
     }
 
-    @objc func showDeleteQueuePopup() {
+    @objc func showDeleteQueueSheet() {
         showingDeleteQueue = true
     }
 }

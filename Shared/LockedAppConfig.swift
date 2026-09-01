@@ -32,15 +32,6 @@ struct LockedAppConfig: Codable, Hashable {
     }
 }
 
-extension LockedAppConfig {
-    func toDict() -> [String: String] {
-        var dict = ["bundleID": bundleID, "path": path]
-        if let cdhash = cdhash { dict["cdhash"] = cdhash }
-        if let sha256 = sha256 { dict["sha256"] = sha256 }
-        return dict
-    }
-}
-
 struct UserConfig: Codable {
     var isDisabled: Bool
     var apps: [LockedAppConfig]

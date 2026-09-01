@@ -22,9 +22,6 @@ final class ESSafetyValve: @unchecked Sendable {
     init(message: ESMessage, manager: ESManager) {
         self.message = message
         self.manager = manager
-
-        // Track the count of active messages in the system
-        manager.incrementActiveMessageCount()
     }
 
     /// Thread-safe response method.
@@ -72,28 +69,11 @@ final class ESSafetyValve: @unchecked Sendable {
                 )
             }
 
-            // Decrement active message counter
-            manager.decrementActiveMessageCount()
-
             // Signal that we are done to any waiting threads (usually the worker cleanup)
             deadlineExpiredSema.signal()
             return true
         }
         return false
-    }
-
-    /// Called when the deadline timer expires (Panic Mode).
-    func fireEmergencyResponse() {
-        // Santa-style: We usually fail-open (ALLOW) in emergency to prevent system freeze.
-        if respond(ES_AUTH_RESULT_ALLOW, cache: true) {
-             let path = ESSafetyValve.getPath(message)
-             Logfile.endpointSecurity.fault(
-                 """
-                 [SafetyValve] Deadline reached for [\(path, privacy: .public)]! \
-                 Forced ALLOW to prevent SIGKILL.
-                 """
-             )
-        }
     }
 
     /// Helper to extract path for logging.

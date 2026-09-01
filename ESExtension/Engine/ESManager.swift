@@ -69,8 +69,6 @@ final class ESManager: NSObject, @unchecked Sendable {
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.emergency",
         qos: .userInteractive)
 
-    var activeMessageCount: Int32 = 0
-
     override init() {
         super.init()
         Logfile.endpointSecurity.info("[ESManager] Initializing Endpoint Security manager...")
@@ -170,14 +168,6 @@ final class ESManager: NSObject, @unchecked Sendable {
         muteAppLockerProcess(&auditToken)
     }
 
-    func incrementActiveMessageCount() {
-        stateLock.withLock { activeMessageCount += 1 }
-    }
-
-    func decrementActiveMessageCount() {
-        stateLock.withLock { activeMessageCount -= 1 }
-    }
-
     // MARK: - Muting Logic
 
     func muteAppLockerProcess(_ token: UnsafePointer<audit_token_t>) {
@@ -198,7 +188,7 @@ final class ESManager: NSObject, @unchecked Sendable {
         }
     }
 
-    static func getSelfAuditToken() -> audit_token_t? {
+    static func selfAuditToken() -> audit_token_t? {
         var token = audit_token_t()
         var size = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
 

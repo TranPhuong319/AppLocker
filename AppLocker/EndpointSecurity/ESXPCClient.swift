@@ -74,18 +74,20 @@ final class ESXPCClient: @unchecked Sendable {
         return conn
     }
 
+    private func updateExtensionInstalledState(_ installed: Bool) {
+        Task { @MainActor in
+            ExtensionInstaller.shared.updateInstalledState(installed)
+        }
+    }
+
     private func setupConnectionHandlers(conn: NSXPCConnection) {
         conn.invalidationHandler = { [weak self] in
-            Task { @MainActor in
-                ExtensionInstaller.shared.updateInstalledState(false)
-            }
+            self?.updateExtensionInstalledState(false)
             self?.scheduleReconnect(immediate: true)
         }
 
         conn.interruptionHandler = { [weak self] in
-            Task { @MainActor in
-                ExtensionInstaller.shared.updateInstalledState(false)
-            }
+            self?.updateExtensionInstalledState(false)
             self?.scheduleReconnect(immediate: false)
         }
     }
@@ -101,18 +103,14 @@ final class ESXPCClient: @unchecked Sendable {
                 Logfile.appXPC.info("[ESXPCClient] Authentication successful. Connection ready.")
                 self.connection = pendingConn
                 self.retryCount = 0
-                Task { @MainActor in
-                    ExtensionInstaller.shared.updateInstalledState(true)
-                }
+                self.updateExtensionInstalledState(true)
                 if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
                    let primary = langs.first {
                     self.updateLanguage(primary)
                 }
             } else {
                 Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
-                Task { @MainActor in
-                    ExtensionInstaller.shared.updateInstalledState(false)
-                }
+                self.updateExtensionInstalledState(false)
                 pendingConn.invalidate()
             }
         }
@@ -139,9 +137,7 @@ final class ESXPCClient: @unchecked Sendable {
             }
             self.connection = nil
 
-            Task { @MainActor in
-                ExtensionInstaller.shared.updateInstalledState(false)
-            }
+            self.updateExtensionInstalledState(false)
         }
     }
 
@@ -217,15 +213,11 @@ final class ESXPCClient: @unchecked Sendable {
             self.connection = nil
             self.isConnecting = false  // Allow new connection attempt
 
-            Task { @MainActor in
-                ExtensionInstaller.shared.updateInstalledState(false)
-            }
+            self.updateExtensionInstalledState(false)
 
             guard self.retryCount < self.maxRetries else {
                 Logfile.appXPC.error("[ESXPCClient] Max retries reached (\(self.maxRetries, privacy: .public))")
-                Task { @MainActor in
-                    ExtensionInstaller.shared.updateInstalledState(false)
-                }
+                self.updateExtensionInstalledState(false)
                 return
             }
             self.retryCount += 1

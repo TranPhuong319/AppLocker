@@ -30,7 +30,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
 
     // MARK: - Luồng Phụ (Background XPC Receiver)
     // Extension -> App notification when exec attempted and app suspended for pending verification
-    func notifyBlockedExec(name: String, path: String, cdhash: String, pid: Int32) {
+    nonisolated func notifyBlockedExec(name: String, path: String, cdhash: String, pid: Int32) {
         Logfile.appXPC.notice(
             """
             [Auth] Pending execution blocked: \
@@ -41,7 +41,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             """
         )
 
-        Task { @MainActor [weak self] in
+        Task { @MainActor in
             if AppState.shared.manager.isProtectionDisabled {
                 Logfile.appXPC.info(
                     """
@@ -52,13 +52,13 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
                 ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
                 return
             }
-            self?.addPendingAuth(name: name, path: path, cdhash: cdhash, pid: pid)
+            XPCServer.shared.addPendingAuth(name: name, path: path, cdhash: cdhash, pid: pid)
         }
     }
 
-    func notifyProcessExited(pid: Int32) {
-        Task { @MainActor [weak self] in
-            self?.removePendingProcess(pid: pid)
+    nonisolated func notifyProcessExited(pid: Int32) {
+        Task { @MainActor in
+            XPCServer.shared.removePendingProcess(pid: pid)
         }
     }
 
