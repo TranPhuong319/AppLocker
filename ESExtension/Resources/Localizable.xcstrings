@@ -5,7 +5,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Authenticate..."
           }
         },
@@ -21,7 +21,13 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
+            "value" : "CDHash:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "CDHash:"
           }
         }
@@ -31,7 +37,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Identifier:"
           }
         },
@@ -43,18 +49,18 @@
         }
       }
     },
-    "Parent PID:" : {
+    "Parent:" : {
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Parent PID:"
+            "state" : "translated",
+            "value" : "Parent"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PID cha:"
+            "value" : "Tiến trình gốc:"
           }
         }
       }
@@ -63,7 +69,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Path:"
           }
         },
@@ -75,19 +81,18 @@
         }
       }
     },
-    "SHA256:" : {
-      "extractionState" : "stale",
+    "PID:" : {
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "SHA256:"
+            "state" : "translated",
+            "value" : "PID:"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SHA256"
+            "value" : "PID:"
           }
         }
       }
@@ -96,7 +101,7 @@
       "localizations" : {
         "base" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "The following application has been blocked from execution\nbecause it was added to the locked list."
           }
         },

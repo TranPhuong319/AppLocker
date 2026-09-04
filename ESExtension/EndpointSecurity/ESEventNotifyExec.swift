@@ -139,9 +139,10 @@ extension ESManager {
     func sendBlockedNotifications(notification: BlockedNotification) {
         Task.detached(priority: .high) {
             TTYNotifier.notify(
+                targetPid: notification.targetPid,
                 parentPid: notification.parentPid,
                 blockedPath: notification.path,
-                sha: notification.cdhash,
+                cdhash: notification.cdhash,
                 identifier: notification.signingID
             )
         }
