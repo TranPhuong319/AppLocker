@@ -2,7 +2,6 @@ name: Build
 
 env:
   BUILDDIR: "build"
-  DEVELOPER_DIR: "/Applications/Xcode_26.2.app/Contents/Developer"
   OLD_PRE_TAG: ""
   IS_PRE: "false"
   REL_TAG: ""
