@@ -356,4 +356,19 @@ extension ESXPCClient {
             }
         }
     }
+
+    func updateIncomingCallRingingState(_ isRinging: Bool) {
+        xpcQueue.async { [weak self] in
+            guard let self, let conn = self.connection else {
+                Logfile.appXPC.debug("[ESXPCClient] Connection not ready, skipping call state update")
+                return
+            }
+
+            guard let proxy = self.proxy(conn: conn, actionName: "updateIncomingCallRingingState") else { return }
+            proxy.updateIncomingCallRingingState(isRinging)
+            Logfile.appXPC.debug(
+                "[ESXPCClient] updateIncomingCallRingingState sent: \(isRinging, privacy: .public)"
+            )
+        }
+    }
 }

@@ -16,6 +16,7 @@ class MockLockManager: LockManagerProtocol {
     var lockedApps: [String: LockedAppConfig] = [:]
     var allApps: [InstalledApp] = []
     var isProtectionDisabled: Bool = false
+    var allowIncomingCalls: Bool = true
 
     func toggleLock(for paths: [String]) {
         for path in paths {
@@ -35,6 +36,10 @@ class MockLockManager: LockManagerProtocol {
 
     func setProtectionDisabled(_ disabled: Bool) {
         self.isProtectionDisabled = disabled
+    }
+
+    func setAllowIncomingCalls(_ allowed: Bool) {
+        self.allowIncomingCalls = allowed
     }
 
     func isLocked(path: String) -> Bool {

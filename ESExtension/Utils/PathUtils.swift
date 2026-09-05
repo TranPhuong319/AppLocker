@@ -5,8 +5,9 @@
 //  Created by Doe Phương on 29/12/25.
 //
 
-import Foundation
+import Darwin
 import EndpointSecurity
+import Foundation
 
 // Safely extract string from es_string_token_t structure (not guaranteed to be null-terminated).
 func string(from token: es_string_token_t) -> String? {
@@ -20,6 +21,31 @@ func string(from token: es_string_token_t) -> String? {
 func safePath(fromFilePointer filePtr: UnsafePointer<es_file_t>?) -> String? {
     guard let filePtr = filePtr else { return nil }
     return string(from: filePtr.pointee.path)
+}
+
+// Safely extract executable path for a given PID.
+func processPath(for pid: pid_t) -> String? {
+    guard pid > 0 else { return nil }
+    var pathBuffer = [UInt8](repeating: 0, count: Int(MAXPATHLEN))
+    let length = proc_pidpath(pid, &pathBuffer, UInt32(MAXPATHLEN))
+    guard length > 0 else { return nil }
+    return String(bytes: pathBuffer.prefix(Int(length)), encoding: .utf8)
+}
+
+// Safely extract command-line arguments from exec event.
+func execArguments(for execEvent: UnsafePointer<es_event_exec_t>) -> [String] {
+    let count = es_exec_arg_count(execEvent)
+    guard count > 0 else { return [] }
+    var args: [String] = []
+    let maxCount = min(count, 16)
+    args.reserveCapacity(Int(maxCount))
+    for index in 0..<maxCount {
+        let argToken = es_exec_arg(execEvent, index)
+        if let arg = string(from: argToken) {
+            args.append(arg)
+        }
+    }
+    return args
 }
 
 extension ESManager {

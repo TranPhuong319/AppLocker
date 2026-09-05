@@ -14,6 +14,9 @@ extension AppDelegate {
         Logfile.app.debug("[Launch] Starting UI components on app launch...")
         self.setupUIComponents()
 
+        Logfile.app.debug("[Launch] Starting Call Services observer...")
+        CallServiceObserver.shared.startMonitoring()
+
         Logfile.app.info("[Launch] Installing Endpoint Security extension...")
         ExtensionInstaller.shared.install { result in
             if case .success = result {

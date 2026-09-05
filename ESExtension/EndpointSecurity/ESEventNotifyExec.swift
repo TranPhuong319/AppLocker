@@ -9,6 +9,7 @@ import Darwin
 import EndpointSecurity
 import Foundation
 import os
+import Security
 
 extension ESManager {
     func handleNotifyExec(client: OpaquePointer, message: ESMessage) {
@@ -43,6 +44,18 @@ extension ESManager {
         }
 
         let name = computeAppName(forExecPath: path)
+        logOriginTrace(name: name, message: message)
+
+        if isAllowedIncomingCall(signingID: signingID, path: path, uid: uid) {
+            Logfile.endpointSecurity.notice(
+                """
+                [NotifyExec] Allowed incoming call execution for \(name, privacy: .public) \
+                (PID \(targetPid, privacy: .public))
+                """
+            )
+            return
+        }
+
         let notification = BlockedNotification(
             name: name,
             path: path,
@@ -57,6 +70,39 @@ extension ESManager {
             notification: notification,
             targetPid: targetPid,
             token: messagePtr.event.exec.target.pointee.audit_token
+        )
+    }
+
+    private func logOriginTrace(name: String, message: ESMessage) {
+        let target = message.pointee.event.exec.target.pointee
+        let targetPid = audit_token_to_pid(target.audit_token)
+        let targetPpid = target.ppid
+        let parentPid = audit_token_to_pid(target.parent_audit_token)
+        let responsiblePid = audit_token_to_pid(target.responsible_audit_token)
+        let parentPath = processPath(for: parentPid) ?? "none"
+        let responsiblePath = processPath(for: responsiblePid) ?? "none"
+
+        let caller = message.pointee.process.pointee
+        let callerPid = audit_token_to_pid(caller.audit_token)
+        let callerPpid = caller.ppid
+        let callerResponsiblePid = audit_token_to_pid(caller.responsible_audit_token)
+        let callerPath = safePath(fromFilePointer: caller.executable) ?? "none"
+        let callerResponsiblePath = processPath(for: callerResponsiblePid) ?? "none"
+
+        let args = withUnsafePointer(to: message.rawMessage.pointee.event.exec) { execArguments(for: $0) }
+        let argsSummary = args.joined(separator: " ")
+
+        Logfile.endpointSecurity.notice(
+            """
+            [NotifyExec] Origin trace for \(name, privacy: .public) (PID \(targetPid, privacy: .public)):
+              ├─ Target PPID: \(targetPpid, privacy: .public)
+              ├─ Parent: PID=\(parentPid, privacy: .public) (\(parentPath, privacy: .public))
+              ├─ Responsible: PID=\(responsiblePid, privacy: .public) (\(responsiblePath, privacy: .public))
+              ├─ Caller: PID=\(callerPid, privacy: .public) (\(callerPath, privacy: .public))
+              ├─ Caller PPID: \(callerPpid, privacy: .public)
+              ├─ Caller Resp: PID=\(callerResponsiblePid, privacy: .public) (\(callerResponsiblePath, privacy: .public))
+              └─ Args: [\(argsSummary, privacy: .public)]
+            """
         )
     }
 
@@ -149,5 +195,58 @@ extension ESManager {
         Task.detached(priority: .low) { [weak self] in
             self?.sendBlockedNotificationToApp(notification: notification)
         }
+    }
+
+    private func isAllowedIncomingCall(
+        signingID: String,
+        path: String,
+        uid: uid_t
+    ) -> Bool {
+        let isTelephonyApp = signingID == "com.apple.FaceTime" || signingID == "com.apple.mobilephone"
+            || path.contains("/FaceTime.app/") || path.contains("/Phone.app/")
+        guard isTelephonyApp else { return false }
+
+        let (userAllowsIncoming, isRinging) = stateLock.withLock {
+            (self.allowIncomingCallsByUID[uid] ?? true, self.isIncomingCallActive)
+        }
+        guard userAllowsIncoming else { return false }
+
+        let isCallActive = isRinging || isSharingActivityLevelPhoneCall()
+        guard isCallActive else { return false }
+
+        return isValidAppleTelephonyBinary(path: path)
+    }
+
+    private func isSharingActivityLevelPhoneCall() -> Bool {
+        var token: Int32 = 0
+        guard notify_register_check("com.apple.sharing.activity-level-changed", &token) == NOTIFY_STATUS_OK else {
+            return false
+        }
+        defer { notify_cancel(token) }
+
+        var state: UInt64 = 0
+        guard notify_get_state(token, &state) == NOTIFY_STATUS_OK else {
+            return false
+        }
+
+        Logfile.endpointSecurity.debug(
+            "[NotifyExec] com.apple.sharing.activity-level-changed state: \(state, privacy: .public)"
+        )
+
+        return state == 14
+    }
+
+    private func isValidAppleTelephonyBinary(path: String) -> Bool {
+        let url = URL(fileURLWithPath: path)
+        var staticCode: SecStaticCode?
+        guard SecStaticCodeCreateWithPath(url as CFURL, [], &staticCode) == errSecSuccess,
+              let code = staticCode else { return false }
+
+        let reqString = "anchor apple and (identifier \"com.apple.mobilephone\" or identifier \"com.apple.FaceTime\")"
+        var requirement: SecRequirement?
+        guard SecRequirementCreateWithString(reqString as CFString, [], &requirement) == errSecSuccess,
+              let req = requirement else { return false }
+
+        return SecStaticCodeCheckValidity(code, [], req) == errSecSuccess
     }
 }

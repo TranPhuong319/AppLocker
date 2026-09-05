@@ -13,6 +13,7 @@ struct SecuritySettingsTab: View {
 
     private var installer = ExtensionInstaller.shared
     @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
+    @State private var allowIncomingCalls: Bool = true
     @AppStorage("batchAuthCountdownSeconds") private var authCountdownSeconds: Double = 30
     @AppStorage("autoLockTimeoutMinutes") private var autoLockTimeoutMinutes: Int = 0
 
@@ -76,6 +77,19 @@ struct SecuritySettingsTab: View {
                     Text("When System Sleeps").tag(-1)
                 }
             }
+
+            Section(header: Text("Incoming Calls")) {
+                Toggle("Allow Incoming Calls while Locked", isOn: Binding(
+                    get: { allowIncomingCalls },
+                    set: { newValue in
+                        handleIncomingCallsToggle(newValue: newValue)
+                    }
+                ))
+
+                Text("Automatically allow FaceTime and Phone to receive incoming calls without password.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .task {
@@ -89,6 +103,7 @@ struct SecuritySettingsTab: View {
     private func syncProtectionStatus() {
         guard !isMock else { return }
         isProtectionEnabled = !AppState.shared.manager.isProtectionDisabled
+        allowIncomingCalls = AppState.shared.manager.allowIncomingCalls
     }
 
     private func handleLockToggle(newValue: Bool) {
@@ -113,6 +128,26 @@ struct SecuritySettingsTab: View {
         } else {
             AppState.shared.manager.setProtectionDisabled(false)
             self.isProtectionEnabled = true
+        }
+    }
+
+    private func handleIncomingCallsToggle(newValue: Bool) {
+        guard !isMock else {
+            allowIncomingCalls = newValue
+            return
+        }
+
+        AuthenticationManager.authenticate(
+            reason: String(localized: "change incoming call security settings")
+        ) { success, _ in
+            Task { @MainActor in
+                if success {
+                    AppState.shared.manager.setAllowIncomingCalls(newValue)
+                    self.allowIncomingCalls = newValue
+                } else {
+                    self.allowIncomingCalls = !newValue
+                }
+            }
         }
     }
 }

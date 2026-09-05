@@ -1,12 +1,10 @@
 <!--
 Sync Impact Report:
-- Version change: 1.2.0 → 1.3.0
+- Version change: 1.3.0 → 1.4.0
 - List of modified principles:
-  - Updated Principle II: Strict Process Interception, Post-Exec Target Audit Token & PID Recycling Guard
-  - Updated Principle V: Clean Architecture, Swift API Design Guidelines & Fluent English Phrasing
-  - Updated Principle VII: Zero-Tolerance Quality, Unified Logging, Error Handling & Fail-Safe Recovery
+  - Updated Principle II: Expanded process interception mechanics with Telephony bypass rules.
 - Added sections:
-  - Security-Scoped Bookmarks & File Integrity
+  - Telephony Services, Darwin Notification & Incoming Call Bypass Governance
 - Removed sections: None
 - Follow-up TODOs: None
 -->
@@ -26,6 +24,7 @@ The lifecycle of intercepted processes MUST strictly follow the two-phase kernel
 1. `AUTH_EXEC` MUST return `ES_AUTH_RESULT_ALLOW` and record the pending execution path so that the macOS Kernel finishes process instantiation and assigns a valid PID (> 0). In `AUTH_EXEC`, `audit_token_to_pid` returns 0; calling `kill(0, signal)` is strictly prohibited as it targets the entire process group of the caller and disrupts XPC connections.
 2. `NOTIFY_EXEC` MUST extract PID and `audit_token_t` from **`message.event.exec.target.pointee.audit_token`** (representing post-exec state after `execve()`) rather than `message.process.audit_token`. This ensures the Darwin XNU incremented `pidversion` matches and prevents false PID recycling aborts.
 3. Every POSIX signal invocation (`SIGSTOP`, `SIGCONT`, `SIGKILL`) MUST strictly enforce `guard pid > 0, kill(pid, 0) == 0 else { continue }` to skip dead processes. Before resuming or terminating, compare `audit_token_to_pidversion` via `task_info(TASK_AUDIT_TOKEN)` against the stored audit token to prevent sending signals to a recycled process ID.
+4. **Telephony Interception Exception**: When active incoming call state is signaled, verified Apple telephony binaries (`com.apple.mobilephone`, `com.apple.FaceTime`) MUST bypass `SIGSTOP` suspension, preserving user call-alerting UX while maintaining scene-isolated privacy.
 
 ### III. Mutual Cryptographic Handshake & Defense in Depth
 All inter-process communication between `AppLocker` (Client) and `ESExtension` (Root Daemon) via Mach Service (`com.TranPhuong319.AppLocker.xpc`) MUST enforce bidirectional cryptographic mutual authentication:
@@ -66,6 +65,15 @@ Every modification MUST pass strict quality and resilience gates:
 
 ---
 
+## Telephony Services, Darwin Notification & Incoming Call Bypass Governance
+
+- **Darwin Notifications over Private IPC**: State monitoring across security domains MUST prioritize public Darwin Notification APIs (`<notify.h>`) over private framework Mach lookup endpoints (`CoreDuetContext`, `TUCallCenter`) that trigger `NSCocoaErrorDomain Code=4097`.
+- **Activity Level State Mapping**: Continuity and call alerting states MUST be monitored via `com.apple.sharing.activity-level-changed` with state `14` (`PhoneCall` / `0x0E`), dispatched on main queue in App and queried directly via `notify_get_state` in Extension.
+- **Strict Code Signing Validation for Telephony Bypasses**: Bypassing `SIGSTOP` for incoming calls MUST verify that the target binary satisfies `anchor apple and (identifier "com.apple.mobilephone" or identifier "com.apple.FaceTime")` via `SecStaticCodeCheckValidity`. Unsigned or tampered binaries MUST NOT be bypassed.
+- **Biometric Guard on Telephony Policy**: Altering incoming call bypass policy in user preferences MUST require biometric or passcode authentication via `AuthenticationManager.authenticate` before persisting to `config.plist`.
+
+---
+
 ## Security & System Extension Governance
 
 - **Kernel Privileges**: Endpoint Security client handles MUST be self-muted appropriately (`es_mute_process`) during initialization to prevent recursive event loops.
@@ -100,4 +108,4 @@ This Constitution serves as the definitive, supreme technical law for the AppLoc
 - **Amendments**: Modifying this Constitution requires updating `.specify/memory/constitution.md`, bumping the version according to Semantic Versioning, updating the Sync Impact Report, and securing maintainer approval.
 - **Enforcement**: Automated tooling, linting, and agent planning workflows MUST validate compliance with these principles before code execution.
 
-**Version**: 1.3.0 | **Ratified**: 2026-08-21 | **Last Amended**: 2026-09-01
+**Version**: 1.4.0 | **Ratified**: 2026-08-21 | **Last Amended**: 2026-09-05
