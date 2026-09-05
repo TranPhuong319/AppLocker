@@ -8,56 +8,55 @@
 import Cocoa
 import Carbon
 
+/// Quản lý phím tắt toàn hệ thống (Global HotKey: ⌘ + ⇧ + L)
+/// Dùng Carbon Event HotKey để chạy nền toàn hệ thống mà không cần xin quyền Accessibility.
 final class HotKeyManager {
-    var hotKeyRef: EventHotKeyRef?
-    var eventHandlerRef: EventHandlerRef?
-    var hotKeyID = EventHotKeyID()
+    private var hotKeyRef: EventHotKeyRef?
+    private var eventHandlerRef: EventHandlerRef?
 
     init() {
-        hotKeyID.signature = OSType("HTK1".utf8.reduce(0) { $0 << 8 | OSType($1) })
-        hotKeyID.id = 1
-
-        let modifierKeys: UInt32 = UInt32(cmdKey | shiftKey)   // Cmd + Shift
-        let keyCode: UInt32 = UInt32(kVK_ANSI_L)               // phím L
-
-        RegisterEventHotKey(keyCode,
-                            modifierKeys,
-                            hotKeyID,
-                            GetEventDispatcherTarget(),
-                            0,
-                            &hotKeyRef)
-
-        installHandler()
+        registerShortcut()
     }
 
-    func installHandler() {
-        var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard),
-                                      eventKind: UInt32(kEventHotKeyPressed))
+    deinit {
+        unregisterShortcut()
+    }
 
-        InstallEventHandler(GetEventDispatcherTarget(), { (_, event, _) -> OSStatus in
-            var id = EventHotKeyID()
-            GetEventParameter(event,
-                              UInt32(kEventParamDirectObject),
-                              UInt32(typeEventHotKeyID),
-                              nil,
-                              MemoryLayout.size(ofValue: id),
-                              nil,
-                              &id)
+    private func registerShortcut() {
+        // 1. Đăng ký phím tắt ⌘ + ⇧ + L với hệ thống
+        let hotKeyID = EventHotKeyID(signature: OSType(1), id: 1)
+        let modifierKeys = UInt32(cmdKey | shiftKey)
+        let keyCode = UInt32(kVK_ANSI_L)
 
-            if id.id == 1 {
-                Task { @MainActor in
-                    NSApp.appDelegate?.openAppList()
-                }
+        let registerStatus = RegisterEventHotKey(
+            keyCode,
+            modifierKeys,
+            hotKeyID,
+            GetEventDispatcherTarget(),
+            0,
+            &hotKeyRef
+        )
+        guard registerStatus == noErr else { return }
+
+        // 2. Lắng nghe sự kiện khi phím tắt được nhấn
+        var eventType = EventTypeSpec(
+            eventClass: OSType(kEventClassKeyboard),
+            eventKind: UInt32(kEventHotKeyPressed)
+        )
+
+        InstallEventHandler(GetEventDispatcherTarget(), { _, _, _ in
+            Task { @MainActor in
+                NSApp.appDelegate?.openAppList()
             }
             return noErr
         }, 1, &eventType, nil, &eventHandlerRef)
     }
 
-    deinit {
-        if let hotKeyRef = hotKeyRef {
+    private func unregisterShortcut() {
+        if let hotKeyRef {
             UnregisterEventHotKey(hotKeyRef)
         }
-        if let eventHandlerRef = eventHandlerRef {
+        if let eventHandlerRef {
             RemoveEventHandler(eventHandlerRef)
         }
     }
