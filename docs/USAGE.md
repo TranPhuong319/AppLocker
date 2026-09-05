@@ -20,7 +20,7 @@ AppLocker is a native macOS security utility that intercepts application launche
 1. Turn off your Mac completely.
 2. Boot into **Recovery Mode**:
    - **Apple Silicon (M1/M2/M3/M4)**: Press and hold the **Power button** until *"Loading startup options"* appears $\rightarrow$ select **Options > Continue** $\rightarrow$ Go to the top menu **Utilities > Startup Security Utility** $\rightarrow$ Select your drive $\rightarrow$ Choose **Reduced Security**.
-   - **Intel Macs**: Hold `Cmd + R` immediately after powering on until the Apple logo appears.
+   - **Intel Macs**: Hold `⌘ + R` immediately after powering on until the Apple logo appears.
 3. In the top menu bar, open **Utilities > Terminal**.
 4. Run the command:
    ```bash
@@ -38,7 +38,7 @@ AppLocker is a native macOS security utility that intercepts application launche
 
 ## 📋 Managing Locked Applications
 
-Access the management window at any time by clicking the **AppLocker lock icon (`🔒`)** in your macOS menu bar and choosing **Manage the application list…** (or press `Cmd + Shift + L`).  
+Access the management window at any time by clicking the **AppLocker lock icon (`🔒`)** in your macOS menu bar and choosing **Manage the application list…** (or press `⌘ + ⇧ + L`).  
 *(Note: Opening the management window requires authentication).*
 
 <div align="center">
@@ -84,12 +84,12 @@ Access the management window at any time by clicking the **AppLocker lock icon (
 
 | Shortcut | Menu Action | Description |
 | :--- | :--- | :--- |
-| `Cmd + Shift + L` | **Manage the application list…** | Opens the app list manager (requires authentication). |
-| `Cmd + ,` | **Settings…** | Configure automatic software update checks, downloads, and channels (Stable / Beta). |
+| `⌘ + ⇧ + L` | **Manage the application list…** | Opens the app list manager (requires authentication). |
+| `⌘ + ,` | **Settings…** | Configure automatic software update checks, downloads, and channels (Stable / Beta). |
 | — | **Check for Updates…** | Manually check for software updates. |
 | — | **About AppLocker** | View current app version and developer information. |
 | — | **Uninstall AppLocker…** | Deauthorizes the system extension, removes background services, and uninstalls AppLocker cleanly. |
-| `Option` (Hold) | **Reset AppLocker…** | Reset all settings and clear the locked applications list (requires authentication). |
+| `⌥` (Hold) | **Reset AppLocker…** | Reset all settings and clear the locked applications list (requires authentication). |
 
 ---
 
@@ -130,7 +130,7 @@ If you have already deleted `AppLocker.app` manually:
 > Resetting AppLocker will permanently erase the locked applications list and shared configuration for **all users** on this Mac.
 
 If you need to restore AppLocker to default settings:
-1. Hold `Option` key while opening the menu bar icon `🔒`.
+1. Hold `⌥` key while opening the menu bar icon `🔒`.
 2. Click **Reset AppLocker…** and authenticate.
 3. Or manually delete the shared configuration file:
    ```bash

@@ -20,7 +20,7 @@ AppLocker là một công cụ bảo mật native dành cho macOS, giúp can thi
 1. Tắt máy Mac của bạn hoàn toàn.
 2. Khởi động vào **Chế độ khôi phục (Recovery Mode)**:
    - **Apple Silicon (M1/M2/M3/M4)**: Nhấn và giữ **Nút nguồn** cho đến khi dòng chữ *"Loading startup options"* xuất hiện $\rightarrow$ chọn **Options > Continue** $\rightarrow$ Vào menu **Utilities > Startup Security Utility** $\rightarrow$ Chọn ổ đĩa $\rightarrow$ Chọn **Reduced Security** (Hạ cấp bảo mật).
-   - **Máy Mac chạy chip Intel**: Giữ tổ hợp phím `Cmd + R` ngay sau khi bật nguồn cho đến khi logo Apple xuất hiện.
+   - **Máy Mac chạy chip Intel**: Giữ tổ hợp phím `⌘ + R` ngay sau khi bật nguồn cho đến khi logo Apple xuất hiện.
 3. Trên thanh menu phía trên, mở **Utilities > Terminal** (Tiện ích > Terminal).
 4. Chạy lệnh:
    ```bash
@@ -38,7 +38,7 @@ AppLocker là một công cụ bảo mật native dành cho macOS, giúp can thi
 
 ## 📋 Quản lý các ứng dụng bị khóa
 
-Truy cập cửa sổ quản lý bất kỳ lúc nào bằng cách nhấp vào **biểu tượng khóa AppLocker (`🔒`)** trên thanh menu macOS và chọn **Manage the application list…** (hoặc nhấn `Cmd + Shift + L`).  
+Truy cập cửa sổ quản lý bất kỳ lúc nào bằng cách nhấp vào **biểu tượng khóa AppLocker (`🔒`)** trên thanh menu macOS và chọn **Manage the application list…** (hoặc nhấn `⌘ + ⇧ + L`).  
 *(Lưu ý: Mở cửa sổ quản lý yêu cầu xác thực Touch ID / Mật khẩu).*
 
 <div align="center">
@@ -84,12 +84,12 @@ Truy cập cửa sổ quản lý bất kỳ lúc nào bằng cách nhấp vào *
 
 | Phím tắt | Thao tác Menu | Mô tả |
 | :--- | :--- | :--- |
-| `Cmd + Shift + L` | **Manage the application list…** | Mở cửa sổ quản lý danh sách ứng dụng (yêu cầu xác thực). |
-| `Cmd + ,` | **Settings…** | Cấu hình kiểm tra cập nhật tự động, tải về và kênh cập nhật (Stable / Beta). |
+| `⌘ + ⇧ + L` | **Manage the application list…** | Mở cửa sổ quản lý danh sách ứng dụng (yêu cầu xác thực). |
+| `⌘ + ,` | **Settings…** | Cấu hình kiểm tra cập nhật tự động, tải về và kênh cập nhật (Stable / Beta). |
 | — | **Check for Updates…** | Kiểm tra cập nhật phần mềm thủ công. |
 | — | **About AppLocker** | Xem phiên bản ứng dụng hiện tại và thông tin nhà phát triển. |
 | — | **Uninstall AppLocker…** | Hủy ủy quyền system extension, gỡ bỏ dịch vụ chạy ngầm và gỡ cài đặt AppLocker sạch sẽ. |
-| `Option` (Giữ) | **Reset AppLocker…** | Đặt lại toàn bộ cài đặt và xóa danh sách ứng dụng bị khóa (yêu cầu xác thực). |
+| `⌥` (Giữ) | **Reset AppLocker…** | Đặt lại toàn bộ cài đặt và xóa danh sách ứng dụng bị khóa (yêu cầu xác thực). |
 
 ---
 
@@ -130,7 +130,7 @@ Nếu bạn đã xóa `AppLocker.app` thủ công trước đó:
 > Việc đặt lại sẽ xóa toàn bộ danh sách khóa ứng dụng và cấu hình chung của **tất cả người dùng** trên máy Mac này.
 
 Nếu bạn cần khôi phục AppLocker về cài đặt mặc định:
-1. Giữ phím `Option` trong khi nhấp vào biểu tượng thanh menu `🔒`.
+1. Giữ phím `⌥` trong khi nhấp vào biểu tượng thanh menu `🔒`.
 2. Nhấp vào **Reset AppLocker…** và thực hiện xác thực.
 3. Hoặc xóa thủ công tệp cấu hình dùng chung:
    ```bash
