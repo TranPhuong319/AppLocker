@@ -16,6 +16,7 @@ class LockES: LockManagerProtocol {
     var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     var allApps: [InstalledApp] = []
     var isProtectionDisabled: Bool = false
+    var allowIncomingCalls: Bool = true
 
     var onConfigUpdated: (() -> Void)?
 
@@ -40,6 +41,7 @@ class LockES: LockManagerProtocol {
                 guard let self else { return }
                 self.lockedApps = loaded.apps
                 self.isProtectionDisabled = loaded.isDisabled
+                self.allowIncomingCalls = loaded.allowIncomingCalls
                 self.onConfigUpdated?()
                 self.migrateLegacyConfigsIfNeeded(appsToMigrate: loaded.apps, isLegacyFormat: loaded.isLegacyFormat)
             }
@@ -130,11 +132,20 @@ class LockES: LockManagerProtocol {
 
     // MARK: - Persistence helper
     func save() {
-        ConfigStore.shared.save(apps: self.lockedApps, isDisabled: self.isProtectionDisabled)
+        ConfigStore.shared.save(
+            apps: self.lockedApps,
+            isDisabled: self.isProtectionDisabled,
+            allowIncomingCalls: self.allowIncomingCalls
+        )
     }
 
     func setProtectionDisabled(_ disabled: Bool) {
         self.isProtectionDisabled = disabled
+        self.save()
+    }
+
+    func setAllowIncomingCalls(_ allowed: Bool) {
+        self.allowIncomingCalls = allowed
         self.save()
     }
 

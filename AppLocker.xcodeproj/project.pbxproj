@@ -21,6 +21,7 @@
 		E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D62F59E36600D46B31 /* AppIcon.icon */; };
 		E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D72F59E36600D46B31 /* Assets.xcassets */; };
 		E0FD75F02F59E36600D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */; };
+		E0FD80012F59E36600D46B31 /* CallServiceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD80022F59E36600D46B31 /* CallServiceObserver.swift */; };
 		E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */; };
 		E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DA2F59E36600D46B31 /* HotKeyManager.swift */; };
 		E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */; };
@@ -204,6 +205,8 @@
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
 		E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManagerProtocol.swift; sourceTree = "<group>"; };
 		E0FD75E62F59E36600D46B31 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
+		E0FD80022F59E36600D46B31 /* CallServiceObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallServiceObserver.swift; sourceTree = "<group>"; };
+		E0FD80032F59E36600D46B31 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
 		E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.agent.plist; sourceTree = "<group>"; };
 		E0FD75EA2F59E36600D46B31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -557,6 +560,7 @@
 		E0FD75E52F59E36600D46B31 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				E0FD80042F59E36600D46B31 /* CallServices */,
 				E02E769130315BE700401271 /* AppState */,
 				E0FD75DB2F59E36600D46B31 /* HotKey */,
 				E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */,
@@ -565,6 +569,14 @@
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		E0FD80042F59E36600D46B31 /* CallServices */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD80022F59E36600D46B31 /* CallServiceObserver.swift */,
+			);
+			path = CallServices;
 			sourceTree = "<group>";
 		};
 		E0FD75E72F59E36600D46B31 /* Update */ = {
@@ -584,6 +596,7 @@
 				E0FD75D92F59E36600D46B31 /* Resources */,
 				E0FD75E52F59E36600D46B31 /* Services */,
 				E0FD75E72F59E36600D46B31 /* Update */,
+				E0FD80032F59E36600D46B31 /* Bridging-Header.h */,
 				E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */,
 				E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */,
 				E0FD75EA2F59E36600D46B31 /* Info.plist */,
@@ -928,6 +941,7 @@
 				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
 				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
 				E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */,
+				E0FD80012F59E36600D46B31 /* CallServiceObserver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1260,12 +1274,9 @@
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AppLocker/Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;
-				SYSTEM_FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
-				);
 			};
 			name = Debug;
 		};
@@ -1319,12 +1330,9 @@
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AppLocker/Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;
-				SYSTEM_FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
-				);
 			};
 			name = Release;
 		};

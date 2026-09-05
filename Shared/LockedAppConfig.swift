@@ -35,4 +35,5 @@ struct LockedAppConfig: Codable, Hashable {
 struct UserConfig: Codable {
     var isDisabled: Bool
     var apps: [LockedAppConfig]
+    var allowIncomingCalls: Bool?
 }

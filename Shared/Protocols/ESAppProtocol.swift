@@ -26,4 +26,6 @@ import Foundation
     )
 
     func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void)
+
+    func updateIncomingCallRingingState(_ isRinging: Bool)
 }

@@ -11,6 +11,7 @@ struct ConfigLoadResult {
     let apps: [String: LockedAppConfig]
     let isDisabled: Bool
     let isLegacyFormat: Bool
+    let allowIncomingCalls: Bool
 }
 
 final class ConfigStore: Sendable {
@@ -53,10 +54,16 @@ final class ConfigStore: Sendable {
         var result: [String: LockedAppConfig] = [:]
         var isDisabled = false
         var isLegacyFormat = false
+        var allowIncomingCalls = true
 
         guard FileManager.default.fileExists(atPath: configURL.path),
               let plistData = try? Data(contentsOf: configURL, options: .mappedIfSafe) else {
-            return ConfigLoadResult(apps: result, isDisabled: isDisabled, isLegacyFormat: isLegacyFormat)
+            return ConfigLoadResult(
+                apps: result,
+                isDisabled: isDisabled,
+                isLegacyFormat: isLegacyFormat,
+                allowIncomingCalls: allowIncomingCalls
+            )
         }
 
         let decoder = PropertyListDecoder()
@@ -65,6 +72,7 @@ final class ConfigStore: Sendable {
                 result[app.path] = app
             }
             isDisabled = config.isDisabled
+            allowIncomingCalls = config.allowIncomingCalls ?? true
         } else if let apps = try? decoder.decode([LockedAppConfig].self, from: plistData) {
             isLegacyFormat = true
             for app in apps {
@@ -72,17 +80,26 @@ final class ConfigStore: Sendable {
             }
         }
 
-        return ConfigLoadResult(apps: result, isDisabled: isDisabled, isLegacyFormat: isLegacyFormat)
+        return ConfigLoadResult(
+            apps: result,
+            isDisabled: isDisabled,
+            isLegacyFormat: isLegacyFormat,
+            allowIncomingCalls: allowIncomingCalls
+        )
     }
 
-    func save(apps map: [String: LockedAppConfig], isDisabled: Bool) {
+    func save(apps map: [String: LockedAppConfig], isDisabled: Bool, allowIncomingCalls: Bool = true) {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
 
         do {
             ensureDirectoryExists(userDirectoryURL)
 
-            let userConfig = UserConfig(isDisabled: isDisabled, apps: Array(map.values))
+            let userConfig = UserConfig(
+                isDisabled: isDisabled,
+                apps: Array(map.values),
+                allowIncomingCalls: allowIncomingCalls
+            )
             let plistData = try encoder.encode(userConfig)
             try plistData.write(to: configURL, options: .atomic)
 

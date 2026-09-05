@@ -12,6 +12,7 @@
 #include <libproc.h>
 #include <sys/proc_info.h>
 #include <bsm/libbsm.h>
+#include <notify.h>
 
 @interface NSXPCConnection (AuditToken)
 @property (readonly) audit_token_t auditToken;

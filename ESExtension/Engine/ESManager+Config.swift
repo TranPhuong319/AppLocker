@@ -8,31 +8,38 @@
 import Foundation
 import os
 
+private struct LoadedConfigs {
+    let cdhashes: [uid_t: Set<String>]
+    let bundlePaths: [uid_t: Set<String>]
+    let incomingCalls: [uid_t: Bool]
+}
+
 extension ESManager {
     static let baseConfigDirectory = "/Users/Shared/AppLocker"
 
     /// Đọc cấu hình từ tất cả các file /Users/Shared/AppLocker/<UID>/config.plist và cập nhật vào bộ nhớ ngay lập tức
     func loadInitialConfigSync() {
-        guard let (loadedCDHashes, loadedBundlePaths) = readConfigsFromDisk() else {
+        guard let configs = readConfigsFromDisk() else {
             return
         }
 
         // Atomic Swap
         self.stateLock.withLock {
-            self.lockedCDHashes = loadedCDHashes
-            self.lockedBundlePaths = loadedBundlePaths
+            self.lockedCDHashes = configs.cdhashes
+            self.lockedBundlePaths = configs.bundlePaths
+            self.allowIncomingCallsByUID = configs.incomingCalls
         }
 
-        let totalApps = loadedBundlePaths.values.reduce(0) { $0 + $1.count }
+        let totalApps = configs.bundlePaths.values.reduce(0) { $0 + $1.count }
         Logfile.endpointSecurity.info(
             """
             [ESConfig] Loaded \(totalApps, privacy: .public) apps for \
-            \(loadedCDHashes.count, privacy: .public) users from per-user configs.
+            \(configs.cdhashes.count, privacy: .public) users from per-user configs.
             """
         )
     }
 
-    private func readConfigsFromDisk() -> ([uid_t: Set<String>], [uid_t: Set<String>])? {
+    private func readConfigsFromDisk() -> LoadedConfigs? {
         let fileManager = FileManager.default
         let baseDir = ESManager.baseConfigDirectory
         guard fileManager.fileExists(atPath: baseDir) else {
@@ -44,6 +51,7 @@ extension ESManager {
 
         var newCDHashes: [uid_t: Set<String>] = [:]
         var newBundlePaths: [uid_t: Set<String>] = [:]
+        var newAllowIncomingCalls: [uid_t: Bool] = [:]
 
         if let subpaths = try? fileManager.contentsOfDirectory(atPath: baseDir) {
             let decoder = PropertyListDecoder()
@@ -56,6 +64,8 @@ extension ESManager {
                     continue
                 }
 
+                newAllowIncomingCalls[uid] = userConfig.allowIncomingCalls ?? true
+
                 guard !userConfig.isDisabled else { continue }
                 let (cdhashes, bundlePaths) = extractHashesAndPaths(from: userConfig.apps)
                 newCDHashes[uid] = cdhashes
@@ -63,7 +73,11 @@ extension ESManager {
             }
         }
 
-        return (newCDHashes, newBundlePaths)
+        return LoadedConfigs(
+            cdhashes: newCDHashes,
+            bundlePaths: newBundlePaths,
+            incomingCalls: newAllowIncomingCalls
+        )
     }
 
     private func extractHashesAndPaths(from apps: [LockedAppConfig]) -> (Set<String>, Set<String>) {

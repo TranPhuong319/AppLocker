@@ -95,14 +95,6 @@ extension ESManager: ESAppProtocol {
         return info[kSecCodeInfoUnique as String] as? Data
     }
 
-    private func processPath(for pid: pid_t) -> String? {
-        let pathBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(MAXPATHLEN))
-        defer { pathBuffer.deallocate() }
-        let length = proc_pidpath(pid, pathBuffer, UInt32(MAXPATHLEN))
-        guard length > 0 else { return nil }
-        return String(cString: pathBuffer)
-    }
-
     public func authenticate(
         clientNonce: Data,
         clientSig: Data,
@@ -192,5 +184,19 @@ extension ESManager: ESAppProtocol {
         )
         let result = processPendingBatch(approved: approvedPIDs, rejected: rejectedPIDs)
         reply(result)
+    }
+
+    public func updateIncomingCallRingingState(_ isRinging: Bool) {
+        guard isCurrentConnectionAuthenticated() else {
+            Logfile.esSecurity.error("[Auth] updateIncomingCallRingingState rejected: Connection not authenticated")
+            return
+        }
+
+        stateLock.withLock {
+            self.isIncomingCallActive = isRinging
+        }
+        Logfile.esSecurity.notice(
+            "[Auth] Incoming call ringing state updated to: \(isRinging, privacy: .public)"
+        )
     }
 }
