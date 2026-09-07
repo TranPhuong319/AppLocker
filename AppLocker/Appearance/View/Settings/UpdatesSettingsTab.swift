@@ -53,6 +53,10 @@ struct UpdatesSettingsTab: View {
                         }
                     }
 
+                Text("Automatically download new updates in the background when available.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                 Picker("Update Channel", selection: $selectedChannelRaw) {
                     ForEach(UpdateChannel.allCases) { channel in
                         Text(channel.displayName).tag(channel.rawValue)

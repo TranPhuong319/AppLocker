@@ -36,4 +36,17 @@ struct UserConfig: Codable {
     var isDisabled: Bool
     var apps: [LockedAppConfig]
     var allowIncomingCalls: Bool?
+    var autoLockTimeoutMinutes: Int?
+
+    init(
+        isDisabled: Bool,
+        apps: [LockedAppConfig],
+        allowIncomingCalls: Bool? = nil,
+        autoLockTimeoutMinutes: Int? = nil
+    ) {
+        self.isDisabled = isDisabled
+        self.apps = apps
+        self.allowIncomingCalls = allowIncomingCalls
+        self.autoLockTimeoutMinutes = autoLockTimeoutMinutes
+    }
 }

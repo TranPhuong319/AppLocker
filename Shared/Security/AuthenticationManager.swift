@@ -12,8 +12,10 @@ import Foundation
 final class AuthenticationManager {
     private static var currentContext: LAContext?
 
-    static func authenticate(reason: String,
-                             completion: @MainActor @escaping (Bool, Error?) -> Void) {
+    static func authenticate(
+        reason: String,
+        completion: @MainActor @escaping (Bool, Error?) -> Void
+    ) {
         let context = LAContext()
         self.currentContext = context
 

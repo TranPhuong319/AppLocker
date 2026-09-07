@@ -14,9 +14,11 @@ protocol LockManagerProtocol: AnyObject {
     var allApps: [InstalledApp] { get set }
     var isProtectionDisabled: Bool { get }
     var allowIncomingCalls: Bool { get }
+    var autoLockTimeoutMinutes: Int { get }
 
     func toggleLock(for paths: [String])
     func setProtectionDisabled(_ disabled: Bool)
     func setAllowIncomingCalls(_ allowed: Bool)
+    func setAutoLockTimeoutMinutes(_ minutes: Int)
     func isLocked(path: String) -> Bool
 }

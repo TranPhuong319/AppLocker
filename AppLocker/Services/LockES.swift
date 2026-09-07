@@ -17,6 +17,7 @@ class LockES: LockManagerProtocol {
     var allApps: [InstalledApp] = []
     var isProtectionDisabled: Bool = false
     var allowIncomingCalls: Bool = true
+    var autoLockTimeoutMinutes: Int = 0
 
     var onConfigUpdated: (() -> Void)?
 
@@ -42,6 +43,7 @@ class LockES: LockManagerProtocol {
                 self.lockedApps = loaded.apps
                 self.isProtectionDisabled = loaded.isDisabled
                 self.allowIncomingCalls = loaded.allowIncomingCalls
+                self.autoLockTimeoutMinutes = loaded.autoLockTimeoutMinutes
                 self.onConfigUpdated?()
                 self.migrateLegacyConfigsIfNeeded(appsToMigrate: loaded.apps, isLegacyFormat: loaded.isLegacyFormat)
             }
@@ -135,17 +137,27 @@ class LockES: LockManagerProtocol {
         ConfigStore.shared.save(
             apps: self.lockedApps,
             isDisabled: self.isProtectionDisabled,
-            allowIncomingCalls: self.allowIncomingCalls
+            allowIncomingCalls: self.allowIncomingCalls,
+            autoLockTimeoutMinutes: self.autoLockTimeoutMinutes
         )
     }
 
     func setProtectionDisabled(_ disabled: Bool) {
         self.isProtectionDisabled = disabled
         self.save()
+        let status = disabled ? "disabled (protection paused)" : "enabled (protection active)"
+        Logfile.policy.notice("[LockES] Application lock protection \(status, privacy: .public)")
     }
 
     func setAllowIncomingCalls(_ allowed: Bool) {
         self.allowIncomingCalls = allowed
+        self.save()
+        let status = allowed ? "enabled (FaceTime/Phone bypass allowed)" : "disabled (FaceTime/Phone locked)"
+        Logfile.policy.notice("[LockES] Allow incoming calls while locked: \(status, privacy: .public)")
+    }
+
+    func setAutoLockTimeoutMinutes(_ minutes: Int) {
+        self.autoLockTimeoutMinutes = minutes
         self.save()
     }
 

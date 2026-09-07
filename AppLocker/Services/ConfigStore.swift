@@ -12,6 +12,7 @@ struct ConfigLoadResult {
     let isDisabled: Bool
     let isLegacyFormat: Bool
     let allowIncomingCalls: Bool
+    let autoLockTimeoutMinutes: Int
 }
 
 final class ConfigStore: Sendable {
@@ -55,6 +56,7 @@ final class ConfigStore: Sendable {
         var isDisabled = false
         var isLegacyFormat = false
         var allowIncomingCalls = true
+        var autoLockTimeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
 
         guard FileManager.default.fileExists(atPath: configURL.path),
               let plistData = try? Data(contentsOf: configURL, options: .mappedIfSafe) else {
@@ -62,7 +64,8 @@ final class ConfigStore: Sendable {
                 apps: result,
                 isDisabled: isDisabled,
                 isLegacyFormat: isLegacyFormat,
-                allowIncomingCalls: allowIncomingCalls
+                allowIncomingCalls: allowIncomingCalls,
+                autoLockTimeoutMinutes: autoLockTimeoutMinutes
             )
         }
 
@@ -73,6 +76,16 @@ final class ConfigStore: Sendable {
             }
             isDisabled = config.isDisabled
             allowIncomingCalls = config.allowIncomingCalls ?? true
+            if let timeout = config.autoLockTimeoutMinutes {
+                autoLockTimeoutMinutes = timeout
+            } else {
+                save(
+                    apps: result,
+                    isDisabled: isDisabled,
+                    allowIncomingCalls: allowIncomingCalls,
+                    autoLockTimeoutMinutes: autoLockTimeoutMinutes
+                )
+            }
         } else if let apps = try? decoder.decode([LockedAppConfig].self, from: plistData) {
             isLegacyFormat = true
             for app in apps {
@@ -84,11 +97,17 @@ final class ConfigStore: Sendable {
             apps: result,
             isDisabled: isDisabled,
             isLegacyFormat: isLegacyFormat,
-            allowIncomingCalls: allowIncomingCalls
+            allowIncomingCalls: allowIncomingCalls,
+            autoLockTimeoutMinutes: autoLockTimeoutMinutes
         )
     }
 
-    func save(apps map: [String: LockedAppConfig], isDisabled: Bool, allowIncomingCalls: Bool = true) {
+    func save(
+        apps map: [String: LockedAppConfig],
+        isDisabled: Bool,
+        allowIncomingCalls: Bool = true,
+        autoLockTimeoutMinutes: Int = 0
+    ) {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
 
@@ -98,7 +117,8 @@ final class ConfigStore: Sendable {
             let userConfig = UserConfig(
                 isDisabled: isDisabled,
                 apps: Array(map.values),
-                allowIncomingCalls: allowIncomingCalls
+                allowIncomingCalls: allowIncomingCalls,
+                autoLockTimeoutMinutes: autoLockTimeoutMinutes
             )
             let plistData = try encoder.encode(userConfig)
             try plistData.write(to: configURL, options: .atomic)

@@ -31,9 +31,39 @@ extension AppDelegate: NSMenuDelegate {
         guard NSApp.mainMenu == nil else { return }
 
         let mainMenu = NSMenu()
+        mainMenu.addItem(createAppMenuItem())
+        mainMenu.addItem(createEditMenuItem())
+        mainMenu.addItem(createWindowMenuItem())
+        NSApp.mainMenu = mainMenu
+    }
+
+    private func createAppMenuItem() -> NSMenuItem {
+        let appMenuItem = NSMenuItem()
+        let appMenu = NSMenu()
+        appMenu.addItem(withTitle: "About AppLocker", action: #selector(showAboutWindow), keyEquivalent: "")
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "Hide AppLocker", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(
+            withTitle: "Hide Others",
+            action: #selector(NSApplication.hideOtherApplications(_:)),
+            keyEquivalent: "h"
+        )
+        appMenu.addItem(
+            withTitle: "Show All",
+            action: #selector(NSApplication.unhideAllApplications(_:)),
+            keyEquivalent: ""
+        )
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "Quit AppLocker", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenuItem.submenu = appMenu
+        return appMenuItem
+    }
+
+    private func createEditMenuItem() -> NSMenuItem {
         let editMenuItem = NSMenuItem()
         let editMenu = NSMenu(title: "Edit")
-
         editMenu.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
         editMenu.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "Z")
         editMenu.addItem(.separator())
@@ -41,10 +71,20 @@ extension AppDelegate: NSMenuDelegate {
         editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
         editMenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         editMenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
-
         editMenuItem.submenu = editMenu
-        mainMenu.addItem(editMenuItem)
-        NSApp.mainMenu = mainMenu
+        return editMenuItem
+    }
+
+    private func createWindowMenuItem() -> NSMenuItem {
+        let windowMenuItem = NSMenuItem()
+        let windowMenu = NSMenu(title: "Window")
+        windowMenu.addItem(
+            withTitle: "Close Window",
+            action: #selector(NSWindow.performClose(_:)),
+            keyEquivalent: "w"
+        )
+        windowMenuItem.submenu = windowMenu
+        return windowMenuItem
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
