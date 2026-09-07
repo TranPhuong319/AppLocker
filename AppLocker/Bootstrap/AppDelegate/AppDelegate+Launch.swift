@@ -69,7 +69,7 @@ extension AppDelegate {
     @MainActor
     private func handleWorkspaceSleep() {
         XPCServer.lastAuthTimestampsByPath.removeAll()
-        let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
+        let timeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
         if timeoutMinutes != 0 {
             Logfile.app.info(
                 """

@@ -590,22 +590,6 @@
         }
       }
     },
-    "change incoming call security settings" : {
-      "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "change incoming call security settings"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "thay đổi cài đặt bảo mật cuộc gọi đến"
-          }
-        }
-      }
-    },
     "Check for Updates Now" : {
       "localizations" : {
         "base" : {
@@ -746,22 +730,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Từ chối"
-          }
-        }
-      }
-    },
-    "disable application lock" : {
-      "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "disable application lock"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "vô hiệu hoá khoá ứng dụng"
           }
         }
       }
@@ -1002,6 +970,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Khoá (%d)"
+          }
+        }
+      }
+    },
+    "Lock security settings" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock security settings"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khóa cài đặt bảo mật"
           }
         }
       }
@@ -1696,6 +1680,54 @@
         }
       }
     },
+    "unlock security settings" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unlock security settings"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở khóa cài đặt bảo mật"
+          }
+        }
+      }
+    },
+    "Unlock security settings" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock security settings"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khóa cài đặt bảo mật"
+          }
+        }
+      }
+    },
+    "Unlock to view security settings" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock to view security settings"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khoá để xem cài đặt bảo mật"
+          }
+        }
+      }
+    },
     "Unlocking %lld apps..." : {
       "localizations" : {
         "base" : {
@@ -1884,6 +1916,150 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Việc làm này sẽ xoá tuỳ chọn khoá ứng dụng cho toàn bộ người dùng trên máy Mac này\n\nBạn có muốn tiếp tục không?"
+          }
+        }
+      }
+    },
+    "Temporarily pause or activate protection for all applications in your lock list." : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temporarily pause or activate protection for all applications in your lock list."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tạm dừng hoặc kích hoạt toàn bộ cơ chế bảo vệ cho các ứng dụng trong danh sách khóa."
+          }
+        }
+      }
+    },
+    "Duration before authentication prompt automatically cancels and aborts app launch." : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration before authentication prompt automatically cancels and aborts app launch."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian đếm ngược trước khi hộp thoại xác thực tự động hủy và ngăn ứng dụng mở lên."
+          }
+        }
+      }
+    },
+    "Duration an app stays unlocked after authentication before requiring password again." : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration an app stays unlocked after authentication before requiring password again."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoảng thời gian ứng dụng duy trì mở khóa sau khi xác thực trước khi yêu cầu mật khẩu lại."
+          }
+        }
+      }
+    },
+    "Background service ensuring apps remain protected even when the main window is closed." : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background service ensuring apps remain protected even when the main window is closed."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiến trình nền đảm bảo ứng dụng luôn được bảo vệ ngay cả khi cửa sổ chính đang đóng."
+          }
+        }
+      }
+    },
+    "Show a system notification whenever an unauthorized launch attempt is blocked." : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show a system notification whenever an unauthorized launch attempt is blocked."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiển thị thông báo hệ thống mỗi khi một lượt khởi chạy trái phép bị ngăn chặn."
+          }
+        }
+      }
+    },
+    "Automatically download new updates in the background when available." : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically download new updates in the background when available."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động tải về bản cập nhật mới trong nền khi có sẵn."
+          }
+        }
+      }
+    },
+    "Disabling protection will allow all locked applications to be opened without authentication.\n\nAre you sure you want to turn off protection?" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disabling protection will allow all locked applications to be opened without authentication.\n\nAre you sure you want to turn off protection?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt cơ chế bảo vệ sẽ cho phép tất cả các ứng dụng trong danh sách khóa được mở mà không cần xác thực.\n\nBạn có chắc chắn muốn tắt bảo vệ không?"
+          }
+        }
+      }
+    },
+    "Turn Off" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt"
+          }
+        }
+      }
+    },
+    "Turn Off Application Lock?" : {
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off Application Lock?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt khoá ứng dụng?"
           }
         }
       }

@@ -61,10 +61,18 @@ struct GeneralSettingsTab: View {
                     })
                     .help("Re-register launchctl agent service")
                 }
+
+                Text("Background service ensuring apps remain protected even when the main window is closed.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section(header: Text("Notifications")) {
                 Toggle("Show notifications when an app is blocked", isOn: $showNotifications)
+
+                Text("Show a system notification whenever an unauthorized launch attempt is blocked.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)

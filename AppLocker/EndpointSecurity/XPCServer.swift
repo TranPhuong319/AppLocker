@@ -95,7 +95,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
 
     @MainActor
     private func checkGracePeriod(name: String, path: String, pid: Int32) -> Bool {
-        let timeoutMinutes = UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
+        let timeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
         if timeoutMinutes > 0, let lastAuth = XPCServer.lastAuthTimestampsByPath[path] {
             let elapsed = Date().timeIntervalSince(lastAuth)
             if elapsed < Double(timeoutMinutes * 60) {

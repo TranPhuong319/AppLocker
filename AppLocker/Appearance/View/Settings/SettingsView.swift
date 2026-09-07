@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var navigationHistory: [SettingsTab] = [.general]
     @State private var historyIndex: Int = 0
     @State private var isNavigatingHistory: Bool = false
+    @State private var isSecurityUnlocked: Bool = false
     private var isMock: Bool
 
     init(
@@ -26,12 +27,25 @@ struct SettingsView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             List(SettingsTab.allCases, id: \.self, selection: $selectedTab) { tab in
-                Label {
-                    Text(tab.displayName)
-                        .font(.system(size: 13, weight: .medium))
-                } icon: {
-                    Image(systemName: tab.iconName)
-                        .foregroundStyle(.blue)
+                HStack(spacing: 8) {
+                    Label {
+                        Text(tab.displayName)
+                            .font(.system(size: 13, weight: .medium))
+                    } icon: {
+                        Image(systemName: tab.iconName)
+                            .foregroundStyle(.blue)
+                    }
+
+                    if tab == .security {
+                        Spacer()
+                        Button(action: toggleSecurityLock) {
+                            Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help(isSecurityUnlocked ? "Lock security settings" : "Unlock security settings")
+                    }
                 }
                 .tag(tab)
             }
@@ -66,7 +80,20 @@ struct SettingsView: View {
         }
     }
 
+    private func toggleSecurityLock() {
+        if isSecurityUnlocked {
+            withAnimation(.snappy(duration: 0.3)) {
+                isSecurityUnlocked = false
+            }
+        } else if selectedTab != .security {
+            selectedTab = .security
+        }
+    }
+
     private func handleTabChange(to newTab: SettingsTab) {
+        if newTab != .security {
+            isSecurityUnlocked = false
+        }
         if isNavigatingHistory {
             isNavigatingHistory = false
             return
@@ -98,7 +125,7 @@ struct SettingsView: View {
         case .general:
             GeneralSettingsTab(isMock: isMock)
         case .security:
-            SecuritySettingsTab(isMock: isMock)
+            SecuritySettingsTab(isUnlocked: $isSecurityUnlocked, isMock: isMock)
         case .updates:
             UpdatesSettingsTab(isMock: isMock)
         case .appearance:

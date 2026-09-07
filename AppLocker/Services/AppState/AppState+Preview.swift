@@ -17,6 +17,7 @@ class MockLockManager: LockManagerProtocol {
     var allApps: [InstalledApp] = []
     var isProtectionDisabled: Bool = false
     var allowIncomingCalls: Bool = true
+    var autoLockTimeoutMinutes: Int = 0
 
     func toggleLock(for paths: [String]) {
         for path in paths {
@@ -40,6 +41,10 @@ class MockLockManager: LockManagerProtocol {
 
     func setAllowIncomingCalls(_ allowed: Bool) {
         self.allowIncomingCalls = allowed
+    }
+
+    func setAutoLockTimeoutMinutes(_ minutes: Int) {
+        self.autoLockTimeoutMinutes = minutes
     }
 
     func isLocked(path: String) -> Bool {
