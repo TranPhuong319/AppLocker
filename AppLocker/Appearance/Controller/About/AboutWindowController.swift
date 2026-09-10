@@ -5,7 +5,7 @@
 //  Created by AppLocker
 //
 
-import Cocoa
+import AppKit
 import SwiftUI
 
 @MainActor

@@ -57,24 +57,6 @@ extension AppDelegate {
         }
     }
 
-    private func relaunchApp(from url: URL) {
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.createsNewApplicationInstance = true
-        let pid = ProcessInfo.processInfo.processIdentifier
-        configuration.arguments = ["-waitForPID", "\(pid)"]
-
-        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, error in
-            if let error = error {
-                Logfile.app.error(
-                    "[DirectoryCheck] Application restart error in Applications: \(error.localizedDescription)"
-                )
-            }
-            Task { @MainActor in
-                NSApp.terminate(nil)
-            }
-        }
-    }
-
     private func moveToApplicationsAndRelaunch() {
         let bundleURL = Bundle.main.bundleURL
         let destinationURL = URL(fileURLWithPath: "/Applications").appendingPathComponent(bundleURL.lastPathComponent)
@@ -87,7 +69,7 @@ extension AppDelegate {
 
             try? FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
             Logfile.app.info("[DirectoryCheck] Moved application to /Applications via FileManager. Restarting…")
-            relaunchApp(from: destinationURL)
+            restartApp(at: destinationURL)
             return
 
         } catch {
@@ -130,7 +112,7 @@ extension AppDelegate {
                 Logfile.app.info(
                     "[DirectoryCheck] Moved application to /Applications via AppleScript. Restarting…"
                 )
-                relaunchApp(from: destinationURL)
+                restartApp(at: destinationURL)
             }
         }
     }

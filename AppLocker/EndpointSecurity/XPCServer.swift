@@ -5,10 +5,10 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
+import AppKit
 import Foundation
 import Observation
 import os
-import UserNotifications
 
 @Observable
 final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
@@ -143,7 +143,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
 
             let showNotifications = UserDefaults.standard.object(forKey: "showBlockedNotifications") as? Bool ?? true
             if showNotifications {
-                sendBlockedNotification(appName: name)
+                NSApp.appDelegate?.sendBlockedNotification(appName: name)
             }
         }
 
@@ -268,20 +268,6 @@ extension XPCServer {
                 self.handleCancel()
             }
         }
-    }
-
-    func sendBlockedNotification(appName: String) {
-        let content = UNMutableNotificationContent()
-        content.title = String(localized: "Application Lock")
-        content.body = String(format: String(localized: "%@ has been blocked from launching."), appName)
-        content.sound = .default
-
-        let request = UNNotificationRequest(
-            identifier: "BlockedAppNotification-\(UUID().uuidString)",
-            content: content,
-            trigger: nil
-        )
-        UNUserNotificationCenter.current().add(request)
     }
 
     @MainActor

@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 28/12/25.
 //
 
-import UserNotifications
 import AppKit
 
 extension AppDelegate {
@@ -33,15 +32,7 @@ extension AppDelegate {
         AppUpdater.shared.setBridgeDelegate(self)
         AppUpdater.shared.startTestAutoCheck()
 
-        UNUserNotificationCenter.current().delegate = self
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: [.badge, .sound, .alert]) { _, error in
-                if let error = error {
-                    Logfile.app.error(
-                        "[Launch] Notification authorization error: \(error.localizedDescription)"
-                    )
-                }
-            }
+        self.setupNotifications()
 
         Logfile.app.debug("[Launch] Setting up hotkey manager...")
         self.hotkey = HotKeyManager()

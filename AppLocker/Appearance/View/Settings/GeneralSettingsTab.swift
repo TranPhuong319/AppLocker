@@ -83,14 +83,14 @@ struct GeneralSettingsTab: View {
 
     private func checkAgentStatus() {
         guard !isMock else { return }
-        if let appDelegate = NSApp.delegate as? AppDelegate {
+        if let appDelegate = NSApp.appDelegate {
             isAgentActive = appDelegate.checkAgentStatus()
         }
     }
 
     private func repairAgentService() {
         guard !isMock else { return }
-        if let appDelegate = NSApp.delegate as? AppDelegate {
+        if let appDelegate = NSApp.appDelegate {
             isAgentActive = appDelegate.repairAgentService()
         }
     }

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Sparkle
 
 struct UpdatesSettingsTab: View {
     let isMock: Bool
@@ -36,10 +35,9 @@ struct UpdatesSettingsTab: View {
                             autoDownload = false
                         }
                         if !isMock {
-                            let updater = AppUpdater.shared.updaterController.updater
-                            updater.automaticallyChecksForUpdates = newValue
+                            AppUpdater.shared.automaticallyChecksForUpdates = newValue
                             if !newValue {
-                                updater.automaticallyDownloadsUpdates = false
+                                AppUpdater.shared.automaticallyDownloadsUpdates = false
                             }
                         }
                     }
@@ -48,8 +46,7 @@ struct UpdatesSettingsTab: View {
                     .disabled(!autoCheck)
                     .onChange(of: autoDownload) { _, newValue in
                         if !isMock {
-                            let updater = AppUpdater.shared.updaterController.updater
-                            updater.automaticallyDownloadsUpdates = newValue
+                            AppUpdater.shared.automaticallyDownloadsUpdates = newValue
                         }
                     }
 
@@ -108,25 +105,14 @@ struct UpdatesSettingsTab: View {
     }
 
     private func updateSparkleStatus() {
-        guard !isMock, let appDelegate = NSApp.delegate as? AppDelegate else { return }
-        if let update = appDelegate.pendingUpdate {
-            hasAvailableUpdate = true
-            let displayVer = update.displayVersionString
-            let buildVer = update.versionString
-            if displayVer != buildVer {
-                availableUpdateVersion = "\(displayVer) (\(buildVer))"
-            } else {
-                availableUpdateVersion = displayVer
-            }
-        } else {
-            hasAvailableUpdate = false
-            availableUpdateVersion = ""
-        }
+        guard !isMock else { return }
+        hasAvailableUpdate = AppUpdater.shared.hasAvailableUpdate
+        availableUpdateVersion = AppUpdater.shared.availableUpdateVersion ?? ""
     }
 
     private func checkForUpdates() {
         guard !isMock else { return }
-        (NSApp.delegate as? AppDelegate)?.checkForUpdates()
+        AppUpdater.shared.checkForUpdates()
     }
 }
 

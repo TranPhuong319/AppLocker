@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 18/8/25.
 //
 
-import ServiceManagement
 import SwiftUI
 
 struct SecuritySettingsTab: View {
@@ -86,8 +85,7 @@ struct SecuritySettingsTab: View {
                             .foregroundStyle(.red)
                         Spacer()
                         Button(action: {
-                            SMAppService.openSystemSettingsLoginItems()
-                            ExtensionInstaller.shared.install()
+                            NSApp.appDelegate?.openSystemSettingsForExtension()
                         }, label: {
                             Text("Enable Extension")
                         })

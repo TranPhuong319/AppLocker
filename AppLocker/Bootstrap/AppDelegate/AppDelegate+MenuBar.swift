@@ -6,7 +6,6 @@
 //
 
 import AppKit
-import ServiceManagement
 
 @MainActor
 extension AppDelegate: NSMenuDelegate {
