@@ -58,7 +58,7 @@ struct AppearanceSettingsTab: View {
 
     private func selectTheme(_ theme: String) {
         appTheme = theme
-        if !isMock, let appDelegate = NSApp.delegate as? AppDelegate {
+        if !isMock, let appDelegate = NSApp.appDelegate {
             appDelegate.applyTheme(theme)
         }
     }

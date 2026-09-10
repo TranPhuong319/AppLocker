@@ -21,7 +21,7 @@ extension AppDelegate {
     func isAgentLoadedInLaunchd() -> Bool {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = ["print", "gui/\(getuid())/\(plistName)"]
+        process.arguments = ["print", "gui/\(getuid())/\(Self.plistName)"]
         process.standardOutput = Pipe()
         process.standardError = Pipe()
         do {
@@ -37,17 +37,17 @@ extension AppDelegate {
         #if DEBUG
         Logfile.app.debug("[Agent] Skipping registerAgentWithoutImmediateLaunch in DEBUG mode")
         #else
-        manageAgent(plistName: plistName, action: .install)
+        manageAgent(action: .install)
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = ["stop", plistName]
+        process.arguments = ["stop", Self.plistName]
         try? process.run()
         #endif
     }
 
     @discardableResult
     func manageAgent(
-        plistName: String,
+        plistName: String = AppDelegate.plistName,
         action: AgentAction
     ) -> AgentManageResult {
         #if DEBUG
@@ -106,7 +106,7 @@ extension AppDelegate {
 
     @discardableResult
     func checkAgentStatus() -> Bool {
-        let result = manageAgent(plistName: plistName, action: .check)
+        let result = manageAgent(action: .check)
         switch result {
         case .installed, .alreadyInstalled:
             return true
@@ -117,12 +117,12 @@ extension AppDelegate {
 
     @discardableResult
     func repairAgentService() -> Bool {
-        let result = manageAgent(plistName: plistName, action: .install)
+        let result = manageAgent(action: .install)
         switch result {
         case .installed, .alreadyInstalled:
             return true
         default:
-            SMAppService.openSystemSettingsLoginItems()
+            openSystemSettingsForExtension()
             AlertShow.showInfo(
                 title: String(localized: "Enable Background Service"),
                 message: String(

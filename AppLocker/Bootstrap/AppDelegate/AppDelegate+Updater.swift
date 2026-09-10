@@ -6,39 +6,25 @@
 //
 
 import AppKit
-import Sparkle
-import UserNotifications
 
 extension AppDelegate: AppUpdaterBridgeDelegate {
-    var supportsGentleScheduledUpdateReminders: Bool { false }
-
-    func didFindUpdate(_ item: SUAppcastItem) {
-        pendingUpdate = item
-        NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
-
+    func didFindUpdate() {
         // Only notify immediately if we are NOT automatically downloading updates in the background.
         // If we are auto-downloading, we wait for didDownloadUpdate to show the "Ready to Install" notification.
-        if !AppUpdater.shared.updaterController.updater.automaticallyDownloadsUpdates {
+        if !AppUpdater.shared.automaticallyDownloadsUpdates {
             Logfile.app.info("[Updater] New update found (silent check)")
-            let request = buildUpdateNotification()
-            UNUserNotificationCenter.current().add(request)
+            sendUpdateNotification()
         }
     }
 
     func didDownloadUpdate() {
-        let request = buildUpdateNotification()
-        UNUserNotificationCenter.current().add(request)
+        sendUpdateNotification()
     }
 
     func didNotFindUpdate() {
         Logfile.app.debug("[Updater] No update found (silent check)")
-        pendingUpdate = nil
-        NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
         NSApp.dockTile.badgeLabel = nil
-        UNUserNotificationCenter.current().setBadgeCount(0)
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [
-            notificationIndentifiers
-        ])
+        clearUpdateNotification()
     }
 }
 

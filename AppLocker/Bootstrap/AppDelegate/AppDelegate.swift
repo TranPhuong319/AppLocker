@@ -8,9 +8,6 @@
 import AppKit
 import Foundation
 import ServiceManagement
-import Sparkle
-import SwiftUI
-import UserNotifications
 
 enum AgentAction {
     case install
@@ -18,13 +15,11 @@ enum AgentAction {
     case check
 }
 
-let plistName = "com.TranPhuong319.AppLocker.agent"
-
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate {
+    static let plistName = "com.TranPhuong319.AppLocker.agent"
+
     var statusItem: NSStatusItem?
-    var pendingUpdate: SUAppcastItem?
-    let notificationIndentifiers = "AppLockerUpdateNotification"
     var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -76,20 +71,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
 
         Logfile.app.info("[Bootstrap] AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
+        let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
+
         #if !DEBUG
         if !launchedByLaunchd() {
-            let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
             if !isFirstStart {
                 if !isAgentLoadedInLaunchd() {
                     Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
-                    _ = manageAgent(plistName: plistName, action: .install)
+                    _ = manageAgent(action: .install)
                 }
 
                 if isAgentLoadedInLaunchd() {
                     Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
                     let process = Process()
                     process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-                    process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(plistName)"]
+                    process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
                     try? process.run()
                     NSApp.terminate(nil)
                     return
@@ -98,7 +94,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         }
         #endif
 
-        let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
         let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "System"
         applyTheme(theme)
         setupEditMenu()

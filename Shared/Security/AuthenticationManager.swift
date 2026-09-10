@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@preconcurrency import LocalAuthentication
+import LocalAuthentication
 
 @MainActor
 final class AuthenticationManager {

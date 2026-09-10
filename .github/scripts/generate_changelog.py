@@ -10,16 +10,24 @@ def run_command(shell_command):
     except subprocess.CalledProcessError:
         return None
 
-def get_last_stable_tag():
-    # Matches logic: git tag -l | grep -v 'alpha' | tail -1
-    tags = run_command("git tag -l")
+def get_last_stable_tag(exclude_tag=None):
+    # Sort tags according to semantic versioning order
+    tags = run_command("git tag -l --sort=v:refname")
     if not tags:
         return None
-    stable_tags = [tag for tag in tags.splitlines() if 'alpha' not in tag.lower()]
+    stable_tags = []
+    for tag in tags.splitlines():
+        tag = tag.strip()
+        if not tag:
+            continue
+        # Exclude pre-release tags (alpha, beta, rc)
+        if any(pre in tag.lower() for pre in ['alpha', 'beta', 'rc']):
+            continue
+        if exclude_tag and tag == exclude_tag:
+            continue
+        stable_tags.append(tag)
     if not stable_tags:
         return None
-    # Assuming tags are sorted or we rely on tail logic. 
-    # git tag -l sorts alphabetically usually. 'tail -1' takes the last one.
     return stable_tags[-1]
 
 def get_commits(from_ref, to_ref):
@@ -166,16 +174,12 @@ def main():
     
     from_ref = args.from_ref
     if not from_ref:
-        current_branch = get_current_branch()
-        if current_branch and current_branch != "main":
-            print(f"Detected branch '{current_branch}'. Using merge-base with main.")
-            from_ref = get_merge_base(current_branch, "main")
-            if not from_ref:
-                print("Merge-base not found, falling back to last stable tag.")
-                from_ref = get_last_stable_tag()
-        else:
-            print("On main branch or branch detection failed. Finding last stable tag...")
-            from_ref = get_last_stable_tag()
+        from_ref = get_last_stable_tag(exclude_tag=args.current_tag)
+        if not from_ref:
+            current_branch = get_current_branch()
+            if current_branch and current_branch != "main":
+                print(f"Detected branch '{current_branch}'. Using merge-base with main.")
+                from_ref = get_merge_base(current_branch, "main")
     
     if not from_ref:
         print("Error: Could not determine start reference.")
@@ -200,7 +204,7 @@ def main():
     base_url = "https://github.com/TranPhuong319/AppLocker/compare/"
     
     # Get last stable tag for display (e.g., v1.6.0)
-    previous_stable_tag = get_last_stable_tag()
+    previous_stable_tag = get_last_stable_tag(exclude_tag=args.current_tag)
     display_from = previous_stable_tag if previous_stable_tag else (from_ref[:7] if len(from_ref) > 20 else from_ref)
     display_to = args.current_tag if args.current_tag else (args.to_ref[:7] if len(args.to_ref) > 20 else args.to_ref)
     

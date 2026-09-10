@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 5/9/25.
 //
 
-import CoreServices
 import Foundation
 import Observation
 import SwiftUI

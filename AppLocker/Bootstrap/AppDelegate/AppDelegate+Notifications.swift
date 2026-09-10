@@ -8,7 +8,21 @@
 import AppKit
 import UserNotifications
 
-extension AppDelegate {
+extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
+    private static let updateNotificationIdentifier = "AppLockerUpdateNotification"
+
+    func setupNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        center.requestAuthorization(options: [.badge, .sound, .alert]) { _, error in
+            if let error = error {
+                Logfile.app.error(
+                    "[Notification] Authorization error: \(error.localizedDescription, privacy: .public)"
+                )
+            }
+        }
+    }
+
     func buildUpdateNotification() -> UNNotificationRequest {
         let updater = AppUpdater.shared.delegate
         let content = UNMutableNotificationContent()
@@ -40,28 +54,88 @@ extension AppDelegate {
         content.sound = .default
 
         return UNNotificationRequest(
-            identifier: notificationIndentifiers,
+            identifier: Self.updateNotificationIdentifier,
             content: content,
             trigger: nil
         )
     }
 
-    @MainActor
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-
-        if response.notification.request.content.categoryIdentifier == "SPARKLE_UPDATE" {
-            if response.actionIdentifier == UpdateNotificationAction.more ||
-               response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-
-                AppUpdater.shared.updaterController.checkForUpdates(nil)
+    func sendUpdateNotification() {
+        let request = buildUpdateNotification()
+        Task {
+            do {
+                try await UNUserNotificationCenter.current().add(request)
+            } catch {
+                Logfile.app.error(
+                    """
+                    [Notification] Failed to schedule update notification: \
+                    \(error.localizedDescription, privacy: .public)
+                    """
+                )
             }
+        }
+    }
 
-            UNUserNotificationCenter.current()
-                .removeDeliveredNotifications(withIdentifiers: [notificationIndentifiers])
+    func clearUpdateNotification() {
+        UNUserNotificationCenter.current().setBadgeCount(0)
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [
+            Self.updateNotificationIdentifier
+        ])
+    }
+
+    func sendBlockedNotification(appName: String) {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Application Lock")
+        content.body = String(format: String(localized: "%@ has been blocked from launching."), appName)
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "BlockedAppNotification-\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+
+        Task {
+            do {
+                try await UNUserNotificationCenter.current().add(request)
+            } catch {
+                Logfile.app.error(
+                    """
+                    [Notification] Failed to deliver blocked notification for \(appName, privacy: .public): \
+                    \(error.localizedDescription, privacy: .public)
+                    """
+                )
+            }
+        }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        defer { completionHandler() }
+
+        guard response.notification.request.content.categoryIdentifier == "SPARKLE_UPDATE" else {
+            return
         }
 
-        completionHandler()
+        if response.actionIdentifier == UpdateNotificationAction.more ||
+           response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+            checkForUpdates()
+        }
+
+        UNUserNotificationCenter.current()
+            .removeDeliveredNotifications(withIdentifiers: [Self.updateNotificationIdentifier])
     }
 }

@@ -31,8 +31,7 @@ extension AppDelegate {
                 defaultIndex: 0
             )
             if case .button(let index, _) = result, index == 0 {
-                SMAppService.openSystemSettingsLoginItems()
-                ExtensionInstaller.shared.install()
+                openSystemSettingsForExtension()
             }
             return
         }
@@ -116,7 +115,7 @@ extension AppDelegate {
     }
 
     @objc func checkForUpdates() {
-        AppUpdater.shared.manualCheckForUpdates()
+        AppUpdater.shared.checkForUpdates()
         NSApp.activate()
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(300))
@@ -142,7 +141,7 @@ extension AppDelegate {
             case .success:
                 ESXPCClient.shared.disconnect()
 
-                self.manageAgent(plistName: plistName, action: .uninstall)
+                self.manageAgent(action: .uninstall)
                 let configRemoved = self.removeConfig(purgeAll: true)
                 let appRemoved = await self.selfRemoveApp()
 
@@ -181,7 +180,6 @@ extension AppDelegate {
             if windowClassName.contains(namePart) {
                 window.makeKeyAndOrderFront(nil)
                 window.orderFrontRegardless()
-                if namePart == "About" { window.makeKey() }
             }
         }
     }

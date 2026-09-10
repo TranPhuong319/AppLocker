@@ -24,7 +24,7 @@ enum UpdateDownloadState {
 
 @MainActor
 protocol AppUpdaterBridgeDelegate: AnyObject {
-    func didFindUpdate(_ item: SUAppcastItem)
+    func didFindUpdate()
     func didDownloadUpdate()
     func didNotFindUpdate()
 }
@@ -54,7 +54,8 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
     func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
         Task { @MainActor in
             self.downloadState = .notDownloaded
-            self.bridgeDelegate?.didFindUpdate(item)
+            AppUpdater.shared.handleFoundUpdate(item)
+            self.bridgeDelegate?.didFindUpdate()
         }
     }
 
@@ -67,6 +68,7 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 
     func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
         Task { @MainActor in
+            AppUpdater.shared.handleNoUpdateFound()
             self.bridgeDelegate?.didNotFindUpdate()
         }
     }
@@ -189,7 +191,7 @@ final class AppUpdater: NSObject {
         block(updater)
     }
 
-    func manualCheckForUpdates() {
+    func checkForUpdates() {
         guardedCheck { _ in
             if delegate.channel == .beta {
                 Task { @MainActor [weak self] in
@@ -241,10 +243,35 @@ final class AppUpdater: NSObject {
         return false
     }
 
-    // MARK: - Exposed state (READ ONLY)
+    // MARK: - Exposed state
 
     var currentChannel: Channel { delegate.channel }
     var downloadState: UpdateDownloadState { delegate.downloadState }
+
+    private(set) var availableUpdateVersion: String?
+    var hasAvailableUpdate: Bool { availableUpdateVersion != nil }
+
+    func handleFoundUpdate(_ item: SUAppcastItem) {
+        let displayVer = item.displayVersionString
+        let buildVer = item.versionString
+        self.availableUpdateVersion = (displayVer != buildVer) ? "\(displayVer) (\(buildVer))" : displayVer
+        NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
+    }
+
+    func handleNoUpdateFound() {
+        self.availableUpdateVersion = nil
+        NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
+    }
+
+    var automaticallyChecksForUpdates: Bool {
+        get { updaterController.updater.automaticallyChecksForUpdates }
+        set { updaterController.updater.automaticallyChecksForUpdates = newValue }
+    }
+
+    var automaticallyDownloadsUpdates: Bool {
+        get { updaterController.updater.automaticallyDownloadsUpdates }
+        set { updaterController.updater.automaticallyDownloadsUpdates = newValue }
+    }
 }
 
 // MARK: - GitHub API Models

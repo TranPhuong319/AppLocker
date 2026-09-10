@@ -39,8 +39,7 @@ extension AppDelegate {
         }
     }
 
-    func restartApp() {
-        let bundleURL = Bundle.main.bundleURL
+    func restartApp(at bundleURL: URL = Bundle.main.bundleURL) {
         let pid = ProcessInfo.processInfo.processIdentifier
 
         let configuration = NSWorkspace.OpenConfiguration()

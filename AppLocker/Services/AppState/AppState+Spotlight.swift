@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 16/8/26.
 //
 
-import CoreServices
 import Foundation
 
 extension AppState {
