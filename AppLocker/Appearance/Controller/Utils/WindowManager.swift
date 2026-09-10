@@ -13,16 +13,16 @@ struct WindowConfiguration {
     var size: NSSize?
     var minSize: NSSize?
     var maxSize: NSSize?
-    var styleMask: NSWindow.StyleMask = [.titled, .closable, .miniaturizable]
+    var styleMask: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
     var backingType: NSWindow.BackingStoreType = .buffered
     var isReleasedWhenClosed: Bool = false
     var level: NSWindow.Level = .normal
-    var titleVisibility: NSWindow.TitleVisibility = .visible
-    var titlebarAppearsTransparent: Bool = false
+    var titleVisibility: NSWindow.TitleVisibility = .hidden
+    var titlebarAppearsTransparent: Bool = true
     var wantsLayer: Bool = false
     var center: Bool = true
-    var isOpaque: Bool = true
-    var backgroundColor: NSColor? = .windowBackgroundColor
+    var isOpaque: Bool = false
+    var backgroundColor: NSColor? = .clear
 }
 
 @MainActor

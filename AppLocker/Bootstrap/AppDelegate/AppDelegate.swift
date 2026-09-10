@@ -28,6 +28,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
     var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" ||
+           ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PLAYGROUNDS"] == "1" {
+            Logfile.app.info("[Bootstrap] Running in Xcode Previews. Skipping system bootstrap.")
+            return
+        }
+
         // Build-in Relaunch Wait: Check for -waitForPID argument
         let args = CommandLine.arguments
         Logfile.app.debug("[Bootstrap] Launch Arguments: \(args, privacy: .public)")

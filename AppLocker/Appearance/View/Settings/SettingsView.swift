@@ -7,8 +7,64 @@
 
 import SwiftUI
 
+// MARK: - Settings Navigator
+
+@Observable
+@MainActor
+final class SettingsNavigator {
+    var selectedTab: SettingsTab
+
+    init(selectedTab: SettingsTab = .general) {
+        self.selectedTab = selectedTab
+    }
+}
+
+// MARK: - Sidebar Collapse Preventer
+
+struct SidebarCollapsePreventer: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else {
+            return view
+        }
+        DispatchQueue.main.async {
+            guard let splitView = view.enclosingSplitView,
+                  let splitViewController = splitView.delegate as? NSSplitViewController,
+                  let sidebarItem = splitViewController.splitViewItems.first else {
+                return
+            }
+            sidebarItem.canCollapse = false
+            sidebarItem.canCollapseFromWindowResize = false
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
+private extension NSView {
+    var enclosingSplitView: NSSplitView? {
+        var current = superview
+        while let view = current {
+            if let split = view as? NSSplitView {
+                return split
+            }
+            current = view.superview
+        }
+        return nil
+    }
+}
+
+private extension View {
+    func preventSidebarCollapse() -> some View {
+        background(SidebarCollapsePreventer())
+    }
+}
+
+// MARK: - Main Settings View
+
 struct SettingsView: View {
-    @State private var selectedTab: SettingsTab = .general
+    @Bindable var navigator: SettingsNavigator
     @State private var navigationHistory: [SettingsTab] = [.general]
     @State private var historyIndex: Int = 0
     @State private var isNavigatingHistory: Bool = false
@@ -16,17 +72,24 @@ struct SettingsView: View {
     private var isMock: Bool
 
     init(
-        selectedTab: SettingsTab = .general,
+        navigator: SettingsNavigator = SettingsNavigator(),
         isMock: Bool = false
     ) {
-        _selectedTab = State(initialValue: selectedTab)
-        _navigationHistory = State(initialValue: [selectedTab])
+        self.navigator = navigator
+        self.isMock = isMock
+    }
+
+    init(
+        selectedTab: SettingsTab,
+        isMock: Bool = false
+    ) {
+        self.navigator = SettingsNavigator(selectedTab: selectedTab)
         self.isMock = isMock
     }
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
-            List(SettingsTab.allCases, id: \.self, selection: $selectedTab) { tab in
+            List(SettingsTab.allCases, id: \.self, selection: $navigator.selectedTab) { tab in
                 HStack(spacing: 8) {
                     Label {
                         Text(tab.displayName)
@@ -50,12 +113,14 @@ struct SettingsView: View {
                 .tag(tab)
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 120, ideal: 150, max: 180)
+            .navigationSplitViewColumnWidth(min: 150, ideal: 150, max: 150)
+            .preventSidebarCollapse()
         } detail: {
-            detailContent(for: selectedTab)
+            detailContent(for: navigator.selectedTab)
                 .padding(.top, -16)
                 .frame(minWidth: 440, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .navigationTitle(selectedTab.displayName)
+                .background(.windowBackground)
+                .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {
                     ToolbarItem(placement: .navigation) {
                         ControlGroup {
@@ -75,7 +140,7 @@ struct SettingsView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .frame(minWidth: 640, minHeight: 440)
-        .onChange(of: selectedTab) { _, newTab in
+        .onChange(of: navigator.selectedTab) { _, newTab in
             handleTabChange(to: newTab)
         }
     }
@@ -85,8 +150,8 @@ struct SettingsView: View {
             withAnimation(.snappy(duration: 0.3)) {
                 isSecurityUnlocked = false
             }
-        } else if selectedTab != .security {
-            selectedTab = .security
+        } else if navigator.selectedTab != .security {
+            navigator.selectedTab = .security
         }
     }
 
@@ -109,14 +174,14 @@ struct SettingsView: View {
         guard historyIndex > 0 else { return }
         isNavigatingHistory = true
         historyIndex -= 1
-        selectedTab = navigationHistory[historyIndex]
+        navigator.selectedTab = navigationHistory[historyIndex]
     }
 
     private func goForward() {
         guard historyIndex < navigationHistory.count - 1 else { return }
         isNavigatingHistory = true
         historyIndex += 1
-        selectedTab = navigationHistory[historyIndex]
+        navigator.selectedTab = navigationHistory[historyIndex]
     }
 
     @ViewBuilder
