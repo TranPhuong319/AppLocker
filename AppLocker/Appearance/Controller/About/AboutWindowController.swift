@@ -14,21 +14,18 @@ final class AboutWindowController: NSWindowController {
 
     private init() {
         let hostingController = NSHostingController(rootView: AboutView())
-        hostingController.view.wantsLayer = true
-        hostingController.view.layer?.backgroundColor = NSColor.clear.cgColor
+        hostingController.sceneBridgingOptions = [.title]
+        hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
 
         var config = WindowConfiguration()
         config.styleMask = [.titled, .closable, .fullSizeContentView]
-        config.titlebarAppearsTransparent = true
-        config.titleVisibility = .hidden
-        config.isOpaque = true
-        config.backgroundColor = .windowBackgroundColor
         config.size = WindowLayout.aboutSize
+        config.minSize = WindowLayout.aboutSize
+        config.maxSize = WindowLayout.aboutSize
         config.isReleasedWhenClosed = false
         config.center = true
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        window.isMovableByWindowBackground = false
         super.init(window: window)
     }
 
@@ -37,9 +34,11 @@ final class AboutWindowController: NSWindowController {
     }
 
     static func show() {
-        shared.window?.center()
+        guard let window = shared.window else { return }
+        window.setContentSize(WindowLayout.aboutSize)
+        window.center()
         shared.showWindow(nil)
-        shared.window?.makeKeyAndOrderFront(nil)
+        window.makeKeyAndOrderFront(nil)
         NSApp.activate()
     }
 }

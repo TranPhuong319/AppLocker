@@ -65,6 +65,7 @@ struct SecuritySettingsTab: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.windowBackground)
     }
 
     private var unlockedContent: some View {

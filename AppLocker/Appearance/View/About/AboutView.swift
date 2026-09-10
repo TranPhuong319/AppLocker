@@ -12,28 +12,34 @@ struct AboutView: View {
     @Environment(\.openURL) var openURL
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 10) {
-                Image(nsImage: bundle.appIcon)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 80, height: 80)
+        NavigationStack {
+            VStack(spacing: 0) {
+                Spacer()
 
-                Text(bundle.appName)
-                    .font(.system(size: 32, weight: .bold))
+                VStack(spacing: 6) {
+                    Image(nsImage: bundle.appIcon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 96, height: 96)
+
+                    Text(bundle.appName)
+                        .font(.system(size: 32, weight: .bold))
+
+                    Text("Version \(bundle.fullVersion)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
             }
-            .padding(.top, 28)
-            .padding(.bottom, 10)
-
-            Spacer()
-
-            // Footer Area
-            VStack(spacing: 12) {
-                Text("Version \(bundle.fullVersion)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(edges: .top)
+            .background(
+                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
+                    .ignoresSafeArea()
+            )
+            .navigationTitle("")
+            .safeAreaInset(edge: .bottom) {
                 HStack {
                     Text(bundle.copyright)
                         .font(.caption)
@@ -46,15 +52,16 @@ struct AboutView: View {
                         .buttonStyle(.plain)
                         .foregroundStyle(.blue)
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(NSColor.windowBackgroundColor))
+        .frame(width: WindowLayout.aboutSize.width, height: WindowLayout.aboutSize.height)
     }
 }
 
 #Preview {
     AboutView()
+        .frame(width: WindowLayout.aboutSize.width,
+               height: WindowLayout.aboutSize.height)
 }
