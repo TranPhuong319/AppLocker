@@ -15,8 +15,39 @@ struct LockedAppConfig: Codable, Hashable {
     var name: String?
     var cdhash: String?
 
+    var isHidden: Bool?
+
     enum CodingKeys: String, CodingKey {
-        case bundleID, path, sha256, execFile, name, cdhash
+        case bundleID, path, sha256, execFile, name, cdhash, isHidden
+    }
+
+    init(
+        bundleID: String,
+        path: String,
+        sha256: String? = nil,
+        execFile: String? = nil,
+        name: String? = nil,
+        cdhash: String? = nil,
+        isHidden: Bool? = false
+    ) {
+        self.bundleID = bundleID
+        self.path = path
+        self.sha256 = sha256
+        self.execFile = execFile
+        self.name = name
+        self.cdhash = cdhash
+        self.isHidden = isHidden
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.bundleID = try container.decode(String.self, forKey: .bundleID)
+        self.path = try container.decode(String.self, forKey: .path)
+        self.sha256 = try container.decodeIfPresent(String.self, forKey: .sha256)
+        self.execFile = try container.decodeIfPresent(String.self, forKey: .execFile)
+        self.name = try container.decodeIfPresent(String.self, forKey: .name)
+        self.cdhash = try container.decodeIfPresent(String.self, forKey: .cdhash)
+        self.isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
     }
 
     /// Convenience initializer for mock data in Previews
@@ -27,7 +58,8 @@ struct LockedAppConfig: Codable, Hashable {
             sha256: nil,
             execFile: app.name,
             name: app.name,
-            cdhash: "mock_cdhash_hash"
+            cdhash: "mock_cdhash_hash",
+            isHidden: false
         )
     }
 }

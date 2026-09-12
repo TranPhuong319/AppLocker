@@ -17,6 +17,8 @@ enum WindowLayout {
     static let addAppMinSize = NSSize(width: 400, height: 500)
     static let addAppListMaxHeight: CGFloat = 420
     static let deleteQueueMinSize = NSSize(width: 350, height: 370)
+    static let missingAppsMinSize = NSSize(width: 380, height: 380)
+    static let missingAppsListMaxHeight: CGFloat = 300
     static let lockingPopupMinSize = NSSize(width: 200, height: 100)
     static let batchAuthSize = NSSize(width: 440, height: 360)
     static let batchAuthMaxListHeight: CGFloat = 220

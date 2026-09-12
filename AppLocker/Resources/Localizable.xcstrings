@@ -16,6 +16,9 @@
         }
       }
     },
+    "%lld" : {
+
+    },
     "%lld seconds" : {
       "localizations" : {
         "vi" : {
@@ -206,12 +209,32 @@
         }
       }
     },
+    "authenticate to hide missing applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để ẩn các ứng dụng không tồn tại"
+          }
+        }
+      }
+    },
     "authenticate to open the application list" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "xác thực để mở danh sách Ứng dụng"
+          }
+        }
+      }
+    },
+    "authenticate to remove missing applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để xoá các ứng dụng không tồn tại"
           }
         }
       }
@@ -596,6 +619,16 @@
         }
       }
     },
+    "Hide" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ẩn"
+          }
+        }
+      }
+    },
     "Immediately" : {
       "localizations" : {
         "vi" : {
@@ -712,6 +745,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quản lý danh sách Ứng dụng"
+          }
+        }
+      }
+    },
+    "Missing" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy"
+          }
+        }
+      }
+    },
+    "Missing Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng không còn tồn tại"
           }
         }
       }
@@ -837,6 +890,16 @@
         }
       }
     },
+    "Remove" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá"
+          }
+        }
+      }
+    },
     "Repair Agent Service" : {
       "localizations" : {
         "vi" : {
@@ -873,6 +936,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đặt lại AppLocker"
+          }
+        }
+      }
+    },
+    "Review missing applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem xét các ứng dụng không tồn tại"
           }
         }
       }
@@ -1064,6 +1137,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Không có ứng dụng nào bị khoá."
+          }
+        }
+      }
+    },
+    "These applications no longer exist on disk but remain in your lock list." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các ứng dụng này không còn tồn tại trên máy nhưng vẫn còn trong danh sách khoá."
           }
         }
       }

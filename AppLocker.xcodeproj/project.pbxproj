@@ -28,6 +28,7 @@
 		E0FD75F82F59E36600D46B31 /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A52F59E36600D46B31 /* SectionHeader.swift */; };
 		E0FD75F92F59E36600D46B31 /* AppDelegate+Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */; };
 		E0FD75FA2F59E36600D46B31 /* DeleteQueueSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75AF2F59E36600D46B31 /* DeleteQueueSheet.swift */; };
+		E0FD75FC2F59E36600D46B31 /* MissingAppsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B82F59E36600D46B31 /* MissingAppsSheet.swift */; };
 		E0FD75FB2F59E36600D46B31 /* AppDelegate+Restart.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */; };
 		E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DD2F59E36600D46B31 /* AppState.swift */; };
 		E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */; };
@@ -169,6 +170,7 @@
 		E0FD75AA2F59E36600D46B31 /* MainUIButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUIButtons.swift; sourceTree = "<group>"; };
 		E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAppSheet.swift; sourceTree = "<group>"; };
 		E0FD75AF2F59E36600D46B31 /* DeleteQueueSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteQueueSheet.swift; sourceTree = "<group>"; };
+		E0FD75B82F59E36600D46B31 /* MissingAppsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingAppsSheet.swift; sourceTree = "<group>"; };
 		E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockingPopupSheet.swift; sourceTree = "<group>"; };
 		E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRowButtonStyle.swift; sourceTree = "<group>"; };
 		E0FD75B42F59E36600D46B31 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -424,6 +426,7 @@
 			children = (
 				E0FD75AE2F59E36600D46B31 /* AddAppSheet.swift */,
 				E0FD75AF2F59E36600D46B31 /* DeleteQueueSheet.swift */,
+				E0FD75B82F59E36600D46B31 /* MissingAppsSheet.swift */,
 				E0FD75B02F59E36600D46B31 /* LockingPopupSheet.swift */,
 			);
 			path = Sheets;
@@ -890,6 +893,7 @@
 				E0FD75F82F59E36600D46B31 /* SectionHeader.swift in Sources */,
 				E0FD75F92F59E36600D46B31 /* AppDelegate+Agent.swift in Sources */,
 				E0FD75FA2F59E36600D46B31 /* DeleteQueueSheet.swift in Sources */,
+				E0FD75FC2F59E36600D46B31 /* MissingAppsSheet.swift in Sources */,
 				E0FD75FB2F59E36600D46B31 /* AppDelegate+Restart.swift in Sources */,
 				E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */,
 				E0FD77042F59E36600D46B31 /* AppState+AppPicker.swift in Sources */,

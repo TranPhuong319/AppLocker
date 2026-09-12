@@ -104,6 +104,8 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
                 .deleteQueueButtons,
                 .flexibleSpace
             ]
+        case .missingAppsPopup:
+            break
         }
 
         return touchBar
