@@ -33,7 +33,7 @@ extension AppState {
         spotlightTask?.cancel()
 
         spotlightTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(1500))
+            try? await Task.sleep(for: .milliseconds(300))
             guard let self = self, !Task.isCancelled else { return }
 
             let results = self.metadataQuery?.results as? [NSMetadataItem] ?? []

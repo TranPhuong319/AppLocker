@@ -35,6 +35,24 @@ class MockLockManager: LockManagerProtocol {
         }
     }
 
+    func hideApps(for paths: [String]) {
+        for path in paths where lockedApps[path] != nil {
+            lockedApps[path]?.isHidden = true
+        }
+    }
+
+    func unhideApps(for paths: [String]) {
+        for path in paths where lockedApps[path] != nil {
+            lockedApps[path]?.isHidden = false
+        }
+    }
+
+    func removeApps(for paths: [String]) {
+        for path in paths {
+            lockedApps.removeValue(forKey: path)
+        }
+    }
+
     func setProtectionDisabled(_ disabled: Bool) {
         self.isProtectionDisabled = disabled
     }

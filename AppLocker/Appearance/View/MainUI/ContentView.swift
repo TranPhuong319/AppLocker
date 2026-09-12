@@ -36,12 +36,37 @@ struct ContentView: View {
             .navigationTitle("Locked application")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        appState.openAddApp()
-                    } label: {
-                        Image(systemName: "plus")
+                    HStack(spacing: 6) {
+                        if !appState.confirmedMissingApps.isEmpty {
+                            Button {
+                                appState.openMissingApps()
+                            } label: {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundStyle(.orange)
+                                        .symbolEffect(.bounce.byLayer, value: appState.confirmedMissingApps.count)
+                                    Text("\(appState.confirmedMissingApps.count)")
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(.orange)
+                                }
+                            }
+                            .help("Review missing applications")
+                            .transition(
+                                .asymmetric(
+                                    insertion: .scale(scale: 0.1, anchor: .trailing).combined(with: .opacity),
+                                    removal: .scale(scale: 0.1, anchor: .trailing).combined(with: .opacity)
+                                )
+                            )
+                        }
+
+                        Button {
+                            appState.openAddApp()
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .help("Add application to lock")
                     }
-                    .help("Add application to lock")
+                    .animation(.snappy, value: appState.confirmedMissingApps.count)
                 }
             }
         }
@@ -50,6 +75,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $appState.showingDeleteQueue) {
             DeleteQueueSheet(appState: appState)
+        }
+        .sheet(isPresented: $appState.showingMissingAppsSheet) {
+            MissingAppsSheet(appState: appState)
         }
         .sheet(isPresented: $appState.showingLockingPopup) {
             LockingPopupSheet(message: appState.lockingMessage)
@@ -99,6 +127,7 @@ struct ContentView: View {
                             LockedAppButton(
                                 app: app,
                                 isDeleting: appState.deleteQueue.contains(app.path),
+                                isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
                                 onDelete: { _ = appState.deleteQueue.insert(app.path) },
                                 unfocus: unfocus
                             )
@@ -111,6 +140,7 @@ struct ContentView: View {
                             LockedAppButton(
                                 app: app,
                                 isDeleting: appState.deleteQueue.contains(app.path),
+                                isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
                                 onDelete: { _ = appState.deleteQueue.insert(app.path) },
                                 unfocus: unfocus
                             )

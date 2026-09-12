@@ -33,12 +33,35 @@ final class AppIconProvider {
             return cachedIcon
         }
 
-        let rawIcon = NSWorkspace.shared.icon(forFile: appBundlePath)
+        let fileExists = FileManager.default.fileExists(atPath: appBundlePath)
+        let rawIcon: NSImage
+        if fileExists {
+            rawIcon = NSWorkspace.shared.icon(forFile: appBundlePath)
+        } else {
+            let symbolConfig = NSImage.SymbolConfiguration(pointSize: size, weight: .regular)
+                .applying(.init(hierarchicalColor: .secondaryLabelColor))
+            rawIcon = NSImage(systemSymbolName: "xmark.app.fill", accessibilityDescription: nil)?
+                .withSymbolConfiguration(symbolConfig)
+                ?? NSWorkspace.shared.icon(for: .applicationBundle)
+        }
         let rasterized = rasterize(image: rawIcon, targetSize: size)
 
-        let cost = Int(size * size * 4 * 4)
-        cache.setObject(rasterized, forKey: key, cost: cost)
+        if !fileExists {
+            rasterized.isTemplate = true
+        }
+
+        if fileExists {
+            let cost = Int(size * size * 4 * 4)
+            cache.setObject(rasterized, forKey: key, cost: cost)
+        }
         return rasterized
+    }
+
+    func invalidateIcon(forPath path: String) {
+        let appBundlePath = resolveAppBundlePath(from: path)
+        for size in [16, 24, 32, 48, 64] {
+            cache.removeObject(forKey: "\(appBundlePath)_\(size)" as NSString)
+        }
     }
 
     private func rasterize(image: NSImage, targetSize: CGFloat) -> NSImage {
@@ -64,12 +87,24 @@ final class AppIconProvider {
 
         bitmapRep.size = NSSize(width: targetSize, height: targetSize)
 
+        let imgWidth = max(image.size.width, 1)
+        let imgHeight = max(image.size.height, 1)
+        let scaleFactor = min(targetSize / imgWidth, targetSize / imgHeight)
+        let drawWidth = imgWidth * scaleFactor
+        let drawHeight = imgHeight * scaleFactor
+        let destRect = NSRect(
+            x: (targetSize - drawWidth) / 2.0,
+            y: (targetSize - drawHeight) / 2.0,
+            width: drawWidth,
+            height: drawHeight
+        )
+
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
         image.draw(
-            in: NSRect(x: 0, y: 0, width: targetSize, height: targetSize),
+            in: destRect,
             from: .zero,
-            operation: .copy,
+            operation: .sourceOver,
             fraction: 1.0
         )
         NSGraphicsContext.restoreGraphicsState()

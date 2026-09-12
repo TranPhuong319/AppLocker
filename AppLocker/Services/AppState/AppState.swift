@@ -27,11 +27,16 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     var manager: any LockManagerProtocol
     var showingAddApp = false
     var showingDeleteQueue = false
+    var showingMissingAppsSheet = false
     var selectedToLock: Set<String> = []
     var deleteQueue: Set<String> = []
+    var confirmedMissingApps: [InstalledApp] = []
     var isLocking = false
     var showingLockingPopup = false
     var lockingMessage = ""
+
+    @ObservationIgnored
+    fileprivate var missingAppTimestamps: [String: Date] = [:]
 
     var searchTextLockApps = "" {
         didSet {
@@ -58,6 +63,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         case mainWindow
         case addAppPopup
         case deleteQueuePopup
+        case missingAppsPopup
     }
 
     init(manager: (any LockManagerProtocol)? = nil) {
@@ -115,46 +121,73 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         }
     }
 
+    private func resolveLockedApp(
+        path: String,
+        config: LockedAppConfig,
+        allApps: [InstalledApp]
+    ) -> InstalledApp {
+        var name = allApps.first(where: {
+            $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
+        })?.name
+
+        if name == nil {
+            let displayName = FileManager.default.displayName(atPath: path)
+            name = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+        }
+
+        let finalName = name ?? config.name ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+        let source: AppSource = path.hasPrefix("/System") ? .system : .user
+        return InstalledApp(name: finalName, bundleID: config.bundleID, path: path, source: source)
+    }
+
     func refreshAppLists() {
         let allApps = manager.allApps
         let lockedPathSet = Set(manager.lockedApps.keys)
+        var missingAppsList: [InstalledApp] = []
+        var appsToUnhide: [String] = []
+        let now = Date()
+        var hasPendingCheck = false
 
         let lockedAppsList: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
             guard let config = manager.lockedApps[path] else { return nil }
+            let app = self.resolveLockedApp(path: path, config: config, allApps: allApps)
+            let fileExists = FileManager.default.fileExists(atPath: path)
+            var isHidden = config.isHidden == true
 
-            // 1. Ưu tiên lấy tên từ Spotlight (dữ liệu allApps) thông qua path hoặc bundleID
-            var name = allApps.first(where: {
-                $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
-            })?.name
-
-            // 2. Dự phòng: Lấy từ FileManager display name nếu Spotlight chưa có/không thấy
-            if name == nil {
-                let displayName = FileManager.default.displayName(atPath: path)
-                name = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+            if isHidden && fileExists {
+                appsToUnhide.append(path)
+                isHidden = false
+                AppIconProvider.shared.invalidateIcon(forPath: path)
             }
 
-            // 3. Fallback cuối cùng: dùng tên trong config hoặc tên file
-            let finalName = name ?? config.name ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-            let source: AppSource = path.hasPrefix("/System") ? .system : .user
+            let (isConfirmed, isPending) = self.checkMissingStatus(
+                path: path,
+                isHidden: isHidden,
+                now: now,
+                fileExists: fileExists
+            )
+            if isConfirmed { missingAppsList.append(app) }
+            if isPending { hasPendingCheck = true }
 
-            return InstalledApp(name: finalName, bundleID: config.bundleID, path: path, source: source)
+            guard !isHidden else { return nil }
+            return app
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+        if !appsToUnhide.isEmpty { manager.unhideApps(for: appsToUnhide) }
+        if hasPendingCheck { schedulePendingMissingCheck() }
 
         let unlockable = allApps
             .filter { !lockedPathSet.contains($0.path) }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
+        self.confirmedMissingApps = missingAppsList
         self.lockedAppObjects = lockedAppsList
         self.unlockableApps = unlockable
         self.filteredLockedApps = self.performFilter(text: self.searchTextLockApps, apps: lockedAppsList)
         self.filteredUnlockableApps = self.performFilter(text: self.searchTextUnlockableApps, apps: unlockable)
 
-        Task(priority: .low) {
-            for app in unlockable.prefix(60) {
-                _ = AppIconProvider.shared.icon(forPath: app.path, size: 32)
-            }
-        }
+        prefetchUnlockableIcons(apps: unlockable)
     }
 
     var userUnlockableApps: [InstalledApp] {
@@ -227,5 +260,79 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
 
     @objc func showDeleteQueueSheet() {
         showingDeleteQueue = true
+    }
+}
+
+// MARK: - Missing Apps Handling
+extension AppState {
+    fileprivate func checkMissingStatus(
+        path: String,
+        isHidden: Bool,
+        now: Date,
+        fileExists: Bool
+    ) -> (isConfirmed: Bool, isPending: Bool) {
+        guard !fileExists else {
+            if missingAppTimestamps.removeValue(forKey: path) != nil {
+                AppIconProvider.shared.invalidateIcon(forPath: path)
+            }
+            return (false, false)
+        }
+        guard !isHidden else { return (false, false) }
+        let firstDetected = missingAppTimestamps[path] ?? now
+        missingAppTimestamps[path] = firstDetected
+        let isConfirmed = now.timeIntervalSince(firstDetected) >= 3.0
+        return (isConfirmed, !isConfirmed)
+    }
+
+    fileprivate func schedulePendingMissingCheck() {
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(3.0))
+            guard !Task.isCancelled, let self = self else { return }
+            self.refreshAppLists()
+        }
+    }
+
+    fileprivate func prefetchUnlockableIcons(apps: [InstalledApp]) {
+        Task(priority: .low) {
+            for app in apps.prefix(60) {
+                _ = AppIconProvider.shared.icon(forPath: app.path, size: 32)
+            }
+        }
+    }
+
+    func hideMissingApps(paths: [String]) {
+        AuthenticationManager.authenticate(
+            reason: String(localized: "authenticate to hide missing applications")
+        ) { [weak self] success, _ in
+            guard success, let self = self else { return }
+            self.manager.hideApps(for: paths)
+            for path in paths {
+                self.missingAppTimestamps.removeValue(forKey: path)
+            }
+            self.refreshAppLists()
+            self.showingMissingAppsSheet = false
+        }
+    }
+
+    func deleteMissingApps(paths: [String]) {
+        AuthenticationManager.authenticate(
+            reason: String(localized: "authenticate to remove missing applications")
+        ) { [weak self] success, _ in
+            guard success, let self = self else { return }
+            self.manager.removeApps(for: paths)
+            for path in paths {
+                self.missingAppTimestamps.removeValue(forKey: path)
+            }
+            self.refreshAppLists()
+            self.showingMissingAppsSheet = false
+        }
+    }
+
+    @objc func openMissingApps() {
+        showingMissingAppsSheet = true
+    }
+
+    @objc func closeMissingApps() {
+        showingMissingAppsSheet = false
     }
 }

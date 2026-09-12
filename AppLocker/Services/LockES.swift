@@ -133,6 +133,38 @@ class LockES: LockManagerProtocol {
         }
     }
 
+    func hideApps(for paths: [String]) {
+        var hasConfigChanged = false
+        for path in paths where lockedApps[path] != nil {
+            lockedApps[path]?.isHidden = true
+            hasConfigChanged = true
+        }
+        if hasConfigChanged {
+            save()
+        }
+    }
+
+    func unhideApps(for paths: [String]) {
+        var hasConfigChanged = false
+        for path in paths where lockedApps[path]?.isHidden == true {
+            lockedApps[path]?.isHidden = false
+            hasConfigChanged = true
+        }
+        if hasConfigChanged {
+            save()
+        }
+    }
+
+    func removeApps(for paths: [String]) {
+        var hasConfigChanged = false
+        for path in paths where lockedApps.removeValue(forKey: path) != nil {
+            hasConfigChanged = true
+        }
+        if hasConfigChanged {
+            save()
+        }
+    }
+
     func isLocked(path: String) -> Bool {
         if isProtectionDisabled { return false }
         return lockedApps[path] != nil

@@ -72,14 +72,27 @@ struct DeleteAppButton: View {
 struct LockedAppButton: View {
     let app: InstalledApp
     let isDeleting: Bool
+    var isMissing: Bool = false
     let onDelete: () -> Void
     let unfocus: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            AppIconView(path: app.path, size: 32)
+            AppIconView(path: app.path, size: 32, isMissing: isMissing)
+                .opacity(isMissing ? 0.5 : 1.0)
 
-            Text(app.name)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(app.name)
+                    .font(.body)
+
+                if isMissing {
+                    Text(String(localized: "Missing"))
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.orange)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.smooth, value: isMissing)
 
             Spacer()
 
@@ -100,5 +113,33 @@ struct LockedAppButton: View {
         .contentShape(Rectangle())
         .onTapGesture { unfocus() }
         .opacity(isDeleting ? 0.3 : 1.0)
+    }
+}
+
+struct MissingAppRow: View {
+    let app: InstalledApp
+
+    var body: some View {
+        HStack(spacing: 12) {
+            AppIconView(path: app.path, size: 32, isMissing: true)
+                .opacity(0.6)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(app.name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+
+                Text(app.path)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity)
     }
 }
