@@ -157,12 +157,15 @@ def generate_html(groups):
     return "\n".join(lines)
 
 def get_current_branch():
+    branch = os.environ.get("GITHUB_REF_NAME")
+    if branch and branch != "HEAD":
+        return branch
     return run_command("git rev-parse --abbrev-ref HEAD")
 
 def get_merge_base(branch, base="main"):
-    res = run_command(f"git merge-base {base} {branch}")
+    res = run_command(f"git merge-base origin/{base} {branch}")
     if not res:
-        res = run_command(f"git merge-base origin/{base} {branch}")
+        res = run_command(f"git merge-base {base} {branch}")
     return res
 
 def main():
@@ -174,12 +177,16 @@ def main():
     
     from_ref = args.from_ref
     if not from_ref:
-        from_ref = get_last_stable_tag(exclude_tag=args.current_tag)
-        if not from_ref:
-            current_branch = get_current_branch()
-            if current_branch and current_branch != "main":
-                print(f"Detected branch '{current_branch}'. Using merge-base with main.")
-                from_ref = get_merge_base(current_branch, "main")
+        current_branch = get_current_branch()
+        if current_branch and current_branch != "main" and current_branch != "HEAD":
+            print(f"Detected branch '{current_branch}'. Using merge-base with main.")
+            from_ref = get_merge_base(current_branch, "main")
+            if not from_ref:
+                print("Merge-base not found, falling back to last stable tag.")
+                from_ref = get_last_stable_tag(exclude_tag=args.current_tag)
+        else:
+            print("On main branch or branch detection failed. Finding last stable tag...")
+            from_ref = get_last_stable_tag(exclude_tag=args.current_tag)
     
     if not from_ref:
         print("Error: Could not determine start reference.")

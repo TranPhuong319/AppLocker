@@ -2,7 +2,7 @@
 //  ESManager+Config.swift
 //  ESExtension
 //
-//  Created by Antigravity on 06/02/26.
+//  Created by Doe Phương on 6/2/26.
 //
 
 import Foundation
@@ -15,7 +15,7 @@ private struct LoadedConfigs {
 }
 
 extension ESManager {
-    static let baseConfigDirectory = "/Users/Shared/AppLocker"
+    static var baseConfigDirectory: String { UserConfig.baseDirectoryURL.path }
 
     /// Đọc cấu hình từ tất cả các file /Users/Shared/AppLocker/<UID>/config.plist và cập nhật vào bộ nhớ ngay lập tức
     func loadInitialConfigSync() {
@@ -40,9 +40,8 @@ extension ESManager {
     }
 
     private func readConfigsFromDisk() -> LoadedConfigs? {
-        let fileManager = FileManager.default
-        let baseDir = ESManager.baseConfigDirectory
-        guard fileManager.fileExists(atPath: baseDir) else {
+        let baseDir = UserConfig.baseDirectoryURL.path
+        guard FileManager.default.fileExists(atPath: baseDir) else {
             Logfile.endpointSecurity.debug(
                 "[ESConfig] Base config directory not found at \(baseDir, privacy: .public). Skipping load."
             )
@@ -53,24 +52,14 @@ extension ESManager {
         var newBundlePaths: [uid_t: Set<String>] = [:]
         var newAllowIncomingCalls: [uid_t: Bool] = [:]
 
-        if let subpaths = try? fileManager.contentsOfDirectory(atPath: baseDir) {
-            let decoder = PropertyListDecoder()
-            for item in subpaths {
-                guard let uid = uid_t(item) else { continue }
-                let userConfigPath = (baseDir as NSString).appendingPathComponent("\(item)/config.plist")
-                guard fileManager.fileExists(atPath: userConfigPath),
-                      let data = try? Data(contentsOf: URL(fileURLWithPath: userConfigPath), options: .mappedIfSafe),
-                      let userConfig = try? decoder.decode(UserConfig.self, from: data) else {
-                    continue
-                }
+        let configs = UserConfig.loadAll()
+        for (uid, userConfig) in configs {
+            newAllowIncomingCalls[uid] = userConfig.allowIncomingCalls ?? true
 
-                newAllowIncomingCalls[uid] = userConfig.allowIncomingCalls ?? true
-
-                guard !userConfig.isDisabled else { continue }
-                let (cdhashes, bundlePaths) = extractHashesAndPaths(from: userConfig.apps)
-                newCDHashes[uid] = cdhashes
-                newBundlePaths[uid] = bundlePaths
-            }
+            guard !userConfig.isDisabled else { continue }
+            let (cdhashes, bundlePaths) = extractHashesAndPaths(from: userConfig.apps)
+            newCDHashes[uid] = cdhashes
+            newBundlePaths[uid] = bundlePaths
         }
 
         return LoadedConfigs(
@@ -102,16 +91,15 @@ extension ESManager {
     }
 
     func startConfigMonitoring() {
-        let configDir = ESManager.baseConfigDirectory
+        for (_, source) in configMonitorSources {
+            source.cancel()
+        }
+        configMonitorSources.removeAll()
 
-        configMonitorSource?.cancel()
-        configMonitorSource = nil
-
-        let fileDescriptor = open(configDir, O_EVTONLY)
-
-        guard fileDescriptor != -1 else {
+        let baseDir = ESManager.baseConfigDirectory
+        guard FileManager.default.fileExists(atPath: baseDir) else {
             Logfile.endpointSecurity.error(
-                "[ESConfig] Failed to open config directory for monitoring: \(configDir, privacy: .public)"
+                "[ESConfig] Base config directory does not exist: \(baseDir, privacy: .public)"
             )
             backgroundProcessingQueue.asyncAfter(deadline: .now() + 5) { [weak self] in
                 self?.startConfigMonitoring()
@@ -119,36 +107,68 @@ extension ESManager {
             return
         }
 
+        // 1. Monitor base directory for new/deleted UID directories
+        monitorDirectory(at: baseDir, isBase: true)
+
+        // 2. Monitor each existing UID subdirectory for config changes
+        if let subpaths = try? FileManager.default.contentsOfDirectory(atPath: baseDir) {
+            for item in subpaths where uid_t(item) != nil {
+                let userDirPath = (baseDir as NSString).appendingPathComponent(item)
+                monitorDirectory(at: userDirPath, isBase: false)
+            }
+        }
+
+        Logfile.endpointSecurity.info(
+            """
+            [ESConfig] Started monitoring base and \(self.configMonitorSources.count - 1, privacy: .public) \
+            UID subdirectories.
+            """
+        )
+    }
+
+    private func monitorDirectory(at path: String, isBase: Bool) {
+        let fileDescriptor = open(path, O_EVTONLY)
+        guard fileDescriptor != -1 else {
+            Logfile.endpointSecurity.error(
+                "[ESConfig] Failed to open directory for monitoring: \(path, privacy: .public)"
+            )
+            return
+        }
+
         let source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileDescriptor,
-            eventMask: [.write], // Directory write covers file create/delete/rename in folder
+            eventMask: [.write],
             queue: backgroundProcessingQueue
         )
 
-        var debounceTimer: DispatchSourceTimer?
-
         source.setEventHandler { [weak self] in
             guard let self else { return }
-
-            debounceTimer?.cancel()
-            let timer = DispatchSource.makeTimerSource(queue: self.backgroundProcessingQueue)
-            timer.schedule(deadline: .now() + 0.05) // Debounce 50ms for instant update
-            timer.setEventHandler { [weak self] in
-                Logfile.endpointSecurity.debug("[ESConfig] Directory change detected, reloading config...")
-                self?.loadInitialConfigSync()
-                timer.cancel()
-            }
-            timer.resume()
-            debounceTimer = timer
+            self.scheduleDebouncedConfigReload(refreshMonitors: isBase)
         }
 
         source.setCancelHandler {
             close(fileDescriptor)
         }
 
-        self.configMonitorSource = source
+        configMonitorSources[path] = source
         source.resume()
-        Logfile.endpointSecurity.info("[ESConfig] Started directory monitoring for \(configDir, privacy: .public)")
+    }
+
+    private func scheduleDebouncedConfigReload(refreshMonitors: Bool) {
+        configDebounceTimer?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: backgroundProcessingQueue)
+        timer.schedule(deadline: .now() + 0.05)
+        timer.setEventHandler { [weak self] in
+            guard let self else { return }
+            Logfile.endpointSecurity.debug("[ESConfig] Config directory change detected, reloading config...")
+            self.loadInitialConfigSync()
+            if refreshMonitors {
+                self.startConfigMonitoring()
+            }
+            timer.cancel()
+        }
+        timer.resume()
+        configDebounceTimer = timer
     }
 
     // MARK: - Language Configuration

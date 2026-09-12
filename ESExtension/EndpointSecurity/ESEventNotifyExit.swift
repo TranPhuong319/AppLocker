@@ -32,6 +32,11 @@ extension ESManager {
         }
 
         let pid = audit_token_to_pid(process.pointee.audit_token)
+        processIDLock.withLock {
+            if self.lastKnownMainAppPID == pid {
+                self.lastKnownMainAppPID = nil
+            }
+        }
         Logfile.endpointSecurity.info("[Guardian] Main App (PID: \(pid, privacy: .public)) exited.")
 
         // 2. Check if shutdown was authorized

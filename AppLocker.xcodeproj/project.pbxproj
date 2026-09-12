@@ -803,7 +803,6 @@
 			knownRegions = (
 				vi,
 				en,
-				Base,
 			);
 			mainGroup = E0EF51A12E31558800161CAB;
 			minimizedProjectReferenceProxies = 1;

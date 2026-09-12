@@ -3,12 +3,6 @@
   "strings" : {
     "Authenticate..." : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Authenticate..."
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19,12 +13,6 @@
     },
     "CDHash:" : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CDHash:"
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35,12 +23,6 @@
     },
     "Identifier:" : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Identifier:"
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -51,12 +33,6 @@
     },
     "Parent:" : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parent"
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -67,12 +43,6 @@
     },
     "Path:" : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Path:"
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -83,12 +53,6 @@
     },
     "PID:" : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PID:"
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
@@ -99,12 +63,6 @@
     },
     "The following application has been blocked from execution\nbecause it was added to the locked list." : {
       "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The following application has been blocked from execution\nbecause it was added to the locked list."
-          }
-        },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",

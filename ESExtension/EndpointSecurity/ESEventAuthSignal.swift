@@ -20,8 +20,8 @@ extension ESManager {
         let isPending = isPendingVerification(pid: targetPid)
 
         if isPending && sig == SIGCONT {
-            let isAuthorizedSender = stateLock.withLock {
-                return senderPid == authenticatedMainAppPID || senderPid == getpid()
+            let isAuthorizedSender = processIDLock.withLock {
+                senderPid == authenticatedMainAppPID || senderPid == getpid()
             }
 
             if !isAuthorizedSender {

@@ -27,7 +27,7 @@ extension ESManager {
         }
 
         let parentPid = messagePtr.process.pointee.ppid
-        let uid = audit_token_to_euid(messagePtr.process.pointee.audit_token)
+        let uid = audit_token_to_euid(messagePtr.event.exec.target.pointee.audit_token)
 
         var signingID = "Unsigned/Unknown"
         let signingToken = messagePtr.event.exec.target.pointee.signing_id
