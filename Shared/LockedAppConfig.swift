@@ -32,7 +32,7 @@ struct LockedAppConfig: Codable, Hashable {
     }
 }
 
-struct UserConfig: Codable {
+struct UserConfig: Codable, Sendable {
     var isDisabled: Bool
     var apps: [LockedAppConfig]
     var allowIncomingCalls: Bool?
@@ -48,5 +48,37 @@ struct UserConfig: Codable {
         self.apps = apps
         self.allowIncomingCalls = allowIncomingCalls
         self.autoLockTimeoutMinutes = autoLockTimeoutMinutes
+    }
+}
+
+extension UserConfig {
+    static let baseDirectoryURL = URL(fileURLWithPath: "/Users/Shared/AppLocker")
+
+    static func configURL(for uid: uid_t) -> URL {
+        baseDirectoryURL
+            .appendingPathComponent(String(uid), isDirectory: true)
+            .appendingPathComponent("config.plist")
+    }
+
+    static func load(for uid: uid_t) -> UserConfig? {
+        let fileURL = configURL(for: uid)
+        guard FileManager.default.fileExists(atPath: fileURL.path),
+              let data = try? Data(contentsOf: fileURL, options: .mappedIfSafe) else {
+            return nil
+        }
+        return try? PropertyListDecoder().decode(UserConfig.self, from: data)
+    }
+
+    static func loadAll() -> [uid_t: UserConfig] {
+        guard let items = try? FileManager.default.contentsOfDirectory(atPath: baseDirectoryURL.path) else {
+            return [:]
+        }
+        var result: [uid_t: UserConfig] = [:]
+        for item in items {
+            guard let uid = uid_t(item),
+                  let config = load(for: uid) else { continue }
+            result[uid] = config
+        }
+        return result
     }
 }

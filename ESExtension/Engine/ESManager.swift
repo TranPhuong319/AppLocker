@@ -24,7 +24,8 @@ final class ESManager: NSObject, @unchecked Sendable {
     var allowIncomingCallsByUID: [uid_t: Bool] = [:]
     var isIncomingCallActive: Bool = false
     var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
-    var configMonitorSource: DispatchSourceFileSystemObject?
+    var configMonitorSources: [String: DispatchSourceFileSystemObject] = [:]
+    var configDebounceTimer: DispatchSourceTimer?
 
     struct BlockedNotification {
         let name: String
@@ -53,6 +54,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     var activeConnections: [XPCConn] = []
     var authenticatedConnections: Set<ObjectIdentifier> = []
     var authenticatedMainAppPID: pid_t?
+    var lastKnownMainAppPID: pid_t?
     var activeUserUID: uid_t?
     var isShutdownAuthorized: Bool = false
     let processIDLock = OSAllocatedUnfairLock()
@@ -153,12 +155,17 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     func isMainAppProcess(_ process: UnsafePointer<es_process_t>) -> Bool {
         let processPid = audit_token_to_pid(process.pointee.audit_token)
-        return processIDLock.withLock { processPid == authenticatedMainAppPID }
+        return processIDLock.withLock {
+            processPid == authenticatedMainAppPID || processPid == lastKnownMainAppPID
+        }
     }
 
     func cacheMainAppPID(from connection: NSXPCConnection) {
-        let processID = connection.processIdentifier
-        processIDLock.withLock { self.authenticatedMainAppPID = pid_t(processID) }
+        let processID = pid_t(connection.processIdentifier)
+        processIDLock.withLock {
+            self.authenticatedMainAppPID = processID
+            self.lastKnownMainAppPID = processID
+        }
 
         var auditToken = connection.auditToken
         let userUID = audit_token_to_euid(auditToken)

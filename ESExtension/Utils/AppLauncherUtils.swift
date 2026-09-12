@@ -2,7 +2,7 @@
 //  AppLauncherUtils.swift
 //  ESExtension
 //
-//  Created by Antigravity on 07/02/26.
+//  Created by Doe Phương on 7/2/26.
 //
 
 import Foundation
