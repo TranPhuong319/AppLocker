@@ -1,7 +1,17 @@
-# Git Commit Style Guidelines
+# Git Commit Style & Operational Safety Guidelines
+
+## Operational Safety: No Unsolicited Commits or Pushes
+
+- **Strict Prohibition on Unsolicited Commits & Pushes**:
+  - Agents MUST NEVER execute `git commit`, `git push`, or modify branches/tags unless EXPLICITLY instructed by the user (e.g. "commit these changes", "push code to repo").
+  - Autonomous workflows (implementing features, refactoring, fixing bugs, creating/updating agent rules or configurations) must NEVER trigger commits proactively.
+  - All workspace modifications remain in working tree status for user review until an explicit commit command is provided.
+
+---
 
 ## Git Commit Style
-Always follow this commit message format and guidelines when making commits:
+
+Always follow this commit message format and guidelines when explicitly asked to make commits:
 
 ### Commit Types (Choose 1)
 - `feat(scope)`: User-facing change (new feature)
