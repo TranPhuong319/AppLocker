@@ -36,10 +36,16 @@ Project rules and architecture guidelines are organized into domain-specific mod
    - Memory management (`[weak self]` in escaping closures/Tasks).
 
 6. **[Liquid Glass & macOS UI Design](rules/ui-design.md)**:
-   - Native macOS Liquid Glass adoption (no custom glass-on-glass layering).
-   - Traffic light insets & titlebar drag isolation (`WindowDragArea`).
+   - Apple HIG Materials architecture: Functional Layer (`glassEffect` Liquid Glass for navigation/controls) vs. Content Layer (`Material`/`NSVisualEffectMaterial` for structure).
+   - Strict Content Layer ban: zero Liquid Glass inside content cards/rows (transient interaction exception only).
+   - Liquid Glass variants: `regular` for text/sidebars/alerts; `clear` strictly for rich media + 35% dimming layer when needed.
+   - Semantic colors & mandatory system vibrancy (zero hardcoded hex/RGB, WCAG 4.5:1 contrast, no color-only signifiers).
+   - Typography & layout: semantic text styles, title-style section headers, concentric curvature formula ($r_{\text{in}} = r_{\text{out}} - p$).
+   - Interaction safety & A11y: destructive action confirmation, atomic sheets with unsaved protection, mandatory icon `.accessibilityLabel`.
+   - macOS platform integrity: Menu Bar commands, keyboard shortcuts, context menus, traffic light insets & titlebar drag isolation (`WindowDragArea`).
+   - Native `.searchable` toolbar integration (no custom search fields in `ToolbarItem` to avoid overflow `>>`).
    - Pure AppKit transparent window skeleton & 100% SwiftUI UI ownership.
-   - Optical blur vs. strict clipping scroll patterns.
+   - Optical glass scattering vs. strict clipping scroll patterns.
    - Modern state management (`@Observable` macro over Combine/ObservableObject).
 
 7. **[XPC Resilience & IPC Lifecycle](rules/xpc-and-security.md)**:
