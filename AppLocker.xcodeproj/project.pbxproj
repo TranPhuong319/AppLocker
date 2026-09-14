@@ -64,6 +64,8 @@
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
+		E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */; };
+		E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */; };
 		E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */; };
 		E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */; };
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
@@ -99,6 +101,7 @@
 		E0FD77022F59E36600D46B31 /* AppState+Spotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */; };
 		E0FD77042F59E36600D46B31 /* AppState+AppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */; };
 		E0FD77062F59E36600D46B31 /* AppState+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77052F59E36600D46B31 /* AppState+Preview.swift */; };
+		E0FD77082F59E36600D46B31 /* AppState+MissingApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */; };
 		E0FD79022F59E37C00D46B31 /* ESManager+PendingProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */; };
 		E0FD79042F59E37C00D46B31 /* ESEventNotifyExec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79032F59E37C00D46B31 /* ESEventNotifyExec.swift */; };
 		E0FD79062F59E37C00D46B31 /* ESEventAuthSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79052F59E37C00D46B31 /* ESEventAuthSignal.swift */; };
@@ -165,6 +168,8 @@
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeWindowController.swift; sourceTree = "<group>"; };
 		E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarManager.swift; sourceTree = "<group>"; };
+		E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarItems.swift; sourceTree = "<group>"; };
+		E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarBuilders.swift; sourceTree = "<group>"; };
 		E0FD75A52F59E36600D46B31 /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		E0FD75A72F59E36600D46B31 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
 		E0FD75AA2F59E36600D46B31 /* MainUIButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUIButtons.swift; sourceTree = "<group>"; };
@@ -244,6 +249,7 @@
 		E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Spotlight.swift"; sourceTree = "<group>"; };
 		E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+AppPicker.swift"; sourceTree = "<group>"; };
 		E0FD77052F59E36600D46B31 /* AppState+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Preview.swift"; sourceTree = "<group>"; };
+		E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+MissingApps.swift"; sourceTree = "<group>"; };
 		E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+PendingProcess.swift"; sourceTree = "<group>"; };
 		E0FD79032F59E37C00D46B31 /* ESEventNotifyExec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventNotifyExec.swift; sourceTree = "<group>"; };
 		E0FD79052F59E37C00D46B31 /* ESEventAuthSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthSignal.swift; sourceTree = "<group>"; };
@@ -286,6 +292,7 @@
 				E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */,
 				E0FD77052F59E36600D46B31 /* AppState+Preview.swift */,
 				E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */,
+				E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */,
 			);
 			path = AppState;
 			sourceTree = "<group>";
@@ -393,6 +400,8 @@
 			isa = PBXGroup;
 			children = (
 				E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */,
+				E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */,
+				E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */,
 			);
 			path = TouchBar;
 			sourceTree = "<group>";
@@ -899,6 +908,7 @@
 				E0FD77042F59E36600D46B31 /* AppState+AppPicker.swift in Sources */,
 				E0FD77062F59E36600D46B31 /* AppState+Preview.swift in Sources */,
 				E0FD77022F59E36600D46B31 /* AppState+Spotlight.swift in Sources */,
+				E0FD77082F59E36600D46B31 /* AppState+MissingApps.swift in Sources */,
 				E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */,
 				E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */,
 				E0FD76012F59E36600D46B31 /* LockES.swift in Sources */,
@@ -944,6 +954,8 @@
 				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
 				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
 				E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */,
+				E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */,
+				E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */,
 				E0FD80012F59E36600D46B31 /* CallServiceObserver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

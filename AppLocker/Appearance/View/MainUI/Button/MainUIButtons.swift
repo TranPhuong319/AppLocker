@@ -80,10 +80,12 @@ struct LockedAppButton: View {
         HStack(spacing: 12) {
             AppIconView(path: app.path, size: 32, isMissing: isMissing)
                 .opacity(isMissing ? 0.5 : 1.0)
+                .grayscale(isMissing ? 0.6 : 0.0)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(app.name)
                     .font(.body)
+                    .foregroundStyle(isMissing ? .secondary : .primary)
 
                 if isMissing {
                     Text(String(localized: "Missing"))
@@ -112,7 +114,7 @@ struct LockedAppButton: View {
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { unfocus() }
-        .opacity(isDeleting ? 0.3 : 1.0)
+        .opacity(isDeleting ? 0.3 : (isMissing ? 0.6 : 1.0))
     }
 }
 
@@ -122,16 +124,17 @@ struct MissingAppRow: View {
     var body: some View {
         HStack(spacing: 12) {
             AppIconView(path: app.path, size: 32, isMissing: true)
-                .opacity(0.6)
+                .opacity(0.5)
+                .grayscale(0.6)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(app.name)
                     .font(.body)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.secondary)
 
                 Text(app.path)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
@@ -141,5 +144,6 @@ struct MissingAppRow: View {
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
+        .opacity(0.7)
     }
 }

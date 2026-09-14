@@ -23,6 +23,7 @@ enum WindowLayout {
     static let batchAuthSize = NSSize(width: 440, height: 360)
     static let batchAuthMaxListHeight: CGFloat = 220
     static let aboutSize = NSSize(width: 450, height: 248)
+    static let settingsSize = NSSize(width: 640, height: 440)
 }
 
 // MARK: - Liquid Glass Visual Effects & Modifiers
@@ -61,10 +62,12 @@ struct LiquidGlassBackgroundModifier: ViewModifier {
 }
 
 struct LiquidGlassCapsuleModifier: ViewModifier {
+    var isInteractive: Bool = true
+
     func body(content: Content) -> some View {
         if #available(macOS 26.0, *) {
             content
-                .glassEffect(in: Capsule())
+                .glassEffect(isInteractive ? .regular.interactive() : .regular, in: Capsule())
         } else {
             content
                 .background(.ultraThinMaterial, in: Capsule())
@@ -150,8 +153,8 @@ extension View {
         modifier(LiquidGlassBackgroundModifier(material: material))
     }
 
-    func liquidGlassCapsule() -> some View {
-        modifier(LiquidGlassCapsuleModifier())
+    func liquidGlassCapsule(isInteractive: Bool = true) -> some View {
+        modifier(LiquidGlassCapsuleModifier(isInteractive: isInteractive))
     }
 
     func liquidGlassCircle() -> some View {
@@ -164,6 +167,15 @@ extension View {
 
     func liquidGlassBar() -> some View {
         modifier(LiquidGlassBarModifier())
+    }
+
+    @ViewBuilder
+    func softScrollEdge() -> some View {
+        if #available(macOS 26.0, *) {
+            self.scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            self
+        }
     }
 }
 

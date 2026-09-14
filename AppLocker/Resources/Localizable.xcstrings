@@ -6,6 +6,16 @@
       "generatesSymbol" : false,
       "shouldTranslate" : false
     },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$lld)"
+          }
+        }
+      }
+    },
     "%@ has been blocked from launching." : {
       "localizations" : {
         "vi" : {
@@ -15,9 +25,6 @@
           }
         }
       }
-    },
-    "%lld" : {
-
     },
     "%lld seconds" : {
       "localizations" : {
@@ -65,6 +72,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hoạt động"
+          }
+        }
+      }
+    },
+    "Add Application" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm ứng dụng"
           }
         }
       }
