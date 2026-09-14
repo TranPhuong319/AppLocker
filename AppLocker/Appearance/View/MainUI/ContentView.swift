@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @Bindable var appState: AppState
-    @FocusState var isSearchFocused: Bool
 
     @MainActor
     init(appState: AppState? = nil) {
@@ -18,58 +17,35 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 8) {
-                if appState.lockedAppObjects.isEmpty {
-                    emptyStateView
-                } else {
-                    searchBarHeader
-                    mainListView
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 8)
-            .padding(.bottom, 10)
-            .background(
-                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
-                    .ignoresSafeArea()
-            )
-            .navigationTitle("Locked application")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    HStack(spacing: 6) {
-                        if !appState.confirmedMissingApps.isEmpty {
-                            Button {
-                                appState.openMissingApps()
-                            } label: {
-                                HStack(spacing: 3) {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .foregroundStyle(.orange)
-                                        .symbolEffect(.bounce.byLayer, value: appState.confirmedMissingApps.count)
-                                    Text("\(appState.confirmedMissingApps.count)")
-                                        .font(.caption2.bold())
-                                        .foregroundStyle(.orange)
-                                }
-                            }
-                            .help("Review missing applications")
-                            .transition(
-                                .asymmetric(
-                                    insertion: .scale(scale: 0.1, anchor: .trailing).combined(with: .opacity),
-                                    removal: .scale(scale: 0.1, anchor: .trailing).combined(with: .opacity)
-                                )
-                            )
+            contentView
+                .navigationTitle("Locked application")
+                .searchable(
+                    text: $appState.searchTextLockApps,
+                    isPresented: $appState.isSearchPresented,
+                    prompt: "Search apps..."
+                )
+                .toolbar {
+                    if !appState.confirmedMissingApps.isEmpty {
+                        ToolbarItem(placement: .primaryAction) {
+                            missingAppsWarningButton
                         }
+                    }
 
+                    ToolbarItem(placement: .primaryAction) {
                         Button {
                             appState.openAddApp()
                         } label: {
-                            Image(systemName: "plus")
+                            Label("Add Application", systemImage: "plus")
                         }
+                        .labelStyle(.iconOnly)
                         .help("Add application to lock")
                     }
-                    .animation(.snappy, value: appState.confirmedMissingApps.count)
                 }
-            }
         }
+        .background(
+            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
+                .ignoresSafeArea()
+        )
         .sheet(isPresented: $appState.showingAddApp) {
             AddAppSheet(appState: appState, unfocus: unfocus)
         }
@@ -84,76 +60,90 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Subviews / Thành phần con
-    @ViewBuilder
-    private var searchBarHeader: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-                .padding(.leading, 8)
+    func unfocus() {
+        NSApp.keyWindow?.makeFirstResponder(nil)
+    }
+}
 
-            TextField("Search apps...", text: $appState.searchTextLockApps)
-                .textFieldStyle(.plain)
-                .focused($isSearchFocused)
-                .onSubmit { unfocus() }
-                .onExitCommand { unfocus() }
+// MARK: - Subviews
+private extension ContentView {
+    @ViewBuilder
+    var contentView: some View {
+        if appState.lockedAppObjects.isEmpty {
+            emptyStateView
+        } else {
+            mainListView
         }
-        .padding(7)
-        .contentShape(Capsule())
-        .onTapGesture { isSearchFocused = true }
-        .liquidGlassCapsule()
     }
 
     @ViewBuilder
-    private var emptyStateView: some View {
+    var missingAppsWarningButton: some View {
+        Button {
+            appState.openMissingApps()
+        } label: {
+            Label {
+                Text("\(String(localized: "Review missing applications")) (\(appState.confirmedMissingApps.count))")
+            } icon: {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .symbolEffect(.bounce.byLayer, value: appState.confirmedMissingApps.count)
+            }
+        }
+        .labelStyle(.iconOnly)
+        .help(String(localized: "Review missing applications"))
+        .accessibilityLabel(String(localized: "Review missing applications"))
+    }
+
+    @ViewBuilder
+    var emptyStateView: some View {
         Text("There is no locked application.")
             .foregroundStyle(.secondary)
             .font(.title3)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .padding(.horizontal, 14)
     }
 
     @ViewBuilder
-    private var mainListView: some View {
-        ZStack(alignment: .bottom) {
-            ScrollView {
-                LazyVStack(alignment: .center, spacing: 6) {
-                    let apps = appState.filteredLockedApps
-                    let userApps = apps.filter { $0.source == .user }
-                    let systemApps = apps.filter { $0.source == .system }
+    var mainListView: some View {
+        ScrollView {
+            LazyVStack(alignment: .center, spacing: 6) {
+                let apps = appState.filteredLockedApps
+                let userApps = apps.filter { $0.source == .user }
+                let systemApps = apps.filter { $0.source == .system }
 
-                    if !userApps.isEmpty {
-                        SectionHeader(title: "Applications")
-                        ForEach(userApps, id: \.path) { app in
-                            LockedAppButton(
-                                app: app,
-                                isDeleting: appState.deleteQueue.contains(app.path),
-                                isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
-                                onDelete: { _ = appState.deleteQueue.insert(app.path) },
-                                unfocus: unfocus
-                            )
-                        }
-                    }
-
-                    if !systemApps.isEmpty {
-                        SectionHeader(title: "System Applications")
-                        ForEach(systemApps, id: \.path) { app in
-                            LockedAppButton(
-                                app: app,
-                                isDeleting: appState.deleteQueue.contains(app.path),
-                                isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
-                                onDelete: { _ = appState.deleteQueue.insert(app.path) },
-                                unfocus: unfocus
-                            )
-                        }
+                if !userApps.isEmpty {
+                    SectionHeader(title: "Applications")
+                    ForEach(userApps, id: \.path) { app in
+                        LockedAppButton(
+                            app: app,
+                            isDeleting: appState.deleteQueue.contains(app.path),
+                            isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
+                            onDelete: { _ = appState.deleteQueue.insert(app.path) },
+                            unfocus: unfocus
+                        )
                     }
                 }
-                .padding(.vertical, 4)
-                .padding(.bottom, appState.deleteQueue.isEmpty ? 0 : 60)
-            }
-            .scrollIndicators(.hidden)
-            .background(Color.clear.contentShape(Rectangle()).onTapGesture { isSearchFocused = false })
-            .clipped()
 
+                if !systemApps.isEmpty {
+                    SectionHeader(title: "System Applications")
+                    ForEach(systemApps, id: \.path) { app in
+                        LockedAppButton(
+                            app: app,
+                            isDeleting: appState.deleteQueue.contains(app.path),
+                            isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
+                            onDelete: { _ = appState.deleteQueue.insert(app.path) },
+                            unfocus: unfocus
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 4)
+        }
+        .scrollIndicators(.hidden)
+        .background(Color.clear.contentShape(Rectangle()).onTapGesture { unfocus() })
+        .clipped()
+        .safeAreaInset(edge: .bottom) {
             if !appState.deleteQueue.isEmpty {
                 deleteQueueNotificationBar
             }
@@ -161,13 +151,8 @@ struct ContentView: View {
         .animation(.spring(), value: appState.deleteQueue.isEmpty)
     }
 
-    private func unfocus() {
-        isSearchFocused = false
-        NSApp.keyWindow?.makeFirstResponder(nil)
-    }
-
     @ViewBuilder
-    private var deleteQueueNotificationBar: some View {
+    var deleteQueueNotificationBar: some View {
         Button { appState.showingDeleteQueue = true } label: {
             HStack(spacing: 12) {
                 ZStack {
