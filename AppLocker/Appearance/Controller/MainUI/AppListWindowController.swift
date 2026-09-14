@@ -40,6 +40,7 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
     private static func createHostingController() -> NSHostingController<ContentView> {
         let hostingController = NSHostingController(rootView: ContentView())
         hostingController.sceneBridgingOptions = [.toolbars, .title]
+        hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
         hostingController.view.setFrameSize(WindowLayout.mainSize)
         return hostingController
     }
@@ -58,7 +59,9 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
         config.isOpaque = false
         config.backgroundColor = .clear
 
-        return WindowManager.createWindow(contentViewController: contentVC, configuration: config)
+        let window = WindowManager.createWindow(contentViewController: contentVC, configuration: config)
+        window.titlebarSeparatorStyle = .none
+        return window
     }
 
     // MARK: - NSWindowDelegate

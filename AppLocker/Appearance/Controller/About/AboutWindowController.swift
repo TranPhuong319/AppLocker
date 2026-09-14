@@ -14,7 +14,7 @@ final class AboutWindowController: NSWindowController {
 
     private init() {
         let hostingController = NSHostingController(rootView: AboutView())
-        hostingController.sceneBridgingOptions = [.title]
+        hostingController.sceneBridgingOptions = [.toolbars, .title]
         hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
 
         var config = WindowConfiguration()
@@ -26,6 +26,7 @@ final class AboutWindowController: NSWindowController {
         config.center = true
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
+        window.titlebarSeparatorStyle = .none
         super.init(window: window)
     }
 

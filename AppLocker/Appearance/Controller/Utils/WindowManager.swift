@@ -23,6 +23,7 @@ struct WindowConfiguration {
     var center: Bool = true
     var isOpaque: Bool = false
     var backgroundColor: NSColor? = .clear
+    var autosaveName: NSWindow.FrameAutosaveName?
 }
 
 @MainActor
@@ -61,7 +62,11 @@ class WindowManager {
             window.maxSize = maxSize
         }
 
-        if configuration.center {
+        if let autosaveName = configuration.autosaveName {
+            if !window.setFrameAutosaveName(autosaveName) && configuration.center {
+                window.center()
+            }
+        } else if configuration.center {
             window.center()
         }
 
