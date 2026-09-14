@@ -39,21 +39,27 @@ struct AboutView: View {
                     .ignoresSafeArea()
             )
             .navigationTitle("")
-            .safeAreaInset(edge: .bottom) {
-                HStack {
-                    Text(bundle.copyright)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
+            .toolbar {
+                ToolbarItem(placement: .automatic) {
                     Spacer()
-
-                    Link("Website", destination: URL(string: "https://github.com/TranPhuong319/AppLocker")!)
-                        .font(.caption)
-                        .buttonStyle(.plain)
-                        .foregroundStyle(.blue)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 12)
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        if let url = URL(string: "https://github.com/TranPhuong319/AppLocker") {
+                            openURL(url)
+                        }
+                    } label: {
+                        Label("Website", systemImage: "globe")
+                    }
+                    .labelStyle(.iconOnly)
+                    .help("Website")
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Text(bundle.copyright)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 14)
             }
         }
         .frame(width: WindowLayout.aboutSize.width, height: WindowLayout.aboutSize.height)

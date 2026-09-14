@@ -18,15 +18,17 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let hostingController = NSHostingController(rootView: SettingsView(navigator: navigator))
         hostingController.sceneBridgingOptions = [.toolbars, .title]
         hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
+        hostingController.view.setFrameSize(WindowLayout.settingsSize)
 
         var config = WindowConfiguration()
         config.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
-        config.minSize = NSSize(width: 640, height: 440)
+        config.size = WindowLayout.settingsSize
+        config.minSize = WindowLayout.settingsSize
+        config.autosaveName = "SettingsWindow"
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
         let toolbar = NSToolbar(identifier: "SettingsToolbar")
         window.toolbar = toolbar
-        window.center()
 
         super.init(window: window)
         window.delegate = self
@@ -41,7 +43,6 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             shared.navigator.selectedTab = tab
         }
         guard let window = shared.window else { return }
-        window.center()
         shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate()
