@@ -14,8 +14,10 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
     func setupNotifications() {
         let center = UNUserNotificationCenter.current()
         center.delegate = self
-        center.requestAuthorization(options: [.badge, .sound, .alert]) { _, error in
-            if let error = error {
+        Task {
+            do {
+                try await center.requestAuthorization(options: [.badge, .sound, .alert])
+            } catch {
                 Logfile.app.error(
                     "[Notification] Authorization error: \(error.localizedDescription, privacy: .public)"
                 )
