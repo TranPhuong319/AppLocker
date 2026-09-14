@@ -46,15 +46,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     try? await Task.sleep(for: .milliseconds(100))
                     attempts += 1
                 }
-                await MainActor.run { [weak self] in
-                    if attempts >= 30 {
-                        Logfile.app.warning("[Bootstrap] Wait timed out after 3 seconds. Proceeding anyway.")
-                    } else {
-                        Logfile.app.debug("[Bootstrap] Parent process exited.")
-                    }
-                    self?.enforceSingleInstance(ignoringPID: parentProcessID)
-                    self?.finishLaunchSetup()
+                if attempts >= 30 {
+                    Logfile.app.warning("[Bootstrap] Wait timed out after 3 seconds. Proceeding anyway.")
+                } else {
+                    Logfile.app.debug("[Bootstrap] Parent process exited.")
                 }
+                self?.enforceSingleInstance(ignoringPID: parentProcessID)
+                self?.finishLaunchSetup()
             }
         } else {
             enforceSingleInstance()
@@ -109,7 +107,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
-            openSettings()
+            openAppList()
         }
         return true
     }

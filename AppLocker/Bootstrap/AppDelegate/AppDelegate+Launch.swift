@@ -37,11 +37,6 @@ extension AppDelegate {
         Logfile.app.debug("[Launch] Setting up hotkey manager...")
         self.hotkey = HotKeyManager()
 
-        Logfile.app.debug("[Launch] Setting up Touch Bar...")
-        if let window = NSApp.windows.first {
-            TouchBarManager.shared.apply(to: window, type: .mainWindow)
-        }
-
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
             selector: #selector(handleWorkspaceSleep),
