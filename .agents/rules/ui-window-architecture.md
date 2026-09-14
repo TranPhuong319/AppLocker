@@ -19,7 +19,7 @@
     - `titlebarAppearsTransparent = true` and `titleVisibility = .hidden`.
     - `isMovableByWindowBackground = false` (dragging strictly isolated to SwiftUI `WindowDragArea`).
     - On `NSHostingController`, ALWAYS enable `sceneBridgingOptions = [.toolbars, .title]` AND `sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]`.
-    - ALWAYS assign a dummy `window.toolbar = NSToolbar(identifier: ...)` at the AppKit level solely to activate SwiftUI `.toolbar` and titlebar bridging.
+    - For windows without interactive SwiftUI toolbar buttons (`BatchAuthWindowController`, `WelcomeWindowController`, `AboutWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` at the AppKit level is required to activate macOS unified toolbar frame and large Squircle corner curvature without rendering duplicate centered pill items.
     - All windows MUST be created via `WindowManager.createWindow` using the transparent skeleton defaults.
 
 - **Traffic Light Margin & Inset**:

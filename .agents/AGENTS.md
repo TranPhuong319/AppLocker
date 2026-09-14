@@ -37,7 +37,7 @@ Project rules and architecture guidelines are organized into domain-specific mod
 
 5. **[Swift Quality, Linting & API Style](rules/swift-quality.md)**:
    - Zero deprecated API tolerance (macOS 14+); mandatory SwiftLint (0 errors, 0 warnings).
-   - Function complexity ($\le 10$), body length ($\le 50$), parameters ($\le 5$), line length ($\le 120$).
+   - Function complexity ($\le 10$), body length ($\le 50$), parameters ($\le 5$), line length ($\le 120$), file length ($\le 300$, decompose when $\ge 300$).
    - Fluent English API phrasing, strongly typed errors, `[weak self]` in escaping closures/Tasks.
 
 6. **[Liquid Glass & macOS UI Design](rules/ui-design.md)**:
