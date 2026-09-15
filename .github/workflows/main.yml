@@ -201,4 +201,5 @@ jobs:
           bodyFile: ReleaseNotes.md
           artifacts: "./Artifacts/*"
           tag: ${{ env.REL_TAG }}
+          commit: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
