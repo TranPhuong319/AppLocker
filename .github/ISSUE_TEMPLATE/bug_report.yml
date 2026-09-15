@@ -1,0 +1,110 @@
+name: Bug Report
+description: Report an issue or unexpected behavior in AppLocker
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report an issue with AppLocker!
+        Please fill out the form below as completely as possible to help us reproduce and resolve the problem quickly.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: What steps are needed to reproduce this behavior?
+      placeholder: |
+        1. Open AppLocker
+        2. Lock application '...'
+        3. Attempt to launch '...'
+        4. See error or unexpected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: macos_version
+    attributes:
+      label: macOS Version
+      description: Which version of macOS are you running?
+      options:
+        - "macOS 15 Sequoia (15.x)"
+        - "macOS 14 Sonoma (14.x)"
+        - "Other / Older (Unsupported)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: Hardware Architecture
+      description: What processor architecture is your Mac using?
+      options:
+        - "Apple Silicon (M1 / M2 / M3 / M4)"
+        - "Intel (x86_64)"
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: AppLocker Version
+      description: The version of AppLocker where this issue occurred (e.g., from AppLocker > About).
+      placeholder: "e.g. 1.9.0"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: security_status
+    attributes:
+      label: Security & Extension Status
+      description: Select the options that apply to your system configuration.
+      options:
+        - label: "System Integrity Protection (SIP) is enabled"
+        - label: "AppLocker System Extension is enabled and running (System Settings > Login Items & Extensions)"
+        - label: "Full Disk Access is granted to AppLocker (if applicable)"
+
+  - type: dropdown
+    id: auth_method
+    attributes:
+      label: Primary Authentication Method
+      description: How do you unlock locked applications?
+      options:
+        - "Touch ID (Biometrics)"
+        - "macOS User Password"
+        - "Apple Watch"
+        - "None / Not reached"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs or Crash Reports
+      description: Paste any relevant output from Console.app, os_log, or crash reports here.
+      render: shell
+      placeholder: |
+        # Example command to filter logs:
+        # log show --predicate 'subsystem == "com.TranPhuong319.AppLocker"' --last 5m
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or screen recordings about the problem.
