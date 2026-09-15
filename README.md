@@ -30,7 +30,7 @@
 ## 🎬 Live Demo
 
 <div align="center">
-  <img src="docs/images/demo.gif" alt="AppLocker Live Demo" width="85%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+  <img src="docs/gif/demo.gif" alt="AppLocker Live Demo" width="85%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
   <p><i>Instant kernel interception with Touch ID authentication & batch unlocking</i></p>
 </div>
 
