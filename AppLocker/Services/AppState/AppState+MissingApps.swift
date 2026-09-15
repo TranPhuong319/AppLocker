@@ -39,31 +39,37 @@ extension AppState {
     }
 
     func hideMissingApps(paths: [String]) {
-        AuthenticationManager.authenticate(
-            reason: String(localized: "authenticate to hide missing applications")
-        ) { [weak self] success, _ in
-            guard success, let self = self else { return }
-            self.manager.hideApps(for: paths)
-            for path in paths {
-                self.missingAppTimestamps.removeValue(forKey: path)
-            }
-            self.refreshAppLists()
-            self.showingMissingAppsSheet = false
+        self.showingMissingAppsSheet = false
+        self.manager.hideApps(for: paths)
+        for path in paths {
+            self.missingAppTimestamps.removeValue(forKey: path)
         }
+        self.refreshAppLists()
     }
 
     func deleteMissingApps(paths: [String]) {
-        AuthenticationManager.authenticate(
-            reason: String(localized: "authenticate to remove missing applications")
-        ) { [weak self] success, _ in
-            guard success, let self = self else { return }
-            self.manager.removeApps(for: paths)
-            for path in paths {
-                self.missingAppTimestamps.removeValue(forKey: path)
-            }
-            self.refreshAppLists()
-            self.showingMissingAppsSheet = false
+        let confirmation = AlertShow.show(
+            title: String(localized: "Remove Missing Applications"),
+            message: String(
+                localized: "Are you sure you want to remove the missing applications from the lock list?"
+            ),
+            style: .critical,
+            buttons: [
+                String(localized: "Remove"),
+                String(localized: "Cancel")
+            ],
+            cancelIndex: 1,
+            defaultIndex: 0
+        )
+
+        guard case .button(let index, _) = confirmation, index == 0 else { return }
+
+        self.showingMissingAppsSheet = false
+        self.manager.removeApps(for: paths)
+        for path in paths {
+            self.missingAppTimestamps.removeValue(forKey: path)
         }
+        self.refreshAppLists()
     }
 
     @objc func openMissingApps() {

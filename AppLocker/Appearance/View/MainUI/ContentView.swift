@@ -82,7 +82,7 @@ private extension ContentView {
             appState.openMissingApps()
         } label: {
             Label {
-                Text("\(String(localized: "Review missing applications")) (\(appState.confirmedMissingApps.count))")
+                Text("Review missing applications (\(appState.confirmedMissingApps.count))")
             } icon: {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.orange)

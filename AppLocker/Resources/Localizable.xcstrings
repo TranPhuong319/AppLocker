@@ -6,22 +6,12 @@
       "generatesSymbol" : false,
       "shouldTranslate" : false
     },
-    "%@ (%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ (%2$lld)"
-          }
-        }
-      }
-    },
     "%@ has been blocked from launching." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ứng dụng %@ đã bị chặn kích hoạt."
+            "value" : "Ứng dụng %@ đã bị chặn khởi chạy."
           }
         }
       }
@@ -226,12 +216,12 @@
         }
       }
     },
-    "authenticate to hide missing applications" : {
+    "Are you sure you want to remove the missing applications from the lock list?" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "xác thực để ẩn các ứng dụng không tồn tại"
+            "value" : "Bạn có chắc chắn muốn xoá các ứng dụng không tồn tại khỏi danh sách khoá?"
           }
         }
       }
@@ -242,16 +232,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "xác thực để mở danh sách Ứng dụng"
-          }
-        }
-      }
-    },
-    "authenticate to remove missing applications" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "xác thực để xoá các ứng dụng không tồn tại"
           }
         }
       }
@@ -917,6 +897,16 @@
         }
       }
     },
+    "Remove Missing Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá ứng dụng không tồn tại"
+          }
+        }
+      }
+    },
     "Repair Agent Service" : {
       "localizations" : {
         "vi" : {
@@ -963,6 +953,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xem xét các ứng dụng không tồn tại"
+          }
+        }
+      }
+    },
+    "Review missing applications (%lld)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem lại những ứng dụng không tìm thấy (%lld)"
           }
         }
       }
