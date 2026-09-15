@@ -30,7 +30,7 @@
 ## 🎬 Trải Nghiệm Trực Tiếp (Live Demo)
 
 <div align="center">
-  <img src="../docs/images/demo.gif" alt="Demo hoạt động của AppLocker" width="85%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+  <img src="../docs/gif/demo.gif" alt="Demo hoạt động của AppLocker" width="85%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
   <p><i>Chặn bắt tức thì ở cấp độ Kernel, xác thực Touch ID mượt mà và mở khóa hàng loạt</i></p>
 </div>
 
