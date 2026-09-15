@@ -1,0 +1,54 @@
+name: Feature Request
+description: Suggest an idea or enhancement for AppLocker
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new idea or feature for AppLocker!
+        Please provide as much detail as possible to help us evaluate and design the enhancement.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Motivation
+      description: Is your feature request related to a problem, limitation, or missing workflow?
+      placeholder: "I find it challenging when... / Currently, AppLocker does not..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: A clear and concise description of what you would like AppLocker to do.
+      placeholder: "Add a feature that allows..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative workarounds or solutions?
+      placeholder: "I tried using... but it wasn't ideal because..."
+
+  - type: checkboxes
+    id: feature_area
+    attributes:
+      label: Feature Area
+      description: Which area(s) of AppLocker does this proposal involve?
+      options:
+        - label: "UI / Liquid Glass Design & Menu Bar Experience"
+        - label: "Application Locking & Interception Rules (Endpoint Security)"
+        - label: "Authentication & Biometrics (Touch ID, Password, Apple Watch)"
+        - label: "Settings, Configuration & Preferences"
+        - label: "Performance, Battery & Resource Optimization"
+        - label: "Localization & Accessibility"
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, concept diagrams, or screenshots here.
