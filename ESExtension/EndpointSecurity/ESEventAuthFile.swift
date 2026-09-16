@@ -13,49 +13,21 @@ import Darwin
 extension ESManager {
 
     func isAuthorized(_ message: ESMessage) -> Bool {
-        let mainAppID = "com.TranPhuong319.AppLocker"
-        let extensionID = "com.TranPhuong319.AppLocker.ESExtension"
-
-        // 1. Check PID (Fast Cache)
+        // 1. Fast Cache (PID verified via XPC handshake or self)
         let processPid = audit_token_to_pid(message.pointee.process.pointee.audit_token)
-        if processIDLock.withLock({ processPid == authenticatedMainAppPID }) {
+        if processPid == getpid() || processIDLock.withLock({ processPid == authenticatedMainAppPID }) {
             return true
         }
 
-        // 2. Get Calling Process Path
-        let procPath = safePath(fromFilePointer: message.pointee.process.pointee.executable) ?? ""
-        let isInsideBundle = procPath.hasPrefix("/Applications/AppLocker.app")
-
-        // 3. Check Signing ID (Immutable Identity)
-        let signingIDToken = message.pointee.process.pointee.signing_id
-        if let signingID = string(from: signingIDToken) {
-             if (signingID == mainAppID || signingID == extensionID) && isInsideBundle {
-                 return true
-             }
-             // Sparkle Updates (Framework & Autoupdate tools)
-             if signingID.lowercased().contains("sparkle") || signingID.hasPrefix("Autoupdate") {
-                 if isInsideBundle { return true }
-
-                 let parentAuditToken = message.pointee.process.pointee.parent_audit_token
-                 let parentPid = audit_token_to_pid(parentAuditToken)
-                 let mainAppPid = processIDLock.withLock({ authenticatedMainAppPID })
-
-                 if parentPid != -1 && parentPid == mainAppPid {
-                     if procPath.contains("/Library/Caches/") ||
-                        procPath.contains("/var/folders/") ||
-                        procPath.hasPrefix("/tmp/") ||
-                        procPath.hasPrefix("/private/tmp/") {
-                         return true
-                     }
-                 }
-                 Logfile.endpointSecurity.warning(
-                     """
-                     [AuthFile] AUTH_CHECK [SPARKLE] Untrusted lineage or path: \(procPath, privacy: .public) \
-                     (Parent PID: \(parentPid, privacy: .public), Main PID: \(mainAppPid ?? -1, privacy: .public))
-                     """
-                 )
-             }
+        // 2. Cryptographic Code Signature Verification (AppLocker, ESExtension, Sparkle Autoupdate)
+        let auditToken = message.pointee.process.pointee.audit_token
+        if CodeSignatureValidator.validate(
+            auditToken: auditToken,
+            requirement: CodeSignatureValidator.projectRootRequirement
+        ) {
+            return true
         }
+
         return false
     }
 

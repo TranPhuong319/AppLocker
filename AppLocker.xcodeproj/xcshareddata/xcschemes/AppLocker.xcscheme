@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2620"
+   LastUpgradeVersion = "2650"
    version = "2.0">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -29,7 +29,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "APP_PATH=&quot;${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;&#10;cp -R &quot;$APP_PATH&quot; /Applications/&#10;echo &quot;&#x2705; Copied $APP_PATH -&gt; /Applications/&quot;&#10;&#10;">
+               scriptText = "APP_PATH=&quot;${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;&#10;rm -rf &quot;/Applications/${FULL_PRODUCT_NAME}&quot;&#10;/usr/bin/ditto &quot;$APP_PATH&quot; &quot;/Applications/${FULL_PRODUCT_NAME}&quot;&#10;echo &quot;&#x2705; Copied $APP_PATH -&gt; /Applications/&quot;&#10;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
