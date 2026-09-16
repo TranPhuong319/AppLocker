@@ -10,5 +10,10 @@
 
 #import <Foundation/Foundation.h>
 #include <notify.h>
+#include <bsm/libbsm.h>
+
+@interface NSXPCConnection (AuditToken)
+@property (readonly) audit_token_t auditToken;
+@end
 
 #endif /* AppLocker_Bridging_Header_h */

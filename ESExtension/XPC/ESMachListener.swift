@@ -42,6 +42,16 @@ extension ESManager: NSXPCListenerDelegate {
             """
         )
 
+        guard CodeSignatureValidator.validateXPCConnection(newConnection) else {
+            Logfile.esXPC.error(
+                """
+                [ESMachListener] Rejecting connection: Client signature verification failed \
+                (pid=\(newConnection.processIdentifier, privacy: .public))
+                """
+            )
+            return false
+        }
+
         newConnection.exportedInterface =
             NSXPCInterface(with: ESAppProtocol.self)
         newConnection.exportedObject = self
