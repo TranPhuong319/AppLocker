@@ -77,7 +77,7 @@ AppLocker is structured into three decoupled layers:
 
 1. **`AppLocker` (Main Application)**: User-space GUI (SwiftUI + AppKit) managing app configurations, `LocalAuthentication`, Menu Bar status, and Batch Auth window dispatch on `@MainActor`.
 2. **`ESExtension` (Endpoint Security Daemon)**: Privileged System Extension running as root. Handles `NOTIFY_EXEC`, `NOTIFY_EXIT`, and anti-tamper events (`AUTH_SIGNAL`, `AUTH_FILE`).
-3. **`Shared Core`**: Shared XPC protocol contracts (`ESAppProtocol`, `ESXPCProtocol`), ECDSA P-256 cryptography helpers (`KeychainHelper`), CDHash verification (`CDHashHelper`), and unified logging (`os.Logger`).
+3. **`Shared Core`**: Shared XPC protocol contracts (`ESAppProtocol`, `ESXPCProtocol`), cryptographic code signature verification (`CodeSignatureValidator`), CDHash extraction (`CDHashHelper`), and unified logging (`os.Logger`).
 
 ### 🔄 Interception Flow
 

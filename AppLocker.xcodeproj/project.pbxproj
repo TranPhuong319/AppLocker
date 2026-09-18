@@ -84,14 +84,12 @@
 		E0FD765C2F59E37C00D46B31 /* PathUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763D2F59E37C00D46B31 /* PathUtils.swift */; };
 		E0FD765E2F59E37C00D46B31 /* AppLauncherUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD763A2F59E37C00D46B31 /* AppLauncherUtils.swift */; };
 		E0FD76722F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
-		E0FD76742F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
 		E0FD76782F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
 		E0FD76792F59E3BE00D46B31 /* CDHashHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* CDHashHelper.swift */; };
 		E0FD767A2F59E3BE00D46B31 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766F2F59E3BE00D46B31 /* Log.swift */; };
 		E0FD767D2F59E3BE00D46B31 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD766E2F59E3BE00D46B31 /* InfoPlist.strings */; };
 		E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */; };
 		E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76622F59E3BE00D46B31 /* FuzzySearch.swift */; };
-		E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */; };
 		E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD765F2F59E3BE00D46B31 /* Alert.swift */; };
 		E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */; };
 		E0FD76852F59E3BE00D46B31 /* CDHashHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76612F59E3BE00D46B31 /* CDHashHelper.swift */; };
@@ -245,7 +243,6 @@
 		E0FD76652F59E3BE00D46B31 /* ESAppProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAppProtocol.swift; sourceTree = "<group>"; };
 		E0FD76662F59E3BE00D46B31 /* ESXPCProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCProtocol.swift; sourceTree = "<group>"; };
 		E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
-		E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		E0FD766C2F59E3BE00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766D2F59E3BE00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0FD766F2F59E3BE00D46B31 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
@@ -712,7 +709,6 @@
 			isa = PBXGroup;
 			children = (
 				E0FD76682F59E3BE00D46B31 /* AuthenticationManager.swift */,
-				E0FD766A2F59E3BE00D46B31 /* KeychainHelper.swift */,
 				E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */,
 			);
 			path = Security;
@@ -915,7 +911,6 @@
 				E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */,
 				E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */,
 				E0FD76722F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
-				E0FD76742F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
 				E03BB181305AA41B009552C2 /* CodeSignatureValidator.swift in Sources */,
 				E0FD76782F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,
 				E0FD76792F59E3BE00D46B31 /* CDHashHelper.swift in Sources */,
@@ -970,7 +965,6 @@
 				E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */,
 				E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
 				E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */,
-				E0FD76802F59E3BE00D46B31 /* KeychainHelper.swift in Sources */,
 				E03BB182305AA41B009552C3 /* CodeSignatureValidator.swift in Sources */,
 				E0FD76832F59E3BE00D46B31 /* Alert.swift in Sources */,
 				E0FD76842F59E3BE00D46B31 /* ESXPCProtocol.swift in Sources */,

@@ -77,7 +77,7 @@ AppLocker được phân tách thành 3 tầng thành phần rõ ràng:
 
 1. **`AppLocker` (Ứng Dụng Chính)**: Giao diện người dùng (SwiftUI + AppKit) quản lý cấu hình, `LocalAuthentication`, Menu Bar và điều phối cửa sổ Batch Auth trên `@MainActor`.
 2. **`ESExtension` (Endpoint Security Daemon)**: System Extension chạy với quyền root (System Daemon). Xử lý các sự kiện `NOTIFY_EXEC`, `NOTIFY_EXIT`, và sự kiện chống can thiệp (`AUTH_SIGNAL`, `AUTH_FILE`).
-3. **`Shared Core`**: Chia sẻ các giao thức XPC (`ESAppProtocol`, `ESXPCProtocol`), mật mã học ECDSA P-256 (`KeychainHelper`), trích xuất CDHash (`CDHashHelper`) và hệ thống ghi log tập trung (`os.Logger`).
+3. **`Shared Core`**: Chia sẻ các giao thức XPC (`ESAppProtocol`, `ESXPCProtocol`), xác thực chữ ký số bằng mật mã học (`CodeSignatureValidator`), trích xuất CDHash (`CDHashHelper`) và hệ thống ghi log tập trung (`os.Logger`).
 
 ### 🔄 Quy Trình Chặn Bắt & Mở Khóa
 
