@@ -91,10 +91,7 @@ final class ESManager: NSObject, @unchecked Sendable {
         if authorizer.start() && tamper.start() {
             Logfile.endpointSecurity.info("[ESManager] Modular ES Clients created and self-muted.")
 
-            // 3. Pre-generate EC P-256 Authentication Keys (Fast ~0.1ms)
-            prepareAuthenticationKeys()
-
-            // 4. Setup Listener (Ready for connections)
+            // 3. Setup Listener (Ready for connections)
             setupMachListener()
 
             // 5. Initial Config & Monitoring
@@ -211,31 +208,6 @@ final class ESManager: NSObject, @unchecked Sendable {
             return token
         }
         return nil
-    }
-
-    func prepareAuthenticationKeys() {
-        let serverTag = KeychainHelper.Keys.extensionPublic
-
-        if !KeychainHelper.shared.hasKey(tag: serverTag) {
-            Logfile.esSecurity.debug("[Auth] Pre-generating server keys at startup...")
-            let startTime = mach_absolute_time()
-
-            do {
-                try KeychainHelper.shared.generateKeys(tag: serverTag)
-
-                let elapsedNanos = ESManager.machTimeToNanos(mach_absolute_time() - startTime)
-                let elapsedMs = Double(elapsedNanos) / 1_000_000.0
-
-                let formattedMs = String(format: "%.1f", elapsedMs)
-                Logfile.esSecurity.debug(
-                    "[Auth] Server keys generated in \(formattedMs, privacy: .public)ms"
-                )
-            } catch {
-                Logfile.esSecurity.error("[Auth] Server key pre-generation failed: \(error.localizedDescription)")
-            }
-        } else {
-            Logfile.esSecurity.debug("[Auth] Server keys already exist")
-        }
     }
 
     // MARK: - Time Utilities

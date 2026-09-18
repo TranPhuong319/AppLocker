@@ -12,12 +12,19 @@ extension ESManager {
     // Store an incoming connection (thread-safe).
     func storeIncomingConnection(_ conn: NSXPCConnection) {
         let boxed = XPCConn(connection: conn)
+        let connID = ObjectIdentifier(conn)
         let count = xpcConnectionLock.withLock { () -> Int in
             self.activeConnections.append(boxed)
+            self.authenticatedConnections.insert(connID)
             return self.activeConnections.count
         }
 
-        Logfile.esXPC.debug("[ESConnections] Stored incoming XPC connection - total=\(count, privacy: .public)")
+        cacheMainAppPID(from: conn)
+        flushPendingNotifications(to: conn)
+
+        Logfile.esXPC.debug(
+            "[ESConnections] Stored and authenticated incoming XPC connection - total=\(count, privacy: .public)"
+        )
     }
 
     // Flush pending notifications to a specific connection (called after Auth)

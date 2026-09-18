@@ -5,7 +5,6 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
-import CryptoKit
 import Foundation
 import os
 
@@ -60,7 +59,14 @@ final class ESXPCClient: @unchecked Sendable {
             conn.resume()
             self.pendingConnection = conn
 
-            self.performAuth(conn: conn) { [weak self] success in
+            guard let proxy = self.proxy(conn: conn, actionName: "Connect", onError: { [weak self] in
+                self?.handleAuthResult(success: false)
+            }) else {
+                self.handleAuthResult(success: false)
+                return
+            }
+
+            proxy.allowConfigAccess(getpid()) { [weak self] success in
                 self?.handleAuthResult(success: success)
             }
         }
@@ -138,65 +144,6 @@ final class ESXPCClient: @unchecked Sendable {
             self.connection = nil
 
             self.updateExtensionInstalledState(false)
-        }
-    }
-
-    private func performAuth(conn: NSXPCConnection, completion: @escaping @Sendable (Bool) -> Void) {
-        let appTag = KeychainHelper.Keys.appPublic
-
-        // 1. Ensure Client Keys
-        if !KeychainHelper.shared.hasKey(tag: appTag) {
-            Logfile.appXPC.debug("[ESXPCClient] Client keys missing, generating...")
-            do {
-                try KeychainHelper.shared.generateKeys(tag: appTag)
-            } catch {
-                Logfile.appXPC.error("[ESXPCClient] Key gen failed: \(error.localizedDescription)")
-                completion(false)
-                return
-            }
-        }
-
-        // 2. Prepare Auth Data
-        let clientNonce = SymmetricKey(size: .bits256).withUnsafeBytes { Data($0) }
-        guard let clientSig = KeychainHelper.shared.sign(data: clientNonce, tag: appTag) else {
-            Logfile.appXPC.error("[ESXPCClient] Failed to sign client nonce")
-            completion(false)
-            return
-        }
-
-        // 2b. Export Public Key
-        guard let pubKeyData = KeychainHelper.shared.exportPublicKey(tag: appTag) else {
-            Logfile.appXPC.error("[ESXPCClient] Failed to export public key")
-            completion(false)
-            return
-        }
-
-        // 3. Send to Server
-        guard let proxy = self.proxy(conn: conn, actionName: "Auth XPC", onError: { completion(false) }) else {
-            return
-        }
-
-        proxy.authenticate(
-            clientNonce: clientNonce, clientSig: clientSig, clientPublicKey: pubKeyData
-        ) { serverNonce, serverSig, serverPubKey, success in
-            guard success, let serverNonce = serverNonce, let serverSig = serverSig,
-                let serverPubKey = serverPubKey
-            else {
-                Logfile.appXPC.error("[ESXPCClient] Server rejected auth or invalid response")
-                completion(false)
-                return
-            }
-
-            // 4. Verify Server
-            let combined = clientNonce + serverNonce
-
-            if KeychainHelper.shared.verify(
-                signature: serverSig, originalData: combined, publicKeyData: serverPubKey) {
-                completion(true)
-            } else {
-                Logfile.appXPC.error("[ESXPCClient] Server signature verification failed!")
-                completion(false)
-            }
         }
     }
 

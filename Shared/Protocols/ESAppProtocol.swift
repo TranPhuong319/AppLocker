@@ -12,13 +12,6 @@ import Foundation
 
     func updateLanguage(to code: String)
 
-    func authenticate(
-        clientNonce: Data,
-        clientSig: Data,
-        clientPublicKey: Data,
-        withReply reply: @escaping (Data?, Data?, Data?, Bool) -> Void
-    )
-
     func processPendingApps(
         approvedPIDs: [Int32],
         rejectedPIDs: [Int32],
