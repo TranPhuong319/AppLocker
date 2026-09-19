@@ -30,27 +30,27 @@ struct AddAppSheet: View {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     let userApps = appState.userUnlockableApps
                     if !userApps.isEmpty {
-                        SectionHeader(title: "Applications")
+                        SectionHeader("Applications")
                         ForEach(userApps, id: \.path) { app in
-                            AddAppButton(
-                                app: app,
+                            AddAppRow(
+                                for: app,
                                 isSelected: appState.selectedToLock.contains(app.path),
                                 onToggle: { toggleSelection(for: app.path) },
-                                unfocus: unfocus
+                                onUnfocus: unfocus
                             )
                         }
                     }
 
                     let systemApps = appState.systemUnlockableApps
                     if !systemApps.isEmpty {
-                        SectionHeader(title: "System Applications")
+                        SectionHeader("System Applications")
                             .padding(.top, 10)
                         ForEach(systemApps, id: \.path) { app in
-                            AddAppButton(
-                                app: app,
+                            AddAppRow(
+                                for: app,
                                 isSelected: appState.selectedToLock.contains(app.path),
                                 onToggle: { toggleSelection(for: app.path) },
-                                unfocus: unfocus
+                                onUnfocus: unfocus
                             )
                         }
                     }

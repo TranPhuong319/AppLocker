@@ -105,50 +105,75 @@ private extension ContentView {
 
     @ViewBuilder
     var mainListView: some View {
+        let apps = appState.filteredLockedApps
+        let userApps = apps.filter { $0.source == .user }
+        let systemApps = apps.filter { $0.source == .system }
+        let missingPaths = Set(appState.confirmedMissingApps.map(\.path))
+
         ScrollView {
             LazyVStack(alignment: .center, spacing: 6) {
-                let apps = appState.filteredLockedApps
-                let userApps = apps.filter { $0.source == .user }
-                let systemApps = apps.filter { $0.source == .system }
-
-                if !userApps.isEmpty {
-                    SectionHeader(title: "Applications")
-                    ForEach(userApps, id: \.path) { app in
-                        LockedAppButton(
-                            app: app,
-                            isDeleting: appState.deleteQueue.contains(app.path),
-                            isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
-                            onDelete: { _ = appState.deleteQueue.insert(app.path) },
-                            unfocus: unfocus
-                        )
-                    }
-                }
-
-                if !systemApps.isEmpty {
-                    SectionHeader(title: "System Applications")
-                    ForEach(systemApps, id: \.path) { app in
-                        LockedAppButton(
-                            app: app,
-                            isDeleting: appState.deleteQueue.contains(app.path),
-                            isMissing: appState.confirmedMissingApps.contains(where: { $0.path == app.path }),
-                            onDelete: { _ = appState.deleteQueue.insert(app.path) },
-                            unfocus: unfocus
-                        )
-                    }
-                }
+                appSection(titled: "Applications", for: userApps, missingPaths: missingPaths)
+                appSection(titled: "System Applications", for: systemApps, missingPaths: missingPaths)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 4)
         }
         .scrollIndicators(.hidden)
         .background(Color.clear.contentShape(Rectangle()).onTapGesture { unfocus() })
-        .clipped()
-        .safeAreaInset(edge: .bottom) {
+        .safeAreaPadding(.bottom, appState.deleteQueue.isEmpty ? 10 : 62)
+        .mask(scrollEdgeDissolveMask)
+        .overlay(alignment: .bottom) {
             if !appState.deleteQueue.isEmpty {
                 deleteQueueNotificationBar
             }
         }
         .animation(.spring(), value: appState.deleteQueue.isEmpty)
+    }
+
+    @ViewBuilder
+    func appSection(
+        titled title: LocalizedStringKey,
+        for apps: [InstalledApp],
+        missingPaths: Set<String>
+    ) -> some View {
+        if !apps.isEmpty {
+            SectionHeader(title)
+            ForEach(apps, id: \.path) { app in
+                LockedAppRow(
+                    for: app,
+                    isDeleting: appState.deleteQueue.contains(app.path),
+                    isMissing: missingPaths.contains(app.path),
+                    onDelete: { _ = appState.deleteQueue.insert(app.path) },
+                    onUnfocus: unfocus
+                )
+            }
+        }
+    }
+
+    var scrollEdgeDissolveMask: some View {
+        VStack(spacing: 0) {
+            LinearGradient(
+                stops: [
+                    .init(color: .black.opacity(0), location: 0),
+                    .init(color: .black, location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 20)
+
+            Rectangle()
+
+            LinearGradient(
+                stops: [
+                    .init(color: .black, location: 0),
+                    .init(color: .black.opacity(0), location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 16)
+        }
     }
 
     @ViewBuilder
@@ -185,6 +210,7 @@ private extension ContentView {
             .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)
         }
         .buttonStyle(.plain)
+        .contentShape(Capsule())
         .padding(.horizontal, 16)
         .padding(.bottom, 12)
         .transition(.asymmetric(

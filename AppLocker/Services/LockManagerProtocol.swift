@@ -23,5 +23,5 @@ protocol LockManagerProtocol: AnyObject {
     func setProtectionDisabled(_ disabled: Bool)
     func setAllowIncomingCalls(_ allowed: Bool)
     func setAutoLockTimeoutMinutes(_ minutes: Int)
-    func isLocked(path: String) -> Bool
+    func isLocked(at path: String) -> Bool
 }

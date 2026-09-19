@@ -9,7 +9,7 @@ import Foundation
 import Security
 
 /// Extract cdhash (Code Directory Hash) of a signed binary/bundle on disk in <1ms without reading full binary data.
-public func extractCDHash(forPath path: String) -> String? {
+public func cdHash(for path: String) -> String? {
     let url = URL(fileURLWithPath: path)
     var staticCode: SecStaticCode?
     guard SecStaticCodeCreateWithPath(url as CFURL, [], &staticCode) == errSecSuccess,

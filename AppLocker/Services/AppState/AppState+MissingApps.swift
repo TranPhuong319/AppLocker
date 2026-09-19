@@ -19,7 +19,7 @@ extension AppState {
     ) -> (isConfirmed: Bool, isPending: Bool) {
         guard !fileExists else {
             if missingAppTimestamps.removeValue(forKey: path) != nil {
-                AppIconProvider.shared.invalidateIcon(forPath: path)
+                AppIconProvider.shared.invalidateIcon(for: path)
             }
             return (false, false)
         }
@@ -38,7 +38,7 @@ extension AppState {
         }
     }
 
-    func hideMissingApps(paths: [String]) {
+    func hideMissingApps(for paths: [String]) {
         self.showingMissingAppsSheet = false
         self.manager.hideApps(for: paths)
         for path in paths {
@@ -47,7 +47,7 @@ extension AppState {
         self.refreshAppLists()
     }
 
-    func deleteMissingApps(paths: [String]) {
+    func deleteMissingApps(for paths: [String]) {
         let confirmation = AlertShow.show(
             title: String(localized: "Remove Missing Applications"),
             message: String(
@@ -83,12 +83,12 @@ extension AppState {
     @objc func hideAllMissingApps() {
         let paths = confirmedMissingApps.map(\.path)
         guard !paths.isEmpty else { return }
-        hideMissingApps(paths: paths)
+        hideMissingApps(for: paths)
     }
 
     @objc func removeAllMissingApps() {
         let paths = confirmedMissingApps.map(\.path)
         guard !paths.isEmpty else { return }
-        deleteMissingApps(paths: paths)
+        deleteMissingApps(for: paths)
     }
 }

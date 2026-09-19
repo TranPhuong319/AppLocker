@@ -24,17 +24,17 @@ struct DeleteQueueSheet: View {
 
                         let userApps = appsInQueue.filter { $0.source == .user }
                         if !userApps.isEmpty {
-                            SectionHeader(title: "Applications")
+                            SectionHeader("Applications")
                             ForEach(userApps, id: \.path) { app in
-                                DeleteAppButton(app: app, appState: appState)
+                                DeleteQueueRow(for: app, appState: appState)
                             }
                         }
 
                         let systemApps = appsInQueue.filter { $0.source == .system }
                         if !systemApps.isEmpty {
-                            SectionHeader(title: "System Applications")
+                            SectionHeader("System Applications")
                             ForEach(systemApps, id: \.path) { app in
-                                DeleteAppButton(app: app, appState: appState)
+                                DeleteQueueRow(for: app, appState: appState)
                             }
                         }
                     }

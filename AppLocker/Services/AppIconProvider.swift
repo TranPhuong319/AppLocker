@@ -19,13 +19,13 @@ final class AppIconProvider {
         cache.totalCostLimit = 5 * 1024 * 1024
     }
 
-    func cachedIcon(forPath path: String, size: CGFloat = 32) -> NSImage? {
+    func cachedIcon(for path: String, size: CGFloat = 32) -> NSImage? {
         let appBundlePath = resolveAppBundlePath(from: path)
         let key = "\(appBundlePath)_\(Int(size))" as NSString
         return cache.object(forKey: key)
     }
 
-    func icon(forPath path: String, size: CGFloat = 32) -> NSImage {
+    func icon(for path: String, size: CGFloat = 32) -> NSImage {
         let appBundlePath = resolveAppBundlePath(from: path)
         let key = "\(appBundlePath)_\(Int(size))" as NSString
 
@@ -57,7 +57,7 @@ final class AppIconProvider {
         return rasterized
     }
 
-    func invalidateIcon(forPath path: String) {
+    func invalidateIcon(for path: String) {
         let appBundlePath = resolveAppBundlePath(from: path)
         for size in [16, 24, 32, 48, 64] {
             cache.removeObject(forKey: "\(appBundlePath)_\(size)" as NSString)

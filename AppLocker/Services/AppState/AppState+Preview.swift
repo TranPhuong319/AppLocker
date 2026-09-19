@@ -65,7 +65,7 @@ class MockLockManager: LockManagerProtocol {
         self.autoLockTimeoutMinutes = minutes
     }
 
-    func isLocked(path: String) -> Bool {
+    func isLocked(at path: String) -> Bool {
         lockedApps[path] != nil
     }
 }
