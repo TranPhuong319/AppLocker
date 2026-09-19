@@ -7,15 +7,27 @@
 
 import SwiftUI
 
-struct AddAppButton: View {
+struct AddAppRow: View {
     let app: InstalledApp
     let isSelected: Bool
     let onToggle: () -> Void
-    let unfocus: () -> Void
+    let onUnfocus: () -> Void
+
+    init(
+        for app: InstalledApp,
+        isSelected: Bool,
+        onToggle: @escaping () -> Void,
+        onUnfocus: @escaping () -> Void
+    ) {
+        self.app = app
+        self.isSelected = isSelected
+        self.onToggle = onToggle
+        self.onUnfocus = onUnfocus
+    }
 
     var body: some View {
         Button {
-            unfocus()
+            onUnfocus()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 onToggle()
             }
@@ -44,9 +56,14 @@ struct AddAppButton: View {
     }
 }
 
-struct DeleteAppButton: View {
+struct DeleteQueueRow: View {
     let app: InstalledApp
     var appState: AppState
+
+    init(for app: InstalledApp, appState: AppState) {
+        self.app = app
+        self.appState = appState
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -69,12 +86,26 @@ struct DeleteAppButton: View {
     }
 }
 
-struct LockedAppButton: View {
+struct LockedAppRow: View {
     let app: InstalledApp
     let isDeleting: Bool
     var isMissing: Bool = false
     let onDelete: () -> Void
-    let unfocus: () -> Void
+    let onUnfocus: () -> Void
+
+    init(
+        for app: InstalledApp,
+        isDeleting: Bool,
+        isMissing: Bool = false,
+        onDelete: @escaping () -> Void,
+        onUnfocus: @escaping () -> Void
+    ) {
+        self.app = app
+        self.isDeleting = isDeleting
+        self.isMissing = isMissing
+        self.onDelete = onDelete
+        self.onUnfocus = onUnfocus
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -113,13 +144,17 @@ struct LockedAppButton: View {
         .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
-        .onTapGesture { unfocus() }
+        .onTapGesture { onUnfocus() }
         .opacity(isDeleting ? 0.3 : (isMissing ? 0.6 : 1.0))
     }
 }
 
 struct MissingAppRow: View {
     let app: InstalledApp
+
+    init(for app: InstalledApp) {
+        self.app = app
+    }
 
     var body: some View {
         HStack(spacing: 12) {

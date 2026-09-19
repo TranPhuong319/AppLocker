@@ -81,7 +81,7 @@ extension ESManager {
             bundlePaths.insert(path2)
             bundlePaths.insert(realPath)
 
-            let resolvedCDHash = app.cdhash ?? extractCDHash(forPath: path1)
+            let resolvedCDHash = app.cdhash ?? cdHash(for: path1)
             if let hash = resolvedCDHash, !hash.isEmpty {
                 cdhashes.insert(hash.lowercased())
             }

@@ -112,7 +112,7 @@ class LockES: LockManagerProtocol {
 
                 let appName = FileManager.default.displayName(atPath: path)
                     .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-                let cdhash = extractCDHash(forPath: execPath) ?? extractCDHash(forPath: path)
+                let cdhash = cdHash(for: execPath) ?? cdHash(for: path)
                 let bundleID = bundle.bundleIdentifier ?? ""
 
                 let lockedAppConfig = LockedAppConfig(
@@ -165,7 +165,7 @@ class LockES: LockManagerProtocol {
         }
     }
 
-    func isLocked(path: String) -> Bool {
+    func isLocked(at path: String) -> Bool {
         if isProtectionDisabled { return false }
         return lockedApps[path] != nil
     }

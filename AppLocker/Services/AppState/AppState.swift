@@ -158,7 +158,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             if isHidden && fileExists {
                 appsToUnhide.append(path)
                 isHidden = false
-                AppIconProvider.shared.invalidateIcon(forPath: path)
+                AppIconProvider.shared.invalidateIcon(for: path)
             }
 
             let (isConfirmed, isPending) = self.checkMissingStatus(
@@ -262,7 +262,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     private func prefetchUnlockableIcons(apps: [InstalledApp]) {
         Task(priority: .low) {
             for app in apps.prefix(60) {
-                _ = AppIconProvider.shared.icon(forPath: app.path, size: 32)
+                _ = AppIconProvider.shared.icon(for: app.path, size: 32)
             }
         }
     }

@@ -23,7 +23,7 @@ struct MissingAppsSheet: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach(appState.confirmedMissingApps, id: \.path) { app in
-                            MissingAppRow(app: app)
+                            MissingAppRow(for: app)
                         }
                     }
                     .padding(.horizontal)
@@ -102,7 +102,7 @@ struct MissingAppsSheet: View {
 
             Button(
                 action: {
-                    appState.hideMissingApps(paths: missingPaths)
+                    appState.hideMissingApps(for: missingPaths)
                 },
                 label: {
                     Text(String(localized: "Hide"))
@@ -123,7 +123,7 @@ struct MissingAppsSheet: View {
 
             Button(
                 action: {
-                    appState.deleteMissingApps(paths: missingPaths)
+                    appState.deleteMissingApps(for: missingPaths)
                 },
                 label: {
                     Text(String(localized: "Remove"))

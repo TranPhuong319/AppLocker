@@ -171,7 +171,7 @@ struct BatchAuthView: View {
     }
 
     private func appIcon(for path: String) -> NSImage? {
-        return AppIconProvider.shared.icon(forPath: path, size: 40)
+        return AppIconProvider.shared.icon(for: path, size: 40)
     }
 }
 
