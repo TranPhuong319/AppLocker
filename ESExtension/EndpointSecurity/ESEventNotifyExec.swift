@@ -15,26 +15,19 @@ extension ESManager {
     func handleNotifyExec(client: OpaquePointer, message: ESMessage) {
         let messagePtr = message.pointee
         let targetPid = audit_token_to_pid(messagePtr.event.exec.target.pointee.audit_token)
-
-        guard targetPid > 0 else {
+        guard targetPid > 0,
+              let path = safePath(fromFilePointer: messagePtr.event.exec.target.pointee.executable) else {
             return
         }
 
-        guard let path = safePath(
-            fromFilePointer: messagePtr.event.exec.target.pointee.executable
-        ) else {
+        let token = messagePtr.event.exec.target.pointee.audit_token
+        let signingID = string(from: messagePtr.event.exec.target.pointee.signing_id) ?? "Unsigned/Unknown"
+        if isAppLockerSelfExecution(signingID: signingID, token: token, pid: targetPid) {
             return
         }
 
         let parentPid = messagePtr.process.pointee.ppid
-        let uid = audit_token_to_euid(messagePtr.event.exec.target.pointee.audit_token)
-
-        var signingID = "Unsigned/Unknown"
-        let signingToken = messagePtr.event.exec.target.pointee.signing_id
-        if let idStr = string(from: signingToken) {
-            signingID = idStr
-        }
-
+        let uid = audit_token_to_euid(token)
         var targetProcess = messagePtr.event.exec.target.pointee
         let cdhashData = Data(bytes: &targetProcess.cdhash, count: 20)
         let cdhashHex = cdhashData.map { String(format: "%02x", $0) }.joined()
@@ -65,12 +58,21 @@ extension ESManager {
             signingID: signingID,
             targetPid: targetPid
         )
+        suspendAndNotifyBlockedProcess(notification: notification, targetPid: targetPid, token: token)
+    }
 
-        suspendAndNotifyBlockedProcess(
-            notification: notification,
-            targetPid: targetPid,
-            token: messagePtr.event.exec.target.pointee.audit_token
-        )
+    private func isAppLockerSelfExecution(signingID: String, token: audit_token_t, pid: pid_t) -> Bool {
+        guard signingID == "com.TranPhuong319.AppLocker" else { return false }
+        if CodeSignatureValidator.validate(auditToken: token, requirement: CodeSignatureValidator.mainAppRequirement) {
+            Logfile.endpointSecurity.notice(
+                """
+                [NotifyExec] AppLocker self-execution allowed, bypassing lock policy \
+                (PID \(pid, privacy: .public))
+                """
+            )
+            return true
+        }
+        return false
     }
 
     private func logOriginTrace(name: String, message: ESMessage) {
