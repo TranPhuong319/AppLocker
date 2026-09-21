@@ -67,8 +67,37 @@ final class ConfigStore: Sendable {
         let autoLockTimeout = config.autoLockTimeoutMinutes
             ?? UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
 
-        // Persist timeout on first load if missing from saved config
-        if config.autoLockTimeoutMinutes == nil {
+        let myBundleID = Bundle.main.bundleIdentifier ?? "com.TranPhuong319.AppLocker"
+        let myPath = Bundle.main.bundlePath
+        let myRealPath = URL(fileURLWithPath: myPath).resolvingSymlinksInPath().path
+        let myCDHash = cdHash(for: myPath)
+
+        var needsSave = config.autoLockTimeoutMinutes == nil
+        let containsSelf = apps.values.contains {
+            isSelfApp(
+                $0,
+                currentBundleID: myBundleID,
+                currentPath: myPath,
+                currentRealPath: myRealPath,
+                currentCDHash: myCDHash
+            )
+        }
+
+        if containsSelf {
+            apps = apps.filter {
+                !isSelfApp(
+                    $0.value,
+                    currentBundleID: myBundleID,
+                    currentPath: myPath,
+                    currentRealPath: myRealPath,
+                    currentCDHash: myCDHash
+                )
+            }
+            needsSave = true
+            Logfile.policy.notice("[ConfigStore] Self-healing: Removed AppLocker from locked config")
+        }
+
+        if needsSave {
             save(
                 apps: apps,
                 isDisabled: config.isDisabled,
@@ -83,6 +112,32 @@ final class ConfigStore: Sendable {
             allowIncomingCalls: config.allowIncomingCalls ?? true,
             autoLockTimeoutMinutes: autoLockTimeout
         )
+    }
+
+    private func isSelfApp(
+        _ config: LockedAppConfig,
+        currentBundleID: String,
+        currentPath: String,
+        currentRealPath: String,
+        currentCDHash: String?
+    ) -> Bool {
+        if !config.bundleID.isEmpty, config.bundleID == currentBundleID {
+            return true
+        }
+
+        let targetPath = config.path
+        let targetRealPath = URL(fileURLWithPath: targetPath).resolvingSymlinksInPath().path
+        if targetPath == currentPath || targetRealPath == currentRealPath {
+            return true
+        }
+
+        if let configCDHash = config.cdhash?.lowercased(), !configCDHash.isEmpty,
+           let myCDHash = currentCDHash?.lowercased(),
+           configCDHash == myCDHash {
+            return true
+        }
+
+        return false
     }
 
     func save(
