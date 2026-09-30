@@ -24,6 +24,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         config.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         config.size = WindowLayout.settingsSize
         config.minSize = WindowLayout.settingsSize
+        config.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: WindowLayout.settingsSize.height)
         config.autosaveName = "SettingsWindow"
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)

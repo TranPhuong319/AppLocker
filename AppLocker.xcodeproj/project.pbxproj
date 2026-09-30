@@ -62,6 +62,10 @@
 		E0FD761C2F59E36600D46B93 /* SecuritySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B93 /* SecuritySettingsTab.swift */; };
 		E0FD761C2F59E36600D46B94 /* UpdatesSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */; };
 		E0FD761C2F59E36600D46B95 /* AppearanceSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */; };
+		E0FD761C2F59E36600D46B96 /* LogsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */; };
+		E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */; };
+		E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LogStore.swift */; };
+		E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */; };
 		E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */; };
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
@@ -185,6 +189,10 @@
 		E0FD75B62F59E36600D46B93 /* SecuritySettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecuritySettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatesSettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsTab.swift; sourceTree = "<group>"; };
+		E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsSettingsTab.swift; sourceTree = "<group>"; };
+		E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntryRow.swift; sourceTree = "<group>"; };
+		E0FD75E32F59E36600D46B31 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
+		E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilterModels.swift; sourceTree = "<group>"; };
 		E0FD75B82F59E36600D46B31 /* MissingAppsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingAppsSheet.swift; sourceTree = "<group>"; };
 		E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayout.swift; sourceTree = "<group>"; };
@@ -471,6 +479,8 @@
 				E0FD75B62F59E36600D46B93 /* SecuritySettingsTab.swift */,
 				E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */,
 				E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */,
+				E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */,
+				E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -578,6 +588,8 @@
 				E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */,
 				E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */,
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
+				E0FD75E32F59E36600D46B31 /* LogStore.swift */,
+				E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */,
 				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
 			);
 			path = Services;
@@ -957,6 +969,10 @@
 				E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */,
 				E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */,
 				E0FD76012F59E36600D46B31 /* LockES.swift in Sources */,
+				E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */,
+				E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */,
+				E0FD761C2F59E36600D46B96 /* LogsSettingsTab.swift in Sources */,
+				E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */,
 				E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */,
 				E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */,
 				E0FD76042F59E36600D46B31 /* MainUIButtons.swift in Sources */,
