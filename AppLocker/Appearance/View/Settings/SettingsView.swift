@@ -139,7 +139,12 @@ struct SettingsView: View {
                 }
         }
         .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 640, minHeight: 440)
+        .frame(
+            minWidth: WindowLayout.settingsSize.width,
+            maxWidth: .infinity,
+            minHeight: WindowLayout.settingsSize.height,
+            maxHeight: WindowLayout.settingsSize.height
+        )
         .onChange(of: navigator.selectedTab) { _, newTab in
             handleTabChange(to: newTab)
         }
@@ -195,6 +200,8 @@ struct SettingsView: View {
             UpdatesSettingsTab(isMock: isMock)
         case .appearance:
             AppearanceSettingsTab(isMock: isMock)
+        case .logs:
+            LogsSettingsTab(isMock: isMock)
         }
     }
 }

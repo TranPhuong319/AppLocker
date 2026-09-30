@@ -38,6 +38,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case security = "Security"
     case updates = "Updates"
     case appearance = "Appearance"
+    case logs = "Logs"
 
     var id: String { self.rawValue }
 
@@ -47,6 +48,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .security: return "Security"
         case .updates: return "Updates"
         case .appearance: return "Appearance"
+        case .logs: return "Logs"
         }
     }
 
@@ -56,6 +58,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .security: return "lock.shield"
         case .updates: return "arrow.triangle.2.circlepath"
         case .appearance: return "paintpalette"
+        case .logs: return "list.bullet.clipboard"
         }
     }
 }
