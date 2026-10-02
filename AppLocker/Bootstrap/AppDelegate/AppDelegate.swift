@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     static let plistName = "com.TranPhuong319.AppLocker.agent"
 
     var statusItem: NSStatusItem?
+    var statusImageView: NSImageView?
     var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {

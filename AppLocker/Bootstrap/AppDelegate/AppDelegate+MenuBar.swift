@@ -6,6 +6,11 @@
 //
 
 import AppKit
+import Symbols
+
+private final class MenuBarImageView: NSImageView {
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+}
 
 @MainActor
 extension AppDelegate: NSMenuDelegate {
@@ -14,16 +19,63 @@ extension AppDelegate: NSMenuDelegate {
             statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         }
 
-        if let button = statusItem?.button {
-            let image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "AppLocker")
-            image?.isTemplate = true
-            button.image = image
+        if let button = statusItem?.button, statusImageView == nil {
+            let imageView = MenuBarImageView(frame: button.bounds)
+            imageView.autoresizingMask = [.width, .height]
+            imageView.imageScaling = .scaleProportionallyDown
+            imageView.imageAlignment = .alignCenter
+            button.addSubview(imageView)
+            statusImageView = imageView
         }
+
+        updateMenuBarIcon()
 
         let menu = NSMenu()
         menu.appearance = NSApp.appearance
         menu.delegate = self
         statusItem?.menu = menu
+
+        NotificationCenter.default.addObserver(
+            forName: .appLockerPendingUpdateDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.updateMenuBarIcon()
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: .protectionStatusDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.updateMenuBarIcon()
+            }
+        }
+    }
+
+    func updateMenuBarIcon() {
+        let symbolName: String
+        if !ExtensionInstaller.shared.isInstalled {
+            symbolName = "lock.trianglebadge.exclamationmark.fill"
+        } else if AppState.shared.manager.isProtectionDisabled {
+            symbolName = "lock.open.fill"
+        } else {
+            symbolName = "lock.fill"
+        }
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "AppLocker")
+        image?.isTemplate = true
+        if let statusImageView {
+            statusImageView.image = image
+        } else if let button = statusItem?.button {
+            button.image = image
+        }
+    }
+
+    func bounceMenuBarIcon() {
+        statusImageView?.addSymbolEffect(BounceSymbolEffect.bounce)
     }
 
     func setupEditMenu() {
@@ -96,16 +148,35 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func addHeaderMenuItems(to menu: NSMenu) {
+        updateMenuBarIcon()
+
         let infoItem = NSMenuItem.sectionHeader(
             title: "AppLocker v\(Bundle.main.fullVersion)"
         )
         menu.addItem(infoItem)
+
+        if AppUpdater.shared.hasAvailableUpdate, let ver = AppUpdater.shared.availableUpdateVersion {
+            let updateNoticeItem = NSMenuItem(
+                title: String(format: String(localized: "Version %@ available"), ver),
+                action: #selector(checkForUpdates),
+                keyEquivalent: ""
+            )
+            updateNoticeItem.image = NSImage(
+                systemSymbolName: "arrow.down.circle.fill",
+                accessibilityDescription: "Update Available"
+            )
+            menu.addItem(updateNoticeItem)
+        }
 
         if !ExtensionInstaller.shared.isInstalled {
             let statusItem = NSMenuItem(
                 title: String(localized: "System Extension Inactive"),
                 action: #selector(openSystemSettingsForExtension),
                 keyEquivalent: ""
+            )
+            statusItem.image = NSImage(
+                systemSymbolName: "exclamationmark.triangle.fill",
+                accessibilityDescription: nil
             )
             menu.addItem(statusItem)
         }
@@ -183,4 +254,8 @@ extension AppDelegate: NSMenuDelegate {
         ))
         #endif
     }
+}
+
+extension Notification.Name {
+    static let protectionStatusDidChange = Notification.Name("protectionStatusDidChange")
 }

@@ -15,7 +15,19 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     static let shared = ExtensionInstaller()
     private override init() {}
 
-    private(set) var isInstalled: Bool = false
+    private(set) var isInstalled: Bool = {
+        if let stored = UserDefaults.standard.object(forKey: "isExtensionInstalled") as? Bool {
+            return stored
+        }
+        let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
+        return !isFirstStart
+    }() {
+        didSet {
+            guard oldValue != isInstalled else { return }
+            UserDefaults.standard.set(isInstalled, forKey: "isExtensionInstalled")
+            NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
+        }
+    }
 
     private enum Action {
         case install(completion: ((Result<Void, Error>) -> Void)?)

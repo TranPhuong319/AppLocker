@@ -47,9 +47,17 @@ struct SecuritySettingsTab: View {
     private var lockedStateView: some View {
         VStack(spacing: 14) {
             Spacer()
-            Image(systemName: "lock.fill")
-                .font(.system(size: 44, weight: .regular))
-                .foregroundStyle(.secondary)
+            if #available(macOS 15.0, *) {
+                Image(systemName: isUnlocked ? "lock.open.fill" : "lock.fill")
+                    .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
+                    .font(.system(size: 44, weight: .regular))
+                    .foregroundStyle(.secondary)
+            } else {
+                Image(systemName: isUnlocked ? "lock.open.fill" : "lock.fill")
+                    .contentTransition(.symbolEffect(.replace.downUp.byLayer))
+                    .font(.system(size: 44, weight: .regular))
+                    .foregroundStyle(.secondary)
+            }
 
             Text("Unlock to view security settings")
                 .font(.body)

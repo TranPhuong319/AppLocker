@@ -86,6 +86,8 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
     }
 
     func sendBlockedNotification(appName: String) {
+        bounceMenuBarIcon()
+
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Application Lock")
         content.body = String(format: String(localized: "%@ has been blocked from launching."), appName)

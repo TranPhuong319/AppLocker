@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import Observation
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Log Entry
 
@@ -46,6 +47,14 @@ struct AppLogEntry: Identifiable, Sendable {
         let tag = "[\(subsystemShort)/\(category)] \(levelFilter.rawValue.uppercased())"
         return "\(time) \(tag): \(message)"
     }
+}
+
+// MARK: - Grouped Log Entry
+
+struct GroupedLogEntry: Identifiable, Sendable {
+    var id: UUID { entry.id }
+    let entry: AppLogEntry
+    let count: Int
 }
 
 // MARK: - Log Store
@@ -119,6 +128,34 @@ final class LogStore {
             """
         let lines = filteredEntries.map { $0.formatted(dateFormatter: dateFormatter) }
         return ([header] + lines).joined(separator: "\n")
+    }
+
+    func groupedEntries(within windowSeconds: TimeInterval = 1.0) -> [GroupedLogEntry] {
+        guard !filteredEntries.isEmpty else { return [] }
+        var result: [GroupedLogEntry] = []
+        var current = filteredEntries[0]
+        var count = 1
+        var lastDate = current.date
+
+        for entry in filteredEntries.dropFirst() {
+            let isSame = entry.subsystem == current.subsystem
+                && entry.category == current.category
+                && entry.level == current.level
+                && entry.message == current.message
+            let isWithinWindow = abs(entry.date.timeIntervalSince(lastDate)) <= windowSeconds
+
+            if isSame && isWithinWindow {
+                count += 1
+                lastDate = entry.date
+            } else {
+                result.append(GroupedLogEntry(entry: current, count: count))
+                current = entry
+                count = 1
+                lastDate = entry.date
+            }
+        }
+        result.append(GroupedLogEntry(entry: current, count: count))
+        return result
     }
 
     func fetchLatest() async {
@@ -210,5 +247,25 @@ final class LogStore {
 
         guard !Task.isCancelled else { return }
         self.filteredEntries = results
+    }
+}
+
+// MARK: - Export Document
+
+struct LogTextDocument: FileDocument {
+    static let logContentType = UTType(filenameExtension: "log", conformingTo: .plainText) ?? .plainText
+    static let readableContentTypes: [UTType] = [logContentType, .plainText]
+    let text: String
+
+    init(text: String) {
+        self.text = text
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        text = ""
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: Data(text.utf8))
     }
 }

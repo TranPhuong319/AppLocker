@@ -14,15 +14,25 @@ import UniformTypeIdentifiers
 struct LogsSettingsTab: View {
     let isMock: Bool
 
+    @AppStorage("collapseRepeatingLogs") private var collapseRepeatingLogs: Bool = true
     @State private var logStore = LogStore()
     @State private var isExporting: Bool = false
+    @State private var isExportSuccess: Bool = false
+    @State private var resetExportTask: Task<Void, Never>?
     @State private var isAtBottom: Bool = true
+    @State private var refreshTrigger: Int = 0
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter
     }()
+
+    private var displayEntries: [GroupedLogEntry] {
+        collapseRepeatingLogs
+            ? logStore.groupedEntries()
+            : logStore.filteredEntries.map { GroupedLogEntry(entry: $0, count: 1) }
+    }
 
     init(isMock: Bool = false) {
         self.isMock = isMock
@@ -34,56 +44,85 @@ struct LogsSettingsTab: View {
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Picker("Time Range", selection: $logStore.selectedTimeRange) {
-                        ForEach(LogTimeRange.allCases) { range in
-                            Text(range.displayName).tag(range)
-                        }
+                        ForEach(LogTimeRange.allCases) { Text($0.displayName).tag($0) }
                     }
                     .pickerStyle(.menu)
-
                     Picker("Process", selection: $logStore.selectedSubsystem) {
-                        ForEach(LogSubsystemFilter.allCases) { sub in
-                            Text(sub.displayName).tag(sub)
-                        }
+                        ForEach(LogSubsystemFilter.allCases) { Text($0.displayName).tag($0) }
                     }
                     .pickerStyle(.menu)
-
                     Picker("Level", selection: $logStore.selectedLevel) {
-                        ForEach(LogLevelFilter.allCases) { level in
-                            Text(level.displayName).tag(level)
-                        }
+                        ForEach(LogLevelFilter.allCases) { Text($0.displayName).tag($0) }
                     }
                     .pickerStyle(.menu)
 
                     Button(action: {
+                        withAnimation(.snappy(duration: 0.25)) { collapseRepeatingLogs.toggle() }
+                    }, label: {
+                        Label {
+                            Text("Group Repeating Logs")
+                        } icon: {
+                            Image(systemName: collapseRepeatingLogs ? "square.stack.3d.up.fill" : "square.stack.3d.up")
+                                .foregroundStyle(
+                                    collapseRepeatingLogs ? AnyShapeStyle(.tint) : AnyShapeStyle(.foreground)
+                                )
+                        }
+                    })
+                    .help(
+                        collapseRepeatingLogs ? Text("Group repeating logs (On)") : Text("Group repeating logs (Off)")
+                    )
+
+                    Button(action: {
+                        refreshTrigger += 1
                         guard !isMock else { return }
                         logStore.reload()
                     }, label: {
-                        Label("Refresh", systemImage: "arrow.clockwise")
+                        Label {
+                            Text("Refresh")
+                        } icon: {
+                            if #available(macOS 15.0, *) {
+                                Image(systemName: "arrow.clockwise")
+                                    .symbolEffect(.rotate.byLayer, value: refreshTrigger)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                                    .symbolEffect(.bounce.byLayer, value: refreshTrigger)
+                            }
+                        }
                     })
                     .help("Refresh logs")
 
-                    Button(action: {
-                        logStore.clearLogs()
-                    }, label: {
+                    Button(action: { logStore.clearLogs() }, label: {
                         Label("Clear", systemImage: "trash")
                     })
                     .disabled(logStore.entries.isEmpty)
                     .help("Clear current logs")
 
                     Button(action: { isExporting = true }, label: {
-                        Label("Export", systemImage: "square.and.arrow.up")
+                        Label {
+                            Text("Export")
+                        } icon: {
+                            exportIcon
+                        }
                     })
                     .disabled(logStore.filteredEntries.isEmpty)
-                    .help("Export visible logs to a .log file")
+                    .help(
+                        isExportSuccess
+                            ? Text("Logs exported successfully")
+                            : Text("Export visible logs to a .log file")
+                    )
                 }
             }
             .task {
                 guard !isMock else { return }
                 logStore.reload()
+                var idleRounds = 0
                 while !Task.isCancelled {
-                    try? await Task.sleep(for: .milliseconds(800))
+                    let delay = idleRounds > 2 ? 3000 : 1500
+                    try? await Task.sleep(for: .milliseconds(delay))
                     guard !Task.isCancelled else { break }
+                    let before = logStore.filteredEntries.count
                     await logStore.fetchLatest()
+                    idleRounds = (logStore.filteredEntries.count == before) ? (idleRounds + 1) : 0
                 }
             }
             .fileExporter(
@@ -91,7 +130,11 @@ struct LogsSettingsTab: View {
                 document: LogTextDocument(text: logStore.exportText(dateFormatter: dateFormatter)),
                 contentType: LogTextDocument.logContentType,
                 defaultFilename: exportFilename
-            ) { _ in }
+            ) { result in
+                if case .success = result {
+                    handleExportSuccess()
+                }
+            }
     }
 
     // MARK: - Log List Content
@@ -113,10 +156,11 @@ struct LogsSettingsTab: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ForEach(logStore.filteredEntries) { entry in
-                        LogEntryRow(entry: entry, dateFormatter: dateFormatter)
+                    ForEach(displayEntries) { item in
+                        LogEntryRow(entry: item.entry, repeatCount: item.count, dateFormatter: dateFormatter)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 3)
+                            .transition(.opacity)
                         Divider().padding(.leading, 20)
                     }
                 }
@@ -127,7 +171,7 @@ struct LogsSettingsTab: View {
             }
             .contentMargins(.trailing, 16, for: .scrollContent)
             .contentMargins(.top, 8, for: .scrollContent)
-            .onChange(of: logStore.filteredEntries.count) { _, _ in
+            .onChange(of: displayEntries.count) { _, _ in
                 guard isAtBottom else { return }
                 proxy.scrollTo("log_bottom", anchor: .bottom)
             }
@@ -137,9 +181,7 @@ struct LogsSettingsTab: View {
             }
             .safeAreaInset(edge: .bottom) {
                 HStack {
-                    Text("\(logStore.filteredEntries.count) entries")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    statusText
                     Spacer()
                     if !isAtBottom {
                         Button(action: {
@@ -159,7 +201,65 @@ struct LogsSettingsTab: View {
         }
     }
 
-    private var loadingPlaceholder: some View {
+    @ViewBuilder
+    private var statusText: some View {
+        let count = collapseRepeatingLogs ? displayEntries.count : logStore.filteredEntries.count
+        let total = logStore.filteredEntries.count
+        Text(collapseRepeatingLogs && count < total ? "\(count) events (\(total) total)" : "\(total) entries")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .contentTransition(.numericText(value: Double(count)))
+            .animation(.snappy(duration: 0.25), value: count)
+    }
+
+    @ViewBuilder
+    private var exportIcon: some View {
+        let image = Image(systemName: isExportSuccess ? "checkmark.circle" : "square.and.arrow.up")
+        if #available(macOS 15.0, *) {
+            exportIconView(image, effect: .replace.magic(fallback: .downUp.byLayer))
+        } else {
+            exportIconView(image, effect: .replace.downUp.byLayer)
+        }
+    }
+
+    private func handleExportSuccess() {
+        resetExportTask?.cancel()
+        resetExportTask = Task { @MainActor in
+            isExportSuccess = true
+            try? await Task.sleep(for: .milliseconds(1800))
+            guard !Task.isCancelled else { return }
+            isExportSuccess = false
+        }
+    }
+}
+
+// MARK: - Helpers & Placeholders
+
+private extension LogsSettingsTab {
+    var exportIconStyle: AnyShapeStyle {
+        if isExportSuccess {
+            return AnyShapeStyle(Color.green)
+        }
+        let color = logStore.filteredEntries.isEmpty
+            ? Color(nsColor: .disabledControlTextColor)
+            : Color(nsColor: .controlTextColor)
+        return AnyShapeStyle(color)
+    }
+
+    func exportIconView(_ image: Image, effect: some ContentTransitionSymbolEffect & SymbolEffect) -> some View {
+        image
+            .contentTransition(.symbolEffect(effect, options: .nonRepeating.speed(1.3)))
+            .foregroundStyle(exportIconStyle)
+    }
+
+    var exportFilename: String {
+        let stamp = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
+            .replacingOccurrences(of: "/", with: "-")
+        return "AppLocker-Logs-\(stamp)"
+    }
+
+    var loadingPlaceholder: some View {
         VStack(spacing: 12) {
             ProgressView()
             Text("Loading logs…")
@@ -169,103 +269,23 @@ struct LogsSettingsTab: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func errorPlaceholder(_ message: String) -> some View {
+    func errorPlaceholder(_ message: String) -> some View {
         VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.title2)
-                .foregroundStyle(.orange)
-            Text("Could not load logs")
-                .fontWeight(.medium)
-            Text(message)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            Image(systemName: "exclamationmark.triangle").font(.title2).foregroundStyle(.orange)
+            Text("Could not load logs").fontWeight(.medium)
+            Text(message).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var emptyPlaceholder: some View {
+    var emptyPlaceholder: some View {
         VStack(spacing: 10) {
-            Image(systemName: "text.page.slash")
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("No log entries found")
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
-            Text("Try adjusting the time range or filters.")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            Image(systemName: "text.page.slash").font(.title2).foregroundStyle(.secondary)
+            Text("No log entries found").fontWeight(.medium).foregroundStyle(.secondary)
+            Text("Try adjusting the time range or filters.").font(.caption).foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var exportFilename: String {
-        let stamp = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
-            .replacingOccurrences(of: "/", with: "-")
-        return "AppLocker-Logs-\(stamp)"
-    }
-}
-
-// MARK: - Export Document
-
-struct LogTextDocument: FileDocument {
-    static let logContentType = UTType(filenameExtension: "log", conformingTo: .plainText) ?? .plainText
-    static let readableContentTypes: [UTType] = [logContentType, .plainText]
-    let text: String
-
-    init(text: String) {
-        self.text = text
-    }
-
-    init(configuration: ReadConfiguration) throws {
-        text = ""
-    }
-
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        FileWrapper(regularFileWithContents: Data(text.utf8))
-    }
-}
-
-// MARK: - Scroll Bottom Tracker
-
-private struct ScrollBottomTracker: NSViewRepresentable {
-    var onAtBottomChanged: @Sendable (Bool) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            guard let scrollView = view.enclosingScrollView else { return }
-            context.coordinator.attach(to: scrollView, notify: onAtBottomChanged)
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    @MainActor
-    final class Coordinator: NSObject {
-        nonisolated(unsafe) private var token: NSObjectProtocol?
-
-        func attach(to scrollView: NSScrollView, notify: @escaping @Sendable (Bool) -> Void) {
-            token = NotificationCenter.default.addObserver(
-                forName: NSScrollView.didLiveScrollNotification,
-                object: scrollView,
-                queue: .main
-            ) { [weak scrollView] _ in
-                MainActor.assumeIsolated {
-                    guard let scrollView else { return }
-                    let docHeight = scrollView.documentView?.frame.height ?? 0
-                    let visibleMaxY = scrollView.contentView.bounds.maxY
-                    notify(visibleMaxY >= docHeight - 40)
-                }
-            }
-        }
-
-        deinit {
-            if let token { NotificationCenter.default.removeObserver(token) }
-        }
     }
 }
 

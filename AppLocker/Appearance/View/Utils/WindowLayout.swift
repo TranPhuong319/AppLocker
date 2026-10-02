@@ -23,7 +23,13 @@ enum WindowLayout {
     static let batchAuthSize = NSSize(width: 440, height: 360)
     static let batchAuthMaxListHeight: CGFloat = 220
     static let aboutSize = NSSize(width: 450, height: 248)
-    static let settingsSize = NSSize(width: 640, height: 440)
+    static let settingsMinSize = NSSize(width: 640, height: 440)
+    static let settingsGeneralSize = NSSize(width: 640, height: 440)
+    static let settingsSecuritySize = NSSize(width: 640, height: 440)
+    static let settingsUpdatesSize = NSSize(width: 640, height: 440)
+    static let settingsAppearanceSize = NSSize(width: 640, height: 440)
+    static let settingsLogsSize = NSSize(width: 1075, height: 580)
+    static let settingsSize = settingsMinSize
 }
 
 // MARK: - Liquid Glass Visual Effects & Modifiers
@@ -207,5 +213,47 @@ struct EqualWidthKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
+    }
+}
+
+// MARK: - Scroll Bottom Tracker
+
+struct ScrollBottomTracker: NSViewRepresentable {
+    var onAtBottomChanged: @Sendable (Bool) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            guard let scrollView = view.enclosingScrollView else { return }
+            context.coordinator.attach(to: scrollView, notify: onAtBottomChanged)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    @MainActor
+    final class Coordinator: NSObject {
+        nonisolated(unsafe) private var token: NSObjectProtocol?
+
+        func attach(to scrollView: NSScrollView, notify: @escaping @Sendable (Bool) -> Void) {
+            token = NotificationCenter.default.addObserver(
+                forName: NSScrollView.didLiveScrollNotification,
+                object: scrollView,
+                queue: .main
+            ) { [weak scrollView] _ in
+                MainActor.assumeIsolated {
+                    guard let scrollView else { return }
+                    let docHeight = scrollView.documentView?.frame.height ?? 0
+                    let visibleMaxY = scrollView.contentView.bounds.maxY
+                    notify(visibleMaxY >= docHeight - 40)
+                }
+            }
+        }
+
+        deinit {
+            if let token { NotificationCenter.default.removeObserver(token) }
+        }
     }
 }

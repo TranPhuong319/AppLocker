@@ -46,6 +46,7 @@ Project rules and architecture guidelines are organized into domain-specific mod
    - Liquid Glass variants: `regular` for text/sidebars; `clear` for media + 35% dimming layer.
    - Semantic system colors (zero hardcoded hex/RGB), WCAG 4.5:1 contrast, concentric curvature ($r_{\text{in}} = r_{\text{out}} - p$).
    - Mandatory icon `.accessibilityLabel`, destructive action confirmation safeguards.
+   - Apple Delight micro-effects: "Delight by Default" mandate (chủ động thêm subtle effects ở bất kỳ nơi nào có thể); magic symbol replacements, directional numeric transitions (`.numericText(value:)`), discrete action feedback (bounce/rotate/pulse).
 
 7. **[macOS Window Architecture & Platform Integrity](rules/ui-window-architecture.md)**:
    - 100% transparent AppKit window skeleton & SwiftUI UI ownership (no opaque backgrounds, no CALayer hacks).

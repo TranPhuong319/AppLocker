@@ -12,7 +12,14 @@ import SwiftUI
 @Observable
 @MainActor
 final class SettingsNavigator {
-    var selectedTab: SettingsTab
+    var selectedTab: SettingsTab {
+        didSet {
+            guard selectedTab != oldValue else { return }
+            onTabChanged?(selectedTab, oldValue)
+        }
+    }
+
+    var onTabChanged: ((SettingsTab, SettingsTab) -> Void)?
 
     init(selectedTab: SettingsTab = .general) {
         self.selectedTab = selectedTab
@@ -102,9 +109,7 @@ struct SettingsView: View {
                     if tab == .security {
                         Spacer()
                         Button(action: toggleSecurityLock) {
-                            Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
+                            securityLockIcon
                         }
                         .buttonStyle(.plain)
                         .help(isSecurityUnlocked ? "Lock security settings" : "Unlock security settings")
@@ -140,10 +145,10 @@ struct SettingsView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .frame(
-            minWidth: WindowLayout.settingsSize.width,
+            minWidth: WindowLayout.settingsMinSize.width,
             maxWidth: .infinity,
-            minHeight: WindowLayout.settingsSize.height,
-            maxHeight: WindowLayout.settingsSize.height
+            minHeight: WindowLayout.settingsMinSize.height,
+            maxHeight: .infinity
         )
         .onChange(of: navigator.selectedTab) { _, newTab in
             handleTabChange(to: newTab)
@@ -187,6 +192,21 @@ struct SettingsView: View {
         isNavigatingHistory = true
         historyIndex += 1
         navigator.selectedTab = navigationHistory[historyIndex]
+    }
+
+    @ViewBuilder
+    private var securityLockIcon: some View {
+        if #available(macOS 15.0, *) {
+            Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
+                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
+        } else {
+            Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
+                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
+        }
     }
 
     @ViewBuilder
