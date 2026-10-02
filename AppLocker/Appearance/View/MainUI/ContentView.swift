@@ -187,13 +187,14 @@ private extension ContentView {
                     Image(systemName: "tray.full.fill")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.red)
+                        .symbolEffect(.bounce, value: appState.deleteQueue.count)
                 }
 
                 Text("Waiting to unlock \(appState.deleteQueue.count) application(s)...")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.primary)
                     .monospacedDigit()
-                    .contentTransition(.numericText())
+                    .contentTransition(.numericText(value: Double(appState.deleteQueue.count)))
                     .animation(.snappy(duration: 0.25), value: appState.deleteQueue.count)
 
                 Spacer()

@@ -10,6 +10,7 @@ import AppKit
 
 struct LogEntryRow: View {
     let entry: AppLogEntry
+    var repeatCount: Int = 1
     let dateFormatter: DateFormatter
 
     @State private var isCopied: Bool = false
@@ -28,6 +29,10 @@ struct LogEntryRow: View {
 
                     subsystemBadge
                     categoryBadge
+
+                    if repeatCount > 1 {
+                        repeatBadge
+                    }
                 }
 
                 Text(entry.message)
@@ -96,6 +101,19 @@ struct LogEntryRow: View {
                 Color(nsColor: .controlAccentColor).opacity(0.12),
                 in: RoundedRectangle(cornerRadius: 3)
             )
+    }
+
+    private var repeatBadge: some View {
+        Text("×\(repeatCount)")
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .background(
+                Capsule()
+                    .fill(Color(nsColor: .quaternaryLabelColor))
+            )
+            .contentTransition(.numericText(value: Double(repeatCount)))
     }
 
     private func copyEntry() {

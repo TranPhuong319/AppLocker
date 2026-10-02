@@ -41,11 +41,7 @@ struct AddAppRow: View {
 
                 Spacer()
 
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.tint)
-                        .font(.title3)
-                }
+                selectionIndicator
             }
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
@@ -53,6 +49,21 @@ struct AddAppRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(AppRowButtonStyle())
+    }
+
+    @ViewBuilder
+    private var selectionIndicator: some View {
+        if #available(macOS 15.0, *) {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
+                .font(.title3)
+                .foregroundStyle(isSelected ? Color.accentColor : Color.secondary.opacity(0.35))
+        } else {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
+                .font(.title3)
+                .foregroundStyle(isSelected ? Color.accentColor : Color.secondary.opacity(0.35))
+        }
     }
 }
 

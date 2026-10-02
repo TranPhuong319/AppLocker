@@ -81,3 +81,27 @@
 - **System Accessibility Override Compliance**:
   - Strictly rely on native materials (`.glassEffect`, `Material`, `NSVisualEffectView`) so the OS can automatically convert translucency to high-contrast opaque backgrounds when the user enables **Reduce Transparency** or **Increase Contrast**.
   - Check `@Environment(\.accessibilityReduceMotion)` before executing decorative physics animations, parallax, or aggressive shape morphing.
+
+---
+
+## Apple Delight: Micro-Interactions, SF Symbols & Directional Transitions
+
+- **Proactive Micro-Effects Mandate ("Delight by Default")**:
+  - Always proactively identify and incorporate subtle, delightful micro-effects wherever possible. Never leave the UI visually static or lifeless: every state transition, user action, counter change, or background update should offer organic, tactile feedback.
+- **SF Symbols Magic Replacement & State Morphing**:
+  - Whenever an icon changes state (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `circle` $\leftrightarrow$ `checkmark.circle.fill`, `document.on.document` $\leftrightarrow$ `checkmark.circle`):
+    - ALWAYS apply `.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))` (with fallback `.replace.downUp.byLayer` on macOS 14).
+    - NEVER abruptly swap icon assets without an animated transition.
+- **Directional Numeric Transitions (`.numericText`)**:
+  - Whenever numbers change (item counts, queue badges, log entry totals, timers):
+    - MUST apply `.contentTransition(.numericText(value: Double(count)))` with `.monospacedDigit()` and `.animation(.snappy(duration: 0.25), value: count)`.
+    - Always pass `value:` so numbers roll up on increase and roll down on decrease.
+- **Tactile Discrete Symbol Effects (Bounce / Rotate / Pulse)**:
+  - Add purpose-driven symbol effects to reinforce user intent and platform vitality:
+    - **Bounce** (`.bounce` / `BounceSymbolEffect.bounce`): Trigger on item additions, selections, queue enqueueing, or blocked execution alerts.
+    - **Rotate** (`.rotate.byLayer` on macOS 15+, fallback `.bounce` on macOS 14): Trigger on refresh/reload/sync actions to signal live scanning.
+    - **Pulse** (`.pulse.byLayer`): Use on security emblems or status badges during indeterminate background work or active monitoring.
+- **Dynamic Menubar Status & Native Restraint**:
+  - Menubar icons must dynamically reflect real-time operational posture (`lock.fill` active, `lock.open.fill` paused, warning badge if extension is down), bounce on intercepted events, and indicate updates (`arrow.down.circle.fill`).
+  - Do NOT manually attach custom icons to system-managed menu items (such as `Settings…` or `Quit`) that modern macOS automatically decorates.
+

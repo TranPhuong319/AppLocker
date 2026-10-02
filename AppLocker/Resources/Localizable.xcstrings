@@ -26,6 +26,16 @@
         }
       }
     },
+    "%lld events (%lld total)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sự kiện (tổng số %lld)"
+          }
+        }
+      }
+    },
     "%lld seconds" : {
       "localizations" : {
         "vi" : {
@@ -35,6 +45,9 @@
           }
         }
       }
+    },
+    "×%lld" : {
+
     },
     "A new beta version is available. Do you want to update?" : {
       "localizations" : {
@@ -96,22 +109,22 @@
         }
       }
     },
-    "After 15 minutes" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sau 15 phút"
-          }
-        }
-      }
-    },
     "After 5 minutes" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sau 5 phút"
+          }
+        }
+      }
+    },
+    "After 15 minutes" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau 15 phút"
           }
         }
       }
@@ -166,16 +179,6 @@
         }
       }
     },
-    "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppLocker yêu cầu tiện ích mở rộng Bảo mật Điểm cuối phải được bật trong Cài đặt Hệ thống để quản lý các ứng dụng."
-          }
-        }
-      }
-    },
     "Appearance" : {
       "localizations" : {
         "vi" : {
@@ -196,22 +199,22 @@
         }
       }
     },
+    "Application is waiting to be deleted" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đang chờ xoá"
+          }
+        }
+      }
+    },
     "Application Lock" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Khoá ứng dụng"
-          }
-        }
-      }
-    },
-    "Application Lock Protection" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bảo vệ khóa ứng dụng"
           }
         }
       }
@@ -236,12 +239,12 @@
         }
       }
     },
-    "Application is waiting to be deleted" : {
+    "Application Lock Protection" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ứng dụng đang chờ xoá"
+            "value" : "Bảo vệ khóa ứng dụng"
           }
         }
       }
@@ -256,12 +259,42 @@
         }
       }
     },
+    "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppLocker yêu cầu tiện ích mở rộng Bảo mật Điểm cuối phải được bật trong Cài đặt Hệ thống để quản lý các ứng dụng."
+          }
+        }
+      }
+    },
     "Are you sure you want to remove the missing applications from the lock list?" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn có chắc chắn muốn xoá các ứng dụng không tồn tại khỏi danh sách khoá?"
+          }
+        }
+      }
+    },
+    "authenticate to open the application list" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để mở danh sách Ứng dụng"
+          }
+        }
+      }
+    },
+    "authenticate to reset AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để Đặt lại AppLocker"
           }
         }
       }
@@ -646,16 +679,6 @@
         }
       }
     },
-    "ES Extension" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiện ích mở rộng hệ thống"
-          }
-        }
-      }
-    },
     "Enable Background Service" : {
       "localizations" : {
         "vi" : {
@@ -686,6 +709,16 @@
         }
       }
     },
+    "ES Extension" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiện ích mở rộng hệ thống"
+          }
+        }
+      }
+    },
     "Export" : {
       "localizations" : {
         "vi" : {
@@ -702,6 +735,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xuất nhật ký đang xem ra tệp .log"
+          }
+        }
+      }
+    },
+    "Logs exported successfully" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xuất nhật ký thành công"
           }
         }
       }
@@ -752,6 +795,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nhận bản cập nhật chính thức, ổn định."
+          }
+        }
+      }
+    },
+    "Group Repeating Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gộp nhật ký lặp lại"
+          }
+        }
+      }
+    },
+    "Group repeating logs (Off)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gộp nhật ký lặp lại (Đang tắt)"
+          }
+        }
+      }
+    },
+    "Group repeating logs (On)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gộp nhật ký lặp lại (Đang bật)"
           }
         }
       }
@@ -816,16 +889,6 @@
         }
       }
     },
-    "Last 24 Hours" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "24 giờ qua"
-          }
-        }
-      }
-    },
     "Last 6 Hours" : {
       "localizations" : {
         "vi" : {
@@ -842,6 +905,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "7 ngày qua"
+          }
+        }
+      }
+    },
+    "Last 24 Hours" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "24 giờ qua"
           }
         }
       }
@@ -906,22 +979,22 @@
         }
       }
     },
-    "Lock Session Timeout" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thời hạn phiên khóa"
-          }
-        }
-      }
-    },
     "Lock security settings" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Khóa cài đặt bảo mật"
+          }
+        }
+      }
+    },
+    "Lock Session Timeout" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời hạn phiên khóa"
           }
         }
       }
@@ -952,6 +1025,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nhật ký"
+          }
+        }
+      }
+    },
+    "macOS requires enabling AppLocker in System Settings -> Login Items & Extensions." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS yêu cầu bật AppLocker trong Cài đặt hệ thống -> Mục đăng nhập & Phần mở rộng"
           }
         }
       }
@@ -1032,6 +1115,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Thông báo"
+          }
+        }
+      }
+    },
+    "open %@" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở %@"
+          }
+        }
+      }
+    },
+    "open %d application(s)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở %d ứng dụng"
           }
         }
       }
@@ -1347,6 +1450,16 @@
         }
       }
     },
+    "System Extension is disabled. Please enable it in System Settings." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiện ích mở rộng hệ thống đang bị tắt. Vui lòng bật trong Cài đặt hệ thống"
+          }
+        }
+      }
+    },
     "System Extension Required" : {
       "localizations" : {
         "vi" : {
@@ -1363,16 +1476,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gỡ cài đặt tiện ích mở rộng hệ thống không thành công"
-          }
-        }
-      }
-    },
-    "System Extension is disabled. Please enable it in System Settings." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiện ích mở rộng hệ thống đang bị tắt. Vui lòng bật trong Cài đặt hệ thống"
           }
         }
       }
@@ -1528,6 +1631,16 @@
         }
       }
     },
+    "unlock security settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở khóa cài đặt bảo mật"
+          }
+        }
+      }
+    },
     "Unlock security settings" : {
       "localizations" : {
         "vi" : {
@@ -1664,66 +1777,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Việc làm này sẽ xoá tuỳ chọn khoá ứng dụng cho toàn bộ người dùng trên máy Mac này\n\nBạn có muốn tiếp tục không?"
-          }
-        }
-      }
-    },
-    "authenticate to open the application list" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "xác thực để mở danh sách Ứng dụng"
-          }
-        }
-      }
-    },
-    "authenticate to reset AppLocker" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "xác thực để Đặt lại AppLocker"
-          }
-        }
-      }
-    },
-    "macOS requires enabling AppLocker in System Settings -> Login Items & Extensions." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS yêu cầu bật AppLocker trong Cài đặt hệ thống -> Mục đăng nhập & Phần mở rộng"
-          }
-        }
-      }
-    },
-    "open %@" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "mở %@"
-          }
-        }
-      }
-    },
-    "open %d application(s)" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "mở %d ứng dụng"
-          }
-        }
-      }
-    },
-    "unlock security settings" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "mở khóa cài đặt bảo mật"
           }
         }
       }

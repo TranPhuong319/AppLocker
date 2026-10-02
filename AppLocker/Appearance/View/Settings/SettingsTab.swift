@@ -61,4 +61,23 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .logs: return "list.bullet.clipboard"
         }
     }
+
+    var preferredSize: NSSize {
+        switch self {
+        case .general:
+            return WindowLayout.settingsGeneralSize
+        case .security:
+            return WindowLayout.settingsSecuritySize
+        case .updates:
+            return WindowLayout.settingsUpdatesSize
+        case .appearance:
+            return WindowLayout.settingsAppearanceSize
+        case .logs:
+            return WindowLayout.settingsLogsSize
+        }
+    }
+
+    var minSize: NSSize {
+        WindowLayout.settingsMinSize
+    }
 }

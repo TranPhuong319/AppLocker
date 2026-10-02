@@ -63,6 +63,7 @@ class LockES: LockManagerProtocol {
         self.save()
         let status = disabled ? "disabled (protection paused)" : "enabled (protection active)"
         Logfile.policy.notice("[LockES] Application lock protection \(status, privacy: .public)")
+        NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
     }
 
     func setAllowIncomingCalls(_ allowed: Bool) {
