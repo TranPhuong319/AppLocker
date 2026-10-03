@@ -66,13 +66,4 @@ extension AppDelegate {
             AppState.shared.manager.setProtectionDisabled(false)
         }
     }
-
-    func launchedByLaunchd() -> Bool {
-        guard let launchByLaunchctl = ProcessInfo.processInfo.environment[
-            "LAUNCHED_BY_LAUNCHD"
-        ] else {
-            return false
-        }
-        return launchByLaunchctl == "1"
-    }
 }

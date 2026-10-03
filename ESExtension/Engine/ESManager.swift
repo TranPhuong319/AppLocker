@@ -12,7 +12,6 @@ import Foundation
 import SystemConfiguration
 import os
 
-@objcMembers
 final class ESManager: NSObject, @unchecked Sendable {
     var authorizer: ESAuthorizer?
     var tamper: ESTamper?

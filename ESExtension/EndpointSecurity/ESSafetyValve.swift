@@ -14,7 +14,6 @@ import os
 /// OR the emergency timer responds to the ES message, but never both.
 final class ESSafetyValve: @unchecked Sendable {
     private let lock = OSAllocatedUnfairLock()
-    private let deadlineExpiredSema = DispatchSemaphore(value: 0)
     private let message: ESMessage
     private let manager: ESManager
     private var isResponded = false
@@ -69,8 +68,6 @@ final class ESSafetyValve: @unchecked Sendable {
                 )
             }
 
-            // Signal that we are done to any waiting threads (usually the worker cleanup)
-            deadlineExpiredSema.signal()
             return true
         }
         return false
@@ -93,12 +90,6 @@ final class ESSafetyValve: @unchecked Sendable {
             return safePath(fromFilePointer: messagePtr.event.truncate.target) ?? "unknown_truncate"
         default: return "Event-\(type.rawValue)"
         }
-    }
-
-    /// Expose semaphore for external waiters (like ESModularClients)
-    func wait() {
-        deadlineExpiredSema.wait()
-        deadlineExpiredSema.signal()
     }
 
     deinit {

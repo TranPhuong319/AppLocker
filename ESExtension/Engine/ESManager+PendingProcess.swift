@@ -60,18 +60,7 @@ extension ESManager {
 
     private func validateAndConsumePendingPID(_ rawPID: Int32, actionName: String) -> pid_t? {
         let pid = pid_t(rawPID)
-        // ponytail: Safety guard: verify PID > 0 and process is still alive before signaling
-        guard pid > 0, kill(pid, 0) == 0 else {
-            let removed = pendingPIDLock.withLock {
-                pendingVerificationProcesses.removeValue(forKey: pid) != nil
-            }
-            if removed {
-                Logfile.endpointSecurity.warning(
-                    "[PendingProcess] \(actionName, privacy: .public) PID \(pid, privacy: .public) is dead, skipping."
-                )
-            }
-            return nil
-        }
+        guard pid > 0 else { return nil }
 
         let savedToken = pendingPIDLock.withLock {
             pendingVerificationProcesses.removeValue(forKey: pid)
@@ -79,20 +68,27 @@ extension ESManager {
 
         guard let expectedToken = savedToken else { return nil }
 
-        if let currentToken = auditToken(for: pid) {
-            let expectedVersion = audit_token_to_pidversion(expectedToken)
-            let currentVersion = audit_token_to_pidversion(currentToken)
-            guard expectedVersion == currentVersion else {
-                Logfile.endpointSecurity.fault(
-                    """
-                    [PendingProcess] PID RECYCLING DETECTED for PID \(pid, privacy: .public)! \
-                    Expected version: \(expectedVersion, privacy: .public), \
-                    Current: \(currentVersion, privacy: .public). Aborting \(actionName, privacy: .public).
-                    """
-                )
-                return nil
-            }
+        // Process liveness & PID recycling defense via Mach audit token
+        guard let currentToken = auditToken(for: pid) else {
+            Logfile.endpointSecurity.warning(
+                "[PendingProcess] \(actionName, privacy: .public) PID \(pid, privacy: .public) is dead, skipping."
+            )
+            return nil
         }
+
+        let expectedVersion = audit_token_to_pidversion(expectedToken)
+        let currentVersion = audit_token_to_pidversion(currentToken)
+        guard expectedVersion == currentVersion else {
+            Logfile.endpointSecurity.fault(
+                """
+                [PendingProcess] PID RECYCLING DETECTED for PID \(pid, privacy: .public)! \
+                Expected version: \(expectedVersion, privacy: .public), \
+                Current: \(currentVersion, privacy: .public). Aborting \(actionName, privacy: .public).
+                """
+            )
+            return nil
+        }
+
         return pid
     }
 

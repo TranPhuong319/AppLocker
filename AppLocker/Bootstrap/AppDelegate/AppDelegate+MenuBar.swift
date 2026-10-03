@@ -62,13 +62,27 @@ extension AppDelegate: NSMenuDelegate {
             symbolName = "lock.trianglebadge.exclamationmark.fill"
         } else if AppState.shared.manager.isProtectionDisabled {
             symbolName = "lock.open.fill"
+        } else if AppUpdater.shared.hasAvailableUpdate {
+            symbolName = "arrowshape.down.circle"
         } else {
             symbolName = "lock.fill"
         }
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "AppLocker")
-        image?.isTemplate = true
+
+        guard symbolName != currentMenuBarSymbol else { return }
+        let isFirst = (currentMenuBarSymbol == nil)
+        currentMenuBarSymbol = symbolName
+
+        guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "AppLocker") else { return }
+        image.isTemplate = true
+
         if let statusImageView {
-            statusImageView.image = image
+            if isFirst {
+                statusImageView.image = image
+            } else if #available(macOS 15.0, *) {
+                statusImageView.setSymbolImage(image, contentTransition: .replace.magic(fallback: .downUp.byLayer))
+            } else {
+                statusImageView.setSymbolImage(image, contentTransition: .replace.downUp.byLayer)
+            }
         } else if let button = statusItem?.button {
             button.image = image
         }

@@ -84,7 +84,7 @@ struct GeneralSettingsTab: View {
     private func checkAgentStatus() {
         guard !isMock else { return }
         if let appDelegate = NSApp.appDelegate {
-            isAgentActive = appDelegate.checkAgentStatus()
+            isAgentActive = appDelegate.isAgentActive
         }
     }
 

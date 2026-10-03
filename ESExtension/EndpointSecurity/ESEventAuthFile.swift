@@ -32,18 +32,10 @@ extension ESManager {
     }
 
     static func getSigningID(_ message: ESMessage) -> String {
-        let signingIDToken = message.pointee.process.pointee.signing_id
-        if let idStr = string(from: signingIDToken) {
-            return idStr
-        }
-        return "Unsigned/Unknown"
+        string(from: message.pointee.process.pointee.signing_id) ?? "Unsigned/Unknown"
     }
 
-    func handleAuthOpen(
-        client: OpaquePointer,
-        message: ESMessage,
-        valve: ESSafetyValve
-    ) {
+    func handleAuthOpen(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve) {
         let path = ESSafetyValve.getPath(message)
         let esPath = message.pointee.event.open.file.pointee.path
 
@@ -58,6 +50,12 @@ extension ESManager {
         }
     }
 
+    private func isWriteIntent(_ fflag: Int32) -> Bool {
+        let fWrite = Int32(0x00000002)
+        let modifyBits = Int32(O_CREAT) | Int32(O_TRUNC) | Int32(O_APPEND)
+        return (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
+    }
+
     private func handleAppBundleAuthOpen(
         path: String,
         message: ESMessage,
@@ -67,27 +65,16 @@ extension ESManager {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             let sigID = Self.getSigningID(message)
             Logfile.endpointSecurity.debug(
-                """
-                [AuthFile] SELF_PROT [OPEN] ALLOW (Authorized): \(path, privacy: .public) \
-                (Process: \(sigID, privacy: .public))
-                """
+                "[AuthFile] OPEN ALLOW: \(path, privacy: .public) (\(sigID, privacy: .public))"
             )
             return
         }
 
-        let fflag = message.pointee.event.open.fflag
-        let fWrite = Int32(0x00000002)
-        let modifyBits = Int32(O_CREAT) | Int32(O_TRUNC) | Int32(O_APPEND)
-        let isWriteIntent = (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
-
-        if !isWriteIntent {
+        if !isWriteIntent(message.pointee.event.open.fflag) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             let sigID = Self.getSigningID(message)
             Logfile.endpointSecurity.debug(
-                """
-                [AuthFile] SELF_PROT [OPEN] ALLOW (Read-only): \(path, privacy: .public) \
-                (Process: \(sigID, privacy: .public))
-                """
+                "[AuthFile] OPEN ALLOW (Read-only): \(path, privacy: .public) (\(sigID, privacy: .public))"
             )
             return
         }
@@ -95,10 +82,7 @@ extension ESManager {
         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
         let sigID = Self.getSigningID(message)
         Logfile.endpointSecurity.warning(
-            """
-            [AuthFile] SELF_PROT [OPEN] DENY (Write-Intent): \(path, privacy: .public) \
-            (Process: \(sigID, privacy: .public))
-            """
+            "[AuthFile] OPEN DENY (Write-Intent): \(path, privacy: .public) (\(sigID, privacy: .public))"
         )
     }
 
@@ -122,12 +106,7 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        let fflag = message.pointee.event.open.fflag
-        let fWrite = Int32(0x00000002)
-        let modifyBits = Int32(O_CREAT) | Int32(O_TRUNC) | Int32(O_APPEND)
-        let isWriteIntent = (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
-
-        if isWriteIntent {
+        if isWriteIntent(message.pointee.event.open.fflag) {
             if isAuthorized(message) {
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 return
@@ -135,10 +114,7 @@ extension ESManager {
             _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
             let sigID = Self.getSigningID(message)
             Logfile.endpointSecurity.warning(
-                """
-                [AuthFile] SELF_PROT [OPEN] DENY folder write-intent: \(path, privacy: .public) \
-                (Process: \(sigID, privacy: .public))
-                """
+                "[AuthFile] OPEN DENY (Folder Write): \(path, privacy: .public) (\(sigID, privacy: .public))"
             )
             return
         }
@@ -150,35 +126,16 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        let targetPathToken = message.pointee.event.unlink.target.pointee.path
-        let isFileProtected = isProtectedConfigPath(targetPathToken)
-        let isFolderProtected = isInsideProtectedFolder(targetPathToken)
-        let isAppProtected = isAppBundlePath(targetPathToken)
-
-        if isFileProtected || isFolderProtected || isAppProtected {
-            let path = ESSafetyValve.getPath(message)
-            if isAuthorized(message) {
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                let sigID = Self.getSigningID(message)
-                Logfile.endpointSecurity.debug(
-                    """
-                    [AuthFile] SELF_PROT [UNLINK] ALLOW (Authorized): \(path, privacy: .public) \
-                    (Process: \(sigID, privacy: .public))
-                    """
-                )
-                return
-            }
-            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            let procID = Self.getSigningID(message)
-            Logfile.endpointSecurity.warning(
-                """
-                [AuthFile] SELF_PROT [UNLINK] DENY (Protected): \(path, privacy: .public) \
-                (Process: \(procID, privacy: .public))
-                """
-            )
-        } else {
-            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
-        }
+        let targetToken = message.pointee.event.unlink.target.pointee.path
+        let isProtected = isProtectedConfigPath(targetToken) ||
+                          isInsideProtectedFolder(targetToken) ||
+                          isAppBundlePath(targetToken)
+        handleProtectedMutationAuth(
+            message: message,
+            valve: valve,
+            isTargetProtected: isProtected,
+            operationName: "UNLINK"
+        )
     }
 
     func handleAuthRename(
@@ -199,10 +156,7 @@ extension ESManager {
                 let path = ESSafetyValve.getPath(message)
                 _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
                 Logfile.endpointSecurity.debug(
-                    """
-                    [AuthFile] SELF_PROT [RENAME] ALLOW (Authorized): \(path, privacy: .public) \
-                    (Process: \(procID, privacy: .public))
-                    """
+                    "[AuthFile] RENAME ALLOW: \(path, privacy: .public) (\(procID, privacy: .public))"
                 )
                 return
             }
@@ -244,26 +198,15 @@ extension ESManager {
         valve: ESSafetyValve
     ) {
         let targetToken = message.pointee.event.truncate.target.pointee.path
-        if isProtectedConfigPath(targetToken) || isInsideProtectedFolder(targetToken) || isAppBundlePath(targetToken) {
-            let procID = Self.getSigningID(message)
-            if isAuthorized(message) {
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                Logfile.endpointSecurity.debug(
-                    "[AuthFile] SELF_PROT [TRUNCATE] ALLOW (Authorized): (Process: \(procID, privacy: .public))"
-                )
-                return
-            }
-            let path = ESSafetyValve.getPath(message)
-            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            Logfile.endpointSecurity.warning(
-                """
-                [AuthFile] SELF_PROT [TRUNCATE] DENY (Protected): \(path, privacy: .public) \
-                (Process: \(procID, privacy: .public))
-                """
-            )
-        } else {
-            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
-        }
+        let isProtected = isProtectedConfigPath(targetToken) ||
+                          isInsideProtectedFolder(targetToken) ||
+                          isAppBundlePath(targetToken)
+        handleProtectedMutationAuth(
+            message: message,
+            valve: valve,
+            isTargetProtected: isProtected,
+            operationName: "TRUNCATE"
+        )
     }
 
     // MARK: - Extended Events (Santa Style Protection)

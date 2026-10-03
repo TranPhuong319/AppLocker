@@ -110,15 +110,17 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     }
 
     private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
-        let query = text.normalized
-        guard !query.isEmpty else { return apps }
-        let tokens = query.split(separator: " ")
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return apps }
+        let tokens = trimmed.split(separator: " ")
         guard !tokens.isEmpty else { return apps }
 
         return apps.filter { app in
-            fuzzyMatch(tokens, in: app.name)
-                || fuzzyMatch(tokens, in: app.bundleID)
-                || fuzzyMatch(tokens, in: app.path)
+            tokens.allSatisfy { token in
+                app.name.localizedCaseInsensitiveContains(token)
+                    || app.bundleID.localizedCaseInsensitiveContains(token)
+                    || app.path.localizedCaseInsensitiveContains(token)
+            }
         }
     }
 
