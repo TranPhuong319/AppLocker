@@ -44,16 +44,14 @@ class ESClientObject: @unchecked Sendable {
 
             // Non-AUTH messages don't need deadline logic
             if esMessage.pointee.action_type != ES_ACTION_TYPE_AUTH {
-                if let manager = self.manager {
-                    if esMessage.pointee.event_type == ES_EVENT_TYPE_NOTIFY_EXEC {
-                        // Handle NOTIFY_EXEC synchronously (0ms latency) to send SIGSTOP immediately
-                        let handler = self.makeAuthHandler(for: message)
-                        handler(message.client, message, ESSafetyValve(message: message, manager: manager))
-                    } else {
-                        manager.authorizationProcessingQueue.async {
-                            let handler = self.makeAuthHandler(for: message)
-                            handler(message.client, message, ESSafetyValve(message: message, manager: manager))
-                        }
+                guard let manager = self.manager else { return }
+                let handler = self.makeAuthHandler(for: message)
+                let valve = ESSafetyValve(message: message, manager: manager)
+                if esMessage.pointee.event_type == ES_EVENT_TYPE_NOTIFY_EXEC {
+                    handler(message.client, message, valve)
+                } else {
+                    manager.authorizationProcessingQueue.async {
+                        handler(message.client, message, valve)
                     }
                 }
                 return
@@ -69,7 +67,6 @@ class ESClientObject: @unchecked Sendable {
                     handler: handler
                 )
             } else {
-                // No Manager (Deallocated?) - Fail Safe
                 es_respond_auth_result(esClient, esMessage, ES_AUTH_RESULT_ALLOW, false)
             }
         }
@@ -89,10 +86,7 @@ class ESClientObject: @unchecked Sendable {
             )
         }
 
-        // 4. Early Mute (Self Protection)
-        // Must mute immediately to prevent self-lockout/generation storms
         self.muteSelf()
-
         return true
     }
 
@@ -117,16 +111,14 @@ class ESClientObject: @unchecked Sendable {
         switch eventType {
         case ES_EVENT_TYPE_AUTH_SIGNAL:
             manager.handleAuthSignal(client: client, message: msg, valve: valve)
-            return true
         case ES_EVENT_TYPE_NOTIFY_EXEC:
             manager.handleNotifyExec(client: client, message: msg)
-            return true
         case ES_EVENT_TYPE_NOTIFY_EXIT:
             manager.handleNotifyExit(client: client, message: msg)
-            return true
         default:
             return false
         }
+        return true
     }
 
     private func dispatchFileAuthEvent(
@@ -183,39 +175,18 @@ class ESClientObject: @unchecked Sendable {
         handler: @escaping @Sendable (OpaquePointer, ESMessage, ESSafetyValve) -> Void
     ) {
         let valve = ESSafetyValve(message: message, manager: manager)
-
-        // --- CALC BUDGET ---
         let deadline = message.pointee.deadline
         let now = mach_absolute_time()
-        let timeUntilDeadline = (deadline > now) ? (deadline - now) : 0
-        let nanosUntilDeadline = ESManager.machTimeToNanos(timeUntilDeadline)
-
-        // Default Budget: 80% (Santa)
+        let timeRemaining = (deadline > now) ? (deadline - now) : 0
+        let nanosUntilDeadline = ESManager.machTimeToNanos(timeRemaining)
         let budget = Double(nanosUntilDeadline) * 0.8
-
-        // Headroom: Time reserved for the deadline block to execute response
-        let headroom = Int64(nanosUntilDeadline) - Int64(budget)
-
-        // Clamp Headroom (Min 1s, Max 5s) - Santa Logic [1s, 5s]
-        let minHeadroom: Int64 = 1_000_000_000  // 1 second
-        let maxHeadroom: Int64 = 5_000_000_000  // 5 seconds
-        let finalHeadroom = min(maxHeadroom, max(minHeadroom, headroom))
-
+        let rawHeadroom = Int64(nanosUntilDeadline) - Int64(budget)
+        let finalHeadroom = min(5_000_000_000, max(1_000_000_000, rawHeadroom))
         let finalProcessingBudget = max(0, Int64(nanosUntilDeadline) - finalHeadroom)
 
-        // --- SEMAPHORES ---
-        let processingSema = DispatchSemaphore(value: 0)
-        processingSema.signal() // Init value to 1 (Santa pattern)
-
-        // --- DEADLINE TASK (Fail-Closed Deny) ---
         manager.emergencyTimerQueue.asyncAfter(
             deadline: .now() + .nanoseconds(Int(finalProcessingBudget))) {
-
-            // Try to acquire token. If success (0), it means Processing hasn't finished.
-            if processingSema.wait(timeout: .now()) == .success {
-                // Timeout Reached! Fail Closed.
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-
+            if valve.respond(ES_AUTH_RESULT_DENY, cache: false) {
                 let path = ESSafetyValve.getPath(message)
                 Logfile.endpointSecurity.error(
                     """
@@ -223,25 +194,11 @@ class ESClientObject: @unchecked Sendable {
                     (Budget: \(finalProcessingBudget, privacy: .public)ns)
                     """
                 )
-
-                // Signal that we are done responding
-                // The valve itself handles the signal internally when respond() is called.
             }
         }
 
-        // --- PROCESSING TASK ---
         manager.authorizationProcessingQueue.async {
-            // Do the work (calls valve.respond internally)
             handler(message.client, message, valve)
-
-            // Try to acquire token.
-            if processingSema.wait(timeout: .now()) == .success {
-                // We finished in time! Code flow normal.
-            } else {
-                // Deadline task stole the token. We were too slow.
-                // Wait for deadline task to finish its log/signal to ensure clean exit.
-                valve.wait()
-            }
         }
     }
 
@@ -272,13 +229,8 @@ class ESClientObject: @unchecked Sendable {
 }
 
 final class ESAuthorizer: ESClientObject, @unchecked Sendable {
-    init() {
-        super.init(name: "Authorizer")
-    }
-
-    func start() -> Bool {
-        return self.createClient()
-    }
+    init() { super.init(name: "Authorizer") }
+    func start() -> Bool { createClient() }
 
     func enable() {
         _ = self.subscribe([
@@ -290,36 +242,25 @@ final class ESAuthorizer: ESClientObject, @unchecked Sendable {
 }
 
 final class ESTamper: ESClientObject, @unchecked Sendable {
-    init() {
-        super.init(name: "TamperResistance")
-    }
-
-    func start() -> Bool {
-        return self.createClient()
-    }
+    init() { super.init(name: "TamperResistance") }
+    func start() -> Bool { createClient() }
 
     func enable() {
         #if DEBUG
         Logfile.endpointSecurity.debug("[ESClient] Skip enable ESTamper (Debug mode)")
         #else
         self.muteSelf()
-
-        // Santa Pattern: Inverted Muting for target paths
         Logfile.endpointSecurity.debug(
             "[ESClient] [\(self.name, privacy: .public)] Enabling Inverted Muting (Santa-Style)..."
         )
-
         if let client = self.client {
             _ = es_unmute_all_target_paths(client)
-
             let invRes = es_invert_muting(client, ES_MUTE_INVERSION_TYPE_TARGET_PATH)
             Logfile.endpointSecurity.debug(
                 "[ESClient] [\(self.name, privacy: .public)] Invert muting result: \(invRes.rawValue, privacy: .public)"
             )
         }
-
         self.setupAllowlist()
-
         _ = self.subscribe([
             ES_EVENT_TYPE_AUTH_OPEN,
             ES_EVENT_TYPE_AUTH_UNLINK,
@@ -333,22 +274,17 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
     }
 
     private func setupAllowlist() {
-        // Santa Pattern: Mute target paths using TARGET_LITERAL
-        // In Inverted Mode, 'Mute' actually means 'Watch'
         let paths: [(path: String, type: es_mute_path_type_t)] = [
             ("/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
             ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
         ]
-
         if let client = self.client {
             for item in paths {
                 let res = es_mute_path(client, item.path, item.type)
-                let itemPath = item.path
-                let resVal = res.rawValue
                 Logfile.endpointSecurity.debug(
                     """
-                    [ESClient] [\(self.name, privacy: .public)] Allowlist [\(itemPath, privacy: .public)] \
-                    result: \(resVal, privacy: .public)
+                    [ESClient] [\(self.name, privacy: .public)] Allowlist [\(item.path, privacy: .public)] \
+                    result: \(res.rawValue, privacy: .public)
                     """
                 )
             }

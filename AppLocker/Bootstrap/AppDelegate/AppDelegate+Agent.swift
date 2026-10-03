@@ -18,19 +18,12 @@ enum AgentManageResult {
 }
 
 extension AppDelegate {
-    func isAgentLoadedInLaunchd() -> Bool {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = ["print", "gui/\(getuid())/\(Self.plistName)"]
-        process.standardOutput = Pipe()
-        process.standardError = Pipe()
-        do {
-            try process.run()
-            process.waitUntilExit()
-            return process.terminationStatus == 0
-        } catch {
-            return false
-        }
+    var isAgentActive: Bool {
+        SMAppService.agent(plistName: "\(Self.plistName).plist").status == .enabled
+    }
+
+    var isLaunchedByLaunchd: Bool {
+        ProcessInfo.processInfo.environment["LAUNCHED_BY_LAUNCHD"] == "1"
     }
 
     func registerAgentWithoutImmediateLaunch() {
@@ -60,19 +53,16 @@ extension AppDelegate {
             switch action {
 
             case .install:
-                if isAgentLoadedInLaunchd() {
-                    Logfile.app.debug("[Agent] Agent already enabled in launchd")
-                    return .alreadyInstalled
-                }
                 if agent.status == .enabled {
-                    try? agent.unregister()
+                    Logfile.app.debug("[Agent] Agent already enabled")
+                    return .alreadyInstalled
                 }
                 try agent.register()
                 Logfile.app.info("[Agent] Agent registered successfully")
                 return .installed
 
             case .uninstall:
-                if agent.status != .enabled && !isAgentLoadedInLaunchd() {
+                if agent.status != .enabled {
                     Logfile.app.debug("[Agent] Agent already disabled")
                     return .alreadyUninstalled
                 }
@@ -81,13 +71,9 @@ extension AppDelegate {
                 return .uninstalled
 
             case .check:
-                if agent.status == .enabled && isAgentLoadedInLaunchd() {
-                    Logfile.app.debug("[Agent] Agent status: enabled")
-                    return .alreadyInstalled
-                } else {
-                    Logfile.app.debug("[Agent] Agent status: disabled")
-                    return .alreadyUninstalled
-                }
+                let active = isAgentActive
+                Logfile.app.debug("[Agent] Agent status: \(active ? "enabled" : "disabled", privacy: .public)")
+                return active ? .alreadyInstalled : .alreadyUninstalled
             }
 
         } catch {
@@ -106,13 +92,7 @@ extension AppDelegate {
 
     @discardableResult
     func checkAgentStatus() -> Bool {
-        let result = manageAgent(action: .check)
-        switch result {
-        case .installed, .alreadyInstalled:
-            return true
-        default:
-            return false
-        }
+        isAgentActive
     }
 
     @discardableResult

@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var statusItem: NSStatusItem?
     var statusImageView: NSImageView?
+    var currentMenuBarSymbol: String?
     var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -64,34 +65,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor
     private func finishLaunchSetup() {
 
-        #if !DEBUG
+#if !DEBUG
         checkAndMoveToApplications()
-        #endif
+#endif
 
         Logfile.app.info("[Bootstrap] AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
 
         let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
 
-        #if !DEBUG
-        if !launchedByLaunchd() {
-            if !isFirstStart {
-                if !isAgentLoadedInLaunchd() {
-                    Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
-                    _ = manageAgent(action: .install)
-                }
+#if !DEBUG
+        if !isLaunchedByLaunchd && !isFirstStart {
+            if !isAgentActive {
+                Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
+                _ = manageAgent(action: .install)
+            }
 
-                if isAgentLoadedInLaunchd() {
-                    Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
-                    let process = Process()
-                    process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-                    process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
-                    try? process.run()
-                    NSApp.terminate(nil)
-                    return
-                }
+            if isAgentActive {
+                Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
+                try? process.run()
+                NSApp.terminate(nil)
+                return
             }
         }
-        #endif
+#endif
 
         let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "System"
         applyTheme(theme)

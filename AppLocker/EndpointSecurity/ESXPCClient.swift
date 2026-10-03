@@ -24,9 +24,7 @@ final class ESXPCClient: @unchecked Sendable {
     )
 
     private init() {
-        xpcQueue.async { [weak self] in
-            self?.connect()
-        }
+        xpcQueue.async { [weak self] in self?.connect() }
     }
 
     private func proxy(
@@ -35,9 +33,7 @@ final class ESXPCClient: @unchecked Sendable {
         onError: @escaping @Sendable () -> Void = {}
     ) -> ESAppProtocol? {
         guard let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-            Logfile.appXPC.error(
-                "[ESXPCClient] \(actionName, privacy: .public) failed: \(String(describing: error))"
-            )
+            Logfile.appXPC.error("[ESXPCClient] \(actionName, privacy: .public) failed: \(String(describing: error))")
             onError()
         }) as? ESAppProtocol else {
             Logfile.appXPC.error("[ESXPCClient] No valid proxy for \(actionName, privacy: .public)")
@@ -81,9 +77,7 @@ final class ESXPCClient: @unchecked Sendable {
     }
 
     private func updateExtensionInstalledState(_ installed: Bool) {
-        Task { @MainActor in
-            ExtensionInstaller.shared.updateInstalledState(installed)
-        }
+        Task { @MainActor in ExtensionInstaller.shared.updateInstalledState(installed) }
     }
 
     private func setupConnectionHandlers(conn: NSXPCConnection) {
@@ -129,20 +123,13 @@ final class ESXPCClient: @unchecked Sendable {
             self.retryCount = 0
             self.isConnecting = false
 
-            if let pending = self.pendingConnection {
-                pending.invalidationHandler = nil
-                pending.interruptionHandler = nil
-                pending.invalidate()
-                self.pendingConnection = nil
+            for conn in [self.pendingConnection, self.connection].compactMap({ $0 }) {
+                conn.invalidationHandler = nil
+                conn.interruptionHandler = nil
+                conn.invalidate()
             }
-
-            if let oldConn = self.connection {
-                oldConn.invalidationHandler = nil
-                oldConn.interruptionHandler = nil
-                oldConn.invalidate()
-            }
+            self.pendingConnection = nil
             self.connection = nil
-
             self.updateExtensionInstalledState(false)
         }
     }
@@ -151,14 +138,13 @@ final class ESXPCClient: @unchecked Sendable {
         xpcQueue.async { [weak self] in
             guard let self = self, self.shouldReconnect else { return }
 
-            // Clean up existing connection safely without triggering recursive handler
             if let oldConn = self.connection {
                 oldConn.invalidationHandler = nil
                 oldConn.interruptionHandler = nil
                 oldConn.invalidate()
             }
             self.connection = nil
-            self.isConnecting = false  // Allow new connection attempt
+            self.isConnecting = false
 
             self.updateExtensionInstalledState(false)
 
@@ -169,13 +155,7 @@ final class ESXPCClient: @unchecked Sendable {
             }
             self.retryCount += 1
 
-            let delay: Double
-            if immediate {
-                delay = 0.05  // try quickly
-            } else {
-                delay = min(0.5 * Double(self.retryCount), 1.0)  // gentle backoff but small cap
-            }
-
+            let delay = immediate ? 0.05 : min(0.5 * Double(self.retryCount), 1.0)
             Logfile.appXPC.debug(
                 """
                 [ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s \
@@ -313,9 +293,7 @@ extension ESXPCClient {
 
             guard let proxy = self.proxy(conn: conn, actionName: "updateIncomingCallRingingState") else { return }
             proxy.updateIncomingCallRingingState(isRinging)
-            Logfile.appXPC.debug(
-                "[ESXPCClient] updateIncomingCallRingingState sent: \(isRinging, privacy: .public)"
-            )
+            Logfile.appXPC.debug("[ESXPCClient] updateIncomingCallRingingState sent: \(isRinging, privacy: .public)")
         }
     }
 }

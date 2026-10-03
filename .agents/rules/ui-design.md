@@ -88,10 +88,9 @@
 
 - **Proactive Micro-Effects Mandate ("Delight by Default")**:
   - Always proactively identify and incorporate subtle, delightful micro-effects wherever possible. Never leave the UI visually static or lifeless: every state transition, user action, counter change, or background update should offer organic, tactile feedback.
-- **SF Symbols Magic Replacement & State Morphing**:
-  - Whenever an icon changes state (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `circle` $\leftrightarrow$ `checkmark.circle.fill`, `document.on.document` $\leftrightarrow$ `checkmark.circle`):
-    - ALWAYS apply `.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))` (with fallback `.replace.downUp.byLayer` on macOS 14).
-    - NEVER abruptly swap icon assets without an animated transition.
+- **Ưu tiên hàng đầu cho Magic Replacement & State Morphing**:
+  - LUÔN CHỦ ĐỘNG ƯU TIÊN HÀNG ĐẦU thêm hiệu ứng chuyển đổi Magic (`.replace.magic(fallback: .downUp.byLayer)`) ở bất kỳ nơi nào có thể khi biểu tượng SF Symbol thay đổi trạng thái (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `circle` $\leftrightarrow$ `checkmark.circle.fill`, `doc.on.doc` $\leftrightarrow$ `checkmark`, `square.stack.3d.up` $\leftrightarrow$ `square.stack.3d.up.fill`).
+  - Phải luôn có fallback `.replace.downUp.byLayer` trên macOS 14. Tuyệt đối không hoán đổi icon đột ngột mà không có animation.
 - **Directional Numeric Transitions (`.numericText`)**:
   - Whenever numbers change (item counts, queue badges, log entry totals, timers):
     - MUST apply `.contentTransition(.numericText(value: Double(count)))` with `.monospacedDigit()` and `.animation(.snappy(duration: 0.25), value: count)`.

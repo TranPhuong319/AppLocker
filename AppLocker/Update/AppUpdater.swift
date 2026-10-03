@@ -11,13 +11,11 @@ import Sparkle
 // MARK: - Enums
 
 enum Channel {
-    case stable
-    case beta
+    case stable, beta
 }
 
 enum UpdateDownloadState {
-    case notDownloaded
-    case downloaded
+    case notDownloaded, downloaded
 }
 
 // MARK: - Bridge
@@ -141,12 +139,8 @@ final class AppUpdater: NSObject {
         #if DEBUG
             startAutoCheck(interval: interval ?? 60)
         #else
-            // In Release, we rely on Sparkle's default internal scheduler.
-            // If we are on Beta channel, we need to fetch the feed URL once at startup.
             if delegate.channel == .beta {
-                Task {
-                    _ = await fetchLatestBeta()
-                }
+                Task { _ = await fetchLatestBeta() }
             }
         #endif
     }
@@ -155,25 +149,10 @@ final class AppUpdater: NSObject {
 
     func silentCheckForUpdates() {
         let updater = updaterController.updater
+        guard updater.automaticallyChecksForUpdates, !updater.sessionInProgress else { return }
 
-        guard updater.automaticallyChecksForUpdates else { return }
-        guard !updater.sessionInProgress else { return }
-
-        if delegate.channel == .beta {
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                let success = await self.fetchLatestBeta()
-                guard success else { return }
-                self.guardedCheck { updater in
-                    if updater.automaticallyDownloadsUpdates {
-                        updater.checkForUpdatesInBackground()
-                    } else {
-                        updater.checkForUpdateInformation()
-                    }
-                }
-            }
-        } else {
-            guardedCheck { updater in
+        let triggerCheck = { [weak self] in
+            self?.guardedCheck { updater in
                 if updater.automaticallyDownloadsUpdates {
                     updater.checkForUpdatesInBackground()
                 } else {
@@ -181,27 +160,33 @@ final class AppUpdater: NSObject {
                 }
             }
         }
+
+        if delegate.channel == .beta {
+            Task { @MainActor [weak self] in
+                guard let self, await self.fetchLatestBeta() else { return }
+                triggerCheck()
+            }
+        } else {
+            triggerCheck()
+        }
     }
 
     private func guardedCheck(_ block: (SPUUpdater) -> Void) {
         let updater = updaterController.updater
-        guard !updater.sessionInProgress else {
-            return
-        }
+        guard !updater.sessionInProgress else { return }
         block(updater)
     }
 
     func checkForUpdates() {
-        guardedCheck { _ in
-            if delegate.channel == .beta {
+        guardedCheck { [weak self] _ in
+            guard let self else { return }
+            if self.delegate.channel == .beta {
                 Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    let success = await self.fetchLatestBeta()
-                    guard success else { return }
+                    guard let self, await self.fetchLatestBeta() else { return }
                     self.updaterController.checkForUpdates(nil)
                 }
             } else {
-                updaterController.checkForUpdates(nil)
+                self.updaterController.checkForUpdates(nil)
             }
         }
     }
@@ -209,12 +194,7 @@ final class AppUpdater: NSObject {
 #if DEBUG
     func debugForceCheckIfPossible() {
         let updater = updaterController.updater
-
-        // Sparkle đang bận → bỏ qua
-        if updater.sessionInProgress {
-            return
-        }
-
+        guard !updater.sessionInProgress else { return }
         if updater.automaticallyDownloadsUpdates {
             updater.checkForUpdatesInBackground()
         } else {
@@ -225,20 +205,43 @@ final class AppUpdater: NSObject {
 
     // MARK: - Beta appcast fetch
 
+    private struct CachedBetaFeed {
+        let url: String
+        let fetchedAt: Date
+    }
+    private var cachedBetaFeed: CachedBetaFeed?
+    private let betaFeedTTL: TimeInterval = 15 * 60
+
     private func fetchLatestBeta() async -> Bool {
+        if let cached = cachedBetaFeed, Date().timeIntervalSince(cached.fetchedAt) < betaFeedTTL {
+            self.delegate.betaFeedURL = cached.url
+            return true
+        }
+
         guard let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases") else {
             return false
         }
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let releases = try JSONDecoder().decode([BetaGitHubRelease].self, from: data)
-            if let beta = releases.first(where: { $0.isPrerelease }),
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 15
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, http.statusCode == 403 {
+                Logfile.app.warning("[Updater] GitHub API rate limit hit (HTTP 403).")
+                return delegate.betaFeedURL != nil
+            }
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            let releases = try decoder.decode([BetaGitHubRelease].self, from: data)
+            if let beta = releases.first(where: { $0.prerelease }),
                let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
-                self.delegate.betaFeedURL = appcast.browserDownloadUrl
+                let downloadUrl = appcast.browserDownloadUrl
+                self.delegate.betaFeedURL = downloadUrl
+                self.cachedBetaFeed = CachedBetaFeed(url: downloadUrl, fetchedAt: Date())
                 return true
             }
         } catch {
             Logfile.app.warning("[Updater] Failed to fetch beta releases: \(error.localizedDescription)")
+            return delegate.betaFeedURL != nil
         }
         return false
     }
@@ -277,21 +280,11 @@ final class AppUpdater: NSObject {
 // MARK: - GitHub API Models
 
 struct BetaGitHubRelease: Decodable {
-    let isPrerelease: Bool
+    let prerelease: Bool
     let assets: [BetaGitHubAsset]
-
-    enum CodingKeys: String, CodingKey {
-        case isPrerelease = "prerelease"
-        case assets
-    }
 }
 
 struct BetaGitHubAsset: Decodable {
     let name: String
     let browserDownloadUrl: String
-
-    enum CodingKeys: String, CodingKey {
-        case name
-        case browserDownloadUrl = "browser_download_url"
-    }
 }
