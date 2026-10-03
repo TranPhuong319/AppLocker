@@ -14,11 +14,13 @@ final class AboutWindowController: NSWindowController {
 
     private init() {
         let hostingController = NSHostingController(rootView: AboutView())
-        hostingController.sceneBridgingOptions = [.toolbars, .title]
+        hostingController.sceneBridgingOptions = []
         hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
 
         var config = WindowConfiguration()
         config.styleMask = [.titled, .closable, .fullSizeContentView]
+        config.titleVisibility = .hidden
+        config.titlebarAppearsTransparent = true
         config.size = WindowLayout.aboutSize
         config.minSize = WindowLayout.aboutSize
         config.maxSize = WindowLayout.aboutSize

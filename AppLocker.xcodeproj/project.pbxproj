@@ -16,6 +16,7 @@
 		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF9782FA5993F00827F2C /* AboutWindowController.swift */; };
 		E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97B2FA5994C00827F2C /* AboutView.swift */; };
+		E07DF98D2FA5994C00827F2C /* AboutView+SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */; };
 		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
@@ -170,6 +171,7 @@
 		E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
 		E07DF9782FA5993F00827F2C /* AboutWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutWindowController.swift; sourceTree = "<group>"; };
 		E07DF97B2FA5994C00827F2C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AboutView+SystemInfo.swift"; sourceTree = "<group>"; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
@@ -321,6 +323,7 @@
 			isa = PBXGroup;
 			children = (
 				E07DF97B2FA5994C00827F2C /* AboutView.swift */,
+				E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */,
 			);
 			path = About;
 			sourceTree = "<group>";
@@ -957,6 +960,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */,
+				E07DF98D2FA5994C00827F2C /* AboutView+SystemInfo.swift in Sources */,
 				E0FD75F22F59E36600D46B31 /* AddAppSheet.swift in Sources */,
 				E0FD75F32F59E36600D46B31 /* HotKeyManager.swift in Sources */,
 				E0FD75F62F59E36600D46B31 /* AppDelegate+Launch.swift in Sources */,
