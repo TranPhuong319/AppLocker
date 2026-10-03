@@ -84,10 +84,10 @@
     "semantic_hash": "4cb53acb22595782760c16bc4e888bf8"
   },
   "AppLocker/Appearance/Controller/About/AboutWindowController.swift": {
-    "mtime": 1789395886.0182226,
-    "seen": 1790680418.659498,
-    "ast_hash": "5e16187f6535d786eca4e2d69b46fbab",
-    "semantic_hash": "5e16187f6535d786eca4e2d69b46fbab"
+    "mtime": 1791002848.740117,
+    "seen": 1791020284.469391,
+    "ast_hash": "c7922f1a2a6089f8c95d7fd8707e78c3",
+    "semantic_hash": "c7922f1a2a6089f8c95d7fd8707e78c3"
   },
   "AppLocker/Appearance/Controller/BatchAuth/BatchAuthWindowController.swift": {
     "mtime": 1789394974.413913,
@@ -102,10 +102,10 @@
     "semantic_hash": "8fc365a2c5d45ef1b4ebeffa40310cfa"
   },
   "AppLocker/Appearance/Controller/Settings/SettingsWindowController.swift": {
-    "mtime": 1790783890.2839112,
-    "seen": 1790787692.426899,
-    "ast_hash": "7d30df7f3d8fbe701c5226b7512477e0",
-    "semantic_hash": "7d30df7f3d8fbe701c5226b7512477e0"
+    "mtime": 1790951904.504449,
+    "seen": 1791020284.469399,
+    "ast_hash": "b789e90d32411466906b4a0d7805866a",
+    "semantic_hash": "b789e90d32411466906b4a0d7805866a"
   },
   "AppLocker/Appearance/Controller/Utils/WindowManager.swift": {
     "mtime": 1789323791.6447191,
@@ -138,10 +138,10 @@
     "semantic_hash": "d3d06311c298a103376a421b2dcdc009"
   },
   "AppLocker/Appearance/View/About/AboutView.swift": {
-    "mtime": 1789396140.435015,
-    "seen": 1790680418.659544,
-    "ast_hash": "35ffc1a18cd150a22eedbb2a4f0e732a",
-    "semantic_hash": "35ffc1a18cd150a22eedbb2a4f0e732a"
+    "mtime": 1791018787.2184837,
+    "seen": 1791020284.469414,
+    "ast_hash": "4e8aaca9b2da5fa91ae771e877452cf1",
+    "semantic_hash": "4e8aaca9b2da5fa91ae771e877452cf1"
   },
   "AppLocker/Appearance/View/BatchAuth/BatchAuthView.swift": {
     "mtime": 1789794241.915314,
@@ -150,10 +150,10 @@
     "semantic_hash": "5155d5d2279b927dd3642dd9ce6797d8"
   },
   "AppLocker/Appearance/View/MainUI/Button/MainUIButtons.swift": {
-    "mtime": 1789794315.3688302,
-    "seen": 1790680418.6595478,
-    "ast_hash": "77d9ed744c096df118261159c24a15de",
-    "semantic_hash": "77d9ed744c096df118261159c24a15de"
+    "mtime": 1790788262.1817312,
+    "seen": 1791020284.469418,
+    "ast_hash": "36c2add72e232f546f5f7cac92b305ed",
+    "semantic_hash": "36c2add72e232f546f5f7cac92b305ed"
   },
   "AppLocker/Appearance/View/MainUI/Components/SectionHeader.swift": {
     "mtime": 1789794295.190344,
@@ -162,10 +162,10 @@
     "semantic_hash": "55fb9c38a66d7cfd43559b5802e99fcd"
   },
   "AppLocker/Appearance/View/MainUI/ContentView.swift": {
-    "mtime": 1789794361.784952,
-    "seen": 1790680418.65955,
-    "ast_hash": "cfbd694e0ccb0f280fa2d611af4d2a58",
-    "semantic_hash": "cfbd694e0ccb0f280fa2d611af4d2a58"
+    "mtime": 1790788280.5386884,
+    "seen": 1791020284.469422,
+    "ast_hash": "5a616a47419c460c4a376751cf5624b3",
+    "semantic_hash": "5a616a47419c460c4a376751cf5624b3"
   },
   "AppLocker/Appearance/View/MainUI/Helpers/AppIconView.swift": {
     "mtime": 1789794230.608553,
@@ -186,8 +186,8 @@
     "semantic_hash": "1a5da1d81b6d4134b921ee769be62fe7"
   },
   "AppLocker/Appearance/View/MainUI/Sheets/LockingPopupSheet.swift": {
-    "mtime": 1787895284.2944503,
-    "seen": 1790680418.659557,
+    "mtime": 1790788962.2959898,
+    "seen": 1791020284.46943,
     "ast_hash": "fd3c2952aa331cd2bed45b9cc22e0bf4",
     "semantic_hash": "fd3c2952aa331cd2bed45b9cc22e0bf4"
   },
@@ -210,28 +210,28 @@
     "semantic_hash": "64113ff9d7ca73163b385c4c5a3a2470"
   },
   "AppLocker/Appearance/View/Settings/GeneralSettingsTab.swift": {
-    "mtime": 1789224907.930432,
-    "seen": 1790680418.659563,
-    "ast_hash": "be52118750bf18a4962f4d76b8fadf66",
-    "semantic_hash": "be52118750bf18a4962f4d76b8fadf66"
+    "mtime": 1790995973.732822,
+    "seen": 1791020284.4694378,
+    "ast_hash": "db78520b82aad2e98c8cb83fb45d1cb3",
+    "semantic_hash": "db78520b82aad2e98c8cb83fb45d1cb3"
   },
   "AppLocker/Appearance/View/Settings/SecuritySettingsTab.swift": {
-    "mtime": 1789224907.9325643,
-    "seen": 1790680418.659565,
-    "ast_hash": "97e8e3a7ebddd54c2f43abf01b7523c4",
-    "semantic_hash": "97e8e3a7ebddd54c2f43abf01b7523c4"
+    "mtime": 1790788211.7047274,
+    "seen": 1791020284.469447,
+    "ast_hash": "8139b07cd78c0845c7687c7795311593",
+    "semantic_hash": "8139b07cd78c0845c7687c7795311593"
   },
   "AppLocker/Appearance/View/Settings/SettingsTab.swift": {
-    "mtime": 1790783881.7894297,
-    "seen": 1790787692.4280949,
-    "ast_hash": "8326a0ddd2387b64ac7d9d6d4ba18351",
-    "semantic_hash": "8326a0ddd2387b64ac7d9d6d4ba18351"
+    "mtime": 1790789976.6183105,
+    "seen": 1791020284.469449,
+    "ast_hash": "685cc75fa77ee29abeb1e4078aec0b73",
+    "semantic_hash": "685cc75fa77ee29abeb1e4078aec0b73"
   },
   "AppLocker/Appearance/View/Settings/SettingsView.swift": {
-    "mtime": 1790784441.538136,
-    "seen": 1790787692.428098,
-    "ast_hash": "a5da2b04b9735e782b5cf9bef6931c1b",
-    "semantic_hash": "a5da2b04b9735e782b5cf9bef6931c1b"
+    "mtime": 1790869982.713563,
+    "seen": 1791020284.46945,
+    "ast_hash": "c260247e10868d2ded4546d9470623ee",
+    "semantic_hash": "c260247e10868d2ded4546d9470623ee"
   },
   "AppLocker/Appearance/View/Settings/UpdatesSettingsTab.swift": {
     "mtime": 1789224907.9401858,
@@ -240,10 +240,10 @@
     "semantic_hash": "c90f4c5ce91a832a370795e9a98e6597"
   },
   "AppLocker/Appearance/View/Utils/WindowLayout.swift": {
-    "mtime": 1789792881.5669649,
-    "seen": 1790680418.659571,
-    "ast_hash": "4101497adf27be3d76e6a2dae4a80470",
-    "semantic_hash": "4101497adf27be3d76e6a2dae4a80470"
+    "mtime": 1791018180.0502355,
+    "seen": 1791020284.469454,
+    "ast_hash": "6adc27e1166b9dd3a84b3dcc331769b7",
+    "semantic_hash": "6adc27e1166b9dd3a84b3dcc331769b7"
   },
   "AppLocker/Appearance/View/Welcome/WelcomeView.swift": {
     "mtime": 1789394756.573467,
@@ -258,10 +258,10 @@
     "semantic_hash": "75365b79655043418ab2d4696b0de536"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate+Agent.swift": {
-    "mtime": 1789224907.9487867,
-    "seen": 1790680418.659594,
-    "ast_hash": "2f78300ff185b6618e3ab97889fafdf8",
-    "semantic_hash": "2f78300ff185b6618e3ab97889fafdf8"
+    "mtime": 1790996024.4432402,
+    "seen": 1791020284.46946,
+    "ast_hash": "f1a5a4cc5e8e7d9d83624d3ce82f5421",
+    "semantic_hash": "f1a5a4cc5e8e7d9d83624d3ce82f5421"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate+CheckDirectory.swift": {
     "mtime": 1789224907.9503796,
@@ -270,22 +270,22 @@
     "semantic_hash": "6bb6592eb2dcddae1c9a0ea3c89710ff"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate+Launch.swift": {
-    "mtime": 1789393365.3787649,
-    "seen": 1790680418.6595972,
-    "ast_hash": "81163da049f9ab819f046d4a80736c27",
-    "semantic_hash": "81163da049f9ab819f046d4a80736c27"
+    "mtime": 1790995957.320482,
+    "seen": 1791020284.469463,
+    "ast_hash": "dde1449d8854ac7d73361d637134e23f",
+    "semantic_hash": "dde1449d8854ac7d73361d637134e23f"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate+MenuBar.swift": {
-    "mtime": 1789308740.1637893,
-    "seen": 1790680418.659599,
-    "ast_hash": "f2c32ddf46b1eea63d72c9ca31f9a7c4",
-    "semantic_hash": "f2c32ddf46b1eea63d72c9ca31f9a7c4"
+    "mtime": 1790964210.8642309,
+    "seen": 1791020284.469465,
+    "ast_hash": "f052279a9d3d6007f9456e7a902a194f",
+    "semantic_hash": "f052279a9d3d6007f9456e7a902a194f"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate+Notifications.swift": {
-    "mtime": 1789393392.7607622,
-    "seen": 1790680418.6596138,
-    "ast_hash": "9bbf183b504c33746b0f098ca85a5036",
-    "semantic_hash": "9bbf183b504c33746b0f098ca85a5036"
+    "mtime": 1790788152.7125385,
+    "seen": 1791020284.469467,
+    "ast_hash": "5cf44c7a2193e798fe8a07516f1a9783",
+    "semantic_hash": "5cf44c7a2193e798fe8a07516f1a9783"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate+Restart.swift": {
     "mtime": 1789224907.9673839,
@@ -300,16 +300,16 @@
     "semantic_hash": "b3f6c38e450a51fdfd9ac8c220267da7"
   },
   "AppLocker/Bootstrap/AppDelegate/AppDelegate.swift": {
-    "mtime": 1789395387.936669,
-    "seen": 1790680418.6596181,
-    "ast_hash": "389791e7c547425dad6b292af5ab139a",
-    "semantic_hash": "389791e7c547425dad6b292af5ab139a"
+    "mtime": 1790997058.507814,
+    "seen": 1791020284.469472,
+    "ast_hash": "68efb253046e02557f3b7054ca451e62",
+    "semantic_hash": "68efb253046e02557f3b7054ca451e62"
   },
   "AppLocker/Bootstrap/CustomApplication.swift": {
-    "mtime": 1787895284.322318,
-    "seen": 1790680418.65962,
-    "ast_hash": "f67437731d50bb7a78c8af907b8a6a6e",
-    "semantic_hash": "f67437731d50bb7a78c8af907b8a6a6e"
+    "mtime": 1790951205.120261,
+    "seen": 1791020284.469474,
+    "ast_hash": "2bcc9b14427faa0a245c84047da081f5",
+    "semantic_hash": "2bcc9b14427faa0a245c84047da081f5"
   },
   "AppLocker/Bootstrap/main.swift": {
     "mtime": 1789393653.047711,
@@ -324,22 +324,22 @@
     "semantic_hash": "af4c6114ad9c98f93b866748170c04a1"
   },
   "AppLocker/EndpointSecurity/ESXPCClient.swift": {
-    "mtime": 1789663468.5759664,
-    "seen": 1790680418.659625,
-    "ast_hash": "1b091f6d90dc75f8f3af0f6a670aa86d",
-    "semantic_hash": "1b091f6d90dc75f8f3af0f6a670aa86d"
+    "mtime": 1790958282.6834805,
+    "seen": 1791020284.4694788,
+    "ast_hash": "7799230c2036fca7e2f529cb42f88d20",
+    "semantic_hash": "7799230c2036fca7e2f529cb42f88d20"
   },
   "AppLocker/EndpointSecurity/ExtensionInstaller.swift": {
-    "mtime": 1789224907.9872408,
-    "seen": 1790680418.659626,
-    "ast_hash": "0b3986f3878c67cfacff901c98341184",
-    "semantic_hash": "0b3986f3878c67cfacff901c98341184"
+    "mtime": 1790857143.0496523,
+    "seen": 1791020284.469481,
+    "ast_hash": "b03ce879d7cf7f94384c68127ca15a8e",
+    "semantic_hash": "b03ce879d7cf7f94384c68127ca15a8e"
   },
   "AppLocker/EndpointSecurity/XPCServer.swift": {
-    "mtime": 1789224907.9887881,
-    "seen": 1790680418.659627,
-    "ast_hash": "5cea652e5a8336ec62fde8f170bc9e60",
-    "semantic_hash": "5cea652e5a8336ec62fde8f170bc9e60"
+    "mtime": 1790958398.401746,
+    "seen": 1791020284.469482,
+    "ast_hash": "ba4fe3e46e3a22ac165b9a6dd80f4280",
+    "semantic_hash": "ba4fe3e46e3a22ac165b9a6dd80f4280"
   },
   "AppLocker/Resources/AppIcon.icon/icon.json": {
     "mtime": 1789530359.3578148,
@@ -396,10 +396,10 @@
     "semantic_hash": "4dfa235fc680165692afc244b9fc5cf7"
   },
   "AppLocker/Services/AppState/AppState.swift": {
-    "mtime": 1789794257.66542,
-    "seen": 1790680418.6596422,
-    "ast_hash": "bec57514447e16ffcb54cbaa1169ee0f",
-    "semantic_hash": "bec57514447e16ffcb54cbaa1169ee0f"
+    "mtime": 1790952012.7602096,
+    "seen": 1791020284.469502,
+    "ast_hash": "193be24c4cdfa739647b81ffa27698e7",
+    "semantic_hash": "193be24c4cdfa739647b81ffa27698e7"
   },
   "AppLocker/Services/CallServices/CallServiceObserver.swift": {
     "mtime": 1789224908.006535,
@@ -420,10 +420,10 @@
     "semantic_hash": "1f07a2e6633fba7592a428d50a2978d6"
   },
   "AppLocker/Services/LockES.swift": {
-    "mtime": 1789794198.7045846,
-    "seen": 1790680418.659662,
-    "ast_hash": "6227e21784e08fb9d6fc6cdee549f356",
-    "semantic_hash": "6227e21784e08fb9d6fc6cdee549f356"
+    "mtime": 1790788165.055122,
+    "seen": 1791020284.4695098,
+    "ast_hash": "180bfc514d509cc51cf391b48120b4ee",
+    "semantic_hash": "180bfc514d509cc51cf391b48120b4ee"
   },
   "AppLocker/Services/LockManagerProtocol.swift": {
     "mtime": 1789794190.222938,
@@ -432,10 +432,10 @@
     "semantic_hash": "6843f9f409e5197e80c4ad4ffaddcece"
   },
   "AppLocker/Update/AppUpdater.swift": {
-    "mtime": 1789224908.0286703,
-    "seen": 1790680418.6596649,
-    "ast_hash": "d7bf965d47d46576ae3eb6c2f356233e",
-    "semantic_hash": "d7bf965d47d46576ae3eb6c2f356233e"
+    "mtime": 1790958243.1336024,
+    "seen": 1791020284.4695182,
+    "ast_hash": "b2c2abec9a21a4a7529f61fb685c76ad",
+    "semantic_hash": "b2c2abec9a21a4a7529f61fb685c76ad"
   },
   "ESExtension/Bridging-Header.h": {
     "mtime": 1789224908.0395148,
@@ -444,10 +444,10 @@
     "semantic_hash": "4a82a532fe63e5d82b517aa4353cfd6c"
   },
   "ESExtension/EndpointSecurity/ESEventAuthFile.swift": {
-    "mtime": 1789556409.6805925,
-    "seen": 1790680418.659668,
-    "ast_hash": "6e4173f8c8e20f685e13f33687a2d729",
-    "semantic_hash": "6e4173f8c8e20f685e13f33687a2d729"
+    "mtime": 1790959683.5564783,
+    "seen": 1791020284.4695208,
+    "ast_hash": "d80d7bf7dccec688ea1bc9a2d747d0af",
+    "semantic_hash": "d80d7bf7dccec688ea1bc9a2d747d0af"
   },
   "ESExtension/EndpointSecurity/ESEventAuthSignal.swift": {
     "mtime": 1789224923.7096765,
@@ -474,10 +474,10 @@
     "semantic_hash": "352548d19091812cf55804cd6394be89"
   },
   "ESExtension/EndpointSecurity/ESSafetyValve.swift": {
-    "mtime": 1789224908.1225138,
-    "seen": 1790680418.6596758,
-    "ast_hash": "c37e452d6814f99dd664429fef48718c",
-    "semantic_hash": "c37e452d6814f99dd664429fef48718c"
+    "mtime": 1790952044.118848,
+    "seen": 1791020284.4695308,
+    "ast_hash": "2bbb6ce80dab2033581de51e3acccc03",
+    "semantic_hash": "2bbb6ce80dab2033581de51e3acccc03"
   },
   "ESExtension/Engine/ESManager+Auth.swift": {
     "mtime": 1789663397.0694072,
@@ -492,22 +492,22 @@
     "semantic_hash": "5649b418247a32c8de879291b445ee2c"
   },
   "ESExtension/Engine/ESManager+PendingProcess.swift": {
-    "mtime": 1789224908.1311114,
-    "seen": 1790680418.65968,
-    "ast_hash": "c322b9d79768e9a1ecea61443785cd62",
-    "semantic_hash": "c322b9d79768e9a1ecea61443785cd62"
+    "mtime": 1790951071.5821886,
+    "seen": 1791020284.469537,
+    "ast_hash": "2ad2863f2388d60f94edf3ee90217ee9",
+    "semantic_hash": "2ad2863f2388d60f94edf3ee90217ee9"
   },
   "ESExtension/Engine/ESManager.swift": {
-    "mtime": 1789663420.5294259,
-    "seen": 1790680418.659682,
-    "ast_hash": "64c0aab9b771308af6d7db1fed10899e",
-    "semantic_hash": "64c0aab9b771308af6d7db1fed10899e"
+    "mtime": 1790951039.5135036,
+    "seen": 1791020284.469538,
+    "ast_hash": "eda79301fdb878d06ca162dca5f12827",
+    "semantic_hash": "eda79301fdb878d06ca162dca5f12827"
   },
   "ESExtension/Engine/ESModularClients.swift": {
-    "mtime": 1789224908.137361,
-    "seen": 1790680418.659683,
-    "ast_hash": "bdafe24bda75eaf0ce7c533e136300ad",
-    "semantic_hash": "bdafe24bda75eaf0ce7c533e136300ad"
+    "mtime": 1790958031.1436024,
+    "seen": 1791020284.46954,
+    "ast_hash": "5e291caab07430342b697f61ebed6ec0",
+    "semantic_hash": "5e291caab07430342b697f61ebed6ec0"
   },
   "ESExtension/Engine/main.swift": {
     "mtime": 1787895284.4201293,
@@ -564,10 +564,10 @@
     "semantic_hash": "147d344398f1c8db147175996b1d764e"
   },
   "Shared/Extensions/FuzzySearch.swift": {
-    "mtime": 1789224908.1592398,
-    "seen": 1790680418.659701,
-    "ast_hash": "e321d32df34c00705b51014a132e056e",
-    "semantic_hash": "e321d32df34c00705b51014a132e056e"
+    "mtime": 1790952153.5291164,
+    "seen": 1791020284.4695601,
+    "ast_hash": "8d9e3805d2475fc70e4c30d72f09a6f3",
+    "semantic_hash": "8d9e3805d2475fc70e4c30d72f09a6f3"
   },
   "Shared/LockedAppConfig.swift": {
     "mtime": 1789227843.5157993,
@@ -606,10 +606,10 @@
     "semantic_hash": "36935eb3c30ad4de9de69c63310c6747"
   },
   ".agents/AGENTS.md": {
-    "mtime": 1789349820.3240278,
-    "seen": 1790680418.659712,
-    "ast_hash": "b51006b925b8aaca81e4d00407c1909a",
-    "semantic_hash": "b51006b925b8aaca81e4d00407c1909a"
+    "mtime": 1791001372.6376743,
+    "seen": 1791020284.469575,
+    "ast_hash": "8be2c4f8df25bfa093445b33a260f687",
+    "semantic_hash": "8be2c4f8df25bfa093445b33a260f687"
   },
   ".agents/rules/architecture.md": {
     "mtime": 1789322932.6515284,
@@ -654,10 +654,10 @@
     "semantic_hash": "23bf15c0c18604aa32dcde265e03c92d"
   },
   ".agents/rules/ui-design.md": {
-    "mtime": 1789323179.1800604,
-    "seen": 1790680418.6597388,
-    "ast_hash": "83241494353778cc924865dae23111a7",
-    "semantic_hash": "83241494353778cc924865dae23111a7"
+    "mtime": 1791001391.1009362,
+    "seen": 1791020284.4695911,
+    "ast_hash": "d62d1e1dd4f826b933e9992a73b4442a",
+    "semantic_hash": "d62d1e1dd4f826b933e9992a73b4442a"
   },
   ".agents/rules/ui-window-architecture.md": {
     "mtime": 1789395592.5381975,
@@ -984,28 +984,28 @@
     "semantic_hash": "f8169263039217aec7d9df04ff8c8f89"
   },
   "AppLocker/Appearance/View/Settings/LogEntryRow.swift": {
-    "mtime": 1790786440.4304895,
-    "seen": 1790787692.428027,
-    "ast_hash": "4e699a0856afeef65b326bfe776687d7",
-    "semantic_hash": "4e699a0856afeef65b326bfe776687d7"
+    "mtime": 1791008147.5581777,
+    "seen": 1791020284.46944,
+    "ast_hash": "02315a003a7c4424c017bbf24dd7fbd2",
+    "semantic_hash": "02315a003a7c4424c017bbf24dd7fbd2"
   },
   "AppLocker/Appearance/View/Settings/LogsSettingsTab.swift": {
-    "mtime": 1790785698.463266,
-    "seen": 1790787692.42803,
-    "ast_hash": "a8132295f660859ec1c7e307c5359d29",
-    "semantic_hash": "a8132295f660859ec1c7e307c5359d29"
+    "mtime": 1791017350.7163875,
+    "seen": 1791020284.4694452,
+    "ast_hash": "798b34d843e1abcd6f0bef63d088de21",
+    "semantic_hash": "798b34d843e1abcd6f0bef63d088de21"
   },
   "AppLocker/Services/LogFilterModels.swift": {
-    "mtime": 1790786707.0187535,
-    "seen": 1790787692.430047,
-    "ast_hash": "0e691537ec7321404946d1166e3c8902",
-    "semantic_hash": "0e691537ec7321404946d1166e3c8902"
+    "mtime": 1791008172.988743,
+    "seen": 1791020284.469514,
+    "ast_hash": "9ecfff40d63f582898184ae85518e96a",
+    "semantic_hash": "9ecfff40d63f582898184ae85518e96a"
   },
   "AppLocker/Services/LogStore.swift": {
-    "mtime": 1790786779.9105911,
-    "seen": 1790787692.4300501,
-    "ast_hash": "2cbffd4a0815e709d2a27fc4ef0ad2bc",
-    "semantic_hash": "2cbffd4a0815e709d2a27fc4ef0ad2bc"
+    "mtime": 1790955921.9266353,
+    "seen": 1791020284.469516,
+    "ast_hash": "9d73869f2a77cb5e3f62409ac3165350",
+    "semantic_hash": "9d73869f2a77cb5e3f62409ac3165350"
   },
   ".agents/skills/speckit-taskstoissues/SKILL.md": {
     "mtime": 1787895284.246495,
@@ -1030,5 +1030,77 @@
     "seen": 1790787692.433055,
     "ast_hash": "0a11d00cbf417d1bb8640d33dccebec3",
     "semantic_hash": "0a11d00cbf417d1bb8640d33dccebec3"
+  },
+  "AppLocker/Appearance/View/About/AboutView+SystemInfo.swift": {
+    "mtime": 1791019048.1451492,
+    "seen": 1791020284.469412,
+    "ast_hash": "b850ebde94712746d9fc111bedc695fc",
+    "semantic_hash": "b850ebde94712746d9fc111bedc695fc"
+  },
+  "AppLocker/Appearance/View/Settings/LogsSettingsTab+AutoScroll.swift": {
+    "mtime": 1791017347.3600507,
+    "seen": 1791020284.4694421,
+    "ast_hash": "b3111357f865383549945fe6da7b4f06",
+    "semantic_hash": "b3111357f865383549945fe6da7b4f06"
+  },
+  "AppLocker/Appearance/View/Settings/LogsSettingsTab+Placeholders.swift": {
+    "mtime": 1791017952.4188967,
+    "seen": 1791020284.469444,
+    "ast_hash": "88465cf564eae25aae6baf386708f7c4",
+    "semantic_hash": "88465cf564eae25aae6baf386708f7c4"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_128x128.png": {
+    "mtime": 1787895284.3415794,
+    "seen": 1791020284.469701,
+    "ast_hash": "63a56e6b2a7c5133424f091298f15d43",
+    "semantic_hash": "63a56e6b2a7c5133424f091298f15d43"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png": {
+    "mtime": 1787895284.342238,
+    "seen": 1791020284.469703,
+    "ast_hash": "d10a8a961f3403f540499554f8f66bfe",
+    "semantic_hash": "d10a8a961f3403f540499554f8f66bfe"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_16x16.png": {
+    "mtime": 1787895284.3434484,
+    "seen": 1791020284.4697049,
+    "ast_hash": "1b19300e35d8a5ed56127bef2264d010",
+    "semantic_hash": "1b19300e35d8a5ed56127bef2264d010"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_16x16@2x.png": {
+    "mtime": 1787895284.3445091,
+    "seen": 1791020284.469706,
+    "ast_hash": "bae81ce8c1953308d442c538cc4a9ccb",
+    "semantic_hash": "bae81ce8c1953308d442c538cc4a9ccb"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png": {
+    "mtime": 1787895284.3461406,
+    "seen": 1791020284.469708,
+    "ast_hash": "d10a8a961f3403f540499554f8f66bfe",
+    "semantic_hash": "d10a8a961f3403f540499554f8f66bfe"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256@2x.png": {
+    "mtime": 1787895284.347547,
+    "seen": 1791020284.46971,
+    "ast_hash": "f5fb9fbe9e898111ee82b7003a34247c",
+    "semantic_hash": "f5fb9fbe9e898111ee82b7003a34247c"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_32x32.png": {
+    "mtime": 1787895284.3549685,
+    "seen": 1791020284.469711,
+    "ast_hash": "bae81ce8c1953308d442c538cc4a9ccb",
+    "semantic_hash": "bae81ce8c1953308d442c538cc4a9ccb"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png": {
+    "mtime": 1787895284.3584619,
+    "seen": 1791020284.469713,
+    "ast_hash": "c6baff26389ecb646d40f451375f2858",
+    "semantic_hash": "c6baff26389ecb646d40f451375f2858"
+  },
+  "AppLocker/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512.png": {
+    "mtime": 1787895284.3602047,
+    "seen": 1791020284.4697149,
+    "ast_hash": "f5fb9fbe9e898111ee82b7003a34247c",
+    "semantic_hash": "f5fb9fbe9e898111ee82b7003a34247c"
   }
 }

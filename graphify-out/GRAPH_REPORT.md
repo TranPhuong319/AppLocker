@@ -1,133 +1,156 @@
-# Graph Report - AppLocker  (2026-10-01)
+# Graph Report - AppLocker  (2026-10-03)
 
 ## Corpus Check
-- 20 files · ~276,012 words
+- 46 files · ~279,312 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1273 nodes · 2650 edges · 106 communities (72 shown, 34 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 209 edges (avg confidence: 0.83)
-- Token cost: 500 input · 200 output
+- 1473 nodes · 2680 edges · 129 communities (75 shown, 54 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 170 edges (avg confidence: 0.83)
+- Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- Batch Auth UI & Window Controller
-- App Lifecycle & Auto-Update
-- Touch Bar & NSToolbar
-- ESExtension NOTIFY_EXEC Engine
-- Window Layout & Drag Hosting
-- AUTH_EXEC & File Tamper Protection
-- Speckit Bash Scripts
-- Agent Rules & Architecture Docs
-- AppState Core & Search Filtering
-- XPC Client & ES Communication
-- ESManager & Safety Valve
-- Settings Tab Views
-- Main UI Buttons & Rows
-- AppDelegate & About Window
-- GitHub CI Localization Scripts
-- SwiftUI Preview Mocks
-- Appearance Settings Tab
-- Window Controllers Hub
-- Extension Installer & XPC Lifecycle
-- Architecture Docs & System Overview
-- Module Group 20
-- Module Group 21
-- Module Group 22
-- Module Group 23
-- Module Group 24
-- Module Group 25
-- Module Group 26
-- Module Group 27
-- Module Group 28
-- Module Group 29
-- Module Group 30
-- Module Group 31
-- Module Group 32
-- Module Group 33
-- Module Group 34
-- Module Group 35
-- Module Group 36
-- Module Group 37
-- Module Group 38
-- Module Group 39
-- Module Group 40
-- Module Group 41
-- Module Group 42
-- Module Group 43
-- Module Group 44
-- Module Group 45
-- Module Group 46
-- Module Group 47
-- Module Group 48
-- Module Group 49
-- Module Group 50
-- Module Group 51
-- Module Group 52
-- Module Group 53
-- Module Group 54
-- Module Group 55
-- Module Group 56
-- Module Group 57
-- Module Group 58
-- Module Group 59
-- Module Group 60
-- Module Group 61
-- Module Group 62
-- Module Group 63
-- Module Group 64
-- Module Group 65
-- Module Group 66
-- Module Group 67
-- Module Group 68
-- Module Group 69
-- Module Group 70
-- Module Group 71
-- Module Group 72
-- Module Group 73
-- Module Group 74
-- Module Group 75
-- Module Group 76
-- Module Group 77
-- Module Group 78
-- Module Group 79
-- Module Group 80
-- Module Group 81
-- Module Group 82
-- Module Group 83
-- Module Group 84
-- Module Group 85
-- Module Group 86
-- Module Group 87
-- Module Group 88
--  Agents Skills Speckit Converg
--  Agents Skills Speckit Tasksto
--  Github Issue Bug Report
--  Github Issue Feature
--  Github Issue Template Config 
--  Github Pr Template
--  Github Workflows Main Ci
-- Applock Resources Icon Svg
-- Applocker Appearance Controlle
-- Applocker Appearance View Sett
-- Docs Images Icon
-- Docs Images Screenshots Menuba
-- Security Md
-- Specs 003 Checklists Requireme
-- Specs 003 Fix Uninstall Spec
-- Specs 005 Checklists Requireme
-- Specs 005 Native Numeric Spec
+- About & System Diagnostics
+- Log Management & Filtering
+- XPC Inter-Process Communication
+- .bottomActionBar
+- About & System Diagnostics
+- Authentication & Security Lock
+- XPC Inter-Process Communication
+- EndpointSecurity Engine
+- Authentication & Security Lock
+- check-prerequisites.sh
+- About & System Diagnostics
+- Log Management & Filtering
+- Architecture Rules & Guidelines
+- EndpointSecurity Engine
+- App Lifecycle & Application Delegate
+- Log Management & Filtering
+- EndpointSecurity Engine
+- About & System Diagnostics
+- Log Management & Filtering
+- Log Management & Filtering
+- es_event_exec_t
+- Authentication & Security Lock
+- argparse
+- macOS TouchBar Integration
+- App Lifecycle & Application Delegate
+- App Lifecycle & Application Delegate
+- App Icon & Asset Pipeline
+- Authentication & Security Lock
+- MainUIButtons.swift
+- ContentView.swift
+- Preferences & Settings Interface
+- ESExtension Endpoint Security 
+- Preferences & Settings Interface
+- Preferences & Settings Interface
+- EndpointSecurity Engine
+- App Lifecycle & Application Delegate
+- App Lifecycle & Application Delegate
+- Log Management & Filtering
+- About & System Diagnostics
+- macOS TouchBar Integration
+- Log Management & Filtering
+- Preferences & Settings Interface
+- Window Layout & Management
+- Window Layout & Management
+- Log Management & Filtering
+- Log Management & Filtering
+- .listener()
+- Window Layout & Management
+- macOS TouchBar Integration
+- macOS TouchBar Integration
+- SectionHeader.swift
+- AppLocker/Bridging-Header.h
+- HotKeyManager.swift
+- ESAppProtocol.swift
+- App Lifecycle & Application Delegate
+- Log Management & Filtering
+- Speckit Implement Skill
+- AddAppSheet.swift
+- Preferences & Settings Interface
+- Preferences & Settings Interface
+- Preferences & Settings Interface
+- App Lifecycle & Application Delegate
+- CallServiceObserver
+- Data
+- Log Management & Filtering
+- AppRowButtonStyle.swift
+- Log Management & Filtering
+- WelcomeView.swift
+- S
+- Authentication & Security Lock
+- MissingAppsSheet.swift
+- Log Management & Filtering
+- App Lifecycle & Application Delegate
+- App Lifecycle & Application Delegate
+- TouchBarType
+- pid_t
+- XPC Inter-Process Communication
+- App Lifecycle & Application Delegate
+- .panel()
+- AUTH_EXEC PID Assignment
+- Speckit Checklist Skill
+- License (English)
+- AppLocker AppIcon Assets
+- AppLocker Usage Guide (EN)
+- Conventional Commit Style
+- English Base Localization
+- Speckit Analyze Skill
+- Speckit Clarify Skill
+- Speckit Constitution Skill
+- Speckit Converge Skill
+- Speckit Tasks To Issues
+- Bug Report Issue Template
+- Feature Request Issue Template
+- GitHub Issue Template Config
+- Pull Request Template
+- GitHub CI/CD Workflow
+- AppLocker App Icon SVG
+- Context
+- Sendable
+- String
+- Bool
+- AppIcon icon_128x128@2x.png
+- AppIcon icon_128x128.png
+- AppIcon icon_16x16@2x.png
+- AppIcon icon_16x16.png
+- AppIcon icon_256x256@2x.png
+- AppIcon icon_256x256.png
+- AppIcon icon_32x32@2x.png
+- AppIcon icon_32x32.png
+- AppIcon icon_512x512.png
+- Color
+- Content
+- App Icon & Asset Pipeline
+- Menu Bar Quick Access Screensh
+- NSXPCListener
+- uid_t
+- UnsafePointer
+- Int
+- Never
+- NSCoder
+- Security Policy
+- Uninstall Fix Requirements Che
+- Fix Uninstall/Reset Flow Spec
+- Numeric Transition Requirement
+- Native Numeric Transition Spec
+- Task
+- TimeInterval
+- UInt64
+- UUID
 
 ## God Nodes (most connected - your core abstractions)
-1. `ESManager` - 103 edges
-2. `Logfile` - 99 edges
-3. `AppState` - 73 edges
-4. `AppDelegate` - 64 edges
-5. `ESMessage` - 33 edges
-6. `XPCServer` - 31 edges
-7. `InstalledApp` - 31 edges
-8. `AppUpdater` - 30 edges
-9. `ESSafetyValve` - 24 edges
-10. `LogStore` - 24 edges
+1. `ESManager` - 105 edges
+2. `AppState` - 74 edges
+3. `AppDelegate` - 69 edges
+4. `LogsSettingsTab` - 46 edges
+5. `Logfile` - 42 edges
+6. `AppUpdater` - 32 edges
+7. `XPCServer` - 31 edges
+8. `AboutView` - 27 edges
+9. `LogStore` - 26 edges
+10. `SettingsTab` - 24 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `AppLocker Demo Animation` --conceptually_related_to--> `AppLocker Project Overview`  [INFERRED]
@@ -149,322 +172,332 @@
 - **Feature 001 Full Artifact Set** — specs_001_migrate_observable_spec, specs_001_migrate_observable_plan, specs_001_tasks, specs_001_research, specs_001_data_model, specs_001_quickstart, specs_001_contracts_state_protocols, specs_001_checklists_requirements [EXTRACTED 1.00]
 - **AppLocker Three-Layer Architecture** — _spec_existing_architecture_main_application, _spec_existing_architecture_es_extension, _spec_existing_architecture_shared_core [EXTRACTED 1.00]
 - **Active Feature Specifications** — specs_001_migrate_observable_spec, specs_002_separate_user_configs_spec, specs_003_fix_uninstall_spec, specs_005_native_numeric_spec, specs_006_liquid_glass_spec [INFERRED 0.90]
-- **AppLocker UI Architecture Stack** — _agents_rules_ui_design_liquid_glass, _agents_rules_ui_window_architecture_appkit_skeleton, _agents_rules_ui_window_architecture_observable, _agents_rules_concurrency_mainactor [INFERRED 0.90]
 - **AppLocker UI Surfaces** — docs_images_screenshots_main, docs_images_screenshots_auth, docs_images_screenshots_menubar, docs_images_screenshots_batch [INFERRED 0.90]
 - **GitHub Contribution Workflow** — _github_issue_bug_report, _github_issue_feature, _github_pr_template, _github_workflows_main_ci [INFERRED 0.90]
 - **Security Core (Crypto + XPC + Anti-Tamper)** — _spec_existing_architecture_mutual_ecdsa, readme_anti_tampering, _agents_rules_xpc_and_security_xpc_reconnect, _agents_rules_architecture_cryptokit [INFERRED 0.90]
 - **Speckit Template System** — _specify_templates_spec, _specify_templates_plan, _specify_templates_tasks, _specify_templates_checklist, _specify_templates_constitution [INFERRED 0.90]
-- **Speckit Development Workflow** — _agents_skills_speckit_specify_skill, _agents_skills_speckit_plan_skill, _agents_skills_speckit_tasks_skill, _agents_skills_speckit_implement_skill, _agents_skills_speckit_analyze_skill [INFERRED 0.95]
 
-## Communities (106 total, 34 thin omitted)
+## Communities (129 total, 54 thin omitted)
 
-### Community 0 - "Batch Auth UI & Window Controller"
+### Community 0 - "About & System Diagnostics"
 Cohesion: 0.06
-Nodes (40): BatchAuthWindowController, .isWindowVisible, Bool, NSCoder, NSWindow, BatchAppRowView, .body, BatchAuthView (+32 more)
+Nodes (37): AnyObject, .actionsSection, Void, AppUpdater, .automaticallyChecksForUpdates, .automaticallyDownloadsUpdates, .currentChannel, .downloadState (+29 more)
 
-### Community 1 - "App Lifecycle & Auto-Update"
-Cohesion: 0.08
-Nodes (27): DispatchSourceFileSystemObject, DispatchSourceTimer, Equatable, es_process_t, OpaquePointer, Bool, Int32, Void (+19 more)
+### Community 1 - "Log Management & Filtering"
+Cohesion: 0.06
+Nodes (40): LogEntryRow, .body, .categoryBadge, .copyIcon, .levelColor, .levelDot, .repeatBadge, .subsystemBadge (+32 more)
 
-### Community 2 - "Touch Bar & NSToolbar"
+### Community 2 - "XPC Inter-Process Communication"
+Cohesion: 0.07
+Nodes (31): BatchAuthWindowController, .isWindowVisible, Bool, NSCoder, NSWindow, BatchAppRowView, .body, BatchAuthView (+23 more)
+
+### Community 3 - ".bottomActionBar"
+Cohesion: 0.07
+Nodes (21): .bottomActionBar, .bottomActionBar, .bottomActionBar, NSWindow, AppState, .searchTextLockApps, .searchTextUnlockableApps, .systemUnlockableApps (+13 more)
+
+### Community 4 - "About & System Diagnostics"
 Cohesion: 0.09
-Nodes (24): DragHostingView, EqualWidthKey, LiquidGlassBackgroundModifier, LiquidGlassBarModifier, LiquidGlassCapsuleModifier, LiquidGlassCardModifier, LiquidGlassCircleModifier, LiquidGlassContainer (+16 more)
+Nodes (24): .body, DragHostingView, EqualWidthKey, LiquidGlassBackgroundModifier, LiquidGlassBarModifier, LiquidGlassCapsuleModifier, LiquidGlassCardModifier, LiquidGlassCircleModifier (+16 more)
 
-### Community 3 - "ESExtension NOTIFY_EXEC Engine"
-Cohesion: 0.17
-Nodes (14): es_auth_result_t, es_event_rename_t, es_message_t, es_string_token_t, Bool, OpaquePointer, OpaquePointer, ESMessage (+6 more)
+### Community 5 - "Authentication & Security Lock"
+Cohesion: 0.06
+Nodes (21): MockLockManager, Bool, Int, Set, Notification, LockManagerProtocol, Bool, Int (+13 more)
 
-### Community 4 - "Window Layout & Drag Hosting"
+### Community 6 - "XPC Inter-Process Communication"
+Cohesion: 0.10
+Nodes (19): ESXPCClient, Bool, Int, Int32, NSXPCConnection, String, Action, install (+11 more)
+
+### Community 7 - "EndpointSecurity Engine"
+Cohesion: 0.08
+Nodes (24): DispatchSourceFileSystemObject, DispatchSourceTimer, es_process_t, audit_token_t, pid_t, Bool, Int32, Void (+16 more)
+
+### Community 8 - "Authentication & Security Lock"
+Cohesion: 0.09
+Nodes (24): ConfigLoadResult, ConfigStore, .configURL, .userDirectoryURL, Bool, Int, URL, Codable (+16 more)
+
+### Community 9 - "check-prerequisites.sh"
 Cohesion: 0.13
 Nodes (29): check-prerequisites.sh script, check_dir(), check_file(), find_specify_root(), format_speckit_command(), get_current_branch(), get_feature_paths(), get_invoke_separator() (+21 more)
 
-### Community 5 - "AUTH_EXEC & File Tamper Protection"
-Cohesion: 0.09
-Nodes (14): .bottomActionBar, .bottomActionBar, NSWindow, AppState, .searchTextLockApps, .searchTextUnlockableApps, Bool, Date (+6 more)
+### Community 10 - "About & System Diagnostics"
+Cohesion: 0.07
+Nodes (28): AboutView, .appIdentitySection, .architectureBadgesSection, .architectureButton, .architectureName, .copyVersionIcon, .footerSection, .isExtensionActive (+20 more)
 
-### Community 6 - "Speckit Bash Scripts"
-Cohesion: 0.08
-Nodes (29): AppLocker Agent Rules, AppIconProvider NSCache, Clean Architecture & Platform API Rules, CryptoKit ECDSA Auth, YAGNI (You Aren't Gonna Need It), @MainActor UI Isolation, Swift Concurrency Rules, Apple Unified Logging (os.Logger) (+21 more)
-
-### Community 7 - "Agent Rules & Architecture Docs"
-Cohesion: 0.11
-Nodes (16): SettingsTab, appearance, .displayName, general, .iconName, .id, logs, security (+8 more)
-
-### Community 8 - "AppState Core & Search Filtering"
-Cohesion: 0.11
-Nodes (19): AddAppRow, DeleteQueueRow, LockedAppRow, .body, MissingAppRow, .body, Bool, Void (+11 more)
-
-### Community 9 - "XPC Client & ES Communication"
-Cohesion: 0.15
-Nodes (8): DispatchQueue, es_event_type_t, ESAuthorizer, ESClientObject, ESTamper, Bool, OpaquePointer, Sendable
-
-### Community 10 - "ESManager & Safety Valve"
-Cohesion: 0.16
-Nodes (8): Combine, Darwin, EndpointSecurity, Foundation, os, OSLog, Security, SystemConfiguration
-
-### Community 11 - "Settings Tab Views"
+### Community 11 - "Log Management & Filtering"
 Cohesion: 0.10
-Nodes (9): AppDelegate, Bool, Notification.Name, NSApplicationDelegate, NSMenuDelegate, NSStatusItem, UNNotificationRequest, UNUserNotificationCenterDelegate (+1 more)
+Nodes (14): Equatable, OpaquePointer, LoadedConfigs, Bool, Set, uid_t, NSXPCConnection, XPCConn (+6 more)
 
-### Community 12 - "Main UI Buttons & Rows"
+### Community 12 - "Architecture Rules & Guidelines"
+Cohesion: 0.07
+Nodes (31): AppLocker Agent Rules, AppIconProvider NSCache, Clean Architecture & Platform API Rules, CryptoKit ECDSA Auth, YAGNI (You Aren't Gonna Need It), @MainActor UI Isolation, Swift Concurrency Rules, Apple Unified Logging (os.Logger) (+23 more)
+
+### Community 13 - "EndpointSecurity Engine"
+Cohesion: 0.19
+Nodes (11): es_auth_result_t, es_event_rename_t, Bool, ESMessage, Int32, OpaquePointer, String, ESSafetyValve (+3 more)
+
+### Community 14 - "App Lifecycle & Application Delegate"
+Cohesion: 0.09
+Nodes (14): .isAgentActive, .isLaunchedByLaunchd, Bool, AppDelegate, String, NSImageView, Notification.Name, HotKeyManager (+6 more)
+
+### Community 15 - "Log Management & Filtering"
+Cohesion: 0.09
+Nodes (26): AnyShapeStyle, LogsSettingsTab, .logListContent, .clearIcon, .copyStatusIcon, .dragSelectionOverlay, .emptyPlaceholder, .exportFilename (+18 more)
+
+### Community 16 - "EndpointSecurity Engine"
+Cohesion: 0.15
+Nodes (11): DispatchQueue, es_event_type_t, UInt64, ESAuthorizer, ESClientObject, ESTamper, Bool, ESMessage (+3 more)
+
+### Community 17 - "About & System Diagnostics"
+Cohesion: 0.15
+Nodes (7): Combine, Darwin, EndpointSecurity, Foundation, os, Security, SystemConfiguration
+
+### Community 18 - "Log Management & Filtering"
+Cohesion: 0.12
+Nodes (16): LogSelectionManager, .hasSelection, .selectedCount, Bool, CGPoint, CGRect, DateFormatter, Int (+8 more)
+
+### Community 19 - "Log Management & Filtering"
+Cohesion: 0.12
+Nodes (7): AppKit, Notification.Name, Observation, OSLog, SwiftUI, SystemExtensions, UniformTypeIdentifiers
+
+### Community 20 - "es_event_exec_t"
+Cohesion: 0.14
+Nodes (16): es_event_exec_t, es_file_t, es_message_t, es_string_token_t, OpaquePointer, ESMessage, .pointee, OpaquePointer (+8 more)
+
+### Community 21 - "Authentication & Security Lock"
+Cohesion: 0.17
+Nodes (14): LockingPopupSheet, .body, AppearanceSettingsTab, .body, Bool, ThemeThumbnailView, .body, .bottomWindowLayer (+6 more)
+
+### Community 22 - "argparse"
 Cohesion: 0.14
 Nodes (19): argparse, collections, get_lang_name(), main(), write_stats(), generate_html(), generate_markdown(), get_commits() (+11 more)
 
-### Community 13 - "AppDelegate & About Window"
-Cohesion: 0.14
-Nodes (10): MockLockManager, Bool, Int, Set, S, Sequence, fuzzyMatch(), String (+2 more)
-
-### Community 14 - "GitHub CI Localization Scripts"
+### Community 23 - "macOS TouchBar Integration"
 Cohesion: 0.16
 Nodes (9): AnyObject, NSButton, Notification, NSTouchBarItem, NSWindow, TouchBarManager, NSTouchBar, NSTouchBarDelegate (+1 more)
 
-### Community 15 - "SwiftUI Preview Mocks"
-Cohesion: 0.21
-Nodes (12): AppearanceSettingsTab, .body, Bool, ThemeThumbnailView, .body, .bottomWindowLayer, .darkWallpaper, .lightWallpaper (+4 more)
+### Community 24 - "App Lifecycle & Application Delegate"
+Cohesion: 0.13
+Nodes (12): NSApplication, .appDelegate, URL, Bool, NSAlert, AlertResult, button, cancelled (+4 more)
 
-### Community 16 - "Appearance Settings Tab"
+### Community 25 - "App Lifecycle & Application Delegate"
 Cohesion: 0.11
-Nodes (20): LogSubsystemFilter, all, .displayName, esExtension, .id, mainApp, .subsystemPrefix, LogTimeRange (+12 more)
+Nodes (15): AgentManageResult, alreadyInstalled, alreadyUninstalled, failed, installed, uninstalled, Error, String (+7 more)
 
-### Community 17 - "Window Controllers Hub"
+### Community 26 - "App Icon & Asset Pipeline"
 Cohesion: 0.16
-Nodes (10): NSApplication, .appDelegate, NSAlert, AlertResult, button, cancelled, AlertShow, Bool (+2 more)
+Nodes (10): AppIconView, .body, Bool, CGFloat, NSImage, AppIconProvider, CGFloat, NSImage (+2 more)
 
-### Community 18 - "Extension Installer & XPC Lifecycle"
-Cohesion: 0.18
-Nodes (11): Action, install, uninstall, ExtensionInstaller, Bool, Error, Void, OSSystemExtensionProperties (+3 more)
-
-### Community 19 - "Architecture Docs & System Overview"
-Cohesion: 0.14
-Nodes (14): LogsSettingsTab, .emptyPlaceholder, .exportFilename, .loadingPlaceholder, .logListContent, LogTextDocument, Bool, DateFormatter (+6 more)
-
-### Community 20 - "Module Group 20"
+### Community 27 - "Authentication & Security Lock"
 Cohesion: 0.20
-Nodes (11): .body, LogStore, .searchText, .selectedLevel, .selectedSubsystem, .selectedTimeRange, Bool, Void (+3 more)
+Nodes (8): LockES, Bool, InstalledApp, Int, LockedAppConfig, String, Void, LockManagerProtocol
 
-### Community 21 - "Module Group 21"
+### Community 28 - "MainUIButtons.swift"
+Cohesion: 0.20
+Nodes (13): AddAppRow, .body, .selectionIndicator, DeleteQueueRow, .body, LockedAppRow, .body, MissingAppRow (+5 more)
+
+### Community 29 - "ContentView.swift"
+Cohesion: 0.12
+Nodes (13): ContentView, .body, .contentView, .deleteQueueNotificationBar, .emptyStateView, .mainListView, .missingAppsWarningButton, .scrollEdgeDissolveMask (+5 more)
+
+### Community 30 - "Preferences & Settings Interface"
+Cohesion: 0.16
+Nodes (9): SettingsNavigator, .selectedTab, SettingsView, .body, .securityLockIcon, Bool, Int, Void (+1 more)
+
+### Community 31 - "ESExtension Endpoint Security "
 Cohesion: 0.14
 Nodes (17): ESExtension Endpoint Security Daemon, Process Interception Flow (SIGSTOP/SIGCONT), AppLocker Main Application, Mutual ECDSA P-256 XPC Handshake, Shared Core Framework, AppLocker Demo Animation, Touch ID Auth Dialog Screenshot, Batch Auth Multi-App Screenshot (+9 more)
 
-### Community 22 - "Module Group 22"
-Cohesion: 0.12
-Nodes (16): LocalizedStringKey, ThemeMode, dark, .displayName, .id, light, system, LocalizedStringKey (+8 more)
-
-### Community 23 - "Module Group 23"
-Cohesion: 0.20
-Nodes (7): audit_token_t, pid_t, audit_token_t, Bool, Int, Int32, pid_t
-
-### Community 24 - "Module Group 24"
+### Community 32 - "Preferences & Settings Interface"
 Cohesion: 0.15
 Nodes (8): GeneralSettingsTab, .body, Bool, Bool, UpdatesSettingsTab, .body, .currentVersionRow, .selectedChannel
 
-### Community 25 - "Module Group 25"
-Cohesion: 0.21
-Nodes (8): ConfigLoadResult, ConfigStore, .configURL, .userDirectoryURL, Bool, Int, URL, Void
-
-### Community 26 - "Module Group 26"
-Cohesion: 0.15
-Nodes (10): ContentView, .contentView, .deleteQueueNotificationBar, .emptyStateView, .mainListView, .missingAppsWarningButton, .scrollEdgeDissolveMask, LocalizedStringKey (+2 more)
-
-### Community 27 - "Module Group 27"
-Cohesion: 0.21
+### Community 33 - "Preferences & Settings Interface"
+Cohesion: 0.19
 Nodes (8): SecuritySettingsTab, .body, .lockedStateView, .unlockedContent, Bool, Int, Binding, Double
 
-### Community 28 - "Module Group 28"
-Cohesion: 0.24
-Nodes (4): LockES, Bool, Int, cdHash()
+### Community 34 - "EndpointSecurity Engine"
+Cohesion: 0.20
+Nodes (7): OpaquePointer, audit_token_t, Bool, Int, Int32, pid_t, String
 
-### Community 29 - "Module Group 29"
-Cohesion: 0.16
-Nodes (4): AppKit, SMAppService.Status, .description, ServiceManagement
+### Community 35 - "App Lifecycle & Application Delegate"
+Cohesion: 0.13
+Nodes (5): Bool, escaping, LAContext, LocalAuthentication, AuthenticationManager
 
-### Community 30 - "Module Group 30"
-Cohesion: 0.18
-Nodes (10): NSCoder, Bool, NSSize, NSViewController, NSWindow, WindowConfiguration, WindowManager, AboutView (+2 more)
-
-### Community 31 - "Module Group 31"
-Cohesion: 0.24
-Nodes (6): .body, AppIconProvider, CGFloat, NSImage, Bool, Date
-
-### Community 32 - "Module Group 32"
+### Community 36 - "App Lifecycle & Application Delegate"
 Cohesion: 0.19
-Nodes (9): Coordinator, .logList, ScrollBottomTracker, Context, Sendable, Void, NSObject, NSObjectProtocol (+1 more)
+Nodes (7): SettingsWindowController, Bool, CGFloat, Notification, NSCoder, NSSize, NSWindow
 
-### Community 33 - "Module Group 33"
-Cohesion: 0.26
-Nodes (8): Codable, Decoder, LockedAppConfig, Bool, Int, uid_t, URL, UserConfig
+### Community 37 - "Log Management & Filtering"
+Cohesion: 0.19
+Nodes (12): LogDragAutoScroller, .direction, .dragCurrentInContent, .dragStartInContent, .visibleContentBottom, .visibleContentTop, CGFloat, CGPoint (+4 more)
 
-### Community 34 - "Module Group 34"
+### Community 38 - "About & System Diagnostics"
 Cohesion: 0.17
-Nodes (4): Observation, SwiftUI, SystemExtensions, UniformTypeIdentifiers
+Nodes (6): AboutWindowController, NSCoder, Notification, WelcomeWindowController, NSWindowController, NSWindowDelegate
 
-### Community 35 - "Module Group 35"
-Cohesion: 0.15
-Nodes (6): Bool, escaping, LAContext, LocalAuthentication, MainActor, AuthenticationManager
-
-### Community 36 - "Module Group 36"
-Cohesion: 0.15
-Nodes (10): .body, .body, AppIconView, Bool, CGFloat, NSImage, AppRowButtonStyle, View (+2 more)
-
-### Community 37 - "Module Group 37"
-Cohesion: 0.18
-Nodes (9): SectionHeader, .body, LocalizedStringKey, AddAppSheet, .body, .lockButtonTitle, Bool, CGFloat (+1 more)
-
-### Community 38 - "Module Group 38"
-Cohesion: 0.19
-Nodes (8): AppUpdater, .automaticallyChecksForUpdates, .automaticallyDownloadsUpdates, .currentChannel, .downloadState, .hasAvailableUpdate, SPUStandardUpdaterController, Timer
-
-### Community 39 - "Module Group 39"
-Cohesion: 0.27
-Nodes (9): es_event_exec_t, es_file_t, OpaquePointer, execArguments(), processPath(), safePath(), string(), pid_t (+1 more)
-
-### Community 40 - "Module Group 40"
-Cohesion: 0.21
-Nodes (4): AnyObject, AppUpdaterBridgeDelegate, SPUUpdater, SUAppcastItem
-
-### Community 41 - "Module Group 41"
+### Community 39 - "macOS TouchBar Integration"
 Cohesion: 0.30
 Nodes (5): MissingAppsTouchBarItem, NSCoder, NSTouchBarItem, NSButtonTouchBarItem, NSRect
 
-### Community 42 - "Module Group 42"
-Cohesion: 0.29
-Nodes (8): AppLogEntry, .levelFilter, .subsystemShort, Date, DateFormatter, OSLogEntryLog, String, UUID
-
-### Community 43 - "Module Group 43"
+### Community 40 - "Log Management & Filtering"
 Cohesion: 0.21
-Nodes (5): Bool, AgentAction, check, install, uninstall
+Nodes (5): Int, ScrollViewProxy, .logList, Gesture, MainActor
 
-### Community 44 - "Module Group 44"
-Cohesion: 0.20
-Nodes (5): HotKeyManager, Carbon, Cocoa, EventHandlerRef, EventHotKeyRef
+### Community 41 - "Preferences & Settings Interface"
+Cohesion: 0.17
+Nodes (12): SettingsTab, appearance, .displayName, general, .iconName, .id, logs, .minSize (+4 more)
 
-### Community 45 - "Module Group 45"
-Cohesion: 0.20
-Nodes (6): AboutWindowController, SettingsWindowController, Notification, WelcomeWindowController, NSWindowController, NSWindowDelegate
+### Community 42 - "Window Layout & Management"
+Cohesion: 0.21
+Nodes (7): Coordinator, ScrollBottomTracker, Sendable, Void, NSObject, NSObjectProtocol, NSScrollView
 
-### Community 46 - "Module Group 46"
+### Community 43 - "Window Layout & Management"
 Cohesion: 0.22
 Nodes (6): AppListWindowController, Notification, NSCoder, NSViewController, NSWindow, NSHostingController
 
-### Community 47 - "Module Group 47"
-Cohesion: 0.18
-Nodes (5): MissingAppsSheet, .bottomActionBar, .missingPaths, .topHeader, CGFloat
-
-### Community 48 - "Module Group 48"
-Cohesion: 0.18
-Nodes (10): LogEntryRow, .body, .categoryBadge, .copyIcon, .levelColor, .levelDot, .subsystemBadge, Bool (+2 more)
-
-### Community 49 - "Module Group 49"
-Cohesion: 0.22
-Nodes (3): LockManagerProtocol, Bool, Int
-
-### Community 50 - "Module Group 50"
+### Community 44 - "Log Management & Filtering"
 Cohesion: 0.18
 Nodes (11): LogLevelFilter, all, debug, .displayName, error, fault, .id, info (+3 more)
 
-### Community 51 - "Module Group 51"
-Cohesion: 0.22
-Nodes (10): Channel, beta, stable, UpdateDownloadState, downloaded, notDownloaded, UpdateNotificationAction, UpdaterDelegate (+2 more)
+### Community 45 - "Log Management & Filtering"
+Cohesion: 0.18
+Nodes (11): LogTimeRange, all, currentSession, .displayName, .id, last24Hours, last6Hours, last7Days (+3 more)
 
-### Community 52 - "Module Group 52"
-Cohesion: 0.25
-Nodes (4): LoadedConfigs, Bool, Set, uid_t
-
-### Community 53 - "Module Group 53"
+### Community 46 - ".listener()"
 Cohesion: 0.24
 Nodes (8): Bool, NSXPCConnection, NSXPCListener, SecRequirement, CodeSignatureValidator, audit_token_t, Bool, NSXPCConnection
 
-### Community 54 - "Module Group 54"
+### Community 47 - "Window Layout & Management"
+Cohesion: 0.27
+Nodes (7): Bool, NSSize, NSViewController, NSWindow, WindowConfiguration, WindowManager, NSColor
+
+### Community 48 - "macOS TouchBar Integration"
 Cohesion: 0.22
 Nodes (6): DeleteQueueTouchBarButton, .intrinsicContentSize, LockTouchBarButton, NSTouchBarItem.Identifier, NSSize, NSButton
 
-### Community 55 - "Module Group 55"
+### Community 49 - "macOS TouchBar Integration"
 Cohesion: 0.29
 Nodes (5): SearchTouchBarItem, Any, Notification, NSPopoverTouchBarItem, NSSearchFieldDelegate
 
-### Community 57 - "Module Group 57"
+### Community 50 - "SectionHeader.swift"
+Cohesion: 0.22
+Nodes (7): SectionHeader, .body, LocalizedStringKey, DeleteQueueSheet, .body, .topHeader, CGFloat
+
+### Community 51 - "AppLocker/Bridging-Header.h"
 Cohesion: 0.22
 Nodes (8): audit_token_t, NSXPCConnection, audit_token_t, NSXPCConnection, libbsm, libproc, notify, proc_info
 
-### Community 58 - "Module Group 58"
+### Community 52 - "HotKeyManager.swift"
+Cohesion: 0.24
+Nodes (5): HotKeyManager, Carbon, Cocoa, EventHandlerRef, EventHotKeyRef
+
+### Community 53 - "ESAppProtocol.swift"
 Cohesion: 0.33
 Nodes (4): ESAppProtocol, Bool, Int32, Void
 
-### Community 59 - "Module Group 59"
+### Community 54 - "App Lifecycle & Application Delegate"
 Cohesion: 0.22
-Nodes (6): .body, DeleteQueueSheet, .topHeader, CGFloat, LockingPopupSheet, .body
+Nodes (5): MenuBarImageView, Notification.Name, NSImageView, NSPoint, Symbols
 
-### Community 60 - "Module Group 60"
-Cohesion: 0.31
-Nodes (3): Bool, Void, TimeInterval
+### Community 55 - "Log Management & Filtering"
+Cohesion: 0.22
+Nodes (9): LogSubsystemFilter, all, .displayName, esExtension, .id, mainApp, .subsystemPrefix, LocalizedStringKey (+1 more)
 
-### Community 61 - "Module Group 61"
-Cohesion: 0.28
-Nodes (9): BetaGitHubAsset, BetaGitHubRelease, CodingKeys, assets, browserDownloadUrl, isPrerelease, name, CodingKey (+1 more)
-
-### Community 62 - "Module Group 62"
+### Community 56 - "Speckit Implement Skill"
 Cohesion: 0.25
 Nodes (8): Speckit Implement Skill, Speckit Plan Skill, Speckit Specify Skill, Speckit Tasks Skill, Plan Template, Spec Template, Tasks Template, Speckit Workflow Configuration
 
-### Community 63 - "Module Group 63"
+### Community 57 - "AddAppSheet.swift"
+Cohesion: 0.29
+Nodes (6): AddAppSheet, .body, .lockButtonTitle, Bool, CGFloat, Void
+
+### Community 58 - "Preferences & Settings Interface"
+Cohesion: 0.25
+Nodes (8): LocalizedStringKey, ThemeMode, dark, .displayName, .id, light, system, CaseIterable
+
+### Community 59 - "Preferences & Settings Interface"
+Cohesion: 0.25
+Nodes (7): LocalizedStringKey, UpdateChannel, beta, .description, .displayName, .id, stable
+
+### Community 60 - "Preferences & Settings Interface"
 Cohesion: 0.32
 Nodes (6): NSView, .enclosingSplitView, SidebarCollapsePreventer, Context, NSSplitView, NSViewRepresentable
 
-### Community 64 - "Module Group 64"
+### Community 61 - "App Lifecycle & Application Delegate"
 Cohesion: 0.25
-Nodes (5): Void, UNNotification, UNNotificationPresentationOptions, UNNotificationResponse, UNUserNotificationCenter
+Nodes (3): Int32, Notification, String
 
-### Community 65 - "Module Group 65"
+### Community 62 - "CallServiceObserver"
+Cohesion: 0.32
+Nodes (3): CallServiceObserver, Bool, Int32
+
+### Community 63 - "Data"
 Cohesion: 0.43
 Nodes (3): Data, Bool, uid_t
 
-### Community 66 - "Module Group 66"
-Cohesion: 0.25
-Nodes (8): Bundle, .appBuild, .appIcon, .appName, .appVersion, .copyright, .fullVersion, NSImage
-
-### Community 67 - "Module Group 67"
-Cohesion: 0.25
-Nodes (8): CodingKeys, bundleID, cdhash, execFile, isHidden, name, path, sha256
-
-### Community 69 - "Module Group 69"
+### Community 64 - "Log Management & Filtering"
 Cohesion: 0.29
-Nodes (7): AgentManageResult, alreadyInstalled, alreadyUninstalled, failed, installed, uninstalled, Error
+Nodes (5): LogSearchFocusModifier, Bool, Content, View, FocusState
 
-### Community 70 - "Module Group 70"
+### Community 65 - "AppRowButtonStyle.swift"
+Cohesion: 0.33
+Nodes (4): AppRowButtonStyle, View, ButtonStyle, Configuration
+
+### Community 66 - "Log Management & Filtering"
+Cohesion: 0.47
+Nodes (4): LogRowBoundsPreference, CGRect, UUID, PreferenceKey
+
+### Community 67 - "WelcomeView.swift"
 Cohesion: 0.40
 Nodes (4): Bool, WelcomeView, .body, .licenseText
 
-### Community 74 - "Module Group 74"
+### Community 68 - "S"
+Cohesion: 0.33
+Nodes (5): S, Sequence, fuzzyMatch(), Bool, String
+
+### Community 69 - "Authentication & Security Lock"
+Cohesion: 0.40
+Nodes (5): PendingAppItem, Bool, Int32, Hashable, Identifiable
+
+### Community 70 - "MissingAppsSheet.swift"
+Cohesion: 0.40
+Nodes (4): MissingAppsSheet, .missingPaths, .topHeader, CGFloat
+
+### Community 71 - "Log Management & Filtering"
+Cohesion: 0.40
+Nodes (3): Int, ScrollViewProxy, View
+
+### Community 74 - "TouchBarType"
 Cohesion: 0.40
 Nodes (5): TouchBarType, addAppPopup, deleteQueuePopup, mainWindow, missingAppsPopup
 
-### Community 78 - "Module Group 78"
+### Community 78 - ".panel()"
 Cohesion: 0.50
 Nodes (3): Any, Bool, URL
 
-### Community 79 - "Module Group 79"
+### Community 79 - "AUTH_EXEC PID Assignment"
 Cohesion: 0.67
 Nodes (3): AUTH_EXEC PID Assignment, NOTIFY_EXEC Pre/Post Exec Timing, POSIX Liveness & PID Recycling Defense
 
 ## Knowledge Gaps
-- **191 isolated node(s):** `UpdateNotificationAction`, `Notification.Name`, `NSTouchBarItem.Identifier`, `.authButtonTitle`, `.bottomActionBar` (+186 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 389 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **239 isolated node(s):** `Notification.Name`, `NSTouchBarItem.Identifier`, `.isWindowVisible`, `.authButtonTitle`, `.bottomActionBar` (+234 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 528 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **54 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `String` connect `AppDelegate & About Window` to `Batch Auth UI & Window Controller`, `App Lifecycle & Auto-Update`, `ESExtension NOTIFY_EXEC Engine`, `AUTH_EXEC & File Tamper Protection`, `AppState Core & Search Filtering`, `XPC Client & ES Communication`, `Settings Tab Views`, `GitHub CI Localization Scripts`, `SwiftUI Preview Mocks`, `Window Controllers Hub`, `Module Group 22`, `Module Group 23`, `Module Group 24`, `Module Group 25`, `Module Group 26`, `Module Group 28`, `Module Group 29`, `Module Group 30`, `Module Group 31`, `Module Group 33`, `Module Group 35`, `Module Group 36`, `Module Group 37`, `Module Group 38`, `Module Group 39`, `Module Group 40`, `Module Group 43`, `Module Group 47`, `Module Group 49`, `Module Group 51`, `Module Group 52`, `Module Group 58`, `Module Group 59`, `Module Group 61`, `Module Group 64`, `Module Group 65`, `Module Group 66`, `Module Group 67`, `Module Group 70`, `Module Group 71`, `Module Group 75`, `Module Group 76`?**
-  _High betweenness centrality (0.277) - this node is a cross-community bridge._
-- **Why does `ESManager` connect `App Lifecycle & Auto-Update` to `Module Group 32`, `Module Group 65`, `ESExtension NOTIFY_EXEC Engine`, `Module Group 39`, `XPC Client & ES Communication`, `ESManager & Safety Valve`, `AppDelegate & About Window`, `Module Group 52`, `Module Group 53`, `Module Group 23`, `Module Group 58`?**
-  _High betweenness centrality (0.140) - this node is a cross-community bridge._
-- **Why does `Logfile` connect `Batch Auth UI & Window Controller` to `App Lifecycle & Auto-Update`, `ESExtension NOTIFY_EXEC Engine`, `XPC Client & ES Communication`, `ESManager & Safety Valve`, `Settings Tab Views`, `Window Controllers Hub`, `Extension Installer & XPC Lifecycle`, `Module Group 23`, `Module Group 25`, `Module Group 27`, `Module Group 28`, `Module Group 35`, `Module Group 39`, `Module Group 43`, `Module Group 44`, `Module Group 52`, `Module Group 53`, `Module Group 60`, `Module Group 65`, `Module Group 68`, `Module Group 75`, `Module Group 77`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
-- **Are the 7 inferred relationships involving `AppState` (e.g. with `.body` and `.appSection()`) actually correct?**
-  _`AppState` has 7 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `UpdateNotificationAction`, `Notification.Name`, `NSTouchBarItem.Identifier` to the rest of the system?**
-  _191 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Batch Auth UI & Window Controller` be split into smaller, more focused modules?**
-  _Cohesion score 0.05647517039922103 - nodes in this community are weakly interconnected._
-- **Should `App Lifecycle & Auto-Update` be split into smaller, more focused modules?**
-  _Cohesion score 0.07536231884057971 - nodes in this community are weakly interconnected._
+- **Why does `ESManager` connect `EndpointSecurity Engine` to `EndpointSecurity Engine`, `Window Layout & Management`, `Log Management & Filtering`, `EndpointSecurity Engine`, `.listener()`, `EndpointSecurity Engine`, `About & System Diagnostics`, `es_event_exec_t`, `ESAppProtocol.swift`, `Data`?**
+  _High betweenness centrality (0.151) - this node is a cross-community bridge._
+- **Why does `Foundation` connect `About & System Diagnostics` to `About & System Diagnostics`, `.bottomActionBar`, `About & System Diagnostics`, `Authentication & Security Lock`, `S`, `App Lifecycle & Application Delegate`, `Authentication & Security Lock`, `Log Management & Filtering`, `XPC Inter-Process Communication`, `Log Management & Filtering`, `ESAppProtocol.swift`, `App Lifecycle & Application Delegate`, `App Icon & Asset Pipeline`?**
+  _High betweenness centrality (0.136) - this node is a cross-community bridge._
+- **Why does `AppState` connect `.bottomActionBar` to `Authentication & Security Lock`, `MissingAppsSheet.swift`, `TouchBarType`, `Window Layout & Management`, `.panel()`, `macOS TouchBar Integration`, `SectionHeader.swift`, `Log Management & Filtering`, `macOS TouchBar Integration`, `AddAppSheet.swift`, `App Icon & Asset Pipeline`, `MainUIButtons.swift`, `ContentView.swift`?**
+  _High betweenness centrality (0.110) - this node is a cross-community bridge._
+- **Are the 2 inferred relationships involving `ESManager` (e.g. with `.createClient()` and `.dispatchProcessEvent()`) actually correct?**
+  _`ESManager` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 8 inferred relationships involving `AppState` (e.g. with `.body` and `.appSection()`) actually correct?**
+  _`AppState` has 8 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 4 inferred relationships involving `LogsSettingsTab` (e.g. with `LogDragAutoScroller` and `LogSelectionManager`) actually correct?**
+  _`LogsSettingsTab` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Notification.Name`, `NSTouchBarItem.Identifier`, `.isWindowVisible` to the rest of the system?**
+  _239 weakly-connected nodes found - possible documentation gaps or missing edges._
