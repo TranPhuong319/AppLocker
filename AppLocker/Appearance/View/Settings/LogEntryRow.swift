@@ -12,6 +12,7 @@ struct LogEntryRow: View {
     let entry: AppLogEntry
     var repeatCount: Int = 1
     let dateFormatter: DateFormatter
+    var isSelected: Bool = false
 
     @State private var isCopied: Bool = false
 
@@ -38,7 +39,6 @@ struct LogEntryRow: View {
                 Text(entry.message)
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.primary)
-                    .textSelection(.enabled)
             }
 
             Spacer()
@@ -50,7 +50,19 @@ struct LogEntryRow: View {
             .help("Copy entry")
             .accessibilityLabel("Copy log entry")
         }
-        .padding(.vertical, 1)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isSelected ? Color(nsColor: .selectedContentBackgroundColor).opacity(0.18) : Color.clear)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(
+                    isSelected ? Color(nsColor: .controlAccentColor).opacity(0.4) : Color.clear,
+                    lineWidth: 1
+                )
+        )
     }
 
     @ViewBuilder

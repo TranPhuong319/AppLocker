@@ -22,20 +22,20 @@ enum WindowLayout {
     static let lockingPopupMinSize = NSSize(width: 200, height: 100)
     static let batchAuthSize = NSSize(width: 440, height: 360)
     static let batchAuthMaxListHeight: CGFloat = 220
-    static let aboutSize = NSSize(width: 450, height: 248)
+    static let aboutSize = NSSize(width: 450, height: 340)
     static let settingsMinSize = NSSize(width: 640, height: 440)
     static let settingsGeneralSize = NSSize(width: 640, height: 440)
     static let settingsSecuritySize = NSSize(width: 640, height: 440)
     static let settingsUpdatesSize = NSSize(width: 640, height: 440)
     static let settingsAppearanceSize = NSSize(width: 640, height: 440)
-    static let settingsLogsSize = NSSize(width: 1075, height: 580)
+    static let settingsLogsSize = NSSize(width: 1095, height: 580)
     static let settingsSize = settingsMinSize
 }
 
 // MARK: - Liquid Glass Visual Effects & Modifiers
 struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-    let blendingMode: NSVisualEffectView.BlendingMode
+    var material: NSVisualEffectView.Material = .sidebar
+    var blendingMode: NSVisualEffectView.BlendingMode = .behindWindow
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let visualEffectView = NSVisualEffectView()
@@ -238,9 +238,10 @@ struct ScrollBottomTracker: NSViewRepresentable {
         nonisolated(unsafe) private var token: NSObjectProtocol?
 
         func attach(to scrollView: NSScrollView, notify: @escaping @Sendable (Bool) -> Void) {
+            scrollView.contentView.postsBoundsChangedNotifications = true
             token = NotificationCenter.default.addObserver(
-                forName: NSScrollView.didLiveScrollNotification,
-                object: scrollView,
+                forName: NSView.boundsDidChangeNotification,
+                object: scrollView.contentView,
                 queue: .main
             ) { [weak scrollView] _ in
                 MainActor.assumeIsolated {
@@ -250,6 +251,9 @@ struct ScrollBottomTracker: NSViewRepresentable {
                     notify(visibleMaxY >= docHeight - 40)
                 }
             }
+            let docHeight = scrollView.documentView?.frame.height ?? 0
+            let visibleMaxY = scrollView.contentView.bounds.maxY
+            notify(visibleMaxY >= docHeight - 40)
         }
 
         deinit {

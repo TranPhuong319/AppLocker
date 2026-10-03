@@ -92,6 +92,28 @@ final class LogStore {
     private var clearedBeforeDate: Date?
     private var fetchTask: Task<Void, Never>?
     private var filterTask: Task<Void, Never>?
+    private var pollingTask: Task<Void, Never>?
+
+    func startPolling() {
+        pollingTask?.cancel()
+        reload()
+        pollingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                guard !Task.isCancelled, let self else { break }
+                await self.fetchLatest()
+            }
+        }
+    }
+
+    func stopPolling() {
+        pollingTask?.cancel()
+        pollingTask = nil
+        fetchTask?.cancel()
+        fetchTask = nil
+        filterTask?.cancel()
+        filterTask = nil
+    }
 
     func reload() {
         clearedBeforeDate = nil
@@ -163,10 +185,7 @@ final class LogStore {
         let since = entries.last?.date ?? clearedBeforeDate ?? selectedTimeRange.since
 
         do {
-            let newEntries = try await Task.detached(priority: .utility) {
-                try Self.queryLogStore(since: since, strictlyAfter: true)
-            }.value
-
+            let newEntries = try await LogReader.shared.query(since: since, strictlyAfter: true)
             guard !Task.isCancelled, !newEntries.isEmpty else { return }
             self.entries.append(contentsOf: newEntries)
             await self.applyFilters()
@@ -179,11 +198,7 @@ final class LogStore {
         let since = selectedTimeRange.since
 
         do {
-            let parsed = try await Task.detached(priority: .userInitiated) { () -> [AppLogEntry] in
-                try Task.checkCancellation()
-                return try Self.queryLogStore(since: since)
-            }.value
-
+            let parsed = try await LogReader.shared.query(since: since, strictlyAfter: false)
             guard !Task.isCancelled else { return }
             let filtered = if let cleared = clearedBeforeDate {
                 parsed.filter { $0.date > cleared }
@@ -199,25 +214,6 @@ final class LogStore {
             self.errorMessage = error.localizedDescription
             Logfile.app.error("[LogStore] Failed to fetch logs: \(error.localizedDescription, privacy: .public)")
         }
-    }
-
-    private nonisolated static func queryLogStore(since: Date, strictlyAfter: Bool = false) throws -> [AppLogEntry] {
-        let store = try OSLogStore(scope: .system)
-        let position = store.position(date: since)
-        let predicate = NSPredicate(format: "subsystem BEGINSWITH %@", "com.TranPhuong319.AppLocker")
-        let rawEntries = try store.getEntries(at: position, matching: predicate)
-        let items: [AppLogEntry] = rawEntries.compactMap { entry -> AppLogEntry? in
-            guard let logEntry = entry as? OSLogEntryLog else { return nil }
-            if strictlyAfter, logEntry.date <= since { return nil }
-            return AppLogEntry(
-                date: logEntry.date,
-                subsystem: logEntry.subsystem,
-                category: logEntry.category,
-                level: logEntry.level,
-                message: logEntry.composedMessage
-            )
-        }
-        return items.sorted { $0.date < $1.date }
     }
 
     private func applyFilters() async {
@@ -250,6 +246,31 @@ final class LogStore {
     }
 }
 
+// MARK: - Log Reader Actor
+
+private actor LogReader {
+    static let shared = LogReader()
+
+    func query(since: Date, strictlyAfter: Bool) throws -> [AppLogEntry] {
+        let store = try OSLogStore(scope: .system)
+        let position = store.position(date: since)
+        let predicate = NSPredicate(format: "subsystem BEGINSWITH %@", "com.TranPhuong319.AppLocker")
+        let rawEntries = try store.getEntries(at: position, matching: predicate)
+        let items: [AppLogEntry] = rawEntries.compactMap { entry -> AppLogEntry? in
+            guard let logEntry = entry as? OSLogEntryLog else { return nil }
+            if strictlyAfter, logEntry.date <= since { return nil }
+            return AppLogEntry(
+                date: logEntry.date,
+                subsystem: logEntry.subsystem,
+                category: logEntry.category,
+                level: logEntry.level,
+                message: logEntry.composedMessage
+            )
+        }
+        return items.sorted { $0.date < $1.date }
+    }
+}
+
 // MARK: - Export Document
 
 struct LogTextDocument: FileDocument {
@@ -257,13 +278,8 @@ struct LogTextDocument: FileDocument {
     static let readableContentTypes: [UTType] = [logContentType, .plainText]
     let text: String
 
-    init(text: String) {
-        self.text = text
-    }
-
-    init(configuration: ReadConfiguration) throws {
-        text = ""
-    }
+    init(text: String) { self.text = text }
+    init(configuration: ReadConfiguration) throws { text = "" }
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         FileWrapper(regularFileWithContents: Data(text.utf8))

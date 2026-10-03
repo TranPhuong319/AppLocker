@@ -57,6 +57,11 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate()
+        NotificationCenter.default.post(name: .settingsWindowDidOpen, object: window)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        NotificationCenter.default.post(name: .settingsWindowWillClose, object: window)
     }
 
     func resizeWindow(for tab: SettingsTab, animate: Bool = true) {
@@ -121,4 +126,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         }
         return adjusted
     }
+}
+
+extension Notification.Name {
+    static let settingsWindowWillClose = Notification.Name("settingsWindowWillClose")
+    static let settingsWindowDidOpen = Notification.Name("settingsWindowDidOpen")
 }
