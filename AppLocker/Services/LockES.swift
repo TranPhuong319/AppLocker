@@ -98,9 +98,7 @@ class LockES: LockManagerProtocol {
                 if resolvedExecPath == nil {
                     let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
                     let potentialPath = "\(path)/Contents/MacOS/\(appName)"
-                    if FileManager.default.fileExists(atPath: potentialPath) {
-                        resolvedExecPath = potentialPath
-                    }
+                    resolvedExecPath = FileManager.default.fileExists(atPath: potentialPath) ? potentialPath : nil
                 }
 
                 guard let execPath = resolvedExecPath else {

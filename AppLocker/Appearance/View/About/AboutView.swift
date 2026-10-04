@@ -14,7 +14,6 @@ struct AboutView: View {
     @State private var isCopied: Bool = false
     @State private var iconBounceTrigger: Int = 0
     @State private var copyResetTask: Task<Void, Never>?
-    @State private var showSystemInfo: Bool = false
 
     private var isExtensionActive: Bool {
         ExtensionInstaller.shared.isInstalled
@@ -42,7 +41,7 @@ struct AboutView: View {
                 taglineSection
                     .padding(.top, 6)
 
-                architectureBadgesSection
+                AboutArchitectureBadgesView(isExtensionActive: isExtensionActive)
                     .padding(.top, 14)
 
                 actionsSection
@@ -136,88 +135,6 @@ struct AboutView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
-    }
-
-    // MARK: - Architecture & Security Badges
-
-    @ViewBuilder
-    private var architectureBadgesSection: some View {
-        HStack(spacing: 8) {
-            badgePill(
-                icon: isExtensionActive ? "shield.checkmark.fill" : "shield.slash.fill",
-                text: isExtensionActive ? "Endpoint Security" : "Extension Inactive",
-                color: isExtensionActive ? .green : .orange
-            )
-
-            badgePill(
-                icon: "swift",
-                text: "Swift Native",
-                color: .orange
-            )
-
-            architectureButton
-        }
-    }
-
-    @ViewBuilder
-    private var architectureButton: some View {
-        Button {
-            showSystemInfo.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "cpu")
-                    .font(.system(size: 10, weight: .semibold))
-                Text(architectureName)
-                    .font(.system(size: 10, weight: .medium))
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 7, weight: .bold))
-                    .foregroundStyle(.tertiary)
-            }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(
-                Capsule().fill(Color.secondary.opacity(0.12))
-            )
-            .overlay(
-                Capsule().stroke(Color.secondary.opacity(0.25), lineWidth: 0.5)
-            )
-        }
-        .buttonStyle(.plain)
-        .popover(isPresented: $showSystemInfo, arrowEdge: .trailing) {
-            systemInfoPopoverContent
-        }
-        .help("Click to view system & architecture details")
-    }
-
-    private var architectureName: LocalizedStringKey {
-        #if arch(arm64)
-        return "Apple Silicon"
-        #elseif arch(x86_64)
-        return "Intel (x86_64)"
-        #else
-        return "Universal"
-        #endif
-    }
-
-    private func badgePill(icon: String, text: LocalizedStringKey, color: Color) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 10, weight: .semibold))
-            Text(text)
-                .font(.system(size: 10, weight: .medium))
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .background(
-            Capsule()
-                .fill(color.opacity(0.12))
-        )
-        .overlay(
-            Capsule()
-                .stroke(color.opacity(0.25), lineWidth: 0.5)
-        )
     }
 
     // MARK: - Actions Section

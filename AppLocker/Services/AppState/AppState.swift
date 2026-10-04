@@ -216,9 +216,10 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
 
         let appsArray = Array(apps)
 
-        Task {
+        Task { [weak self] in
             // Cho SwiftUI 1 nhịp (0.15s) để hiển thị mượt mà sheet LockingPopupSheet
             try? await Task.sleep(for: .milliseconds(150))
+            guard let self else { return }
 
             self.manager.toggleLock(for: appsArray)
 

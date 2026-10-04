@@ -18,15 +18,6 @@ enum UpdateDownloadState {
     case notDownloaded, downloaded
 }
 
-// MARK: - Bridge
-
-@MainActor
-protocol AppUpdaterBridgeDelegate: AnyObject {
-    func didFindUpdate()
-    func didDownloadUpdate()
-    func didNotFindUpdate()
-}
-
 // MARK: - Notification Action
 
 enum UpdateNotificationAction {
@@ -40,8 +31,6 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
     var channel: Channel = .stable
     var downloadState: UpdateDownloadState = .notDownloaded
 
-    weak var bridgeDelegate: AppUpdaterBridgeDelegate?
-
     // Feed URL override
     func feedURLString(for updater: SPUUpdater) -> String? {
         channel == .beta ? betaFeedURL : nil
@@ -50,24 +39,27 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
     // MARK: Sparkle callbacks
 
     func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             self.downloadState = .notDownloaded
             AppUpdater.shared.handleFoundUpdate(item)
-            self.bridgeDelegate?.didFindUpdate()
+            NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: item)
         }
     }
 
     func updater(_ updater: SPUUpdater, didDownloadUpdate item: SUAppcastItem) {
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             self.downloadState = .downloaded
-            self.bridgeDelegate?.didDownloadUpdate()
+            NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: item)
         }
     }
 
     func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
+            guard self != nil else { return }
             AppUpdater.shared.handleNoUpdateFound()
-            self.bridgeDelegate?.didNotFindUpdate()
+            NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
         }
     }
 }
@@ -95,12 +87,6 @@ final class AppUpdater: NSObject {
         super.init()
         syncChannelFromDefaults()
         observeUserDefaults()
-    }
-
-    // MARK: - Bridge
-
-    func setBridgeDelegate(_ bridgeDelegate: AppUpdaterBridgeDelegate) {
-        delegate.bridgeDelegate = bridgeDelegate
     }
 
     // MARK: - Channel sync (SOURCE OF TRUTH = UserDefaults)

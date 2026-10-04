@@ -1,2094 +1,2099 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "": {
-      "extractionState": "manual",
-      "generatesSymbol": false,
-      "shouldTranslate": false
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+      "extractionState" : "manual",
+      "generatesSymbol" : false,
+      "shouldTranslate" : false
     },
-    "%@ has been blocked from launching.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng %@ đã bị chặn khởi chạy."
+    "%@ has been blocked from launching." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng %@ đã bị chặn khởi chạy."
           }
         }
       }
     },
-    "%lld entries": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld bản ghi"
+    "%lld entries" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bản ghi"
           }
         }
       }
     },
-    "%lld events (%lld total)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld sự kiện (tổng số %lld)"
+    "%lld events (%lld total)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sự kiện (tổng số %lld)"
           }
         }
       }
     },
-    "%lld seconds": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld giây"
+    "%lld seconds" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld giây"
           }
         }
       }
     },
-    "%lld selected": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã chọn %lld"
+    "%lld selected" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã chọn %lld"
           }
         }
       }
     },
-    "A new beta version is available. Do you want to update?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Một phiên bản beta mới đã có sẵn. Bạn có muốn cập nhật không?"
+    "×%lld" : {
+
+    },
+    "A new beta version is available. Do you want to update?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một phiên bản beta mới đã có sẵn. Bạn có muốn cập nhật không?"
           }
         }
       }
     },
-    "A new stable version is available. Do you want to update?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Một phiên bản chính thức mới đã có sẵn. Bạn có muốn cập nhật không?"
+    "A new stable version is available. Do you want to update?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một phiên bản chính thức mới đã có sẵn. Bạn có muốn cập nhật không?"
           }
         }
       }
     },
-    "About AppLocker": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Giới thiệu về AppLocker"
+    "About AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giới thiệu về AppLocker"
           }
         }
       }
     },
-    "Active": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoạt động"
+    "Active" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoạt động"
           }
         }
       }
     },
-    "Add Application": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thêm ứng dụng"
+    "Add Application" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm ứng dụng"
           }
         }
       }
     },
-    "Add application to lock": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thêm ứng dụng để khoá"
+    "Add application to lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm ứng dụng để khoá"
           }
         }
       }
     },
-    "After 15 minutes": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sau 15 phút"
+    "After 5 minutes" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau 5 phút"
           }
         }
       }
     },
-    "After 5 minutes": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sau 5 phút"
+    "After 15 minutes" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau 15 phút"
           }
         }
       }
     },
-    "Agree": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đồng ý"
+    "Agree" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đồng ý"
           }
         }
       }
     },
-    "All Levels": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tất cả cấp độ"
+    "All Levels" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tất cả cấp độ"
           }
         }
       }
     },
-    "All Processes": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tất cả tiến trình"
+    "All Processes" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tất cả tiến trình"
           }
         }
       }
     },
-    "All Time": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tất cả thời gian"
+    "All Time" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tất cả thời gian"
           }
         }
       }
     },
-    "Allow Incoming Calls while Locked": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cho phép nhận cuộc gọi khi ứng dụng bị khóa"
+    "Allow Incoming Calls while Locked" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cho phép nhận cuộc gọi khi ứng dụng bị khóa"
           }
         }
       }
     },
-    "AppLocker Icon": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Biểu tượng AppLocker"
+    "Appearance" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giao diện"
           }
         }
       }
     },
-    "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AppLocker yêu cầu tiện ích mở rộng Bảo mật Điểm cuối phải được bật trong Cài đặt Hệ thống để quản lý các ứng dụng."
+    "Appearance mode" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chế độ giao diện"
           }
         }
       }
     },
-    "Appearance": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Giao diện"
+    "Apple Silicon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Silicon"
           }
         }
       }
     },
-    "Appearance mode": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chế độ giao diện"
+    "Application is waiting to be deleted" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đang chờ xoá"
           }
         }
       }
     },
-    "Architecture": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kiến trúc"
+    "Application Lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá ứng dụng"
           }
         }
       }
     },
-    "Apple Silicon": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Silicon"
+    "Application Lock is disabled" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá ứng dụng bị vô hiệu hoá"
           }
         }
       }
     },
-    "Application Lock": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoá ứng dụng"
+    "Application Lock is enabled" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá ứng dụng được kích hoạt"
           }
         }
       }
     },
-    "Application Lock Protection": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bảo vệ khóa ứng dụng"
+    "Application Lock Protection" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bảo vệ khóa ứng dụng"
           }
         }
       }
     },
-    "Application Lock is disabled": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoá ứng dụng bị vô hiệu hoá"
+    "Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng"
           }
         }
       }
     },
-    "Application Lock is enabled": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoá ứng dụng được kích hoạt"
+    "AppLocker Icon" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biểu tượng AppLocker"
           }
         }
       }
     },
-    "Application is waiting to be deleted": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng đang chờ xoá"
+    "AppLocker requires its Endpoint Security extension to be enabled in System Settings to manage applications." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppLocker yêu cầu tiện ích mở rộng Bảo mật Điểm cuối phải được bật trong Cài đặt Hệ thống để quản lý các ứng dụng."
           }
         }
       }
     },
-    "Applications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng"
+    "Architecture" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiến trúc"
           }
         }
       }
     },
-    "Are you sure you want to remove the missing applications from the lock list?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn có chắc chắn muốn xoá các ứng dụng không tồn tại khỏi danh sách khoá?"
+    "Are you sure you want to remove the missing applications from the lock list?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có chắc chắn muốn xoá các ứng dụng không tồn tại khỏi danh sách khoá?"
           }
         }
       }
     },
-    "Authentication": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xác thực"
+    "authenticate to open the application list" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để mở danh sách Ứng dụng"
           }
         }
       }
     },
-    "Authentication (%d)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xác thực (%d)"
+    "authenticate to reset AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "xác thực để Đặt lại AppLocker"
           }
         }
       }
     },
-    "Authentication Popup Timeout": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thời gian chờ cửa sổ xác thực"
+    "Authentication" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác thực"
           }
         }
       }
     },
-    "Auto-Lock Duration": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thời gian tự động khóa"
+    "Authentication (%d)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác thực (%d)"
           }
         }
       }
     },
-    "Automatically allow FaceTime and Phone to receive incoming calls without password.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tự động cho phép FaceTime và Điện thoại nhận cuộc gọi đến mà không cần xác thực mật khẩu."
+    "Authentication Popup Timeout" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian chờ cửa sổ xác thực"
           }
         }
       }
     },
-    "Automatically check for updates": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tự động kiểm tra các bản cập nhật"
+    "Auto-Lock Duration" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian tự động khóa"
           }
         }
       }
     },
-    "Automatically close the application after %d seconds": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tự động đóng ứng dụng sau %d giây"
+    "Automatically allow FaceTime and Phone to receive incoming calls without password." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động cho phép FaceTime và Điện thoại nhận cuộc gọi đến mà không cần xác thực mật khẩu."
           }
         }
       }
     },
-    "Automatically download new updates": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tự động tải xuống các bản cập nhật"
+    "Automatically check for updates" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động kiểm tra các bản cập nhật"
           }
         }
       }
     },
-    "Automatically download new updates in the background when available.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tự động tải về bản cập nhật mới trong nền khi có sẵn."
+    "Automatically close the application after %d seconds" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động đóng ứng dụng sau %d giây"
           }
         }
       }
     },
-    "Background Agent Status": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trạng thái dịch vụ ngầm"
+    "Automatically download new updates" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động tải xuống các bản cập nhật"
           }
         }
       }
     },
-    "Background Security Service": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dịch vụ bảo mật chạy nền"
+    "Automatically download new updates in the background when available." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động tải về bản cập nhật mới trong nền khi có sẵn."
           }
         }
       }
     },
-    "Background service ensuring apps remain protected even when the main window is closed.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiến trình nền đảm bảo ứng dụng luôn được bảo vệ ngay cả khi cửa sổ chính đang đóng."
+    "Background Agent Status" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trạng thái dịch vụ ngầm"
           }
         }
       }
     },
-    "Beta": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thử nghiệm"
+    "Background Security Service" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dịch vụ bảo mật chạy nền"
           }
         }
       }
     },
-    "Beta Ready to Install": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sẵn sàng cài đặt bản Beta"
+    "Background service ensuring apps remain protected even when the main window is closed." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiến trình nền đảm bảo ứng dụng luôn được bảo vệ ngay cả khi cửa sổ chính đang đóng."
           }
         }
       }
     },
-    "Beta Update Available": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bản cập nhật Beta có sẵn"
+    "Beta" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử nghiệm"
           }
         }
       }
     },
-    "Cancel": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Huỷ"
+    "Beta Ready to Install" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sẵn sàng cài đặt bản Beta"
           }
         }
       }
     },
-    "Check for Updates": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kiểm tra bản cập nhật"
+    "Beta Update Available" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật Beta có sẵn"
           }
         }
       }
     },
-    "Check for Updates Now": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kiểm tra cập nhật ngay"
+    "Cancel" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huỷ"
           }
         }
       }
     },
-    "Check for Updates…": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kiểm tra cập nhật…"
+    "Check for Updates" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra bản cập nhật"
           }
         }
       }
     },
-    "Clear": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xoá"
+    "Check for Updates Now" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra cập nhật ngay"
           }
         }
       }
     },
-    "Clear current logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xoá nhật ký hiện tại"
+    "Check for Updates…" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra cập nhật…"
           }
         }
       }
     },
-    "Clear selection": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bỏ chọn các mục"
+    "Clear" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá"
           }
         }
       }
     },
-    "Click to bounce": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhấp để tạo hiệu ứng"
+    "Clear current logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá nhật ký hiện tại"
           }
         }
       }
     },
-    "Click to copy version": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhấn để sao chép phiên bản"
+    "Clear selection" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ chọn các mục"
           }
         }
       }
     },
-    "Click to view system & architecture details": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhấp để xem chi tiết hệ thống & kiến trúc"
+    "Click to bounce" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhấp để tạo hiệu ứng"
           }
         }
       }
     },
-    "Close": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đóng"
+    "Click to copy version" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhấn để sao chép phiên bản"
           }
         }
       }
     },
-    "Confirm": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xác nhận"
+    "Click to view system & architecture details" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhấp để xem chi tiết hệ thống & kiến trúc"
           }
         }
       }
     },
-    "Continue": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiếp tục"
+    "Close" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đóng"
           }
         }
       }
     },
-    "Copied": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã sao chép"
+    "Confirm" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác nhận"
           }
         }
       }
     },
-    "Copy %lld Selected Logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép %lld nhật ký đã chọn"
+    "Continue" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp tục"
           }
         }
       }
     },
-    "Copy Log": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép nhật ký"
+    "Copied" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã sao chép"
           }
         }
       }
     },
-    "Copy Selected": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép mục đã chọn"
+    "Copy %lld Selected Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép %lld nhật ký đã chọn"
           }
         }
       }
     },
-    "Copy Selection": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép mục đã chọn"
+    "Copy entry" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép dòng này"
           }
         }
       }
     },
-    "Copy entry": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép dòng này"
+    "Copy Log" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép nhật ký"
           }
         }
       }
     },
-    "Copy log entry": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép nhật ký"
+    "Copy log entry" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép nhật ký"
           }
         }
       }
     },
-    "Copy selected log entries": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sao chép các mục nhật ký đã chọn"
+    "Copy Selected" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép mục đã chọn"
           }
         }
       }
     },
-    "Could not completely remove application files or configuration.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không thể xoá hoàn toàn các tệp ứng dụng hoặc cấu hình."
+    "Copy selected log entries" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép các mục nhật ký đã chọn"
           }
         }
       }
     },
-    "Could not load logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không thể tải nhật ký"
+    "Copy Selection" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép mục đã chọn"
           }
         }
       }
     },
-    "Current Session": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phiên hiện tại"
+    "Could not completely remove application files or configuration." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xoá hoàn toàn các tệp ứng dụng hoặc cấu hình."
           }
         }
       }
     },
-    "Current Version": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phiên bản hiện tại"
+    "Could not load logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tải nhật ký"
           }
         }
       }
     },
-    "Dark": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tối"
+    "Current Session" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên hiện tại"
           }
         }
       }
     },
-    "Debug": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gỡ lỗi"
+    "Current Version" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên bản hiện tại"
           }
         }
       }
     },
-    "Decline": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Từ chối"
+    "Dark" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tối"
           }
         }
       }
     },
-    "Deselect": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bỏ chọn"
+    "Debug" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ lỗi"
           }
         }
       }
     },
-    "Deselect All": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bỏ chọn tất cả"
+    "Decline" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Từ chối"
           }
         }
       }
     },
-    "Deselect Logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bỏ chọn nhật ký"
+    "Deselect" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ chọn"
           }
         }
       }
     },
-    "Designed & Built by TranPhuong319": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thiết kế & Phát triển bởi TranPhuong319"
+    "Deselect All" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ chọn tất cả"
           }
         }
       }
     },
-    "Disabling protection will allow all locked applications to be opened without authentication.\n\nAre you sure you want to turn off protection?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tắt cơ chế bảo vệ sẽ cho phép tất cả các ứng dụng trong danh sách khóa được mở mà không cần xác thực.\n\nBạn có chắc chắn muốn tắt bảo vệ không?"
+    "Deselect Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ chọn nhật ký"
           }
         }
       }
     },
-    "Do you agree to the terms of service and license above?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn có đồng ý với điều khoản dịch vụ và giấy phép trên không?"
+    "Designed & Built by TranPhuong319" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thiết kế & Phát triển bởi TranPhuong319"
           }
         }
       }
     },
-    "Do you want to launch these %d applications?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn có muốn khởi chạy %d ứng dụng này không?"
+    "Disabling protection will allow all locked applications to be opened without authentication.\n\nAre you sure you want to turn off protection?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt cơ chế bảo vệ sẽ cho phép tất cả các ứng dụng trong danh sách khóa được mở mà không cần xác thực.\n\nBạn có chắc chắn muốn tắt bảo vệ không?"
           }
         }
       }
     },
-    "Do you want to launch this application?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn có muốn khởi chạy ứng dụng này không?"
+    "Do you agree to the terms of service and license above?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có đồng ý với điều khoản dịch vụ và giấy phép trên không?"
           }
         }
       }
     },
-    "Duration an app stays unlocked after authentication before requiring password again.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoảng thời gian ứng dụng duy trì mở khóa sau khi xác thực trước khi yêu cầu mật khẩu lại."
+    "Do you want to launch these %d applications?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có muốn khởi chạy %d ứng dụng này không?"
           }
         }
       }
     },
-    "Duration before authentication prompt automatically cancels and aborts app launch.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thời gian đếm ngược trước khi hộp thoại xác thực tự động hủy và ngăn ứng dụng mở lên."
+    "Do you want to launch this application?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có muốn khởi chạy ứng dụng này không?"
           }
         }
       }
     },
-    "ES Extension": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiện ích mở rộng hệ thống"
+    "Duration an app stays unlocked after authentication before requiring password again." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoảng thời gian ứng dụng duy trì mở khóa sau khi xác thực trước khi yêu cầu mật khẩu lại."
           }
         }
       }
     },
-    "Enable Background Service": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bật dịch vụ nền"
+    "Duration before authentication prompt automatically cancels and aborts app launch." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian đếm ngược trước khi hộp thoại xác thực tự động hủy và ngăn ứng dụng mở lên."
           }
         }
       }
     },
-    "Enable Extension": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bật Tiện ích mở rộng"
+    "Enable Background Service" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật dịch vụ nền"
           }
         }
       }
     },
-    "Endpoint Security": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Endpoint Security"
+    "Enable Extension" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật Tiện ích mở rộng"
           }
         }
       }
     },
-    "Error": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lỗi"
+    "Endpoint Security" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endpoint Security"
           }
         }
       }
     },
-    "Export": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xuất file"
+    "Error" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lỗi"
           }
         }
       }
     },
-    "Export visible logs to a .log file": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xuất nhật ký đang xem ra tệp .log"
+    "ES Extension" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiện ích mở rộng hệ thống"
           }
         }
       }
     },
-    "Extension Inactive": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiện ích chưa kích hoạt"
+    "Export" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xuất file"
           }
         }
       }
     },
-    "Failed to Move Application": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không thể chuyển đến thư mục Ứng dụng"
+    "Export visible logs to a .log file" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xuất nhật ký đang xem ra tệp .log"
           }
         }
       }
     },
-    "Fault": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nghiêm trọng"
+    "Extension Inactive" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiện ích chưa kích hoạt"
           }
         }
       }
     },
-    "General": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chung"
+    "Failed to Move Application" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể chuyển đến thư mục Ứng dụng"
           }
         }
       }
     },
-    "Get experimental updates.\nNote: Experimental updates are often unstable.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhận bản cập nhật thử nghiệm.\nLưu ý: Các bản cập nhật thử nghiệm thường không ổn định."
+    "Fault" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nghiêm trọng"
           }
         }
       }
     },
-    "Get official, stable updates.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhận bản cập nhật chính thức, ổn định."
+    "General" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chung"
           }
         }
       }
     },
-    "GitHub": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GitHub"
+    "Get experimental updates.\nNote: Experimental updates are often unstable." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhận bản cập nhật thử nghiệm.\nLưu ý: Các bản cập nhật thử nghiệm thường không ổn định."
           }
         }
       }
     },
-    "Group Repeating Logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gộp nhật ký lặp lại"
+    "Get official, stable updates." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhận bản cập nhật chính thức, ổn định."
           }
         }
       }
     },
-    "Group repeating logs (Off)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gộp nhật ký lặp lại (Đang tắt)"
+    "GitHub" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub"
           }
         }
       }
     },
-    "Group repeating logs (On)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gộp nhật ký lặp lại (Đang bật)"
+    "Group Repeating Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gộp nhật ký lặp lại"
           }
         }
       }
     },
-    "Hide": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ẩn"
+    "Group repeating logs (Off)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gộp nhật ký lặp lại (Đang tắt)"
           }
         }
       }
     },
-    "High-Performance Process & App Security": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bảo vệ & Giám sát ứng dụng chuyên sâu"
+    "Group repeating logs (On)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gộp nhật ký lặp lại (Đang bật)"
           }
         }
       }
     },
-    "Immediately": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ngay lập tức"
+    "Hide" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ẩn"
           }
         }
       }
     },
-    "Inactive": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không hoạt động"
+    "High-Performance Process & App Security" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bảo vệ & Giám sát ứng dụng chuyên sâu"
           }
         }
       }
     },
-    "Incoming Calls": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuộc gọi đến"
+    "Immediately" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngay lập tức"
           }
         }
       }
     },
-    "Info": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thông tin"
+    "Inactive" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không hoạt động"
           }
         }
       }
     },
-    "Intel (x86_64)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intel (x86_64)"
+    "Incoming Calls" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuộc gọi đến"
           }
         }
       }
     },
-    "Jump to bottom": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuộn xuống cuối"
+    "Info" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thông tin"
           }
         }
       }
     },
-    "Last 24 Hours": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "24 giờ qua"
+    "Intel (x86_64)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intel (x86_64)"
           }
         }
       }
     },
-    "Last 6 Hours": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "6 giờ qua"
+    "Jump to bottom" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuộn xuống cuối"
           }
         }
       }
     },
-    "Last 7 Days": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7 ngày qua"
+    "Last 6 Hours" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 giờ qua"
           }
         }
       }
     },
-    "Last Hour": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 giờ qua"
+    "Last 7 Days" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 ngày qua"
           }
         }
       }
     },
-    "Level": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cấp độ"
+    "Last 24 Hours" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "24 giờ qua"
           }
         }
       }
     },
-    "Light": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sáng"
+    "Last Hour" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 giờ qua"
           }
         }
       }
     },
-    "Loading logs…": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đang tải nhật ký…"
+    "Level" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cấp độ"
           }
         }
       }
     },
-    "Lock": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoá"
+    "Light" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sáng"
           }
         }
       }
     },
-    "Lock (%d)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoá (%d)"
+    "Loading logs…" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang tải nhật ký…"
           }
         }
       }
     },
-    "Lock Session Timeout": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thời hạn phiên khóa"
+    "Lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá"
           }
         }
       }
     },
-    "Lock security settings": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khóa cài đặt bảo mật"
+    "Lock (%d)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoá (%d)"
           }
         }
       }
     },
-    "Locked application": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng đã khoá"
+    "Lock security settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khóa cài đặt bảo mật"
           }
         }
       }
     },
-    "Locking %lld apps...": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đang khoá %lld ứng dụng…"
+    "Lock Session Timeout" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời hạn phiên khóa"
           }
         }
       }
     },
-    "Logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nhật ký"
+    "Locked application" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đã khoá"
           }
         }
       }
     },
-    "Logs exported successfully": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã xuất nhật ký thành công"
+    "Locking %lld apps..." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang khoá %lld ứng dụng…"
           }
         }
       }
     },
-    "Main App": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng chính"
+    "Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhật ký"
           }
         }
       }
     },
-    "Manage the application list": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quản lý danh sách Ứng dụng"
+    "Logs exported successfully" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xuất nhật ký thành công"
           }
         }
       }
     },
-    "Missing": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không tìm thấy"
+    "macOS requires enabling AppLocker in System Settings -> Login Items & Extensions." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS yêu cầu bật AppLocker trong Cài đặt hệ thống -> Mục đăng nhập & Phần mở rộng"
           }
         }
       }
     },
-    "Missing Applications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng không còn tồn tại"
+    "Main App" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng chính"
           }
         }
       }
     },
-    "Move to Applications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Di chuyển đến thư mục Ứng dụng"
+    "Manage the application list" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản lý danh sách Ứng dụng"
           }
         }
       }
     },
-    "No log entries found": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không tìm thấy nhật ký nào"
+    "Missing" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy"
           }
         }
       }
     },
-    "Notice": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chú ý"
+    "Missing Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng không còn tồn tại"
           }
         }
       }
     },
-    "Notifications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thông báo"
+    "Move to Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển đến thư mục Ứng dụng"
           }
         }
       }
     },
-    "Open System Settings": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mở Cài đặt hệ thống"
+    "No log entries found" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy nhật ký nào"
           }
         }
       }
     },
-    "Operating System": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hệ điều hành"
+    "Notice" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chú ý"
           }
         }
       }
     },
-    "Others…": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khác…"
+    "Notifications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thông báo"
           }
         }
       }
     },
-    "Please read and agree to the terms of service and license below:": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vui lòng đọc và đồng ý với điều khoản dịch vụ và giấy phép bên dưới:"
+    "open %@" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở %@"
           }
         }
       }
     },
-    "Popup Countdown:": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thời gian đếm ngược:"
+    "open %d application(s)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở %d ứng dụng"
           }
         }
       }
     },
-    "Process": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiến trình"
+    "Open System Settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở Cài đặt hệ thống"
           }
         }
       }
     },
-    "Processor": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bộ vi xử lý"
+    "Operating System" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hệ điều hành"
           }
         }
       }
     },
-    "Quit": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thoát"
+    "Others…" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khác…"
           }
         }
       }
     },
-    "Quit AppLocker": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thoát AppLocker"
+    "Please read and agree to the terms of service and license below:" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng đọc và đồng ý với điều khoản dịch vụ và giấy phép bên dưới:"
           }
         }
       }
     },
-    "Re-register launchctl agent service": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đăng ký lại dịch vụ agent qua launchctl"
+    "Popup Countdown:" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian đếm ngược:"
           }
         }
       }
     },
-    "Ready to Install": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sẵn sàng để Cài đặt"
+    "Process" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiến trình"
           }
         }
       }
     },
-    "Refresh": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Làm mới"
+    "Processor" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ vi xử lý"
           }
         }
       }
     },
-    "Refresh logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Làm mới nhật ký"
+    "Quit" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoát"
           }
         }
       }
     },
-    "Remove": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xoá"
+    "Quit AppLocker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoát AppLocker"
           }
         }
       }
     },
-    "Remove Missing Applications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xoá ứng dụng không tồn tại"
+    "Re-register launchctl agent service" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đăng ký lại dịch vụ agent qua launchctl"
           }
         }
       }
     },
-    "Repair Agent Service": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sửa chữa dịch vụ agent"
+    "Ready to Install" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sẵn sàng để Cài đặt"
           }
         }
       }
     },
-    "Requires running in the Applications folder": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yêu cầu chạy ứng dụng trong thư mục Ứng dụng"
+    "Refresh" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Làm mới"
           }
         }
       }
     },
-    "Reset": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đặt lại"
+    "Refresh logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Làm mới nhật ký"
           }
         }
       }
     },
-    "Reset AppLocker": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đặt lại AppLocker"
+    "Remove" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá"
           }
         }
       }
     },
-    "Review missing applications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xem xét các ứng dụng không tồn tại"
+    "Remove Missing Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá ứng dụng không tồn tại"
           }
         }
       }
     },
-    "Review missing applications (%lld)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xem lại những ứng dụng không tìm thấy (%lld)"
+    "Repair Agent Service" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa chữa dịch vụ agent"
           }
         }
       }
     },
-    "Search apps...": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tìm kiếm ứng dụng…"
+    "Requires running in the Applications folder" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu chạy ứng dụng trong thư mục Ứng dụng"
           }
         }
       }
     },
-    "Search logs…": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tìm kiếm nhật ký…"
+    "Reset" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt lại"
           }
         }
       }
     },
-    "Security": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bảo mật"
+    "Reset AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt lại AppLocker"
           }
         }
       }
     },
-    "Select All": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn tất cả"
+    "Review missing applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem xét các ứng dụng không tồn tại"
           }
         }
       }
     },
-    "Select All Logs": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn tất cả nhật ký"
+    "Review missing applications (%lld)" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem lại những ứng dụng không tìm thấy (%lld)"
           }
         }
       }
     },
-    "Select the application to lock": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn ứng dụng để khoá"
+    "Search apps..." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tìm kiếm ứng dụng…"
           }
         }
       }
     },
-    "Settings": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cài đặt"
+    "Search logs…" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tìm kiếm nhật ký…"
           }
         }
       }
     },
-    "Show a system notification whenever an unauthorized launch attempt is blocked.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hiển thị thông báo hệ thống mỗi khi một lượt khởi chạy trái phép bị ngăn chặn."
+    "Security" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bảo mật"
           }
         }
       }
     },
-    "Show notifications when an app is blocked": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hiển thị thông báo khi một ứng dụng bị chặn"
+    "Select All" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn tất cả"
           }
         }
       }
     },
-    "Software Updates": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cập nhật phần mềm"
+    "Select All Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn tất cả nhật ký"
           }
         }
       }
     },
-    "Stable": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chính thức"
+    "Select the application to lock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn ứng dụng để khoá"
           }
         }
       }
     },
-    "Swift Native": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Swift Native"
+    "Settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài đặt"
           }
         }
       }
     },
-    "System": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hệ thống"
+    "Show a system notification whenever an unauthorized launch attempt is blocked." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiển thị thông báo hệ thống mỗi khi một lượt khởi chạy trái phép bị ngăn chặn."
           }
         }
       }
     },
-    "System Information": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thông tin hệ thống"
+    "Show notifications when an app is blocked" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiển thị thông báo khi một ứng dụng bị chặn"
           }
         }
       }
     },
-    "System Applications": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng hệ thống"
+    "Software Updates" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật phần mềm"
           }
         }
       }
     },
-    "System Extension Inactive": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phần mở rộng hệ thống không được bật"
+    "Stable" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chính thức"
           }
         }
       }
     },
-    "System Extension Required": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yêu cầu Tiện ích mở rộng hệ thống"
+    "Swift Native" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Native"
           }
         }
       }
     },
-    "System Extension Uninstallation Failed": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gỡ cài đặt tiện ích mở rộng hệ thống không thành công"
+    "System" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hệ thống"
           }
         }
       }
     },
-    "System Extension is disabled. Please enable it in System Settings.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiện ích mở rộng hệ thống đang bị tắt. Vui lòng bật trong Cài đặt hệ thống"
+    "System Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng hệ thống"
           }
         }
       }
     },
-    "Temporarily pause or activate protection for all applications in your lock list.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tạm dừng hoặc kích hoạt toàn bộ cơ chế bảo vệ cho các ứng dụng trong danh sách khóa."
+    "System Extension Inactive" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phần mở rộng hệ thống không được bật"
           }
         }
       }
     },
-    "The beta update has been downloaded. Install now?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bản cập nhật beta đã được tải xuống. Cài đặt ngay bây giờ?"
+    "System Extension is disabled. Please enable it in System Settings." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiện ích mở rộng hệ thống đang bị tắt. Vui lòng bật trong Cài đặt hệ thống"
           }
         }
       }
     },
-    "The currently running application is at %@.\n\nAppLocker must be moved to the /Applications folder to function correctly.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng hiện đang chạy ở %@.\n\nAppLocker phải được chuyển đến thư mục /Applications để hoạt động chính xác."
+    "System Extension Required" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu Tiện ích mở rộng hệ thống"
           }
         }
       }
     },
-    "The update has been downloaded. Install now?": {
-      "generatesSymbol": false,
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bản cập nhật đã được tải xuống. Cài đặt ngay bây giờ?"
+    "System Extension Uninstallation Failed" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ cài đặt tiện ích mở rộng hệ thống không thành công"
           }
         }
       }
     },
-    "There is no locked application.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không có ứng dụng nào bị khoá."
+    "System Information" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thông tin hệ thống"
           }
         }
       }
     },
-    "These applications no longer exist on disk but remain in your lock list.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Các ứng dụng này không còn tồn tại trên máy nhưng vẫn còn trong danh sách khoá."
+    "Temporarily pause or activate protection for all applications in your lock list." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tạm dừng hoặc kích hoạt toàn bộ cơ chế bảo vệ cho các ứng dụng trong danh sách khóa."
           }
         }
       }
     },
-    "This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.\n\nDo you want to continue?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thao tác này sẽ xóa tất cả các cài đặt bao gồm danh sách các ứng dụng bị khóa. Sau khi đặt lại thành công, ứng dụng sẽ được mở lại\n\nBạn có muốn tiếp tục không?"
+    "The beta update has been downloaded. Install now?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật beta đã được tải xuống. Cài đặt ngay bây giờ?"
           }
         }
       }
     },
-    "Time Range": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khoảng thời gian"
+    "The currently running application is at %@.\n\nAppLocker must be moved to the /Applications folder to function correctly." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng hiện đang chạy ở %@.\n\nAppLocker phải được chuyển đến thư mục /Applications để hoạt động chính xác."
           }
         }
       }
     },
-    "Try adjusting the time range or filters.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hãy thử điều chỉnh khoảng thời gian hoặc bộ lọc."
+    "The update has been downloaded. Install now?" : {
+      "generatesSymbol" : false,
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản cập nhật đã được tải xuống. Cài đặt ngay bây giờ?"
           }
         }
       }
     },
-    "Turn Off": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tắt"
+    "There is no locked application." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không có ứng dụng nào bị khoá."
           }
         }
       }
     },
-    "Turn Off Application Lock?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tắt khoá ứng dụng?"
+    "These applications no longer exist on disk but remain in your lock list." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các ứng dụng này không còn tồn tại trên máy nhưng vẫn còn trong danh sách khoá."
           }
         }
       }
     },
-    "Uninstall": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gỡ cài đặt"
+    "This operation will delete all settings including the list of locked applications. After successful reset, the application will be reopened.\n\nDo you want to continue?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thao tác này sẽ xóa tất cả các cài đặt bao gồm danh sách các ứng dụng bị khóa. Sau khi đặt lại thành công, ứng dụng sẽ được mở lại\n\nBạn có muốn tiếp tục không?"
           }
         }
       }
     },
-    "Uninstall AppLocker": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gỡ cài đặt AppLocker"
+    "Time Range" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoảng thời gian"
           }
         }
       }
     },
-    "Uninstallation Incomplete": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gỡ cài đặt chưa hoàn tất"
+    "Try adjusting the time range or filters." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy thử điều chỉnh khoảng thời gian hoặc bộ lọc."
           }
         }
       }
     },
-    "Universal": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Universal"
+    "Turn Off" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt"
           }
         }
       }
     },
-    "Unlock": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mở khoá"
+    "Turn Off Application Lock?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt khoá ứng dụng?"
           }
         }
       }
     },
-    "Unlock security settings": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mở khóa cài đặt bảo mật"
+    "Uninstall" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ cài đặt"
           }
         }
       }
     },
-    "Unlock to view security settings": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mở khoá để xem cài đặt bảo mật"
+    "Uninstall AppLocker" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ cài đặt AppLocker"
           }
         }
       }
     },
-    "Unlocking %lld apps...": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đang mở khoá %lld ứng dụng…"
+    "Uninstallation Incomplete" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ cài đặt chưa hoàn tất"
           }
         }
       }
     },
-    "Up to Date": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã cập nhật"
+    "Universal" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Universal"
           }
         }
       }
     },
-    "Update Available": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cập nhật có sẵn"
+    "Unlock" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khoá"
           }
         }
       }
     },
-    "Update Channel": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kênh Cập nhật"
+    "unlock security settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mở khóa cài đặt bảo mật"
           }
         }
       }
     },
-    "Updates": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cập nhật"
+    "Unlock security settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khóa cài đặt bảo mật"
           }
         }
       }
     },
-    "Version %@": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phiên bản %@"
+    "Unlock to view security settings" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở khoá để xem cài đặt bảo mật"
           }
         }
       }
     },
-    "Version %@ available": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phiên bản %@ có sẵn"
+    "Unlocking %lld apps..." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang mở khoá %lld ứng dụng…"
           }
         }
       }
     },
-    "Waiting to unlock %lld application(s)...": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đang chờ mở khoá %lld ứng dụng..."
+    "Up to Date" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã cập nhật"
           }
         }
       }
     },
-    "Website": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trang web"
+    "Update Available" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật có sẵn"
           }
         }
       }
     },
-    "Welcome to %@": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chào mừng đến với %@"
+    "Update Channel" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kênh Cập nhật"
           }
         }
       }
     },
-    "When System Sleeps": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Khi hệ thống vào chế độ ngủ"
+    "Updates" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật"
           }
         }
       }
     },
-    "You are about to uninstall AppLocker. This action will delete application locking preferences for all users on this Mac.\n\nDo you want to continue?": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Việc làm này sẽ xoá tuỳ chọn khoá ứng dụng cho toàn bộ người dùng trên máy Mac này\n\nBạn có muốn tiếp tục không?"
+    "Version %@" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên bản %@"
           }
         }
       }
     },
-    "authenticate to open the application list": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "xác thực để mở danh sách Ứng dụng"
+    "Version %@ available" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên bản %@ có sẵn"
           }
         }
       }
     },
-    "authenticate to reset AppLocker": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "xác thực để Đặt lại AppLocker"
+    "Waiting to unlock %lld application(s)..." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang chờ mở khoá %lld ứng dụng..."
           }
         }
       }
     },
-    "macOS requires enabling AppLocker in System Settings -> Login Items & Extensions.": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "macOS yêu cầu bật AppLocker trong Cài đặt hệ thống -> Mục đăng nhập & Phần mở rộng"
+    "Website" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trang web"
           }
         }
       }
     },
-    "open %@": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "mở %@"
+    "Welcome to %@" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chào mừng đến với %@"
           }
         }
       }
     },
-    "open %d application(s)": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "mở %d ứng dụng"
+    "When System Sleeps" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi hệ thống vào chế độ ngủ"
           }
         }
       }
     },
-    "unlock security settings": {
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "mở khóa cài đặt bảo mật"
+    "You are about to uninstall AppLocker. This action will delete application locking preferences for all users on this Mac.\n\nDo you want to continue?" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Việc làm này sẽ xoá tuỳ chọn khoá ứng dụng cho toàn bộ người dùng trên máy Mac này\n\nBạn có muốn tiếp tục không?"
           }
         }
       }
-    },
-    "×%lld": {}
+    }
   },
-  "version": "1.1"
+  "version" : "1.1"
 }

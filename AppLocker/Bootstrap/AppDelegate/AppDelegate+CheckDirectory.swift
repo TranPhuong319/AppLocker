@@ -22,38 +22,36 @@ extension AppDelegate {
             currentPath == path || currentPath.hasPrefix(path)
         }
 
-        if !isAllowed {
-            // Hiển thị đầu, cuối bỏ phần giữa
-            var displayPath = (currentPath as NSString).abbreviatingWithTildeInPath
-            if displayPath.count > 50 {
-                let components = displayPath.components(separatedBy: "/")
-                if components.count > 4 {
-                    let firstPart = components.prefix(2).joined(separator: "/")
-                    let lastPart = components.suffix(2).joined(separator: "/")
-                    displayPath = "\(firstPart)/.../\(lastPart)"
-                }
-            }
+        guard !isAllowed else { return }
 
-            let response = AlertShow.show(
-                title: String(localized: "Requires running in the Applications folder"),
-                message: String(localized:
-                """
-                The currently running application is at \(displayPath).
+        // Hiển thị đầu, cuối bỏ phần giữa
+        var displayPath = (currentPath as NSString).abbreviatingWithTildeInPath
+        let components = displayPath.components(separatedBy: "/")
+        if displayPath.count > 50, components.count > 4 {
+            let firstPart = components.prefix(2).joined(separator: "/")
+            let lastPart = components.suffix(2).joined(separator: "/")
+            displayPath = "\(firstPart)/.../\(lastPart)"
+        }
 
-                AppLocker must be moved to the /Applications folder to function correctly.
-                """
-                               ),
-                style: .critical,
-                buttons: [String(localized: "Move to Applications"), String(localized: "Quit")],
-                cancelIndex: 1,
-                defaultIndex: 0
-            )
+        let response = AlertShow.show(
+            title: String(localized: "Requires running in the Applications folder"),
+            message: String(localized:
+            """
+            The currently running application is at \(displayPath).
 
-            if case .button(index: 0, _) = response {
-                moveToApplicationsAndRelaunch()
-            } else {
-                NSApp.terminate(nil)
-            }
+            AppLocker must be moved to the /Applications folder to function correctly.
+            """
+                           ),
+            style: .critical,
+            buttons: [String(localized: "Move to Applications"), String(localized: "Quit")],
+            cancelIndex: 1,
+            defaultIndex: 0
+        )
+
+        if case .button(index: 0, _) = response {
+            moveToApplicationsAndRelaunch()
+        } else {
+            NSApp.terminate(nil)
         }
     }
 
@@ -67,7 +65,13 @@ extension AppDelegate {
             }
             try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
 
-            try? FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
+            do {
+                try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
+            } catch {
+                Logfile.app.warning(
+                    "[DirectoryCheck] Failed to trash bundle: \(error.localizedDescription, privacy: .public)"
+                )
+            }
             Logfile.app.info("[DirectoryCheck] Moved application to /Applications via FileManager. Restarting…")
             restartApp(at: destinationURL)
             return
@@ -81,6 +85,10 @@ extension AppDelegate {
             )
         }
 
+        moveViaPrivilegedAppleScript(bundleURL: bundleURL, destinationURL: destinationURL)
+    }
+
+    private func moveViaPrivilegedAppleScript(bundleURL: URL, destinationURL: URL) {
         let sourcePath = bundleURL.path
         let destPath = "/Applications"
         let appName = bundleURL.lastPathComponent
@@ -92,28 +100,27 @@ extension AppDelegate {
         """
 
         var errorDict: NSDictionary?
-        if let scriptObject = NSAppleScript(source: scriptSource) {
-            _ = scriptObject.executeAndReturnError(&errorDict)
+        guard let scriptObject = NSAppleScript(source: scriptSource) else { return }
+        _ = scriptObject.executeAndReturnError(&errorDict)
 
-            if errorDict != nil {
-                Logfile.app.error(
-                    "[DirectoryCheck] AppleScript privileged move failed: \(String(describing: errorDict))"
-                )
-                let msg = """
-                Could not move the application to /Applications automatically. Please move it manually to continue.
-                """
-                AlertShow.showInfo(
-                    title: String(localized: "Failed to Move Application"),
-                    message: String(localized: String.LocalizationValue(msg)),
-                    style: .critical
-                )
-                NSApp.terminate(nil)
-            } else {
-                Logfile.app.info(
-                    "[DirectoryCheck] Moved application to /Applications via AppleScript. Restarting…"
-                )
-                restartApp(at: destinationURL)
-            }
+        if errorDict != nil {
+            Logfile.app.error(
+                "[DirectoryCheck] AppleScript privileged move failed: \(String(describing: errorDict))"
+            )
+            let msg = """
+            Could not move the application to /Applications automatically. Please move it manually to continue.
+            """
+            AlertShow.showInfo(
+                title: String(localized: "Failed to Move Application"),
+                message: String(localized: String.LocalizationValue(msg)),
+                style: .critical
+            )
+            NSApp.terminate(nil)
+        } else {
+            Logfile.app.info(
+                "[DirectoryCheck] Moved application to /Applications via AppleScript. Restarting…"
+            )
+            restartApp(at: destinationURL)
         }
     }
 }
