@@ -36,15 +36,18 @@ extension AppDelegate {
             return
         }
 
-        AuthenticationManager.authenticate(
-            reason: String(localized: "authenticate to open the application list")
-        ) { success, error in
-            if success {
-                AppListWindowController.show()
-                Logfile.app.debug("[Actions] Opened AppList")
-            } else {
+        Task { @MainActor in
+            do {
+                let success = try await AuthenticationManager.authenticate(
+                    reason: String(localized: "authenticate to open the application list")
+                )
+                if success {
+                    AppListWindowController.show()
+                    Logfile.app.debug("[Actions] Opened AppList")
+                }
+            } catch {
                 Logfile.app.error(
-                    "[Actions] Error opening list app: \(error as NSObject?)")
+                    "[Actions] Error opening list app: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -99,17 +102,20 @@ extension AppDelegate {
             defaultIndex: 1
         )
 
-        if case .button(index: 0, _) = resetConfirmation {
-            AuthenticationManager.authenticate(
-                reason: String(localized: "authenticate to reset AppLocker")
-            ) { [weak self] success, error in
+        guard case .button(index: 0, _) = resetConfirmation else { return }
+
+        Task { @MainActor [weak self] in
+            do {
+                let success = try await AuthenticationManager.authenticate(
+                    reason: String(localized: "authenticate to reset AppLocker")
+                )
                 if success {
                     self?.performReset()
-                } else if let error = error {
-                    Logfile.app.error(
-                        "[Actions] Authentication failed for reset: \(error.localizedDescription)"
-                    )
                 }
+            } catch {
+                Logfile.app.error(
+                    "[Actions] Authentication failed for reset: \(error.localizedDescription, privacy: .public)"
+                )
             }
         }
     }
@@ -130,12 +136,13 @@ extension AppDelegate {
     // MARK: - Helper Methods
 
     private func performUninstall() {
-        Task {
+        Task { [weak self] in
             let uninstallResult = await withCheckedContinuation { continuation in
                 ExtensionInstaller.shared.uninstall { result in
                     continuation.resume(returning: result)
                 }
             }
+            guard let self else { return }
 
             switch uninstallResult {
             case .success:

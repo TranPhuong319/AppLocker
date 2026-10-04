@@ -31,12 +31,12 @@ extension ESManager {
         return false
     }
 
-    static func getSigningID(_ message: ESMessage) -> String {
+    static func signingID(for message: ESMessage) -> String {
         string(from: message.pointee.process.pointee.signing_id) ?? "Unsigned/Unknown"
     }
 
     func handleAuthOpen(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve) {
-        let path = ESSafetyValve.getPath(message)
+        let path = ESSafetyValve.path(for: message)
         let esPath = message.pointee.event.open.file.pointee.path
 
         if isAppBundlePath(esPath) {
@@ -63,7 +63,7 @@ extension ESManager {
     ) {
         if isAuthorized(message) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-            let sigID = Self.getSigningID(message)
+            let sigID = Self.signingID(for: message)
             Logfile.endpointSecurity.debug(
                 "[AuthFile] OPEN ALLOW: \(path, privacy: .public) (\(sigID, privacy: .public))"
             )
@@ -72,7 +72,7 @@ extension ESManager {
 
         if !isWriteIntent(message.pointee.event.open.fflag) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
-            let sigID = Self.getSigningID(message)
+            let sigID = Self.signingID(for: message)
             Logfile.endpointSecurity.debug(
                 "[AuthFile] OPEN ALLOW (Read-only): \(path, privacy: .public) (\(sigID, privacy: .public))"
             )
@@ -80,7 +80,7 @@ extension ESManager {
         }
 
         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-        let sigID = Self.getSigningID(message)
+        let sigID = Self.signingID(for: message)
         Logfile.endpointSecurity.warning(
             "[AuthFile] OPEN DENY (Write-Intent): \(path, privacy: .public) (\(sigID, privacy: .public))"
         )
@@ -106,19 +106,21 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        if isWriteIntent(message.pointee.event.open.fflag) {
-            if isAuthorized(message) {
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                return
-            }
-            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            let sigID = Self.getSigningID(message)
-            Logfile.endpointSecurity.warning(
-                "[AuthFile] OPEN DENY (Folder Write): \(path, privacy: .public) (\(sigID, privacy: .public))"
-            )
+        guard isWriteIntent(message.pointee.event.open.fflag) else {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
         }
-        _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+
+        if isAuthorized(message) {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+            return
+        }
+
+        _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        let sigID = Self.signingID(for: message)
+        Logfile.endpointSecurity.warning(
+            "[AuthFile] OPEN DENY (Folder Write): \(path, privacy: .public) (\(sigID, privacy: .public))"
+        )
     }
 
     func handleAuthUnlink(
@@ -150,23 +152,25 @@ extension ESManager {
                              isAppBundlePath(srcPathToken)
         let dstIsProtected = isRenameDestinationProtected(renameEvent)
 
-        if srcIsProtected || dstIsProtected {
-            let procID = Self.getSigningID(message)
-            if isAuthorized(message) {
-                let path = ESSafetyValve.getPath(message)
-                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-                Logfile.endpointSecurity.debug(
-                    "[AuthFile] RENAME ALLOW: \(path, privacy: .public) (\(procID, privacy: .public))"
-                )
-                return
-            }
-            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-            Logfile.endpointSecurity.warning(
-                "[AuthFile] SELF_PROT [RENAME] DENY (Protected): (Process: \(procID, privacy: .public))"
-            )
-        } else {
+        guard srcIsProtected || dstIsProtected else {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            return
         }
+
+        let procID = Self.signingID(for: message)
+        if isAuthorized(message) {
+            let path = ESSafetyValve.path(for: message)
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+            Logfile.endpointSecurity.debug(
+                "[AuthFile] RENAME ALLOW: \(path, privacy: .public) (\(procID, privacy: .public))"
+            )
+            return
+        }
+
+        _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        Logfile.endpointSecurity.warning(
+            "[AuthFile] SELF_PROT [RENAME] DENY (Protected): (Process: \(procID, privacy: .public))"
+        )
     }
 
     private func isRenameDestinationProtected(_ renameEvent: es_event_rename_t) -> Bool {
@@ -175,20 +179,22 @@ extension ESManager {
             return isProtectedConfigPath(dstToken) ||
                    isInsideProtectedFolder(dstToken) ||
                    isAppBundlePath(dstToken)
-        } else if renameEvent.destination_type == ES_DESTINATION_TYPE_NEW_PATH {
-            let filenameToken = renameEvent.destination.new_path.filename
-            if let nameStr = string(from: filenameToken) {
-                let isParentProtected = isInsideProtectedFolder(renameEvent.destination.new_path.dir.pointee.path)
-                if isParentProtected {
-                    return true
-                } else if nameStr == "AppLocker.app" {
-                    let dirToken = renameEvent.destination.new_path.dir.pointee.path
-                    if let dirStr = string(from: dirToken), dirStr == "/Applications" {
-                        return true
-                    }
-                }
-            }
         }
+
+        guard renameEvent.destination_type == ES_DESTINATION_TYPE_NEW_PATH,
+              let nameStr = string(from: renameEvent.destination.new_path.filename) else {
+            return false
+        }
+
+        let dirToken = renameEvent.destination.new_path.dir.pointee.path
+        if isInsideProtectedFolder(dirToken) {
+            return true
+        }
+
+        if nameStr == "AppLocker.app", let dirStr = string(from: dirToken), dirStr == "/Applications" {
+            return true
+        }
+
         return false
     }
 
@@ -218,7 +224,7 @@ extension ESManager {
         operationName: String
     ) {
         if isTargetProtected {
-            let procID = Self.getSigningID(message)
+            let procID = Self.signingID(for: message)
             guard isAuthorized(message) else {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
                 Logfile.endpointSecurity.warning(

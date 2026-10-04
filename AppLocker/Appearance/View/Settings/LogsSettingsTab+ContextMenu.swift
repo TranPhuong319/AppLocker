@@ -1,5 +1,5 @@
 //
-//  LogsSettingsTab+Placeholders.swift
+//  LogsSettingsTab+ContextMenu.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 03/10/26.

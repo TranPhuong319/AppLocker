@@ -129,18 +129,26 @@ extension LogsSettingsTab {
     private func autoScrollStep(_ direction: Int, proxy: ScrollViewProxy) {
         let entries = displayEntries
         if direction > 0 {
-            let bottom = dragAutoScroller.visibleContentBottom
-            if let next = entries.first(where: { (rowFrames[$0.id]?.maxY ?? 0) > bottom + 1 }) {
-                proxy.scrollTo(next.id, anchor: .bottom)
-            } else {
-                proxy.scrollTo("log_bottom", anchor: .bottom)
-            }
+            autoScrollDown(entries: entries, proxy: proxy)
         } else {
-            let top = dragAutoScroller.visibleContentTop
-            if let previous = entries.last(where: { (rowFrames[$0.id]?.minY ?? .infinity) < top - 1 }) {
-                proxy.scrollTo(previous.id, anchor: .top)
-            }
+            autoScrollUp(entries: entries, proxy: proxy)
         }
         applyDragSelection()
+    }
+
+    private func autoScrollDown(entries: [GroupedLogEntry], proxy: ScrollViewProxy) {
+        let bottom = dragAutoScroller.visibleContentBottom
+        if let next = entries.first(where: { (rowFrames[$0.id]?.maxY ?? 0) > bottom + 1 }) {
+            proxy.scrollTo(next.id, anchor: .bottom)
+        } else {
+            proxy.scrollTo("log_bottom", anchor: .bottom)
+        }
+    }
+
+    private func autoScrollUp(entries: [GroupedLogEntry], proxy: ScrollViewProxy) {
+        let top = dragAutoScroller.visibleContentTop
+        if let previous = entries.last(where: { (rowFrames[$0.id]?.minY ?? .infinity) < top - 1 }) {
+            proxy.scrollTo(previous.id, anchor: .top)
+        }
     }
 }

@@ -34,11 +34,10 @@ struct UpdatesSettingsTab: View {
                         if !newValue {
                             autoDownload = false
                         }
-                        if !isMock {
-                            AppUpdater.shared.automaticallyChecksForUpdates = newValue
-                            if !newValue {
-                                AppUpdater.shared.automaticallyDownloadsUpdates = false
-                            }
+                        guard !isMock else { return }
+                        AppUpdater.shared.automaticallyChecksForUpdates = newValue
+                        if !newValue {
+                            AppUpdater.shared.automaticallyDownloadsUpdates = false
                         }
                     }
 

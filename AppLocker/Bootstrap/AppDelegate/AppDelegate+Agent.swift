@@ -34,7 +34,13 @@ extension AppDelegate {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         process.arguments = ["stop", Self.plistName]
-        try? process.run()
+        do {
+            try process.run()
+        } catch {
+            Logfile.app.error(
+                "[Agent] Failed to stop agent via launchctl: \(error.localizedDescription, privacy: .public)"
+            )
+        }
         #endif
     }
 

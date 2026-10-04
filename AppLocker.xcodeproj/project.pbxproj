@@ -65,13 +65,18 @@
 		E0FD761C2F59E36600D46B95 /* AppearanceSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */; };
 		E0FD761C2F59E36600D46B96 /* LogsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */; };
 		E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */; };
-		E0FD761C2F59E36600D46B99 /* LogsSettingsTab+Placeholders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B99 /* LogsSettingsTab+Placeholders.swift */; };
+		E0FD761C2F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */; };
 		E0FD761C2F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */; };
+		E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */; };
+		E0FDB0042F59E36600D46B01 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */; };
+		E0FDB0062F59E36600D46B01 /* AboutArchitectureBadgesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */; };
+		E0FDB0082F59E36600D46B01 /* ESXPCClient+Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */; };
 		E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LogStore.swift */; };
 		E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */; };
 		E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */; };
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
+		E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
 		E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */; };
 		E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */; };
@@ -80,7 +85,9 @@
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
 		E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76402F59E37C00D46B31 /* ESMachListener.swift */; };
 		E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */; };
-		E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */; };
+		E0FDB00A2F59E37C00D46B01 /* ESClientObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */; };
+		E0FDB00C2F59E37C00D46B01 /* ESAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */; };
+		E0FDB00E2F59E37C00D46B01 /* ESTamper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */; };
 		E0FD76532F59E37C00D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762E2F59E37C00D46B31 /* main.swift */; };
 		E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */; };
 		E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */; };
@@ -195,8 +202,12 @@
 		E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsSettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntryRow.swift; sourceTree = "<group>"; };
-		E0FD75B62F59E36600D46B99 /* LogsSettingsTab+Placeholders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsSettingsTab+Placeholders.swift"; sourceTree = "<group>"; };
+		E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsSettingsTab+ContextMenu.swift"; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsSettingsTab+AutoScroll.swift"; sourceTree = "<group>"; };
+		E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeThumbnailView.swift; sourceTree = "<group>"; };
+		E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSelectionManager.swift; sourceTree = "<group>"; };
+		E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutArchitectureBadgesView.swift; sourceTree = "<group>"; };
+		E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESXPCClient+Requests.swift"; sourceTree = "<group>"; };
 		E0FD75E32F59E36600D46B31 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
 		E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilterModels.swift; sourceTree = "<group>"; };
 		E0FD75B82F59E36600D46B31 /* MissingAppsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingAppsSheet.swift; sourceTree = "<group>"; };
@@ -216,6 +227,7 @@
 		E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCClient.swift; sourceTree = "<group>"; };
 		E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionInstaller.swift; sourceTree = "<group>"; };
 		E0FD75D42F59E36600D46B31 /* XPCServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPCServer.swift; sourceTree = "<group>"; };
+		E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XPCServer+Batch.swift"; sourceTree = "<group>"; };
 		E0FD75D62F59E36600D46B31 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E0FD75D72F59E36600D46B31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -237,7 +249,9 @@
 		E0FD76292F59E37C00D46B31 /* ESManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESManager.swift; sourceTree = "<group>"; };
 		E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Auth.swift"; sourceTree = "<group>"; };
 		E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Config.swift"; sourceTree = "<group>"; };
-		E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESModularClients.swift; sourceTree = "<group>"; };
+		E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESClientObject.swift; sourceTree = "<group>"; };
+		E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAuthorizer.swift; sourceTree = "<group>"; };
+		E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESTamper.swift; sourceTree = "<group>"; };
 		E0FD762E2F59E37C00D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTYNotifier.swift; sourceTree = "<group>"; };
 		E0FD76352F59E37C00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -324,6 +338,7 @@
 			children = (
 				E07DF97B2FA5994C00827F2C /* AboutView.swift */,
 				E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */,
+				E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */,
 			);
 			path = About;
 			sourceTree = "<group>";
@@ -486,9 +501,11 @@
 				E0FD75B62F59E36600D46B93 /* SecuritySettingsTab.swift */,
 				E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */,
 				E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */,
+				E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */,
 				E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */,
 				E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */,
-				E0FD75B62F59E36600D46B99 /* LogsSettingsTab+Placeholders.swift */,
+				E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */,
+				E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */,
 				E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */,
 			);
 			path = Settings;
@@ -563,8 +580,10 @@
 			isa = PBXGroup;
 			children = (
 				E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */,
+				E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */,
 				E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */,
 				E0FD75D42F59E36600D46B31 /* XPCServer.swift */,
+				E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */,
 			);
 			path = EndpointSecurity;
 			sourceTree = "<group>";
@@ -648,7 +667,9 @@
 				E0FD76292F59E37C00D46B31 /* ESManager.swift */,
 				E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */,
 				E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */,
-				E0FD762C2F59E37C00D46B31 /* ESModularClients.swift */,
+				E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */,
+				E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */,
+				E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */,
 				E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */,
 				E0FD762E2F59E37C00D46B31 /* main.swift */,
 			);
@@ -939,7 +960,9 @@
 				E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */,
 				E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */,
 				E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */,
-				E0FD76522F59E37C00D46B31 /* ESModularClients.swift in Sources */,
+				E0FDB00A2F59E37C00D46B01 /* ESClientObject.swift in Sources */,
+				E0FDB00C2F59E37C00D46B01 /* ESAuthorizer.swift in Sources */,
+				E0FDB00E2F59E37C00D46B01 /* ESTamper.swift in Sources */,
 				E0FD76532F59E37C00D46B31 /* main.swift in Sources */,
 				E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */,
 				E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */,
@@ -983,8 +1006,12 @@
 				E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */,
 				E0FD761C2F59E36600D46B96 /* LogsSettingsTab.swift in Sources */,
 				E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */,
-				E0FD761C2F59E36600D46B99 /* LogsSettingsTab+Placeholders.swift in Sources */,
+				E0FDB0042F59E36600D46B01 /* LogSelectionManager.swift in Sources */,
+				E0FD761C2F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift in Sources */,
 				E0FD761C2F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift in Sources */,
+				E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */,
+				E0FDB0062F59E36600D46B01 /* AboutArchitectureBadgesView.swift in Sources */,
+				E0FDB0082F59E36600D46B01 /* ESXPCClient+Requests.swift in Sources */,
 				E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */,
 				E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */,
 				E0FD76042F59E36600D46B31 /* MainUIButtons.swift in Sources */,
@@ -1026,6 +1053,7 @@
 				E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */,
 				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
 				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
+				E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */,
 				E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */,
 				E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */,
 				E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */,

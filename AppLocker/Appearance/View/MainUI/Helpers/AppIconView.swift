@@ -27,10 +27,6 @@ struct AppIconView: View {
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .task(id: "\(path)_\(isMissing)") {
-            if !isMissing, let cached = AppIconProvider.shared.cachedIcon(for: path, size: size) {
-                self.image = cached
-                return
-            }
             self.image = AppIconProvider.shared.icon(for: path, size: size)
         }
     }

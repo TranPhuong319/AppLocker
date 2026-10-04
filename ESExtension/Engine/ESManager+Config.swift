@@ -180,14 +180,14 @@ extension ESManager {
             return
         }
         stateLock.withLock {
-            self.currentLanguage = code
+            self.rawCurrentLanguage = code
             UserDefaults.standard.set([code], forKey: "AppleLanguages")
             Logfile.endpointSecurity.debug("[ESConfig] ES process language updated to: \(code, privacy: .public)")
         }
     }
 
     // Read the current language in a thread-safe way.
-    func getCurrentLanguage() -> String {
-        return stateLock.withLock { self.currentLanguage }
+    var currentLanguage: String {
+        stateLock.withLock { self.rawCurrentLanguage }
     }
 }

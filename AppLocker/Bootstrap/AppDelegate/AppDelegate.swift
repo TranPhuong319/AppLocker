@@ -80,15 +80,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 _ = manageAgent(action: .install)
             }
 
-            if isAgentActive {
-                Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-                process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
-                try? process.run()
-                NSApp.terminate(nil)
-                return
-            }
+            guard isAgentActive else { return }
+
+            Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+            process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
+            try? process.run()
+            NSApp.terminate(nil)
+            return
         }
 #endif
 

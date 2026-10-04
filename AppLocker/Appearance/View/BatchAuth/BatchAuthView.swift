@@ -181,9 +181,7 @@ struct BatchAppRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Toggle("", isOn: $app.isSelected)
-                .toggleStyle(.checkbox)
-                .labelsHidden()
+            checkmarkIndicator
 
             if let icon = icon {
                 Image(nsImage: icon)
@@ -215,9 +213,28 @@ struct BatchAppRowView: View {
         .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(.snappy(duration: 0.25)) {
                 app.isSelected.toggle()
             }
+        }
+    }
+
+    @ViewBuilder
+    private var checkmarkIndicator: some View {
+        let name = app.isSelected ? "checkmark.circle.fill" : "circle"
+        let style = app.isSelected ? Color.accentColor : Color.secondary.opacity(0.35)
+        if #available(macOS 15.0, *) {
+            Image(systemName: name)
+                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
+                .font(.title3)
+                .foregroundStyle(style)
+                .accessibilityLabel(app.isSelected ? "Selected" : "Unselected")
+        } else {
+            Image(systemName: name)
+                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
+                .font(.title3)
+                .foregroundStyle(style)
+                .accessibilityLabel(app.isSelected ? "Selected" : "Unselected")
         }
     }
 }

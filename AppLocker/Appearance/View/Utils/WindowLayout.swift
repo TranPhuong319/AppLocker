@@ -235,7 +235,8 @@ struct ScrollBottomTracker: NSViewRepresentable {
 
     @MainActor
     final class Coordinator: NSObject {
-        nonisolated(unsafe) private var token: NSObjectProtocol?
+        // Required for Swift 6 nonisolated deinit cleanup of non-Sendable NSObjectProtocol
+        nonisolated(unsafe) private var token: (any NSObjectProtocol)?
 
         func attach(to scrollView: NSScrollView, notify: @escaping @Sendable (Bool) -> Void) {
             scrollView.contentView.postsBoundsChangedNotifications = true

@@ -184,14 +184,21 @@ struct SecuritySettingsTab: View {
     private func unlockSecurityTab() {
         guard !isAuthenticating else { return }
         isAuthenticating = true
-        AuthenticationManager.authenticate(
-            reason: String(localized: "unlock security settings")
-        ) { success, _ in
-            self.isAuthenticating = false
-            if success {
-                withAnimation(.snappy(duration: 0.3)) {
-                    self.isUnlocked = true
+        Task {
+            defer { isAuthenticating = false }
+            do {
+                let success = try await AuthenticationManager.authenticate(
+                    reason: String(localized: "unlock security settings")
+                )
+                if success {
+                    withAnimation(.snappy(duration: 0.3)) {
+                        self.isUnlocked = true
+                    }
                 }
+            } catch {
+                Logfile.app.debug(
+                    "[SecurityTab] Authentication failed: \(error.localizedDescription, privacy: .public)"
+                )
             }
         }
     }

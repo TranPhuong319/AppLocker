@@ -63,11 +63,10 @@ enum SystemEnvironment {
     }
 }
 
-// MARK: - AboutView System Info Popover
+// MARK: - System Info Popover View
 
-extension AboutView {
-    @ViewBuilder
-    var systemInfoPopoverContent: some View {
+struct SystemInfoPopoverView: View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "cpu")

@@ -28,8 +28,7 @@ extension AppDelegate {
     func setupUIComponents() {
         Logfile.app.debug("[Launch] Starting menu bar and Notification setup")
         self.setupMenuBar()
-
-        AppUpdater.shared.setBridgeDelegate(self)
+        self.setupUpdateObserver()
         AppUpdater.shared.startTestAutoCheck()
 
         self.setupNotifications()
@@ -54,7 +53,7 @@ extension AppDelegate {
     @objc
     @MainActor
     private func handleWorkspaceSleep() {
-        XPCServer.lastAuthTimestampsByPath.removeAll()
+        XPCServer.shared.lastAuthTimestampsByPath.removeAll()
         let timeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
         if timeoutMinutes != 0 {
             Logfile.app.info(

@@ -25,7 +25,7 @@ struct AppLauncherUtils {
             try task.run()
             task.waitUntilExit()
 
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let data = try pipe.fileHandleForReading.readToEnd() ?? Data()
             if let output = String(data: data, encoding: .utf8), !output.isEmpty {
                 let trimmed = output.trimmingCharacters(in: .whitespacesAndNewlines)
                 Logfile.endpointSecurity.debug("[AutoWake] Command output: \(trimmed, privacy: .public)")

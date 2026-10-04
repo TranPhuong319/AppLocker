@@ -58,7 +58,7 @@ final class ESSafetyValve: @unchecked Sendable {
             }
 
             if status != ES_RESPOND_RESULT_SUCCESS {
-                let path = ESSafetyValve.getPath(self.message)
+                let path = ESSafetyValve.path(for: self.message)
                 Logfile.endpointSecurity.error(
                 """
                 [SafetyValve] es_respond failed [\(status.rawValue, privacy: .public)] \
@@ -74,7 +74,7 @@ final class ESSafetyValve: @unchecked Sendable {
     }
 
     /// Helper to extract path for logging.
-    static func getPath(_ message: ESMessage) -> String {
+    static func path(for message: ESMessage) -> String {
         let type = message.pointee.event_type
         let messagePtr = message.pointee
         switch type {

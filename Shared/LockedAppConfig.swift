@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 struct LockedAppConfig: Codable, Hashable {
     let bundleID: String
@@ -94,15 +95,31 @@ extension UserConfig {
 
     static func load(for uid: uid_t) -> UserConfig? {
         let fileURL = configURL(for: uid)
-        guard FileManager.default.fileExists(atPath: fileURL.path),
-              let data = try? Data(contentsOf: fileURL, options: .mappedIfSafe) else {
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
             return nil
         }
-        return try? PropertyListDecoder().decode(UserConfig.self, from: data)
+        do {
+            let data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
+            return try PropertyListDecoder().decode(UserConfig.self, from: data)
+        } catch {
+            Logfile.policy.error(
+                """
+                [Config] Failed to load config for UID \(uid, privacy: .public): \
+                \(error.localizedDescription, privacy: .public)
+                """
+            )
+            return nil
+        }
     }
 
     static func loadAll() -> [uid_t: UserConfig] {
-        guard let items = try? FileManager.default.contentsOfDirectory(atPath: baseDirectoryURL.path) else {
+        let items: [String]
+        do {
+            items = try FileManager.default.contentsOfDirectory(atPath: baseDirectoryURL.path)
+        } catch {
+            Logfile.policy.error(
+                "[Config] Failed to list base directory: \(error.localizedDescription, privacy: .public)"
+            )
             return [:]
         }
         var result: [uid_t: UserConfig] = [:]

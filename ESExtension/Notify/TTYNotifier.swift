@@ -20,7 +20,7 @@ final class TTYNotifier {
     }
 
     // Find the TTY path of a process (e.g., /dev/ttys001).
-    static func getTTYPath(for processID: pid_t) -> String? {
+    static func ttyPath(for processID: pid_t) -> String? {
         let bufferSize = proc_pidinfo(processID, PROC_PIDLISTFDS, 0, nil, 0)
         guard bufferSize > 0 else { return nil }
 
@@ -66,7 +66,7 @@ final class TTYNotifier {
         cdhash: String,
         identifier: String? = nil
     ) {
-        guard let ttyPath = getTTYPath(for: parentPid) else { return }
+        guard let ttyPath = ttyPath(for: parentPid) else { return }
         guard let fileHandle = FileHandle(forWritingAtPath: ttyPath) else { return }
         defer { try? fileHandle.close() }
 
@@ -113,7 +113,7 @@ final class TTYNotifier {
             """
 
         if let data = message.data(using: .utf8) {
-            fileHandle.write(data)
+            try? fileHandle.write(contentsOf: data)
         }
     }
 }

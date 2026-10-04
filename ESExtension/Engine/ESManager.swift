@@ -22,7 +22,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     var lockedBundlePaths: [uid_t: Set<String>] = [:]
     var allowIncomingCallsByUID: [uid_t: Bool] = [:]
     var isIncomingCallActive: Bool = false
-    var currentLanguage: String = Locale.preferredLanguages.first ?? "en"
+    var rawCurrentLanguage: String = Locale.preferredLanguages.first ?? "en"
     var configMonitorSources: [String: DispatchSourceFileSystemObject] = [:]
     var configDebounceTimer: DispatchSourceTimer?
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 struct ConfigLoadResult {
     let apps: [String: LockedAppConfig]
@@ -40,11 +41,20 @@ final class ConfigStore: Sendable {
 
     private func ensureDirectoryExists(_ url: URL) {
         let attributes: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
-        try? FileManager.default.createDirectory(
-            at: url,
-            withIntermediateDirectories: true,
-            attributes: attributes
-        )
+        do {
+            try FileManager.default.createDirectory(
+                at: url,
+                withIntermediateDirectories: true,
+                attributes: attributes
+            )
+        } catch {
+            Logfile.policy.error(
+                """
+                [ConfigStore] Failed to create directory at \(url.path, privacy: .public): \
+                \(error.localizedDescription, privacy: .public)
+                """
+            )
+        }
     }
 
     func performHandshake(completion: @escaping @Sendable (Bool) -> Void) {
@@ -173,6 +183,23 @@ final class ConfigStore: Sendable {
             )
         } catch {
             Logfile.policy.error("[ConfigStore] Save failed: \(error.localizedDescription)")
+        }
+    }
+
+    @discardableResult
+    func removeConfig(purgeAll: Bool = false) -> Bool {
+        if let domain = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: domain)
+        }
+        do {
+            let targetURL = purgeAll ? Self.baseDirectoryURL : userDirectoryURL
+            if FileManager.default.fileExists(atPath: targetURL.path) {
+                try FileManager.default.removeItem(at: targetURL)
+            }
+            return true
+        } catch {
+            Logfile.policy.error("[ConfigStore] Error deleting config directory: \(error.localizedDescription)")
+            return false
         }
     }
 }

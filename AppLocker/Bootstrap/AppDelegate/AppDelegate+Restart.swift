@@ -24,19 +24,7 @@ extension AppDelegate {
     }
 
     func removeConfig(purgeAll: Bool = false) -> Bool {
-        if let domain = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: domain)
-        }
-        do {
-            let targetURL = purgeAll ? ConfigStore.baseDirectoryURL : ConfigStore.shared.userDirectoryURL
-            if FileManager.default.fileExists(atPath: targetURL.path) {
-                try FileManager.default.removeItem(at: targetURL)
-            }
-            return true
-        } catch {
-            Logfile.app.error("[Lifecycle] Error deleting config directory: \(error.localizedDescription)")
-            return false
-        }
+        ConfigStore.shared.removeConfig(purgeAll: purgeAll)
     }
 
     func restartApp(at bundleURL: URL = Bundle.main.bundleURL) {
