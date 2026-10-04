@@ -42,6 +42,9 @@ struct SecuritySettingsTab: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
             syncProtectionStatus()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .protectionStatusDidChange)) { _ in
+            syncProtectionStatus()
+        }
     }
 
     private var lockedStateView: some View {

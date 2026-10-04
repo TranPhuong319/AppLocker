@@ -28,7 +28,7 @@ enum WindowLayout {
     static let settingsSecuritySize = NSSize(width: 640, height: 440)
     static let settingsUpdatesSize = NSSize(width: 640, height: 440)
     static let settingsAppearanceSize = NSSize(width: 640, height: 440)
-    static let settingsLogsSize = NSSize(width: 1095, height: 580)
+    static let settingsLogsSize = NSSize(width: 1100, height: 580)
     static let settingsSize = settingsMinSize
 }
 

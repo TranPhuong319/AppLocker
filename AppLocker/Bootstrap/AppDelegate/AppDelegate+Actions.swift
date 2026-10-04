@@ -57,6 +57,12 @@ extension AppDelegate {
         ExtensionInstaller.shared.install()
     }
 
+    @objc func resumeProtection() {
+        guard AppState.shared.manager.isProtectionDisabled else { return }
+        AppState.shared.manager.setProtectionDisabled(false)
+        Logfile.app.notice("[Actions] Protection resumed by user")
+    }
+
     @objc func openSettings() {
         NSApp.activate()
         SettingsWindowController.show()
