@@ -1571,6 +1571,27 @@
         }
       }
     },
+    "Resume" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật lại"
+          }
+        }
+      }
+    },
+    "Resume Protection" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật lại bảo vệ"
+          }
+        }
+      }
+    },
     "Review missing applications" : {
       "localizations" : {
         "vi" : {
@@ -1650,6 +1671,9 @@
           }
         }
       }
+    },
+    "Selected" : {
+
     },
     "Settings" : {
       "localizations" : {
@@ -1982,6 +2006,9 @@
           }
         }
       }
+    },
+    "Unselected" : {
+
     },
     "Up to Date" : {
       "localizations" : {

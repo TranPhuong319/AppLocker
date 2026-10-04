@@ -111,15 +111,9 @@ extension AppDelegate: NSMenuDelegate {
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Hide AppLocker", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(
-            withTitle: "Hide Others",
-            action: #selector(NSApplication.hideOtherApplications(_:)),
-            keyEquivalent: "h"
-        )
+            withTitle: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
         appMenu.addItem(
-            withTitle: "Show All",
-            action: #selector(NSApplication.unhideAllApplications(_:)),
-            keyEquivalent: ""
-        )
+            withTitle: "Show All", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Quit AppLocker", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appMenuItem.submenu = appMenu
@@ -143,11 +137,7 @@ extension AppDelegate: NSMenuDelegate {
     private func createWindowMenuItem() -> NSMenuItem {
         let windowMenuItem = NSMenuItem()
         let windowMenu = NSMenu(title: "Window")
-        windowMenu.addItem(
-            withTitle: "Close Window",
-            action: #selector(NSWindow.performClose(_:)),
-            keyEquivalent: "w"
-        )
+        windowMenu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         windowMenuItem.submenu = windowMenu
         return windowMenuItem
     }
@@ -168,6 +158,20 @@ extension AppDelegate: NSMenuDelegate {
             title: "AppLocker v\(Bundle.main.fullVersion)"
         )
         menu.addItem(infoItem)
+
+        if AppState.shared.manager.isProtectionDisabled {
+            let resumeItem = NSMenuItem(
+                title: String(localized: "Resume Protection"),
+                action: #selector(resumeProtection),
+                keyEquivalent: "l"
+            )
+            resumeItem.keyEquivalentModifierMask = [.command, .option]
+            resumeItem.image = NSImage(
+                systemSymbolName: "lock.fill",
+                accessibilityDescription: String(localized: "Resume Protection")
+            )
+            menu.addItem(resumeItem)
+        }
 
         if AppUpdater.shared.hasAvailableUpdate, let ver = AppUpdater.shared.availableUpdateVersion {
             let updateNoticeItem = NSMenuItem(
