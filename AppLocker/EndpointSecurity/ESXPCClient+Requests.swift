@@ -37,6 +37,10 @@ extension ESXPCClient {
             }
 
             guard let conn = self.connection else {
+                guard ExtensionInstaller.isExtensionInstalled, self.shouldReconnect else {
+                    completion(false)
+                    return
+                }
                 self.xpcQueue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                     self?.allowConfigAccess(processID, retry: retry + 1, completion: completion)
                 }
@@ -95,6 +99,10 @@ extension ESXPCClient {
             }
 
             guard let conn = self.connection else {
+                guard ExtensionInstaller.isExtensionInstalled, self.shouldReconnect else {
+                    completion(false)
+                    return
+                }
                 self.xpcQueue.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                     self?.processPendingApps(
                         approvedPIDs: approvedPIDs,

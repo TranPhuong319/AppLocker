@@ -16,7 +16,7 @@ final class ESXPCClient: @unchecked Sendable {
     private let maxRetries = 10
     private var retryCount = 0
     private var isConnecting = false  // Prevent parallel connection attempts
-    private var shouldReconnect = true
+    var shouldReconnect = true
 
     let xpcQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc.qos",
@@ -24,7 +24,9 @@ final class ESXPCClient: @unchecked Sendable {
     )
 
     private init() {
-        xpcQueue.async { [weak self] in self?.connect() }
+        if ExtensionInstaller.isExtensionInstalled {
+            xpcQueue.async { [weak self] in self?.connect() }
+        }
     }
 
     func proxy(
@@ -46,6 +48,10 @@ final class ESXPCClient: @unchecked Sendable {
     func connect() {
         xpcQueue.async { [weak self] in
             guard let self = self, self.connection == nil, !self.isConnecting else { return }
+            guard ExtensionInstaller.isExtensionInstalled else {
+                Logfile.appXPC.debug("[ESXPCClient] Extension is not installed, skipping connect")
+                return
+            }
             self.shouldReconnect = true
             self.isConnecting = true
 
@@ -110,7 +116,10 @@ final class ESXPCClient: @unchecked Sendable {
                 }
             } else {
                 Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                self.shouldReconnect = false
                 self.updateExtensionInstalledState(false)
+                pendingConn.invalidationHandler = nil
+                pendingConn.interruptionHandler = nil
                 pendingConn.invalidate()
             }
         }
@@ -136,7 +145,7 @@ final class ESXPCClient: @unchecked Sendable {
 
     private func scheduleReconnect(immediate: Bool) {
         xpcQueue.async { [weak self] in
-            guard let self = self, self.shouldReconnect else { return }
+            guard let self = self, self.shouldReconnect, ExtensionInstaller.isExtensionInstalled else { return }
 
             if let oldConn = self.connection {
                 oldConn.invalidationHandler = nil
@@ -150,7 +159,6 @@ final class ESXPCClient: @unchecked Sendable {
 
             guard self.retryCount < self.maxRetries else {
                 Logfile.appXPC.error("[ESXPCClient] Max retries reached (\(self.maxRetries, privacy: .public))")
-                self.updateExtensionInstalledState(false)
                 return
             }
             self.retryCount += 1
@@ -163,7 +171,7 @@ final class ESXPCClient: @unchecked Sendable {
                 """
             )
             self.xpcQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard let self = self, self.shouldReconnect else { return }
+                guard let self = self, self.shouldReconnect, ExtensionInstaller.isExtensionInstalled else { return }
                 self.connect()
             }
         }

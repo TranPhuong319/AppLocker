@@ -38,10 +38,11 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     var pendingNotifications: [BlockedNotification] = []
     let pendingPIDLock = OSAllocatedUnfairLock()
-    var pendingVerificationProcesses: [pid_t: audit_token_t] = [:]
+    var pendingVerificationProcesses: [pid_t: (token: audit_token_t, registeredAt: ContinuousClock.Instant)] = [:]
 
     struct XPCConn: @unchecked Sendable, Equatable {
         let connection: NSXPCConnection
+        let uid: uid_t
         static func == (lhs: XPCConn, rhs: XPCConn) -> Bool {
             lhs.connection === rhs.connection
         }
@@ -58,8 +59,9 @@ final class ESManager: NSObject, @unchecked Sendable {
     var isShutdownAuthorized: Bool = false
     let processIDLock = OSAllocatedUnfairLock()
     let backgroundProcessingQueue = DispatchQueue(
-        label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg", qos: .userInitiated,
-        attributes: .concurrent)
+        label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg",
+        qos: .userInitiated
+    )
 
     /// Queue chuyên dụng cho xử lý AUTH events (CONCURRENT cho burst throughput)
     let authorizationProcessingQueue = DispatchQueue(
@@ -101,6 +103,9 @@ final class ESManager: NSObject, @unchecked Sendable {
             // Now safe to receive events
             authorizer.enable()
             tamper.enable()
+
+            // 7. Start Fail-Closed Watchdog for pending processes
+            startPendingProcessesWatchdog()
 
             Logfile.endpointSecurity.notice("[ESManager] Modular ES Clients enabled and active.")
 

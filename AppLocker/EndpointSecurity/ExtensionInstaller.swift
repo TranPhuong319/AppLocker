@@ -13,14 +13,36 @@ import SystemExtensions
 @MainActor
 final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     static let shared = ExtensionInstaller()
-    private override init() {}
+    nonisolated static let extensionIdentifier = "com.TranPhuong319.AppLocker.ESExtension"
+
+    private override init() {
+        super.init()
+        if #available(macOS 15.1, *) {
+            do {
+                try OSSystemExtensionsWorkspace.shared.addObserver(self)
+                Logfile.app.debug("[Installer] OSSystemExtensionsWorkspace observer registered.")
+            } catch {
+                Logfile.app.error("[Installer] Failed to add workspace observer: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        refreshStatus()
+    }
+
+    func refreshStatus() {
+        let req = OSSystemExtensionRequest.propertiesRequest(
+            forExtensionWithIdentifier: Self.extensionIdentifier,
+            queue: .main
+        )
+        req.delegate = self
+        OSSystemExtensionManager.shared.submitRequest(req)
+    }
+
+    nonisolated static var isExtensionInstalled: Bool {
+        UserDefaults.standard.bool(forKey: "isExtensionInstalled")
+    }
 
     private(set) var isInstalled: Bool = {
-        if let stored = UserDefaults.standard.object(forKey: "isExtensionInstalled") as? Bool {
-            return stored
-        }
-        let isFirstStart = UserDefaults.standard.object(forKey: "isFirstStart") as? Bool ?? true
-        return !isFirstStart
+        UserDefaults.standard.bool(forKey: "isExtensionInstalled")
     }() {
         didSet {
             guard oldValue != isInstalled else { return }
@@ -36,7 +58,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     private var currentAction: Action?
 
-    let identifier = "com.TranPhuong319.AppLocker.ESExtension"
+    var identifier: String { Self.extensionIdentifier }
 
     func updateInstalledState(_ installed: Bool) {
         isInstalled = installed
@@ -99,9 +121,9 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     nonisolated func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
+        ESXPCClient.shared.disconnect()
         Task { @MainActor in
             self.isInstalled = false
-            ESXPCClient.shared.disconnect()
             let action = self.currentAction
             self.currentAction = nil
 
@@ -119,9 +141,9 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     nonisolated func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
+        ESXPCClient.shared.disconnect()
         Task { @MainActor in
             self.isInstalled = false
-            ESXPCClient.shared.disconnect()
             Logfile.app.warning("[Installer] Extension requires user approval in System Settings")
         }
     }
@@ -132,4 +154,49 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     ) -> OSSystemExtensionRequest.ReplacementAction {
         return .replace
     }
+
+    nonisolated func request(_ request: OSSystemExtensionRequest, foundProperties properties: [OSSystemExtensionProperties]) {
+        let isEnabled = properties.first?.isEnabled ?? false
+        Task { @MainActor in
+            self.isInstalled = isEnabled
+            Logfile.app.info("[Installer] Extension properties checked: isEnabled=\(isEnabled, privacy: .public)")
+            if isEnabled {
+                ESXPCClient.shared.connect()
+            } else {
+                ESXPCClient.shared.disconnect()
+            }
+        }
+    }
+}
+
+// MARK: - OSSystemExtensionsWorkspaceObserver (macOS 15.1+)
+@available(macOS 15.1, *)
+extension ExtensionInstaller: OSSystemExtensionsWorkspaceObserver {
+    nonisolated func systemExtensionWillBecomeEnabled(_ systemExtensionInfo: OSSystemExtensionInfo) {
+        guard systemExtensionInfo.bundleIdentifier == ExtensionInstaller.extensionIdentifier else { return }
+        Task { @MainActor in
+            self.isInstalled = true
+            ESXPCClient.shared.connect()
+            Logfile.app.notice("[Installer] System extension enabled: \(systemExtensionInfo.bundleIdentifier, privacy: .public)")
+        }
+    }
+
+    nonisolated func systemExtensionWillBecomeDisabled(_ systemExtensionInfo: OSSystemExtensionInfo) {
+        guard systemExtensionInfo.bundleIdentifier == ExtensionInstaller.extensionIdentifier else { return }
+        ESXPCClient.shared.disconnect()
+        Task { @MainActor in
+            self.isInstalled = false
+            Logfile.app.warning("[Installer] System extension disabled: \(systemExtensionInfo.bundleIdentifier, privacy: .public)")
+        }
+    }
+
+    nonisolated func systemExtensionWillBecomeInactive(_ systemExtensionInfo: OSSystemExtensionInfo) {
+        guard systemExtensionInfo.bundleIdentifier == ExtensionInstaller.extensionIdentifier else { return }
+        ESXPCClient.shared.disconnect()
+        Task { @MainActor in
+            self.isInstalled = false
+            Logfile.app.warning("[Installer] System extension inactive: \(systemExtensionInfo.bundleIdentifier, privacy: .public)")
+        }
+    }
+
 }

@@ -48,6 +48,16 @@ func execArguments(for execEvent: UnsafePointer<es_event_exec_t>) -> [String] {
     return args
 }
 
+// Safely normalize APFS Firmlink path (e.g. stripping /System/Volumes/Data prefix).
+func normalizeFirmlinkPath(_ path: String) -> String {
+    let dataPrefix = "/System/Volumes/Data"
+    if path.hasPrefix(dataPrefix) {
+        let remainder = String(path.dropFirst(dataPrefix.count))
+        return remainder.hasPrefix("/") ? remainder : "/" + remainder
+    }
+    return path
+}
+
 extension ESManager {
     // Compute app bundle name for an exec path (best-effort).
     func computeAppName(forExecPath path: String) -> String {
@@ -68,18 +78,21 @@ extension ESManager {
 
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker
     func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
-        guard let path = string(from: esPath) else { return false }
+        guard let raw = string(from: esPath) else { return false }
+        let path = normalizeFirmlinkPath(raw)
         return path == "/Users/Shared/AppLocker" || path.hasPrefix("/Users/Shared/AppLocker/")
     }
 
     func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
-        guard let path = string(from: esPath) else { return false }
+        guard let raw = string(from: esPath) else { return false }
+        let path = normalizeFirmlinkPath(raw)
         return (path.hasPrefix("/Users/Shared/AppLocker/") && path.hasSuffix("/config.plist"))
             || path == "/Users/Shared/AppLocker/config.plist"
     }
 
     func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {
-        guard let path = string(from: esPath) else { return false }
+        guard let raw = string(from: esPath) else { return false }
+        let path = normalizeFirmlinkPath(raw)
         return path == "/Applications/AppLocker.app" || path.hasPrefix("/Applications/AppLocker.app/")
     }
 }

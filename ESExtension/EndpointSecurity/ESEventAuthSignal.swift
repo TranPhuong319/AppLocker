@@ -17,19 +17,41 @@ extension ESManager {
         let senderPid = audit_token_to_pid(messagePtr.process.pointee.audit_token)
         let sig = messagePtr.event.signal.sig
 
-        let isPending = isPendingVerification(pid: targetPid)
+        let pendingEntry = pendingPIDLock.withLock {
+            pendingVerificationProcesses[targetPid]
+        }
 
-        if isPending && sig == SIGCONT {
+        if let expectedRecord = pendingEntry, sig == SIGCONT {
+            let targetToken = messagePtr.event.signal.target.pointee.audit_token
+            let expectedVersion = audit_token_to_pidversion(expectedRecord.token)
+            let currentVersion = audit_token_to_pidversion(targetToken)
+
+            // Strict Fail-Deny: If PID recycling or version mismatch detected, DENY immediately
+            guard expectedVersion == currentVersion else {
+                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+                Logfile.endpointSecurity.fault(
+                    """
+                    [AuthSignal] PID RECYCLING / VERSION MISMATCH for target PID \(targetPid, privacy: .public)! \
+                    Expected: \(expectedVersion, privacy: .public), target: \(currentVersion, privacy: .public). \
+                    Denied SIGCONT.
+                    """
+                )
+                return
+            }
+
             let isAuthorizedSender = processIDLock.withLock {
                 senderPid == authenticatedMainAppPID || senderPid == getpid()
             }
 
             if !isAuthorizedSender {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+                let senderPath = safePath(fromFilePointer: messagePtr.process.pointee.executable)
+                    ?? processPath(for: senderPid)
+                    ?? "PID \(senderPid)"
                 Logfile.endpointSecurity.warning(
                     """
-                    [AuthSignal] SECURITY SHIELD: Denied SIGCONT from PID \(senderPid, privacy: .public) \
-                    to pending PID \(targetPid, privacy: .public)
+                    [AuthSignal] SECURITY SHIELD: Denied SIGCONT from \(senderPath, privacy: .public) \
+                    (PID \(senderPid, privacy: .public)) to pending PID \(targetPid, privacy: .public)
                     """
                 )
                 return

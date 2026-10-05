@@ -14,7 +14,7 @@ extension ESManager {
 
     func markPendingVerification(pid: pid_t, token: audit_token_t) {
         pendingPIDLock.withLock {
-            pendingVerificationProcesses[pid] = token
+            pendingVerificationProcesses[pid] = (token: token, registeredAt: ContinuousClock.now)
         }
     }
 
@@ -48,6 +48,46 @@ extension ESManager {
         return token
     }
 
+    // MARK: - Watchdog Safety Valve (Fail-Closed)
+
+    func startPendingProcessesWatchdog() {
+        Task.detached(priority: .utility) { [weak self] in
+            while true {
+                try? await Task.sleep(for: .seconds(15))
+                guard let self else { break }
+                self.purgeExpiredPendingProcesses(timeoutSeconds: 75)
+            }
+        }
+    }
+
+    private func purgeExpiredPendingProcesses(timeoutSeconds: Double) {
+        let now = ContinuousClock.now
+
+        let expiredPIDs: [pid_t] = pendingPIDLock.withLock {
+            var expired: [pid_t] = []
+            for (pid, entry) in self.pendingVerificationProcesses
+                where now - entry.registeredAt > .seconds(timeoutSeconds) {
+                expired.append(pid)
+            }
+            for pid in expired {
+                self.pendingVerificationProcesses.removeValue(forKey: pid)
+            }
+            return expired
+        }
+
+        for pid in expiredPIDs {
+            Logfile.endpointSecurity.fault(
+                """
+                [Watchdog] Pending PID \(pid, privacy: .public) timed out after \(timeoutSeconds, privacy: .public)s. \
+                Issuing SIGKILL (Fail-Closed).
+                """
+            )
+            // Fail-Closed: SIGKILL to terminate unauthorized app, then SIGCONT to clean up kernel dispatch loop
+            _ = kill(pid, SIGKILL)
+            _ = kill(pid, SIGCONT)
+        }
+    }
+
     // MARK: - Batch Execution (SIGCONT / SIGKILL)
 
     func processPendingBatch(approved: [Int32], rejected: [Int32]) -> Bool {
@@ -62,11 +102,11 @@ extension ESManager {
         let pid = pid_t(rawPID)
         guard pid > 0 else { return nil }
 
-        let savedToken = pendingPIDLock.withLock {
+        let savedEntry = pendingPIDLock.withLock {
             pendingVerificationProcesses.removeValue(forKey: pid)
         }
 
-        guard let expectedToken = savedToken else { return nil }
+        guard let expectedToken = savedEntry?.token else { return nil }
 
         // Process liveness & PID recycling defense via Mach audit token
         guard let currentToken = auditToken(for: pid) else {
@@ -101,8 +141,8 @@ extension ESManager {
 
             let result = kill(pid, SIGCONT)
             if result == 0 {
-                Logfile.endpointSecurity.debug(
-                    "[PendingProcess] Successfully sent SIGCONT to approved PID \(pid, privacy: .public)"
+                Logfile.endpointSecurity.info(
+                    "[PendingProcess] Successfully resumed approved PID \(pid, privacy: .public) (SIGCONT)"
                 )
             } else {
                 Logfile.endpointSecurity.error(
@@ -129,10 +169,10 @@ extension ESManager {
             let killRes = kill(pid, SIGKILL)
             let contRes = kill(pid, SIGCONT)
             if killRes == 0 {
-                Logfile.endpointSecurity.debug(
+                Logfile.endpointSecurity.info(
                     """
-                    [PendingProcess] Successfully sent SIGKILL+SIGCONT to rejected \
-                    PID \(pid, privacy: .public) (contRes=\(contRes, privacy: .public))
+                    [PendingProcess] Successfully terminated rejected \
+                    PID \(pid, privacy: .public) (SIGKILL+SIGCONT)
                     """
                 )
             } else {
