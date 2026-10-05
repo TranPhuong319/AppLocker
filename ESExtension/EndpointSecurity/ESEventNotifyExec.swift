@@ -64,7 +64,7 @@ extension ESManager {
     private func isAppLockerSelfExecution(signingID: String, token: audit_token_t, pid: pid_t) -> Bool {
         guard signingID == "com.TranPhuong319.AppLocker" else { return false }
         if CodeSignatureValidator.validate(auditToken: token, requirement: CodeSignatureValidator.mainAppRequirement) {
-            Logfile.endpointSecurity.notice(
+            Logfile.endpointSecurity.info(
                 """
                 [NotifyExec] AppLocker self-execution allowed, bypassing lock policy \
                 (PID \(pid, privacy: .public))
@@ -94,7 +94,7 @@ extension ESManager {
         let args = withUnsafePointer(to: message.rawMessage.pointee.event.exec) { execArguments(for: $0) }
         let argsSummary = args.joined(separator: " ")
 
-        Logfile.endpointSecurity.notice(
+        Logfile.endpointSecurity.debug(
             """
             [NotifyExec] Origin trace for \(name, privacy: .public) (PID \(targetPid, privacy: .public)):
               ├─ Target PPID: \(targetPpid, privacy: .public)
@@ -142,16 +142,16 @@ extension ESManager {
                 (\(notification.path, privacy: .public))
                 """
             )
+            sendBlockedNotifications(notification: notification)
         } else {
-            Logfile.endpointSecurity.error(
+            removePendingVerification(pid: targetPid)
+            Logfile.endpointSecurity.warning(
                 """
                 [NotifyExec] SIGSTOP failed for PID \(targetPid, privacy: .public): \
-                errno \(errno, privacy: .public)
+                errno \(errno, privacy: .public). Rolled back pending state.
                 """
             )
         }
-
-        sendBlockedNotifications(notification: notification)
     }
 
     private func isProcessBlocked(path: String, cdhashData: Data, cdhashHex: String, uid: uid_t) -> Bool {
@@ -166,15 +166,20 @@ extension ESManager {
 
     private func isPathInLockedBundle(path: String, uid: uid_t) -> Bool {
         guard let userBundlePaths = lockedBundlePaths[uid], !userBundlePaths.isEmpty else { return false }
-        var url = URL(fileURLWithPath: path)
+        let normalizedExecPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
+        var url = URL(fileURLWithPath: normalizedExecPath)
 
         while url.pathComponents.count > 1 {
             let currentPath = url.path
             let stdPath = (currentPath as NSString).standardizingPath
-            if userBundlePaths.contains(currentPath) || userBundlePaths.contains(stdPath) {
+            let normCurrent = normalizeFirmlinkPath(stdPath)
+            let matchesBundle = userBundlePaths.contains(currentPath)
+                || userBundlePaths.contains(stdPath)
+                || userBundlePaths.contains(normCurrent)
+            if matchesBundle {
                 if let bundle = Bundle(url: url), let mainExec = bundle.executablePath {
-                    let normPath = (path as NSString).standardizingPath
-                    let normMainExec = (mainExec as NSString).standardizingPath
+                    let normPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
+                    let normMainExec = normalizeFirmlinkPath((mainExec as NSString).standardizingPath)
                     return normPath == normMainExec
                 }
                 return false

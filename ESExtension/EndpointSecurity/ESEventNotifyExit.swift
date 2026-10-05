@@ -13,24 +13,26 @@ extension ESManager {
     func handleNotifyExit(client: OpaquePointer, message: ESMessage) {
         let process = message.pointee.process
         let exitingPID = audit_token_to_pid(process.pointee.audit_token)
-        let wasPending = removePendingVerification(pid: exitingPID)
+        let exitingUID = audit_token_to_euid(process.pointee.audit_token)
 
-        // Notify Main App to remove the exited process from pending auth queue
-        if wasPending, exitingPID > 0 {
-            if let conn = pickAppConnection(),
-               let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
-                   Logfile.esXPC.error("[ESExit] XPC notifyProcessExited error: \(String(describing: error))")
-               }) as? ESXPCProtocol {
-                proxy.notifyProcessExited(pid: Int32(exitingPID))
-                Logfile.esXPC.debug("[ESExit] Notified app about exited pending PID: \(exitingPID, privacy: .public)")
-            }
+        notifyPendingProcessExitIfNeeded(pid: exitingPID, uid: exitingUID)
+
+        guard isMainAppProcess(process) else { return }
+        handleMainAppExit(process: process, exitStat: message.pointee.event.exit.stat)
+    }
+
+    private func notifyPendingProcessExitIfNeeded(pid: pid_t, uid: uid_t) {
+        guard removePendingVerification(pid: pid), pid > 0 else { return }
+        if let conn = pickAppConnection(forUID: uid) ?? pickAppConnection(),
+           let proxy = conn.remoteObjectProxyWithErrorHandler({ error in
+               Logfile.esXPC.error("[ESExit] XPC notifyProcessExited error: \(String(describing: error))")
+           }) as? ESXPCProtocol {
+            proxy.notifyProcessExited(pid: Int32(pid))
+            Logfile.esXPC.debug("[ESExit] Notified app about exited pending PID: \(pid, privacy: .public)")
         }
+    }
 
-        // 1. Check if it's our main app
-        guard isMainAppProcess(process) else {
-            return
-        }
-
+    private func handleMainAppExit(process: UnsafePointer<es_process_t>, exitStat: Int32) {
         let pid = audit_token_to_pid(process.pointee.audit_token)
         processIDLock.withLock {
             if self.lastKnownMainAppPID == pid {
@@ -39,16 +41,27 @@ extension ESManager {
         }
         Logfile.endpointSecurity.info("[Guardian] Main App (PID: \(pid, privacy: .public)) exited.")
 
-        // 2. Check if shutdown was authorized
         let isAuthorized = stateLock.withLock { isShutdownAuthorized }
-
-        if isAuthorized {
-            Logfile.endpointSecurity.info("[Guardian] Shutdown was authorized. Watchdog standing down.")
+        if isAuthorized || exitStat == 0 {
+            Logfile.endpointSecurity.info(
+                """
+                [Guardian] Shutdown was clean/authorized (stat: \(exitStat, privacy: .public), \
+                auth: \(isAuthorized, privacy: .public)). Watchdog standing down.
+                """
+            )
             return
         }
 
-        // 3. Unauthorized exit detected -> Self-Healing with 10s delay
-        Logfile.endpointSecurity.warning("[Guardian] Unauthorized exit detected! Launching watchdog (10s delay)...")
+        scheduleGuardianWatchdog(stat: exitStat)
+    }
+
+    private func scheduleGuardianWatchdog(stat: Int32) {
+        Logfile.endpointSecurity.warning(
+            """
+            [Guardian] Unexpected Main App termination detected (stat: \(stat, privacy: .public))! \
+            Launching watchdog (10s delay)...
+            """
+        )
 
         let uid = stateLock.withLock { activeUserUID }
         guard let userUID = uid else {
@@ -56,13 +69,11 @@ extension ESManager {
             return
         }
 
-        // Schedule kickstart after 10 seconds via Swift Concurrency Task
         Task.detached(priority: .utility) { [weak self] in
             try? await Task.sleep(for: .seconds(10))
             guard let self else { return }
             Logfile.endpointSecurity.debug("[Guardian] Watchdog checking if Main App has recovered...")
 
-            // Thread-safe atomic check via processIDLock
             let isAppRunning = self.processIDLock.withLock { self.authenticatedMainAppPID != nil }
             if isAppRunning {
                 Logfile.endpointSecurity.info("[Guardian] Main App recovered via launchd. Watchdog cancelled.")

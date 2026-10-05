@@ -11,7 +11,8 @@ import os
 extension ESManager {
     // Store an incoming connection (thread-safe).
     func storeIncomingConnection(_ conn: NSXPCConnection) {
-        let boxed = XPCConn(connection: conn)
+        let uid = audit_token_to_euid(conn.auditToken)
+        let boxed = XPCConn(connection: conn, uid: uid)
         let connID = ObjectIdentifier(conn)
         let count = xpcConnectionLock.withLock { () -> Int in
             self.activeConnections.append(boxed)
@@ -20,26 +21,29 @@ extension ESManager {
         }
 
         cacheMainAppPID(from: conn)
-        flushPendingNotifications(to: conn)
+        flushPendingNotifications(to: conn, uid: uid)
 
         Logfile.esXPC.debug(
-            "[ESConnections] Stored and authenticated incoming XPC connection - total=\(count, privacy: .public)"
+            """
+            [ESConnections] Stored and authenticated incoming XPC connection for \
+            UID=\(uid, privacy: .public) - total=\(count, privacy: .public)
+            """
         )
     }
 
     // Flush pending notifications to a specific connection (called after Auth)
-    func flushPendingNotifications(to conn: NSXPCConnection) {
+    func flushPendingNotifications(to conn: NSXPCConnection, uid: uid_t) {
         let pendingToFlush = xpcConnectionLock.withLock { () -> [BlockedNotification] in
-            let pending = self.pendingNotifications
-            self.pendingNotifications.removeAll()
-            return pending
+            let matching = self.pendingNotifications.filter { $0.uid == uid }
+            self.pendingNotifications.removeAll { $0.uid == uid }
+            return matching
         }
 
         if !pendingToFlush.isEmpty {
             Logfile.esXPC.debug(
                 """
-                [ESConnections] Auth complete. \
-                Flushing \(pendingToFlush.count, privacy: .public) pending notifications...
+                [ESConnections] Auth complete. Flushing \(pendingToFlush.count, privacy: .public) \
+                pending notifications for UID \(uid, privacy: .public)...
                 """
             )
             for item in pendingToFlush {
@@ -56,7 +60,7 @@ extension ESManager {
 
     // Remove a connection when it goes away.
     func removeIncomingConnection(_ conn: NSXPCConnection) {
-        let boxed = XPCConn(connection: conn)
+        let boxed = XPCConn(connection: conn, uid: 0)
         let connID = ObjectIdentifier(conn)
         let count = xpcConnectionLock.withLock { () -> Int in
             self.activeConnections.removeAll { $0 == boxed }
@@ -66,10 +70,15 @@ extension ESManager {
         Logfile.esXPC.debug("[ESConnections] Removed XPC connection - total=\(count, privacy: .public)")
     }
 
-    // Pick the first available active connection.
-    func pickAppConnection() -> NSXPCConnection? {
-        let boxed = xpcConnectionLock.withLock {
-            self.activeConnections.first
+    // Pick active connection for a specific UID, fallback to any available connection.
+    func pickAppConnection(forUID uid: uid_t? = nil) -> NSXPCConnection? {
+        let boxed = xpcConnectionLock.withLock { () -> XPCConn? in
+            if let uid = uid {
+                if let matched = self.activeConnections.first(where: { $0.uid == uid }) {
+                    return matched
+                }
+            }
+            return self.activeConnections.first
         }
         return boxed?.connection
     }
@@ -77,7 +86,7 @@ extension ESManager {
     // MARK: - Outgoing Block Notifications
 
     func sendBlockedNotificationToApp(notification: BlockedNotification) {
-        if let conn = self.pickAppConnection() {
+        if let conn = self.pickAppConnection(forUID: notification.uid) {
             self.performNotifyBlockRequest(
                 conn: conn,
                 name: notification.name,
@@ -89,8 +98,8 @@ extension ESManager {
             xpcConnectionLock.withLock {
                 Logfile.endpointSecurity.warning(
                     """
-                    [ESConnections] No XPC connection available. Queueing notification and \
-                    forcing App wake-up for UID \(notification.uid, privacy: .public)...
+                    [ESConnections] No XPC connection available for UID \(notification.uid, privacy: .public). \
+                    Queueing notification and forcing App wake-up...
                     """
                 )
                 self.pendingNotifications.append(notification)

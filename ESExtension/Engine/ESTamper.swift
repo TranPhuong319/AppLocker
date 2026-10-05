@@ -44,7 +44,9 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
     private func setupAllowlist() {
         let paths: [(path: String, type: es_mute_path_type_t)] = [
             ("/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
-            ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
+            ("/System/Volumes/Data/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
+            ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
+            ("/System/Volumes/Data/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
         ]
         if let client = self.client {
             for item in paths {
