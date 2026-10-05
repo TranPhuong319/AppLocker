@@ -22,7 +22,9 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
                 try OSSystemExtensionsWorkspace.shared.addObserver(self)
                 Logfile.app.debug("[Installer] OSSystemExtensionsWorkspace observer registered.")
             } catch {
-                Logfile.app.error("[Installer] Failed to add workspace observer: \(error.localizedDescription, privacy: .public)")
+                Logfile.app.error(
+                    "[Installer] Failed to add workspace observer: \(error.localizedDescription, privacy: .public)"
+                )
             }
         }
         refreshStatus()
@@ -155,7 +157,10 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         return .replace
     }
 
-    nonisolated func request(_ request: OSSystemExtensionRequest, foundProperties properties: [OSSystemExtensionProperties]) {
+    nonisolated func request(
+        _ request: OSSystemExtensionRequest,
+        foundProperties properties: [OSSystemExtensionProperties]
+    ) {
         let isEnabled = properties.first?.isEnabled ?? false
         Task { @MainActor in
             self.isInstalled = isEnabled
@@ -177,7 +182,9 @@ extension ExtensionInstaller: OSSystemExtensionsWorkspaceObserver {
         Task { @MainActor in
             self.isInstalled = true
             ESXPCClient.shared.connect()
-            Logfile.app.notice("[Installer] System extension enabled: \(systemExtensionInfo.bundleIdentifier, privacy: .public)")
+            Logfile.app.notice(
+                "[Installer] System extension enabled: \(systemExtensionInfo.bundleIdentifier, privacy: .public)"
+            )
         }
     }
 
@@ -186,7 +193,9 @@ extension ExtensionInstaller: OSSystemExtensionsWorkspaceObserver {
         ESXPCClient.shared.disconnect()
         Task { @MainActor in
             self.isInstalled = false
-            Logfile.app.warning("[Installer] System extension disabled: \(systemExtensionInfo.bundleIdentifier, privacy: .public)")
+            Logfile.app.warning(
+                "[Installer] System extension disabled: \(systemExtensionInfo.bundleIdentifier, privacy: .public)"
+            )
         }
     }
 
@@ -195,8 +204,9 @@ extension ExtensionInstaller: OSSystemExtensionsWorkspaceObserver {
         ESXPCClient.shared.disconnect()
         Task { @MainActor in
             self.isInstalled = false
-            Logfile.app.warning("[Installer] System extension inactive: \(systemExtensionInfo.bundleIdentifier, privacy: .public)")
+            Logfile.app.warning(
+                "[Installer] System extension inactive: \(systemExtensionInfo.bundleIdentifier, privacy: .public)"
+            )
         }
     }
-
 }
