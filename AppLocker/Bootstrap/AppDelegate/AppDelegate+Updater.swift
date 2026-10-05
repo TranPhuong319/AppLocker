@@ -10,16 +10,19 @@ import AppKit
 extension AppDelegate {
     func setupUpdateObserver() {
         NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handlePendingUpdateChange(_:)),
-            name: .appLockerPendingUpdateDidChange,
-            object: nil
-        )
+            forName: .appLockerPendingUpdateDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            let hasUpdate = notification.object != nil
+            MainActor.assumeIsolated {
+                self?.handlePendingUpdateChange(hasUpdate: hasUpdate)
+            }
+        }
     }
 
-    @objc
-    private func handlePendingUpdateChange(_ notification: Notification) {
-        guard notification.object != nil else {
+    private func handlePendingUpdateChange(hasUpdate: Bool) {
+        guard hasUpdate else {
             Logfile.app.debug("[Updater] No update found (silent check)")
             NSApp.dockTile.badgeLabel = nil
             clearUpdateNotification()

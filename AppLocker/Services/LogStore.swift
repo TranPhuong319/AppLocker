@@ -11,52 +11,6 @@ import Observation
 import SwiftUI
 import UniformTypeIdentifiers
 
-// MARK: - Log Entry
-
-struct AppLogEntry: Identifiable, Sendable {
-    let id: UUID
-    let date: Date
-    let subsystem: String
-    let category: String
-    let level: OSLogEntryLog.Level
-    let message: String
-
-    init(
-        id: UUID = UUID(), date: Date, subsystem: String,
-        category: String, level: OSLogEntryLog.Level, message: String
-    ) {
-        self.id = id; self.date = date; self.subsystem = subsystem
-        self.category = category; self.level = level; self.message = message
-    }
-
-    var levelFilter: LogLevelFilter {
-        switch level {
-        case .debug: return .debug
-        case .info: return .info
-        case .notice: return .notice
-        case .error: return .error
-        case .fault: return .fault
-        default: return .info
-        }
-    }
-
-    var subsystemShort: String { subsystem.hasSuffix("ESExtension") ? "ESExt" : "App" }
-
-    func formatted(dateFormatter: DateFormatter) -> String {
-        let time = dateFormatter.string(from: date)
-        let tag = "[\(subsystemShort)/\(category)] \(levelFilter.rawValue.uppercased())"
-        return "\(time) \(tag): \(message)"
-    }
-}
-
-// MARK: - Grouped Log Entry
-
-struct GroupedLogEntry: Identifiable, Sendable {
-    var id: UUID { entry.id }
-    let entry: AppLogEntry
-    let count: Int
-}
-
 // MARK: - Log Store
 
 @Observable
@@ -74,7 +28,7 @@ final class LogStore {
         }
     }
 
-    var selectedTimeRange: LogTimeRange = .currentSession {
+    var selectedTimeRange: LogTimeRange = .last24Hours {
         didSet {
             guard oldValue != selectedTimeRange else { return }
             reload()
@@ -87,6 +41,16 @@ final class LogStore {
 
     var selectedLevel: LogLevelFilter = .all {
         didSet { if oldValue != selectedLevel { scheduleRefilter() } }
+    }
+
+    init(
+        timeRange: LogTimeRange = .last24Hours,
+        subsystem: LogSubsystemFilter = .all,
+        level: LogLevelFilter = .all
+    ) {
+        self.selectedTimeRange = timeRange
+        self.selectedSubsystem = subsystem
+        self.selectedLevel = level
     }
 
     private var clearedBeforeDate: Date?
@@ -236,7 +200,7 @@ final class LogStore {
                     return subsystemFilter == .mainApp ? entry.subsystem == prefix : entry.subsystem.hasPrefix(prefix)
                 }()
 
-                let matchesLevel = levelFilter.osLogLevel == nil || entry.level == levelFilter.osLogLevel
+                let matchesLevel = levelFilter == .all || entry.resolvedLevel == levelFilter
                 return matchesSearch && matchesSubsystem && matchesLevel
             }
         }.value

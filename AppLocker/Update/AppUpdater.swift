@@ -98,15 +98,14 @@ final class AppUpdater: NSObject {
 
     private func observeUserDefaults() {
         NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(userDefaultsDidChange),
-            name: UserDefaults.didChangeNotification,
-            object: nil
-        )
-    }
-
-    @objc private func userDefaultsDidChange() {
-        syncChannelFromDefaults()
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.syncChannelFromDefaults()
+            }
+        }
     }
 
     // MARK: - Auto check
