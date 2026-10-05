@@ -2,3 +2,4 @@ excluded:
   - build
   - .build
   - DerivedData
+  - .kilo

@@ -167,7 +167,7 @@ extension ESManager {
             // Send SIGKILL followed by SIGCONT to unfreeze XNU kernel dispatch loop
             // and terminate cleanly without hanging launchd
             let killRes = kill(pid, SIGKILL)
-            let contRes = kill(pid, SIGCONT)
+            _ = kill(pid, SIGCONT)
             if killRes == 0 {
                 Logfile.endpointSecurity.info(
                     """
