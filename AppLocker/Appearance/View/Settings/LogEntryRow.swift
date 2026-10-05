@@ -28,6 +28,7 @@ struct LogEntryRow: View {
                         .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(.secondary)
 
+                    levelBadge
                     subsystemBadge
                     categoryBadge
 
@@ -81,16 +82,28 @@ struct LogEntryRow: View {
     }
 
     private var levelDot: some View {
-        Circle().fill(levelColor)
+        Circle()
+            .fill(levelColor)
+            .help(entry.resolvedLevel.rawValue)
+    }
+
+    private var levelBadge: some View {
+        Text(entry.resolvedLevel.shortTag)
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .foregroundStyle(levelColor)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 1)
+            .background(levelColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
     }
 
     private var levelColor: Color {
-        switch entry.level {
-        case .fault: return .red
-        case .error: return .orange
-        case .notice: return .yellow
+        switch entry.resolvedLevel {
+        case .fault: return Color(red: 0.85, green: 0.1, blue: 0.25)
+        case .error: return .red
+        case .warning: return .orange
+        case .notice: return .purple
         case .info: return .blue
-        default: return Color(nsColor: .tertiaryLabelColor)
+        case .debug, .all: return Color(nsColor: .tertiaryLabelColor)
         }
     }
 

@@ -15,6 +15,9 @@ struct LogsSettingsTab: View {
     let isMock: Bool
 
     @AppStorage("collapseRepeatingLogs") var collapseRepeatingLogs: Bool = true
+    @AppStorage("logsSelectedTimeRange") var storedTimeRange: LogTimeRange = .currentSession
+    @AppStorage("logsSelectedSubsystem") var storedSubsystem: LogSubsystemFilter = .all
+    @AppStorage("logsSelectedLevel") var storedLevel: LogLevelFilter = .all
     @State var logStore = LogStore()
     @State var selectionManager = LogSelectionManager()
     @State var isExporting: Bool = false
@@ -104,7 +107,22 @@ struct LogsSettingsTab: View {
                     )
                 }
             }
-            .onAppear { guard !isMock else { return }; logStore.startPolling() }
+            .onAppear {
+                guard !isMock else { return }
+                logStore.selectedTimeRange = storedTimeRange
+                logStore.selectedSubsystem = storedSubsystem
+                logStore.selectedLevel = storedLevel
+                logStore.startPolling()
+            }
+            .onChange(of: logStore.selectedTimeRange) { _, newValue in
+                storedTimeRange = newValue
+            }
+            .onChange(of: logStore.selectedSubsystem) { _, newValue in
+                storedSubsystem = newValue
+            }
+            .onChange(of: logStore.selectedLevel) { _, newValue in
+                storedLevel = newValue
+            }
             .onDisappear { logStore.stopPolling() }
             .onReceive(NotificationCenter.default.publisher(for: .settingsWindowWillClose)) { _ in
                 logStore.stopPolling()

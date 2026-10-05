@@ -38,10 +38,12 @@ enum LogTimeRange: String, CaseIterable, Identifiable {
         var proc = kinfo_proc()
         var size = MemoryLayout<kinfo_proc>.stride
         var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
-        guard sysctl(&mib, 4, &proc, &size, nil, 0) == 0 else { return Date() }
+        guard sysctl(&mib, 4, &proc, &size, nil, 0) == 0 else {
+            return Date().addingTimeInterval(-5.0)
+        }
         let sec = Double(proc.kp_proc.p_starttime.tv_sec)
         let usec = Double(proc.kp_proc.p_starttime.tv_usec) / 1_000_000.0
-        return Date(timeIntervalSince1970: sec + usec)
+        return Date(timeIntervalSince1970: sec + usec).addingTimeInterval(-5.0)
     }()
 
     var since: Date {
@@ -85,11 +87,12 @@ enum LogSubsystemFilter: String, CaseIterable, Identifiable {
 
 // MARK: - Log Level Filter
 
-enum LogLevelFilter: String, CaseIterable, Identifiable {
+enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
     case all = "All"
     case debug = "Debug"
     case info = "Info"
     case notice = "Notice"
+    case warning = "Warning"
     case error = "Error"
     case fault = "Fault"
 
@@ -101,8 +104,21 @@ enum LogLevelFilter: String, CaseIterable, Identifiable {
         case .debug: return "Debug"
         case .info: return "Info"
         case .notice: return "Notice"
+        case .warning: return "Warning"
         case .error: return "Error"
         case .fault: return "Fault"
+        }
+    }
+
+    var shortTag: String {
+        switch self {
+        case .all: return ""
+        case .debug: return "DEBUG"
+        case .info: return "INFO"
+        case .notice: return "NOTICE"
+        case .warning: return "WARN"
+        case .error: return "ERR"
+        case .fault: return "FAULT"
         }
     }
 
@@ -112,8 +128,77 @@ enum LogLevelFilter: String, CaseIterable, Identifiable {
         case .debug: return .debug
         case .info: return .info
         case .notice: return .notice
-        case .error: return .error
+        case .warning, .error: return .error
         case .fault: return .fault
         }
     }
+}
+
+// MARK: - App Log Entry
+
+struct AppLogEntry: Identifiable, Sendable {
+    let id: UUID
+    let date: Date
+    let subsystem: String
+    let category: String
+    let level: OSLogEntryLog.Level
+    let resolvedLevel: LogLevelFilter
+    let message: String
+
+    init(
+        id: UUID = UUID(), date: Date, subsystem: String,
+        category: String, level: OSLogEntryLog.Level, message: String
+    ) {
+        self.id = id; self.date = date; self.subsystem = subsystem
+        self.category = category; self.level = level; self.message = message
+        self.resolvedLevel = Self.resolveLevel(level: level, message: message)
+    }
+
+    var levelFilter: LogLevelFilter { resolvedLevel }
+
+    var subsystemShort: String { subsystem.hasSuffix("ESExtension") ? "ESExt" : "App" }
+
+    func formatted(dateFormatter: DateFormatter) -> String {
+        let time = dateFormatter.string(from: date)
+        let tag = "[\(subsystemShort)/\(category)] \(resolvedLevel.rawValue.uppercased())"
+        return "\(time) \(tag): \(message)"
+    }
+
+    private static func resolveLevel(level: OSLogEntryLog.Level, message: String) -> LogLevelFilter {
+        switch level {
+        case .debug:
+            return .debug
+        case .info:
+            return .info
+        case .notice:
+            return .notice
+        case .fault:
+            return .fault
+        case .error:
+            return isWarning(message: message) ? .warning : .error
+        default:
+            return .info
+        }
+    }
+
+    private static func isWarning(message: String) -> Bool {
+        let lower = message.lowercased()
+        return lower.contains("[warning]")
+            || lower.contains("warning:")
+            || lower.contains("another instance is running")
+            || lower.contains("timeout reached")
+            || lower.contains("wait timed out")
+            || lower.contains("requires user approval")
+            || lower.contains("rate limit hit")
+            || lower.contains("falling back")
+            || lower.contains("interrupted")
+    }
+}
+
+// MARK: - Grouped Log Entry
+
+struct GroupedLogEntry: Identifiable, Sendable {
+    var id: UUID { entry.id }
+    let entry: AppLogEntry
+    let count: Int
 }

@@ -19,7 +19,7 @@ extension AppDelegate {
         Logfile.app.info("[Launch] Installing Endpoint Security extension...")
         ExtensionInstaller.shared.install { result in
             if case .success = result {
-                Logfile.app.notice("[Launch] Endpoint Security extension activated successfully.")
+                Logfile.app.info("[Launch] Endpoint Security extension activated successfully.")
             }
         }
     }
@@ -37,17 +37,23 @@ extension AppDelegate {
         self.hotkey = HotKeyManager()
 
         NSWorkspace.shared.notificationCenter.addObserver(
-            self,
-            selector: #selector(handleWorkspaceSleep),
-            name: NSWorkspace.willSleepNotification,
-            object: nil
-        )
+            forName: NSWorkspace.willSleepNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.handleWorkspaceSleep()
+            }
+        }
         NSWorkspace.shared.notificationCenter.addObserver(
-            self,
-            selector: #selector(handleWorkspaceSleep),
-            name: NSWorkspace.screensDidSleepNotification,
-            object: nil
-        )
+            forName: NSWorkspace.screensDidSleepNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.handleWorkspaceSleep()
+            }
+        }
     }
 
     @objc

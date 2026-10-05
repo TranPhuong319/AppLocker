@@ -58,6 +58,10 @@ final class ConfigStore: Sendable {
     }
 
     func performHandshake(completion: @escaping @Sendable (Bool) -> Void) {
+        guard ExtensionInstaller.isExtensionInstalled else {
+            completion(false)
+            return
+        }
         let currentProcessID = getpid()
         ESXPCClient.shared.allowConfigAccess(currentProcessID) { success in
             completion(success)

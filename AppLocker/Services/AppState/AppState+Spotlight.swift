@@ -10,6 +10,7 @@ import Foundation
 extension AppState {
     func setupSpotlightQuery() {
         let query = NSMetadataQuery()
+        query.operationQueue = .main
         self.metadataQuery = query
 
         NotificationCenter.default.addObserver(
