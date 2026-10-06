@@ -970,6 +970,28 @@
         }
       }
     },
+    "Filter logs" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lọc nhật ký"
+          }
+        }
+      }
+    },
+    "Filters applied (Click to modify)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang áp dụng bộ lọc (Nhấn để thay đổi)"
+          }
+        }
+      }
+    },
     "General" : {
       "localizations" : {
         "vi" : {
@@ -1571,6 +1593,17 @@
         }
       }
     },
+    "Reset Filters" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt lại bộ lọc"
+          }
+        }
+      }
+    },
     "Resume" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2081,7 +2114,14 @@
       }
     },
     "Warning" : {
-
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cảnh báo"
+          }
+        }
+      }
     },
     "Website" : {
       "extractionState" : "stale",

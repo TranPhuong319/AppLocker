@@ -100,7 +100,6 @@ struct LogEntryRow: View {
         switch entry.resolvedLevel {
         case .fault: return Color(red: 0.85, green: 0.1, blue: 0.25)
         case .error: return .red
-        case .warning: return .orange
         case .notice: return .purple
         case .info: return .blue
         case .debug, .all: return Color(nsColor: .tertiaryLabelColor)
