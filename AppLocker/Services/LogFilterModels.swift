@@ -89,10 +89,9 @@ enum LogSubsystemFilter: String, CaseIterable, Identifiable {
 
 enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
     case all = "All"
-    case debug = "Debug"
     case info = "Info"
+    case debug = "Debug"
     case notice = "Notice"
-    case warning = "Warning"
     case error = "Error"
     case fault = "Fault"
 
@@ -101,10 +100,9 @@ enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
     var displayName: LocalizedStringKey {
         switch self {
         case .all: return "All Levels"
-        case .debug: return "Debug"
         case .info: return "Info"
+        case .debug: return "Debug"
         case .notice: return "Notice"
-        case .warning: return "Warning"
         case .error: return "Error"
         case .fault: return "Fault"
         }
@@ -113,10 +111,9 @@ enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
     var shortTag: String {
         switch self {
         case .all: return ""
-        case .debug: return "DEBUG"
         case .info: return "INFO"
+        case .debug: return "DEBUG"
         case .notice: return "NOTICE"
-        case .warning: return "WARN"
         case .error: return "ERR"
         case .fault: return "FAULT"
         }
@@ -125,10 +122,10 @@ enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
     var osLogLevel: OSLogEntryLog.Level? {
         switch self {
         case .all: return nil
-        case .debug: return .debug
         case .info: return .info
+        case .debug: return .debug
         case .notice: return .notice
-        case .warning, .error: return .error
+        case .error: return .error
         case .fault: return .fault
         }
     }
@@ -151,7 +148,7 @@ struct AppLogEntry: Identifiable, Sendable {
     ) {
         self.id = id; self.date = date; self.subsystem = subsystem
         self.category = category; self.level = level; self.message = message
-        self.resolvedLevel = Self.resolveLevel(level: level, message: message)
+        self.resolvedLevel = Self.resolveLevel(level: level)
     }
 
     var levelFilter: LogLevelFilter { resolvedLevel }
@@ -164,7 +161,7 @@ struct AppLogEntry: Identifiable, Sendable {
         return "\(time) \(tag): \(message)"
     }
 
-    private static func resolveLevel(level: OSLogEntryLog.Level, message: String) -> LogLevelFilter {
+    private static func resolveLevel(level: OSLogEntryLog.Level) -> LogLevelFilter {
         switch level {
         case .debug:
             return .debug
@@ -175,23 +172,10 @@ struct AppLogEntry: Identifiable, Sendable {
         case .fault:
             return .fault
         case .error:
-            return isWarning(message: message) ? .warning : .error
+            return .error
         default:
             return .info
         }
-    }
-
-    private static func isWarning(message: String) -> Bool {
-        let lower = message.lowercased()
-        return lower.contains("[warning]")
-            || lower.contains("warning:")
-            || lower.contains("another instance is running")
-            || lower.contains("timeout reached")
-            || lower.contains("wait timed out")
-            || lower.contains("requires user approval")
-            || lower.contains("rate limit hit")
-            || lower.contains("falling back")
-            || lower.contains("interrupted")
     }
 }
 

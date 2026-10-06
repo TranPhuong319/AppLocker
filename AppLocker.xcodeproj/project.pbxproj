@@ -36,6 +36,8 @@
 		E0FD75FD2F59E36600D46B31 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DD2F59E36600D46B31 /* AppState.swift */; };
 		E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B22F59E36600D46B31 /* AppRowButtonStyle.swift */; };
 		E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */; };
+		E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LogStore.swift */; };
+		E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */; };
 		E0FD76012F59E36600D46B31 /* LockES.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E22F59E36600D46B31 /* LockES.swift */; };
 		E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */; };
 		E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */; };
@@ -67,16 +69,10 @@
 		E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */; };
 		E0FD761C2F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */; };
 		E0FD761C2F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */; };
-		E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */; };
-		E0FDB0042F59E36600D46B01 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */; };
-		E0FDB0062F59E36600D46B01 /* AboutArchitectureBadgesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */; };
-		E0FDB0082F59E36600D46B01 /* ESXPCClient+Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */; };
-		E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LogStore.swift */; };
-		E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */; };
+		E0FD761C2F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift */; };
 		E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */; };
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
-		E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
 		E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */; };
 		E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */; };
@@ -85,9 +81,6 @@
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
 		E0FD764E2F59E37C00D46B31 /* ESMachListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76402F59E37C00D46B31 /* ESMachListener.swift */; };
 		E0FD764F2F59E37C00D46B31 /* TTYNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */; };
-		E0FDB00A2F59E37C00D46B01 /* ESClientObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */; };
-		E0FDB00C2F59E37C00D46B01 /* ESAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */; };
-		E0FDB00E2F59E37C00D46B01 /* ESTamper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */; };
 		E0FD76532F59E37C00D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762E2F59E37C00D46B31 /* main.swift */; };
 		E0FD76542F59E37C00D46B31 /* ESManager+Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */; };
 		E0FD76562F59E37C00D46B31 /* ESEventNotifyExit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76252F59E37C00D46B31 /* ESEventNotifyExit.swift */; };
@@ -123,6 +116,14 @@
 		E0FD790A2F59E37C00D46B31 /* BatchAuthWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79092F59E37C00D46B31 /* BatchAuthWindowController.swift */; };
 		E0FD80012F59E36600D46B31 /* CallServiceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD80022F59E36600D46B31 /* CallServiceObserver.swift */; };
 		E0FDA0042F59E37C00D46B31 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
+		E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */; };
+		E0FDB0042F59E36600D46B01 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */; };
+		E0FDB0062F59E36600D46B01 /* AboutArchitectureBadgesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */; };
+		E0FDB0082F59E36600D46B01 /* ESXPCClient+Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */; };
+		E0FDB00A2F59E37C00D46B01 /* ESClientObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */; };
+		E0FDB00C2F59E37C00D46B01 /* ESAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */; };
+		E0FDB00E2F59E37C00D46B01 /* ESTamper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */; };
+		E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */; };
 		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -204,12 +205,7 @@
 		E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntryRow.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsSettingsTab+ContextMenu.swift"; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsSettingsTab+AutoScroll.swift"; sourceTree = "<group>"; };
-		E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeThumbnailView.swift; sourceTree = "<group>"; };
-		E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSelectionManager.swift; sourceTree = "<group>"; };
-		E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutArchitectureBadgesView.swift; sourceTree = "<group>"; };
-		E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESXPCClient+Requests.swift"; sourceTree = "<group>"; };
-		E0FD75E32F59E36600D46B31 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
-		E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilterModels.swift; sourceTree = "<group>"; };
+		E0FD75B62F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsSettingsTab+Toolbar.swift"; sourceTree = "<group>"; };
 		E0FD75B82F59E36600D46B31 /* MissingAppsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingAppsSheet.swift; sourceTree = "<group>"; };
 		E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		E0FD75BD2F59E36600D46B31 /* WindowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayout.swift; sourceTree = "<group>"; };
@@ -227,7 +223,6 @@
 		E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCClient.swift; sourceTree = "<group>"; };
 		E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionInstaller.swift; sourceTree = "<group>"; };
 		E0FD75D42F59E36600D46B31 /* XPCServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPCServer.swift; sourceTree = "<group>"; };
-		E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XPCServer+Batch.swift"; sourceTree = "<group>"; };
 		E0FD75D62F59E36600D46B31 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E0FD75D72F59E36600D46B31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -237,6 +232,8 @@
 		E0FD75DE2F59E36600D46B31 /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedAppConfig.swift; sourceTree = "<group>"; };
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
+		E0FD75E32F59E36600D46B31 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
+		E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilterModels.swift; sourceTree = "<group>"; };
 		E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManagerProtocol.swift; sourceTree = "<group>"; };
 		E0FD75E62F59E36600D46B31 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
 		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
@@ -249,9 +246,6 @@
 		E0FD76292F59E37C00D46B31 /* ESManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESManager.swift; sourceTree = "<group>"; };
 		E0FD762A2F59E37C00D46B31 /* ESManager+Auth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Auth.swift"; sourceTree = "<group>"; };
 		E0FD762B2F59E37C00D46B31 /* ESManager+Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+Config.swift"; sourceTree = "<group>"; };
-		E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESClientObject.swift; sourceTree = "<group>"; };
-		E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAuthorizer.swift; sourceTree = "<group>"; };
-		E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESTamper.swift; sourceTree = "<group>"; };
 		E0FD762E2F59E37C00D46B31 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E0FD76302F59E37C00D46B31 /* TTYNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTYNotifier.swift; sourceTree = "<group>"; };
 		E0FD76352F59E37C00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -287,6 +281,14 @@
 		E0FD80032F59E36600D46B31 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		E0FDA0012F59E37C00D46B31 /* en */ = {isa = PBXFileReference; lastKnownFileType = text; name = en; path = en.lproj/License.txt; sourceTree = "<group>"; };
 		E0FDA0022F59E37C00D46B31 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text; name = vi; path = vi.lproj/License.txt; sourceTree = "<group>"; };
+		E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeThumbnailView.swift; sourceTree = "<group>"; };
+		E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSelectionManager.swift; sourceTree = "<group>"; };
+		E0FDB0052F59E36600D46B01 /* AboutArchitectureBadgesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutArchitectureBadgesView.swift; sourceTree = "<group>"; };
+		E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESXPCClient+Requests.swift"; sourceTree = "<group>"; };
+		E0FDB0092F59E37C00D46B01 /* ESClientObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESClientObject.swift; sourceTree = "<group>"; };
+		E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAuthorizer.swift; sourceTree = "<group>"; };
+		E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESTamper.swift; sourceTree = "<group>"; };
+		E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XPCServer+Batch.swift"; sourceTree = "<group>"; };
 		E0FDDD102F797A8C0078A290 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -366,6 +368,22 @@
 				E0FD79092F59E37C00D46B31 /* BatchAuthWindowController.swift */,
 			);
 			path = BatchAuth;
+			sourceTree = "<group>";
+		};
+		E0E611F73073D43B00BA7F3B /* Tab */ = {
+			isa = PBXGroup;
+			children = (
+				E0FD75B62F59E36600D46B91 /* SettingsTab.swift */,
+				E0FD75B62F59E36600D46B92 /* GeneralSettingsTab.swift */,
+				E0FD75B62F59E36600D46B93 /* SecuritySettingsTab.swift */,
+				E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */,
+				E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */,
+				E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */,
+				E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */,
+				E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */,
+				E0FD75B62F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift */,
+			);
+			path = Tab;
 			sourceTree = "<group>";
 		};
 		E0EF51A12E31558800161CAB = {
@@ -495,18 +513,11 @@
 		E0FD75B72F59E36600D46B31 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				E0E611F73073D43B00BA7F3B /* Tab */,
 				E0FD75B62F59E36600D46B31 /* SettingsView.swift */,
-				E0FD75B62F59E36600D46B91 /* SettingsTab.swift */,
-				E0FD75B62F59E36600D46B92 /* GeneralSettingsTab.swift */,
-				E0FD75B62F59E36600D46B93 /* SecuritySettingsTab.swift */,
-				E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */,
-				E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */,
 				E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */,
-				E0FD75B62F59E36600D46B96 /* LogsSettingsTab.swift */,
 				E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */,
 				E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */,
-				E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */,
-				E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1009,6 +1020,7 @@
 				E0FDB0042F59E36600D46B01 /* LogSelectionManager.swift in Sources */,
 				E0FD761C2F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift in Sources */,
 				E0FD761C2F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift in Sources */,
+				E0FD761C2F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift in Sources */,
 				E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */,
 				E0FDB0062F59E36600D46B01 /* AboutArchitectureBadgesView.swift in Sources */,
 				E0FDB0082F59E36600D46B01 /* ESXPCClient+Requests.swift in Sources */,

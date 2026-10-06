@@ -79,7 +79,7 @@ extension ESManager {
             Logfile.endpointSecurity.fault(
                 """
                 [Watchdog] Pending PID \(pid, privacy: .public) timed out after \(timeoutSeconds, privacy: .public)s. \
-                Issuing SIGKILL (Fail-Closed).
+                Issuing SIGKILL.
                 """
             )
             // Fail-Closed: SIGKILL to terminate unauthorized app, then SIGCONT to clean up kernel dispatch loop
