@@ -43,6 +43,9 @@ class LockES: LockManagerProtocol {
                 self.isProtectionDisabled = loaded.isDisabled
                 self.allowIncomingCalls = loaded.allowIncomingCalls
                 self.autoLockTimeoutMinutes = loaded.autoLockTimeoutMinutes
+                // Notify menubar to re-render with the real loaded state
+                // (setupMenuBar runs before bootstrap completes, so icon may be stale)
+                NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
                 self.onConfigUpdated?()
             }
         }

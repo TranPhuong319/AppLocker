@@ -15,10 +15,6 @@ struct AboutView: View {
     @State private var iconBounceTrigger: Int = 0
     @State private var copyResetTask: Task<Void, Never>?
 
-    private var isExtensionActive: Bool {
-        ExtensionInstaller.shared.isInstalled
-    }
-
     var body: some View {
         ZStack {
             VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
@@ -41,7 +37,7 @@ struct AboutView: View {
                 taglineSection
                     .padding(.top, 6)
 
-                AboutArchitectureBadgesView(isExtensionActive: isExtensionActive)
+                AboutArchitectureBadgesView()
                     .padding(.top, 14)
 
                 actionsSection
