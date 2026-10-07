@@ -186,11 +186,13 @@ final class LogStore {
         let search = searchText
         let subsystemFilter = selectedSubsystem
         let levelFilter = selectedLevel
+        let timeCutoff = selectedTimeRange.since
 
         let results = await Task.detached(priority: .userInitiated) { () -> [AppLogEntry] in
             snapshot.filter { entry in
                 if Task.isCancelled { return false }
 
+                let matchesTime = entry.date >= timeCutoff
                 let matchesSearch = search.isEmpty
                     || entry.message.localizedCaseInsensitiveContains(search)
                     || entry.category.localizedCaseInsensitiveContains(search)
@@ -201,7 +203,7 @@ final class LogStore {
                 }()
 
                 let matchesLevel = levelFilter == .all || entry.resolvedLevel == levelFilter
-                return matchesSearch && matchesSubsystem && matchesLevel
+                return matchesTime && matchesSearch && matchesSubsystem && matchesLevel
             }
         }.value
 
@@ -222,7 +224,7 @@ private actor LogReader {
         let rawEntries = try store.getEntries(at: position, matching: predicate)
         let items: [AppLogEntry] = rawEntries.compactMap { entry -> AppLogEntry? in
             guard let logEntry = entry as? OSLogEntryLog else { return nil }
-            if strictlyAfter, logEntry.date <= since { return nil }
+            if strictlyAfter ? (logEntry.date <= since) : (logEntry.date < since) { return nil }
             return AppLogEntry(
                 date: logEntry.date,
                 subsystem: logEntry.subsystem,
