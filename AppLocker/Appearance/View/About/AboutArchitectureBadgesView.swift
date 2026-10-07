@@ -8,13 +8,17 @@
 import SwiftUI
 
 struct AboutArchitectureBadgesView: View {
-    let isExtensionActive: Bool
+    @State private var isExtensionActive: Bool
     @State private var showSystemInfo: Bool = false
+
+    init(isExtensionActive: Bool? = nil) {
+        _isExtensionActive = State(initialValue: isExtensionActive ?? !AppState.shared.manager.isProtectionDisabled)
+    }
 
     var body: some View {
         HStack(spacing: 8) {
             badgePill(
-                icon: isExtensionActive ? "shield.checkmark.fill" : "shield.slash.fill",
+                icon: isExtensionActive ? "checkmark.shield.fill" : "shield.slash.fill",
                 text: isExtensionActive ? "Endpoint Security" : "Extension Inactive",
                 color: isExtensionActive ? .green : .orange
             )
@@ -26,6 +30,9 @@ struct AboutArchitectureBadgesView: View {
             )
 
             architectureButton
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .protectionStatusDidChange)) { _ in
+            isExtensionActive = !AppState.shared.manager.isProtectionDisabled
         }
     }
 

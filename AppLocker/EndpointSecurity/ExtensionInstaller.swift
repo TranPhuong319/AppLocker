@@ -164,6 +164,9 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         let isEnabled = properties.first?.isEnabled ?? false
         Task { @MainActor in
             self.isInstalled = isEnabled
+            // Always notify: menubar icon may be stale because setupMenuBar runs
+            // before this async callback returns (even when value is unchanged).
+            NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
             Logfile.app.info("[Installer] Extension properties checked: isEnabled=\(isEnabled, privacy: .public)")
             if isEnabled {
                 ESXPCClient.shared.connect()
