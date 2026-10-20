@@ -63,19 +63,39 @@ extension ESManager {
     private func purgeExpiredPendingProcesses(timeoutSeconds: Double) {
         let now = ContinuousClock.now
 
-        let expiredPIDs: [pid_t] = pendingPIDLock.withLock {
-            var expired: [pid_t] = []
+        let expiredEntries: [(pid: pid_t, token: audit_token_t)] = pendingPIDLock.withLock {
+            var expired: [(pid: pid_t, token: audit_token_t)] = []
             for (pid, entry) in self.pendingVerificationProcesses
                 where now - entry.registeredAt > .seconds(timeoutSeconds) {
-                expired.append(pid)
+                expired.append((pid: pid, token: entry.token))
             }
-            for pid in expired {
-                self.pendingVerificationProcesses.removeValue(forKey: pid)
+            for entry in expired {
+                self.pendingVerificationProcesses.removeValue(forKey: entry.pid)
             }
             return expired
         }
 
-        for pid in expiredPIDs {
+        for (pid, expectedToken) in expiredEntries {
+            guard let currentToken = auditToken(for: pid) else {
+                Logfile.endpointSecurity.warning(
+                    "[Watchdog] Pending PID \(pid, privacy: .public) expired but process is already dead, skipping."
+                )
+                continue
+            }
+
+            let expectedVersion = audit_token_to_pidversion(expectedToken)
+            let currentVersion = audit_token_to_pidversion(currentToken)
+            guard expectedVersion == currentVersion else {
+                Logfile.endpointSecurity.fault(
+                    """
+                    [Watchdog] PID RECYCLING DETECTED for PID \(pid, privacy: .public)! \
+                    Expected version: \(expectedVersion, privacy: .public), \
+                    Current: \(currentVersion, privacy: .public). Aborting SIGKILL.
+                    """
+                )
+                continue
+            }
+
             Logfile.endpointSecurity.fault(
                 """
                 [Watchdog] Pending PID \(pid, privacy: .public) timed out after \(timeoutSeconds, privacy: .public)s. \

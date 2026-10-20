@@ -69,6 +69,8 @@ final class ConfigStore: Sendable {
     }
 
     func load() -> ConfigLoadResult {
+        migrateLegacyConfigIfNeeded()
+
         guard let config = UserConfig.load(for: getuid()) else {
             return .empty
         }
@@ -81,12 +83,35 @@ final class ConfigStore: Sendable {
         let autoLockTimeout = config.autoLockTimeoutMinutes
             ?? UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
 
+        var needsSave = config.autoLockTimeoutMinutes == nil
+        sanitizeAppsSelfLockout(&apps, needsSave: &needsSave)
+
+        if needsSave {
+            save(
+                apps: apps,
+                isDisabled: config.isDisabled,
+                allowIncomingCalls: config.allowIncomingCalls ?? true,
+                autoLockTimeoutMinutes: autoLockTimeout
+            )
+        }
+
+        return ConfigLoadResult(
+            apps: apps,
+            isDisabled: config.isDisabled,
+            allowIncomingCalls: config.allowIncomingCalls ?? true,
+            autoLockTimeoutMinutes: autoLockTimeout
+        )
+    }
+
+    private func sanitizeAppsSelfLockout(
+        _ apps: inout [String: LockedAppConfig],
+        needsSave: inout Bool
+    ) {
         let myBundleID = Bundle.main.bundleIdentifier ?? "com.TranPhuong319.AppLocker"
         let myPath = Bundle.main.bundlePath
         let myRealPath = URL(fileURLWithPath: myPath).resolvingSymlinksInPath().path
         let myCDHash = cdHash(for: myPath)
 
-        var needsSave = config.autoLockTimeoutMinutes == nil
         let containsSelf = apps.values.contains {
             isSelfApp(
                 $0,
@@ -110,22 +135,6 @@ final class ConfigStore: Sendable {
             needsSave = true
             Logfile.policy.notice("[ConfigStore] Self-healing: Removed AppLocker from locked config")
         }
-
-        if needsSave {
-            save(
-                apps: apps,
-                isDisabled: config.isDisabled,
-                allowIncomingCalls: config.allowIncomingCalls ?? true,
-                autoLockTimeoutMinutes: autoLockTimeout
-            )
-        }
-
-        return ConfigLoadResult(
-            apps: apps,
-            isDisabled: config.isDisabled,
-            allowIncomingCalls: config.allowIncomingCalls ?? true,
-            autoLockTimeoutMinutes: autoLockTimeout
-        )
     }
 
     private func isSelfApp(
@@ -205,5 +214,43 @@ final class ConfigStore: Sendable {
             Logfile.policy.error("[ConfigStore] Error deleting config directory: \(error.localizedDescription)")
             return false
         }
+    }
+
+    private func migrateLegacyConfigIfNeeded() {
+        let legacyURL = Self.baseDirectoryURL.appendingPathComponent("config.plist")
+        guard !FileManager.default.fileExists(atPath: configURL.path),
+              FileManager.default.fileExists(atPath: legacyURL.path),
+              let legacyData = try? Data(contentsOf: legacyURL) else {
+            return
+        }
+
+        let decoder = PropertyListDecoder()
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+
+        var configsToMigrate: [String: UserConfig] = [:]
+        if let fullConfig = try? decoder.decode([String: UserConfig].self, from: legacyData) {
+            configsToMigrate = fullConfig
+        } else if let userConfig = try? decoder.decode(UserConfig.self, from: legacyData) {
+            configsToMigrate[String(getuid())] = userConfig
+        } else if let oldDict = try? decoder.decode([String: [LockedAppConfig]].self, from: legacyData) {
+            for (key, apps) in oldDict {
+                configsToMigrate[key] = UserConfig(isDisabled: false, apps: apps)
+            }
+        } else if let apps = try? decoder.decode([LockedAppConfig].self, from: legacyData) {
+            configsToMigrate[String(getuid())] = UserConfig(isDisabled: false, apps: apps)
+        }
+
+        guard !configsToMigrate.isEmpty else { return }
+        for (uidString, userConfig) in configsToMigrate {
+            guard let uid = uid_t(uidString) else { continue }
+            let targetURL = UserConfig.configURL(for: uid)
+            ensureDirectoryExists(targetURL.deletingLastPathComponent())
+            if let data = try? encoder.encode(userConfig) {
+                try? data.write(to: targetURL, options: .atomic)
+            }
+        }
+        try? FileManager.default.removeItem(at: legacyURL)
+        Logfile.policy.info("[ConfigStore] Legacy config migrated successfully.")
     }
 }
