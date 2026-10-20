@@ -5,9 +5,10 @@
 //  Created by AppLocker
 //
 
-import Foundation
-import OSLog
 import AppKit
+import Foundation
+import LocalAuthentication
+import OSLog
 
 // MARK: - Batch Authentication & Notifications Extension
 
@@ -54,44 +55,70 @@ extension XPCServer {
         let reason = String(format: String(localized: "open %d application(s)"), approvedPIDs.count)
         Task { @MainActor [weak self] in
             guard let self else { return }
-            let success = (try? await AuthenticationManager.authenticate(reason: reason)) ?? false
+            let success: Bool
+            do {
+                success = try await AuthenticationManager.authenticate(reason: reason)
+            } catch {
+                if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel {
+                    Logfile.appXPC.notice("[Auth] Batch auth cancelled by user.")
+                } else {
+                    Logfile.appXPC.error("[Auth] Batch auth error: \(error.localizedDescription, privacy: .public)")
+                }
+                success = false
+            }
             self.isAuthenticatingBatch = false
-
-            if !success && self.isRestartingBatchWithNewApps {
-                self.handleBatchAutoReAuthenticateWithNewApps()
-                return
-            }
-
-            self.isRestartingBatchWithNewApps = false
-            let batchApps = self.activeBatchApps
-            self.activeBatchApps.removeAll()
-
-            if success {
-                let survivingApproved = approvedPIDs.filter { pid in
-                    batchApps.contains(where: { $0.pid == pid })
-                }
-                let survivingRejected = rejectedPIDs.filter { pid in
-                    batchApps.contains(where: { $0.pid == pid })
-                }
-                self.handleBatchSuccess(
-                    batchApps: batchApps,
-                    approvedPIDs: survivingApproved,
-                    rejectedPIDs: survivingRejected
-                )
-            } else {
-                let allPIDs = batchApps.map(\.pid)
-                if !allPIDs.isEmpty {
-                    Logfile.appXPC.warning(
-                        "[Auth] Batch auth failed/cancelled. Rejecting PIDs: \(allPIDs, privacy: .public)"
-                    )
-                    ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: allPIDs) { _ in }
-                }
-            }
-
-            if !self.pendingApps.isEmpty {
-                self.processIncomingQueue()
-            }
+            self.handleBatchAuthResult(
+                success: success,
+                approvedPIDs: approvedPIDs,
+                rejectedPIDs: rejectedPIDs
+            )
         }
+    }
+
+    @MainActor
+    private func handleBatchAuthResult(
+        success: Bool,
+        approvedPIDs: [pid_t],
+        rejectedPIDs: [pid_t]
+    ) {
+        if !success && isRestartingBatchWithNewApps {
+            handleBatchAutoReAuthenticateWithNewApps()
+            return
+        }
+
+        isRestartingBatchWithNewApps = false
+        let batchApps = activeBatchApps
+        activeBatchApps.removeAll()
+
+        if success {
+            let survivingApproved = approvedPIDs.filter { pid in
+                batchApps.contains(where: { $0.pid == pid })
+            }
+            let survivingRejected = rejectedPIDs.filter { pid in
+                batchApps.contains(where: { $0.pid == pid })
+            }
+            handleBatchSuccess(
+                batchApps: batchApps,
+                approvedPIDs: survivingApproved,
+                rejectedPIDs: survivingRejected
+            )
+        } else {
+            handleBatchFailure(batchApps: batchApps)
+        }
+
+        if !pendingApps.isEmpty {
+            processIncomingQueue()
+        }
+    }
+
+    @MainActor
+    private func handleBatchFailure(batchApps: [PendingAppItem]) {
+        let allPIDs = batchApps.map(\.pid)
+        guard !allPIDs.isEmpty else { return }
+        Logfile.appXPC.warning(
+            "[Auth] Batch auth failed/cancelled. Rejecting PIDs: \(allPIDs, privacy: .public)"
+        )
+        ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: allPIDs) { _ in }
     }
 
     @MainActor

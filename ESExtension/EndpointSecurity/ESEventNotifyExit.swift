@@ -35,6 +35,9 @@ extension ESManager {
     private func handleMainAppExit(process: UnsafePointer<es_process_t>, exitStat: Int32) {
         let pid = audit_token_to_pid(process.pointee.audit_token)
         processIDLock.withLock {
+            if self.authenticatedMainAppPID == pid {
+                self.authenticatedMainAppPID = nil
+            }
             if self.lastKnownMainAppPID == pid {
                 self.lastKnownMainAppPID = nil
             }

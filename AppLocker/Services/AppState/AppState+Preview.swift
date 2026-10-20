@@ -10,69 +10,9 @@ import Observation
 import SwiftUI
 
 // MARK: - Mocking for Previews
-@Observable
-@MainActor
-class MockLockManager: LockManagerProtocol {
-    var lockedApps: [String: LockedAppConfig] = [:]
-    var allApps: [InstalledApp] = []
-    var isProtectionDisabled: Bool = false
-    var allowIncomingCalls: Bool = true
-    var autoLockTimeoutMinutes: Int = 0
-
-    func toggleLock(for paths: [String]) {
-        for path in paths {
-            if lockedApps[path] != nil {
-                lockedApps.removeValue(forKey: path)
-            } else {
-                lockedApps[path] = LockedAppConfig(
-                    bundleID: "com.mock.app",
-                    path: path,
-                    sha256: "mock_sha256",
-                    execFile: "MockApp",
-                    name: "Mock App"
-                )
-            }
-        }
-    }
-
-    func hideApps(for paths: [String]) {
-        for path in paths where lockedApps[path] != nil {
-            lockedApps[path]?.isHidden = true
-        }
-    }
-
-    func unhideApps(for paths: [String]) {
-        for path in paths where lockedApps[path] != nil {
-            lockedApps[path]?.isHidden = false
-        }
-    }
-
-    func removeApps(for paths: [String]) {
-        for path in paths {
-            lockedApps.removeValue(forKey: path)
-        }
-    }
-
-    func setProtectionDisabled(_ disabled: Bool) {
-        self.isProtectionDisabled = disabled
-    }
-
-    func setAllowIncomingCalls(_ allowed: Bool) {
-        self.allowIncomingCalls = allowed
-    }
-
-    func setAutoLockTimeoutMinutes(_ minutes: Int) {
-        self.autoLockTimeoutMinutes = minutes
-    }
-
-    func isLocked(at path: String) -> Bool {
-        lockedApps[path] != nil
-    }
-}
-
 extension AppState {
     static func preview(locked: [InstalledApp] = [], deleteQueue: Set<String> = []) -> AppState {
-        let mockManager = MockLockManager()
+        let mockManager = LockES()
         mockManager.allApps = InstalledApp.allMocks
 
         var lockedConfigs: [String: LockedAppConfig] = [:]
@@ -81,7 +21,7 @@ extension AppState {
         }
         mockManager.lockedApps = lockedConfigs
 
-        let state = AppState(manager: mockManager)
+        let state = AppState(manager: mockManager, isMock: true)
         state.deleteQueue = deleteQueue
 
         // Populate lists synchronously for instantaneous preview

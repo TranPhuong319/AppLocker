@@ -16,20 +16,12 @@ struct AppLauncherUtils {
         task.executableURL = URL(fileURLWithPath: path)
         task.arguments = args
 
-        // Cần thiết lập pipe để tránh treo nếu output quá lớn, mặc dù lệnh này output ít
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        task.standardError = pipe
+        task.standardOutput = FileHandle.nullDevice
+        task.standardError = FileHandle.nullDevice
 
         do {
             try task.run()
             task.waitUntilExit()
-
-            let data = try pipe.fileHandleForReading.readToEnd() ?? Data()
-            if let output = String(data: data, encoding: .utf8), !output.isEmpty {
-                let trimmed = output.trimmingCharacters(in: .whitespacesAndNewlines)
-                Logfile.endpointSecurity.debug("[AutoWake] Command output: \(trimmed, privacy: .public)")
-            }
 
             if task.terminationStatus == 0 {
                 Logfile.endpointSecurity.debug("[AutoWake] Command executed successfully.")

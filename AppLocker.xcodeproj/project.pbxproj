@@ -70,7 +70,6 @@
 		E0FD761C2F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B99 /* LogsSettingsTab+ContextMenu.swift */; };
 		E0FD761C2F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift */; };
 		E0FD761C2F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift */; };
-		E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */; };
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
@@ -109,6 +108,8 @@
 		E0FD77042F59E36600D46B31 /* AppState+AppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */; };
 		E0FD77062F59E36600D46B31 /* AppState+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77052F59E36600D46B31 /* AppState+Preview.swift */; };
 		E0FD77082F59E36600D46B31 /* AppState+MissingApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */; };
+		E0FD770A2F59E36600D46B31 /* AppState+ListRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77092F59E36600D46B31 /* AppState+ListRefresh.swift */; };
+		E0FD770C2F59E36600D46B31 /* AppState+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD770B2F59E36600D46B31 /* AppState+Actions.swift */; };
 		E0FD79022F59E37C00D46B31 /* ESManager+PendingProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */; };
 		E0FD79042F59E37C00D46B31 /* ESEventNotifyExec.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79032F59E37C00D46B31 /* ESEventNotifyExec.swift */; };
 		E0FD79062F59E37C00D46B31 /* ESEventAuthSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD79052F59E37C00D46B31 /* ESEventAuthSignal.swift */; };
@@ -234,7 +235,6 @@
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
 		E0FD75E32F59E36600D46B31 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
 		E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilterModels.swift; sourceTree = "<group>"; };
-		E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockManagerProtocol.swift; sourceTree = "<group>"; };
 		E0FD75E62F59E36600D46B31 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
 		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
 		E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.agent.plist; sourceTree = "<group>"; };
@@ -272,6 +272,8 @@
 		E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+AppPicker.swift"; sourceTree = "<group>"; };
 		E0FD77052F59E36600D46B31 /* AppState+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Preview.swift"; sourceTree = "<group>"; };
 		E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+MissingApps.swift"; sourceTree = "<group>"; };
+		E0FD77092F59E36600D46B31 /* AppState+ListRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+ListRefresh.swift"; sourceTree = "<group>"; };
+		E0FD770B2F59E36600D46B31 /* AppState+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Actions.swift"; sourceTree = "<group>"; };
 		E0FD79012F59E37C00D46B31 /* ESManager+PendingProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ESManager+PendingProcess.swift"; sourceTree = "<group>"; };
 		E0FD79032F59E37C00D46B31 /* ESEventNotifyExec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventNotifyExec.swift; sourceTree = "<group>"; };
 		E0FD79052F59E37C00D46B31 /* ESEventAuthSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESEventAuthSignal.swift; sourceTree = "<group>"; };
@@ -323,6 +325,8 @@
 				E0FD77052F59E36600D46B31 /* AppState+Preview.swift */,
 				E0FD77012F59E36600D46B31 /* AppState+Spotlight.swift */,
 				E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */,
+				E0FD77092F59E36600D46B31 /* AppState+ListRefresh.swift */,
+				E0FD770B2F59E36600D46B31 /* AppState+Actions.swift */,
 			);
 			path = AppState;
 			sourceTree = "<group>";
@@ -629,7 +633,6 @@
 				E0FD75E22F59E36600D46B31 /* LockES.swift */,
 				E0FD75E32F59E36600D46B31 /* LogStore.swift */,
 				E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */,
-				E0FD75E42F59E36600D46B31 /* LockManagerProtocol.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1010,6 +1013,8 @@
 				E0FD77062F59E36600D46B31 /* AppState+Preview.swift in Sources */,
 				E0FD77022F59E36600D46B31 /* AppState+Spotlight.swift in Sources */,
 				E0FD77082F59E36600D46B31 /* AppState+MissingApps.swift in Sources */,
+				E0FD770A2F59E36600D46B31 /* AppState+ListRefresh.swift in Sources */,
+				E0FD770C2F59E36600D46B31 /* AppState+Actions.swift in Sources */,
 				E0FD75FE2F59E36600D46B31 /* AppRowButtonStyle.swift in Sources */,
 				E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */,
 				E0FD76012F59E36600D46B31 /* LockES.swift in Sources */,
@@ -1062,7 +1067,6 @@
 				E0FD761C2F59E36600D46B94 /* UpdatesSettingsTab.swift in Sources */,
 				E0FD761C2F59E36600D46B95 /* AppearanceSettingsTab.swift in Sources */,
 				E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */,
-				E0FD761D2F59E36600D46B31 /* LockManagerProtocol.swift in Sources */,
 				E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */,
 				E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */,
 				E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */,

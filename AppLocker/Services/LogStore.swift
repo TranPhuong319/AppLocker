@@ -63,7 +63,7 @@ final class LogStore {
         reload()
         pollingTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                try? await Task.sleep(for: .seconds(3))
                 guard !Task.isCancelled, let self else { break }
                 await self.fetchLatest()
             }
@@ -153,7 +153,9 @@ final class LogStore {
             guard !Task.isCancelled, !newEntries.isEmpty else { return }
             self.entries.append(contentsOf: newEntries)
             await self.applyFilters()
-        } catch {}
+        } catch {
+            Logfile.app.error("[LogStore] Polling failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func fetchLogs() async {

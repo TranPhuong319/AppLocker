@@ -24,7 +24,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     @ObservationIgnored
     private var searchUnlockableAppsTask: Task<Void, Never>?
 
-    var manager: any LockManagerProtocol
+    var manager: LockES
     var showingAddApp = false
     var showingDeleteQueue = false
     var showingMissingAppsSheet = false
@@ -67,23 +67,16 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         case missingAppsPopup
     }
 
-    init(manager: (any LockManagerProtocol)? = nil) {
-        if let manager = manager {
-            self.manager = manager
-            self.isMock = manager is MockLockManager
-        } else {
-            self.manager = LockES()
-        }
+    init(manager: LockES? = nil, isMock: Bool = false) {
+        self.manager = manager ?? LockES()
+        self.isMock = isMock
 
         super.init()
 
-        if let esManager = self.manager as? LockES {
-            esManager.bootstrap { [weak self] in
+        if !isMock {
+            self.manager.bootstrap { [weak self] in
                 self?.refreshAppLists()
             }
-        }
-
-        if !isMock {
             setupSpotlightQuery()
             refreshAppLists()
         }
@@ -91,106 +84,6 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
-    }
-
-    private func filterLockedApps() {
-        filteredLockedApps = performFilter(text: searchTextLockApps, apps: lockedAppObjects)
-    }
-
-    private func debounceFilterUnlockableApps() {
-        searchUnlockableAppsTask?.cancel()
-        searchUnlockableAppsTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(200))
-            guard !Task.isCancelled, let self = self else { return }
-            self.filteredUnlockableApps = self.performFilter(
-                text: self.searchTextUnlockableApps,
-                apps: self.unlockableApps
-            )
-        }
-    }
-
-    private func performFilter(text: String, apps: [InstalledApp]) -> [InstalledApp] {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return apps }
-        let tokens = trimmed.split(separator: " ")
-        guard !tokens.isEmpty else { return apps }
-
-        return apps.filter { app in
-            tokens.allSatisfy { token in
-                app.name.localizedCaseInsensitiveContains(token)
-                    || app.bundleID.localizedCaseInsensitiveContains(token)
-                    || app.path.localizedCaseInsensitiveContains(token)
-            }
-        }
-    }
-
-    private func resolveLockedApp(
-        path: String,
-        config: LockedAppConfig,
-        allApps: [InstalledApp]
-    ) -> InstalledApp {
-        var name = allApps.first(where: {
-            $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
-        })?.name
-
-        if name == nil {
-            let displayName = FileManager.default.displayName(atPath: path)
-            name = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-        }
-
-        let finalName = name ?? config.name ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-        let source: AppSource = path.hasPrefix("/System") ? .system : .user
-        return InstalledApp(name: finalName, bundleID: config.bundleID, path: path, source: source)
-    }
-
-    func refreshAppLists() {
-        let allApps = manager.allApps
-        let lockedPathSet = Set(manager.lockedApps.keys)
-        var missingAppsList: [InstalledApp] = []
-        var appsToUnhide: [String] = []
-        let now = Date()
-        var hasPendingCheck = false
-
-        let lockedAppsList: [InstalledApp] = manager.lockedApps.keys.compactMap { path -> InstalledApp? in
-            guard let config = manager.lockedApps[path] else { return nil }
-            let app = self.resolveLockedApp(path: path, config: config, allApps: allApps)
-            let fileExists = FileManager.default.fileExists(atPath: path)
-            var isHidden = config.isHidden == true
-
-            if isHidden && fileExists {
-                appsToUnhide.append(path)
-                isHidden = false
-                AppIconProvider.shared.invalidateIcon(for: path)
-            }
-
-            let (isConfirmed, isPending) = self.checkMissingStatus(
-                path: path,
-                isHidden: isHidden,
-                now: now,
-                fileExists: fileExists
-            )
-            if isConfirmed { missingAppsList.append(app) }
-            if isPending { hasPendingCheck = true }
-
-            guard !isHidden else { return nil }
-            return app
-        }
-        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-
-        if !appsToUnhide.isEmpty { manager.unhideApps(for: appsToUnhide) }
-        if hasPendingCheck { schedulePendingMissingCheck() }
-
-        let unlockable = allApps
-            .filter { !lockedPathSet.contains($0.path) }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-
-        self.confirmedMissingApps = missingAppsList
-        self.lockedAppObjects = lockedAppsList
-        self.unlockableApps = unlockable
-        self.filteredLockedApps = self.performFilter(text: self.searchTextLockApps, apps: lockedAppsList)
-        self.filteredUnlockableApps = self.performFilter(text: self.searchTextUnlockableApps, apps: unlockable)
-
-        prefetchUnlockableIcons(apps: unlockable)
     }
 
     var userUnlockableApps: [InstalledApp] {
@@ -201,76 +94,16 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         filteredUnlockableApps.filter { $0.source == .system }
     }
 
-    func toggleLockPopup(for apps: Set<String>, locking: Bool) {
-        if locking {
-            showingAddApp = false
-        } else {
-            showingDeleteQueue = false
+    private func filterLockedApps() {
+        filteredLockedApps = lockedAppObjects.filter(matching: searchTextLockApps)
+    }
+
+    private func debounceFilterUnlockableApps() {
+        searchUnlockableAppsTask?.cancel()
+        searchUnlockableAppsTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled, let self = self else { return }
+            self.filteredUnlockableApps = self.unlockableApps.filter(matching: self.searchTextUnlockableApps)
         }
-
-        lockingMessage =
-            locking
-            ? String(localized: "Locking \(apps.count) apps...")
-            : String(localized: "Unlocking \(apps.count) apps...")
-        showingLockingPopup = true
-
-        let appsArray = Array(apps)
-
-        Task { [weak self] in
-            // Cho SwiftUI 1 nhịp (0.15s) để hiển thị mượt mà sheet LockingPopupSheet
-            try? await Task.sleep(for: .milliseconds(150))
-            guard let self else { return }
-
-            self.manager.toggleLock(for: appsArray)
-
-            if locking {
-                self.selectedToLock.removeAll()
-            } else {
-                self.deleteQueue.removeAll()
-            }
-
-            self.refreshAppLists()
-
-            self.showingLockingPopup = false
-        }
-    }
-
-    @objc func openAddApp() {
-        showingAddApp = true
-    }
-
-    @objc func lockSelectedApps() {
-        toggleLockPopup(for: selectedToLock, locking: true)
-    }
-
-    @objc func dismissAddAppSheet() {
-        showingAddApp = false
-        selectedToLock.removeAll()
-        searchTextLockApps = ""
-    }
-
-    @objc func chooseCustomApp() {
-        addOtherApps(over: NSApp.keyWindow)
-    }
-
-    @objc func unlockQueuedApps() {
-        toggleLockPopup(for: deleteQueue, locking: false)
-    }
-
-    @objc func clearDeleteQueue() {
-        deleteQueue.removeAll()
-        showingDeleteQueue = false
-    }
-
-    private func prefetchUnlockableIcons(apps: [InstalledApp]) {
-        Task(priority: .low) {
-            for app in apps.prefix(60) {
-                _ = AppIconProvider.shared.icon(for: app.path, size: 32)
-            }
-        }
-    }
-
-    @objc func showDeleteQueueSheet() {
-        showingDeleteQueue = true
     }
 }

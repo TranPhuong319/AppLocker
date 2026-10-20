@@ -8,9 +8,6 @@
 import Foundation
 
 // Keep a strong global reference to prevent deallocation
-private var manager: ESManager?
+private let manager = ESManager()
 
-autoreleasepool {
-    manager = ESManager()
-    dispatchMain()
-}
+dispatchMain()
