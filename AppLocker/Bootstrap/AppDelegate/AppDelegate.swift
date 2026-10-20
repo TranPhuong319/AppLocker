@@ -85,6 +85,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+            process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
             do {
                 try process.run()
                 NSApp.terminate(nil)

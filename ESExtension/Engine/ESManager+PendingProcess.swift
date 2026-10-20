@@ -96,7 +96,7 @@ extension ESManager {
                 continue
             }
 
-            Logfile.endpointSecurity.fault(
+            Logfile.endpointSecurity.warning(
                 """
                 [Watchdog] Pending PID \(pid, privacy: .public) timed out after \(timeoutSeconds, privacy: .public)s. \
                 Issuing SIGKILL.

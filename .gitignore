@@ -41,3 +41,6 @@ Carthage/Build/
 *.secret
 *.key
 *.pem
+
+# Knowledge Graph Analysis
+graphify-out/
