@@ -95,7 +95,14 @@ extension UserConfig {
         }
         do {
             let data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
-            return try PropertyListDecoder().decode(UserConfig.self, from: data)
+            let decoder = PropertyListDecoder()
+            if let config = try? decoder.decode(UserConfig.self, from: data) {
+                return config
+            }
+            if let apps = try? decoder.decode([LockedAppConfig].self, from: data) {
+                return UserConfig(isDisabled: false, apps: apps)
+            }
+            return nil
         } catch {
             Logfile.policy.error(
                 """

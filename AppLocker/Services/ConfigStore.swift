@@ -216,6 +216,23 @@ final class ConfigStore: Sendable {
         }
     }
 
+    private func parseLegacyConfigs(from data: Data) -> [String: UserConfig] {
+        let decoder = PropertyListDecoder()
+        if let fullConfig = try? decoder.decode([String: UserConfig].self, from: data) {
+            return fullConfig
+        }
+        if let userConfig = try? decoder.decode(UserConfig.self, from: data) {
+            return [String(getuid()): userConfig]
+        }
+        if let oldDict = try? decoder.decode([String: [LockedAppConfig]].self, from: data) {
+            return oldDict.mapValues { UserConfig(isDisabled: false, apps: $0) }
+        }
+        if let apps = try? decoder.decode([LockedAppConfig].self, from: data) {
+            return [String(getuid()): UserConfig(isDisabled: false, apps: apps)]
+        }
+        return [:]
+    }
+
     private func migrateLegacyConfigIfNeeded() {
         let legacyURL = Self.baseDirectoryURL.appendingPathComponent("config.plist")
         guard !FileManager.default.fileExists(atPath: configURL.path),
@@ -224,33 +241,30 @@ final class ConfigStore: Sendable {
             return
         }
 
-        let decoder = PropertyListDecoder()
+        let configsToMigrate = parseLegacyConfigs(from: legacyData)
+        guard !configsToMigrate.isEmpty else { return }
+
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
+        var allSucceeded = true
 
-        var configsToMigrate: [String: UserConfig] = [:]
-        if let fullConfig = try? decoder.decode([String: UserConfig].self, from: legacyData) {
-            configsToMigrate = fullConfig
-        } else if let userConfig = try? decoder.decode(UserConfig.self, from: legacyData) {
-            configsToMigrate[String(getuid())] = userConfig
-        } else if let oldDict = try? decoder.decode([String: [LockedAppConfig]].self, from: legacyData) {
-            for (key, apps) in oldDict {
-                configsToMigrate[key] = UserConfig(isDisabled: false, apps: apps)
-            }
-        } else if let apps = try? decoder.decode([LockedAppConfig].self, from: legacyData) {
-            configsToMigrate[String(getuid())] = UserConfig(isDisabled: false, apps: apps)
-        }
-
-        guard !configsToMigrate.isEmpty else { return }
         for (uidString, userConfig) in configsToMigrate {
             guard let uid = uid_t(uidString) else { continue }
             let targetURL = UserConfig.configURL(for: uid)
             ensureDirectoryExists(targetURL.deletingLastPathComponent())
-            if let data = try? encoder.encode(userConfig) {
-                try? data.write(to: targetURL, options: .atomic)
+            do {
+                let data = try encoder.encode(userConfig)
+                try data.write(to: targetURL, options: .atomic)
+            } catch {
+                allSucceeded = false
+                Logfile.policy.error(
+                    "[ConfigStore] Failed to write migrated config for UID \(uidString): \(error.localizedDescription)"
+                )
             }
         }
-        try? FileManager.default.removeItem(at: legacyURL)
-        Logfile.policy.info("[ConfigStore] Legacy config migrated successfully.")
+        if allSucceeded {
+            try? FileManager.default.removeItem(at: legacyURL)
+            Logfile.policy.info("[ConfigStore] Legacy config migrated successfully.")
+        }
     }
 }
