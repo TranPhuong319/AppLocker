@@ -83,8 +83,8 @@ enum AlertShow {
     /// ngược lại hiện modal độc lập
     @discardableResult
     private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
-        let candidateWindows = [NSApp.keyWindow, NSApp.mainWindow].compactMap { $0 } + NSApp.windows
-        if let window = candidateWindows.first(where: isValidSheetWindow) {
+        let focusedWindow = [NSApp.keyWindow, NSApp.mainWindow].compactMap { $0 }.first(where: isValidSheetWindow)
+        if let window = focusedWindow {
             var modalResponse: NSApplication.ModalResponse = .alertFirstButtonReturn
             alert.beginSheetModal(for: window) { response in
                 modalResponse = response

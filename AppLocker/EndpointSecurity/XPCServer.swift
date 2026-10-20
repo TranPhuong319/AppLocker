@@ -7,6 +7,7 @@
 
 import AppKit
 import Foundation
+import LocalAuthentication
 import Observation
 import os
 
@@ -204,8 +205,12 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             let reason = String(format: String(localized: "open %@"), app.name)
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                let success = (try? await AuthenticationManager.authenticate(reason: reason)) ?? false
-                self.handleSingleAppAuthResult(app: app, success: success)
+                do {
+                    let success = try await AuthenticationManager.authenticate(reason: reason)
+                    self.handleSingleAppAuthResult(app: app, success: success, error: nil)
+                } catch {
+                    self.handleSingleAppAuthResult(app: app, success: false, error: error)
+                }
             }
         } else {
             startOrResetCountdownTimer()
@@ -214,7 +219,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     }
 
     @MainActor
-    private func handleSingleAppAuthResult(app: PendingAppItem, success: Bool) {
+    private func handleSingleAppAuthResult(app: PendingAppItem, success: Bool, error: Error? = nil) {
         self.isAuthenticatingSingleApp = false
         if self.isUpgradingToBatch {
             handleBatchUpgradeAuthResult(app: app, success: success)
@@ -230,9 +235,25 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             )
             ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
         } else {
-            Logfile.appXPC.notice(
-                "[Auth] Cancelled by user. Rejecting PID: \(app.pid, privacy: .public) (\(app.name, privacy: .public))"
-            )
+            if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel {
+                Logfile.appXPC.notice(
+                    """
+                    [Auth] Cancelled by user. Rejecting PID: \(app.pid, privacy: .public) \
+                    (\(app.name, privacy: .public))
+                    """
+                )
+            } else if let error {
+                Logfile.appXPC.error(
+                    """
+                    [Auth] Auth failed with error: \(error.localizedDescription, privacy: .public). \
+                    Rejecting PID: \(app.pid, privacy: .public)
+                    """
+                )
+            } else {
+                Logfile.appXPC.notice(
+                    "[Auth] Auth rejected for PID: \(app.pid, privacy: .public)"
+                )
+            }
             ESXPCClient.shared.processPendingApps(approvedPIDs: [], rejectedPIDs: [app.pid]) { _ in }
         }
 

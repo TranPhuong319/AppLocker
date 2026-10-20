@@ -11,7 +11,6 @@ import OSLog
 struct LockedAppConfig: Codable, Hashable {
     let bundleID: String
     let path: String
-    var sha256: String?
     var execFile: String?
     var name: String?
     var cdhash: String?
@@ -19,13 +18,12 @@ struct LockedAppConfig: Codable, Hashable {
     var isHidden: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case bundleID, path, sha256, execFile, name, cdhash, isHidden
+        case bundleID, path, execFile, name, cdhash, isHidden
     }
 
     init(
         bundleID: String,
         path: String,
-        sha256: String? = nil,
         execFile: String? = nil,
         name: String? = nil,
         cdhash: String? = nil,
@@ -33,7 +31,6 @@ struct LockedAppConfig: Codable, Hashable {
     ) {
         self.bundleID = bundleID
         self.path = path
-        self.sha256 = sha256
         self.execFile = execFile
         self.name = name
         self.cdhash = cdhash
@@ -44,7 +41,6 @@ struct LockedAppConfig: Codable, Hashable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.bundleID = try container.decode(String.self, forKey: .bundleID)
         self.path = try container.decode(String.self, forKey: .path)
-        self.sha256 = try container.decodeIfPresent(String.self, forKey: .sha256)
         self.execFile = try container.decodeIfPresent(String.self, forKey: .execFile)
         self.name = try container.decodeIfPresent(String.self, forKey: .name)
         self.cdhash = try container.decodeIfPresent(String.self, forKey: .cdhash)
@@ -56,7 +52,6 @@ struct LockedAppConfig: Codable, Hashable {
         LockedAppConfig(
             bundleID: app.bundleID,
             path: app.path,
-            sha256: nil,
             execFile: app.name,
             name: app.name,
             cdhash: "mock_cdhash_hash",

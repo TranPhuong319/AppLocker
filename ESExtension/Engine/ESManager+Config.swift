@@ -111,11 +111,16 @@ extension ESManager {
         monitorDirectory(at: baseDir, isBase: true)
 
         // 2. Monitor each existing UID subdirectory for config changes
-        if let subpaths = try? FileManager.default.contentsOfDirectory(atPath: baseDir) {
+        do {
+            let subpaths = try FileManager.default.contentsOfDirectory(atPath: baseDir)
             for item in subpaths where uid_t(item) != nil {
                 let userDirPath = (baseDir as NSString).appendingPathComponent(item)
                 monitorDirectory(at: userDirPath, isBase: false)
             }
+        } catch {
+            Logfile.endpointSecurity.warning(
+                "[ESConfig] Failed to list base directory: \(error.localizedDescription, privacy: .public)"
+            )
         }
 
         Logfile.endpointSecurity.info(

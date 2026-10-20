@@ -11,7 +11,7 @@ import Observation
 
 @Observable
 @MainActor
-class LockES: LockManagerProtocol {
+class LockES {
     var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     var allApps: [InstalledApp] = []
     var isProtectionDisabled: Bool = false
@@ -120,7 +120,6 @@ class LockES: LockManagerProtocol {
                 let lockedAppConfig = LockedAppConfig(
                     bundleID: bundleID,
                     path: path,
-                    sha256: nil,
                     execFile: execName,
                     name: appName,
                     cdhash: cdhash

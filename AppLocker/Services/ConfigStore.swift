@@ -177,7 +177,7 @@ final class ConfigStore: Sendable {
 
             var attributes = [FileAttributeKey: Any]()
             attributes[.posixPermissions] = 0o666
-            try? FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
+            try FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
 
             Logfile.policy.debug(
                 """
