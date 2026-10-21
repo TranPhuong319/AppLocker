@@ -64,23 +64,30 @@ extension AppState {
         config: LockedAppConfig,
         allApps: [InstalledApp]
     ) -> InstalledApp {
-        var name = allApps.first(where: {
+        let fallbackOriginal = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+        let existingApp = allApps.first(where: {
             $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
-        })?.name
+        })
 
-        if name == nil {
-            let displayName = FileManager.default.displayName(atPath: path)
-            name = displayName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-        }
-
-        let finalName = name ?? config.name ?? URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+        let finalName = existingApp?.name
+            ?? AppState.resolveDisplayName(at: path, fallback: config.name ?? fallbackOriginal)
+        let originalName = existingApp?.originalName ?? fallbackOriginal
         let source: AppSource = path.hasPrefix("/System") ? .system : .user
-        return InstalledApp(name: finalName, bundleID: config.bundleID, path: path, source: source)
+
+        let bundleID = !config.bundleID.isEmpty ? config.bundleID : (existingApp?.bundleID ?? "")
+
+        return InstalledApp(
+            name: finalName,
+            bundleID: bundleID,
+            path: path,
+            source: source,
+            originalName: originalName
+        )
     }
 
     private func prefetchUnlockableIcons(apps: [InstalledApp]) {
         Task(priority: .low) {
-            for app in apps.prefix(60) {
+            for app in apps {
                 _ = AppIconProvider.shared.icon(for: app.path, size: 32)
             }
         }

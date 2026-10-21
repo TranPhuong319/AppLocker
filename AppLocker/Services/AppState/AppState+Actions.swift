@@ -44,6 +44,9 @@ extension AppState {
     }
 
     @objc func openAddApp() {
+        for app in unlockableApps {
+            _ = AppIconProvider.shared.icon(for: app.path, size: 32)
+        }
         showingAddApp = true
     }
 
