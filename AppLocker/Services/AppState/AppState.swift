@@ -19,6 +19,12 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     var metadataQuery: NSMetadataQuery?
     @ObservationIgnored
     var spotlightTask: Task<Void, Never>?
+    @ObservationIgnored
+    var appScanTask: Task<Void, Never>?
+    @ObservationIgnored
+    var cachedFileSystemApps: [InstalledApp] = []
+    @ObservationIgnored
+    var cachedSpotlightApps: [InstalledApp] = []
     var lastInstalledPathSet: Set<String> = []
 
     @ObservationIgnored
@@ -77,6 +83,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             self.manager.bootstrap { [weak self] in
                 self?.refreshAppLists()
             }
+            refreshInstalledApps()
             setupSpotlightQuery()
             refreshAppLists()
         }

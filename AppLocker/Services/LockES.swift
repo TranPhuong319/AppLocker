@@ -112,8 +112,9 @@ class LockES {
                 // Get filename for config
                 let execName = URL(fileURLWithPath: execPath).lastPathComponent
 
-                let appName = FileManager.default.displayName(atPath: path)
-                    .replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+                let fallbackOriginal = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+                let appName = allApps.first(where: { $0.path == path })?.name
+                    ?? AppState.resolveDisplayName(at: path, fallback: fallbackOriginal)
                 let cdhash = cdHash(for: execPath) ?? cdHash(for: path)
                 let bundleID = bundle.bundleIdentifier ?? ""
 

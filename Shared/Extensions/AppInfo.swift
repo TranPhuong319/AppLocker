@@ -15,13 +15,21 @@ enum AppSource: String {
 struct InstalledApp: Identifiable, Hashable {
     let id: String
     let name: String
+    let originalName: String?
     let bundleID: String
     let path: String
     let source: AppSource?
 
-    init(name: String, bundleID: String, path: String, source: AppSource? = nil) {
+    init(
+        name: String,
+        bundleID: String,
+        path: String,
+        source: AppSource? = nil,
+        originalName: String? = nil
+    ) {
         self.id = path
         self.name = name
+        self.originalName = originalName
         self.bundleID = bundleID
         self.path = path
         self.source = source

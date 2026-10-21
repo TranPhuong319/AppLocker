@@ -15,8 +15,8 @@ final class AppIconProvider {
     private let cache = NSCache<NSString, NSImage>()
 
     private init() {
-        cache.countLimit = 100
-        cache.totalCostLimit = 5 * 1024 * 1024
+        cache.countLimit = 500
+        cache.totalCostLimit = 50 * 1024 * 1024
     }
 
     func cachedIcon(for path: String, size: CGFloat = 32) -> NSImage? {
