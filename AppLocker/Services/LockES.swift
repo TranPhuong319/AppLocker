@@ -167,6 +167,21 @@ class LockES {
         }
     }
 
+    func migrateApp(from oldPath: String, to newPath: String) {
+        guard let config = lockedApps.removeValue(forKey: oldPath) else { return }
+        let cdhash = cdHash(for: newPath) ?? config.cdhash
+        let appName = AppState.resolveDisplayName(at: newPath, fallback: config.name ?? "")
+        lockedApps[newPath] = LockedAppConfig(
+            bundleID: config.bundleID,
+            path: newPath,
+            execFile: URL(fileURLWithPath: newPath).deletingPathExtension().lastPathComponent,
+            name: appName,
+            cdhash: cdhash,
+            isHidden: config.isHidden
+        )
+        save()
+    }
+
     func isLocked(at path: String) -> Bool {
         if isProtectionDisabled { return false }
         return lockedApps[path] != nil

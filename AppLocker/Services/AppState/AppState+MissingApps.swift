@@ -11,6 +11,8 @@ import Foundation
 // MARK: - Missing Apps Handling
 
 extension AppState {
+    private static let missingGracePeriod: TimeInterval = 5.0
+
     func checkMissingStatus(
         path: String,
         isHidden: Bool,
@@ -26,13 +28,14 @@ extension AppState {
         guard !isHidden else { return (false, false) }
         let firstDetected = missingAppTimestamps[path] ?? now
         missingAppTimestamps[path] = firstDetected
-        let isConfirmed = now.timeIntervalSince(firstDetected) >= 3.0
+        let isConfirmed = now.timeIntervalSince(firstDetected) >= Self.missingGracePeriod
         return (isConfirmed, !isConfirmed)
     }
 
     func schedulePendingMissingCheck() {
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(3.0))
+        pendingMissingCheckTask?.cancel()
+        pendingMissingCheckTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(Self.missingGracePeriod))
             guard !Task.isCancelled, let self = self else { return }
             self.refreshAppLists()
         }

@@ -29,6 +29,10 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
 
     @ObservationIgnored
     private var searchUnlockableAppsTask: Task<Void, Never>?
+    @ObservationIgnored
+    var pendingMissingCheckTask: Task<Void, Never>?
+    @ObservationIgnored
+    var directoryWatcherSource: DispatchSourceFileSystemObject?
 
     var manager: LockES
     var showingAddApp = false
@@ -85,12 +89,29 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             }
             refreshInstalledApps()
             setupSpotlightQuery()
+            startApplicationsWatcher()
+            setupApplicationLifecycleObservers()
             refreshAppLists()
         }
     }
 
     deinit {
+        pendingMissingCheckTask?.cancel()
+        directoryWatcherSource?.cancel()
         NotificationCenter.default.removeObserver(self)
+    }
+
+    private func setupApplicationLifecycleObservers() {
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshInstalledApps()
+                self?.refreshAppLists()
+            }
+        }
     }
 
     var userUnlockableApps: [InstalledApp] {
