@@ -11,6 +11,11 @@ import Foundation
 extension AppState {
     func refreshAppLists() {
         let allApps = manager.allApps
+        if migrateRenamedApps(allApps: allApps) {
+            refreshAppLists()
+            return
+        }
+
         let lockedPathSet = Set(manager.lockedApps.keys)
         var missingAppsList: [InstalledApp] = []
         var appsToUnhide: [String] = []
@@ -57,6 +62,20 @@ extension AppState {
         self.filteredUnlockableApps = unlockable.filter(matching: self.searchTextUnlockableApps)
 
         prefetchUnlockableIcons(apps: unlockable)
+    }
+
+    private func migrateRenamedApps(allApps: [InstalledApp]) -> Bool {
+        var hasMigrated = false
+        for (path, config) in manager.lockedApps {
+            guard !FileManager.default.fileExists(atPath: path),
+                  let newApp = allApps.first(where: {
+                      !config.bundleID.isEmpty && $0.bundleID == config.bundleID && $0.path != path
+                  }) else { continue }
+            manager.migrateApp(from: path, to: newApp.path)
+            missingAppTimestamps.removeValue(forKey: path)
+            hasMigrated = true
+        }
+        return hasMigrated
     }
 
     private func resolveLockedApp(

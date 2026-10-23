@@ -217,4 +217,30 @@ extension AppState {
     nonisolated static func resolveDisplayName(at path: String, fallback: String) -> String {
         resolveMetadata(at: path, fallback: fallback).name
     }
+
+    func startApplicationsWatcher() {
+        guard directoryWatcherSource == nil else { return }
+        let descriptor = open("/Applications", O_EVTONLY)
+        guard descriptor >= 0 else { return }
+
+        let source = DispatchSource.makeFileSystemObjectSource(
+            fileDescriptor: descriptor,
+            eventMask: [.write, .extend, .rename, .delete],
+            queue: .main
+        )
+
+        source.setEventHandler { [weak self] in
+            MainActor.assumeIsolated {
+                self?.refreshInstalledApps()
+                self?.refreshAppLists()
+            }
+        }
+
+        source.setCancelHandler {
+            close(descriptor)
+        }
+
+        self.directoryWatcherSource = source
+        source.resume()
+    }
 }

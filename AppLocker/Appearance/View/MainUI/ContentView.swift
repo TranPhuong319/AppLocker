@@ -31,6 +31,12 @@ struct ContentView: View {
                         }
                     }
 
+                    if appState.manager.isProtectionDisabled {
+                        ToolbarItem(placement: .primaryAction) {
+                            resumeProtectionToolbarButton
+                        }
+                    }
+
                     ToolbarItem(placement: .primaryAction) {
                         Button {
                             appState.openAddApp()
@@ -92,6 +98,26 @@ private extension ContentView {
         .labelStyle(.iconOnly)
         .help(String(localized: "Review missing applications"))
         .accessibilityLabel(String(localized: "Review missing applications"))
+    }
+
+    @ViewBuilder
+    var resumeProtectionToolbarButton: some View {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                appState.manager.setProtectionDisabled(false)
+            }
+        } label: {
+            Label {
+                Text("Resume Protection")
+            } icon: {
+                Image(systemName: "lock.open.trianglebadge.exclamationmark.fill")
+                    .foregroundStyle(.orange)
+                    .symbolEffect(.pulse, options: .repeating)
+            }
+        }
+        .labelStyle(.iconOnly)
+        .help(String(localized: "Resume Protection"))
+        .accessibilityLabel(String(localized: "Resume Protection"))
     }
 
     @ViewBuilder
