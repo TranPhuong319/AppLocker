@@ -51,6 +51,7 @@ struct AboutView: View {
             .padding(.horizontal, 20)
         }
         .frame(width: WindowLayout.aboutSize.width, height: WindowLayout.aboutSize.height)
+        .focusEffectDisabled()
     }
 
     // MARK: - App Identity Section
@@ -71,6 +72,7 @@ struct AboutView: View {
                     .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
             }
             .buttonStyle(.plain)
+            .focusable(false)
             .scaleEffect(iconBounceTrigger.isMultiple(of: 2) ? 1.0 : 1.08)
             .animation(.spring(response: 0.35, dampingFraction: 0.45), value: iconBounceTrigger)
             .help("Click to bounce")
@@ -107,6 +109,7 @@ struct AboutView: View {
             )
         }
         .buttonStyle(.plain)
+        .focusable(false)
         .help("Click to copy version")
         .accessibilityLabel("Version \(bundle.fullVersion)")
     }
@@ -145,6 +148,7 @@ struct AboutView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .focusable(false)
 
             Button {
                 if let url = URL(string: "https://github.com/TranPhuong319/AppLocker") {
@@ -155,6 +159,7 @@ struct AboutView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .focusable(false)
         }
     }
 
