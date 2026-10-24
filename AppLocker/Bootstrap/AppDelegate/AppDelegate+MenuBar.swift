@@ -160,12 +160,15 @@ extension AppDelegate: NSMenuDelegate {
         menu.addItem(infoItem)
 
         if AppState.shared.manager.isProtectionDisabled {
+            let resumeShortcut = HotKeyShortcut.currentResumeProtection
             let resumeItem = NSMenuItem(
                 title: String(localized: "Resume Protection"),
                 action: #selector(resumeProtection),
-                keyEquivalent: "l"
+                keyEquivalent: resumeShortcut?.keyEquivalent ?? ""
             )
-            resumeItem.keyEquivalentModifierMask = [.command, .option]
+            if let resumeShortcut {
+                resumeItem.keyEquivalentModifierMask = resumeShortcut.modifierFlags
+            }
             resumeItem.image = NSImage(
                 systemSymbolName: "lock.fill",
                 accessibilityDescription: String(localized: "Resume Protection")
@@ -203,12 +206,15 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func addPrimaryMenuItems(to menu: NSMenu) {
+        let manageShortcut = HotKeyShortcut.currentAppList
         let manageItem = NSMenuItem(
             title: String(localized: "Manage the application list") + "…",
             action: #selector(openAppList),
-            keyEquivalent: "l"
+            keyEquivalent: manageShortcut?.keyEquivalent ?? ""
         )
-        manageItem.keyEquivalentModifierMask = [.command, .shift]
+        if let manageShortcut {
+            manageItem.keyEquivalentModifierMask = manageShortcut.modifierFlags
+        }
         manageItem.image = NSImage(systemSymbolName: "lock.app.dashed", accessibilityDescription: nil)
         menu.addItem(manageItem)
 

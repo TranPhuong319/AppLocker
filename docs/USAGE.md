@@ -82,14 +82,18 @@ Access the management window at any time by clicking the **AppLocker lock icon (
   <p><i>Quick actions from the macOS Menu Bar</i></p>
 </div>
 
-| Shortcut | Menu Action | Description |
+| Default Shortcut | Menu Action | Description |
 | :--- | :--- | :--- |
-| `⌘ + ⇧ + L` | **Manage the application list…** | Opens the app list manager (requires authentication). |
-| `⌘ + ,` | **Settings…** | Configure automatic software update checks, downloads, and channels (Stable / Beta). |
+| `⌃ + ⇧ + ⌘ + L` | **Manage the application list…** | Opens the app list manager (requires authentication). |
+| `⌃ + ⌥ + ⌘ + L` | **Resume Protection** | Resumes application lock protection (only active and displayed when protection is suspended). |
+| `⌘ + ,` | **Settings…** | Opens Settings to configure shortcuts, notifications, updates, and appearance. |
 | — | **Check for Updates…** | Manually check for software updates. |
 | — | **About AppLocker** | View current app version and developer information. |
 | — | **Uninstall AppLocker…** | Deauthorizes the system extension, removes background services, and uninstalls AppLocker cleanly. |
 | `⌥` (Hold) | **Reset AppLocker…** | Reset all settings and clear the locked applications list (requires authentication). |
+
+> [!TIP]
+> **Customizing Shortcuts**: You can customize or restore default global hotkeys at any time in **Settings (`⌘,`) → General → Keyboard Shortcuts**.
 
 ---
 
