@@ -61,6 +61,7 @@ struct AboutArchitectureBadgesView: View {
             )
         }
         .buttonStyle(.plain)
+        .focusable(false)
         .popover(isPresented: $showSystemInfo, arrowEdge: .trailing) {
             SystemInfoPopoverView()
         }
