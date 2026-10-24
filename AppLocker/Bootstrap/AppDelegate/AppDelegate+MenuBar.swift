@@ -24,6 +24,8 @@ extension AppDelegate: NSMenuDelegate {
             imageView.autoresizingMask = [.width, .height]
             imageView.imageScaling = .scaleProportionallyDown
             imageView.imageAlignment = .alignCenter
+            imageView.appearance = nil
+            button.appearance = nil
             button.addSubview(imageView)
             statusImageView = imageView
         }
@@ -31,7 +33,7 @@ extension AppDelegate: NSMenuDelegate {
         updateMenuBarIcon()
 
         let menu = NSMenu()
-        menu.appearance = NSApp.appearance
+        menu.appearance = currentThemeAppearance
         menu.delegate = self
         statusItem?.menu = menu
 
@@ -143,7 +145,7 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        menu.appearance = NSApp.appearance
+        menu.appearance = currentThemeAppearance
         menu.removeAllItems()
 
         addHeaderMenuItems(to: menu)

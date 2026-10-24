@@ -24,6 +24,7 @@ struct WindowConfiguration {
     var isOpaque: Bool = false
     var backgroundColor: NSColor? = .clear
     var autosaveName: NSWindow.FrameAutosaveName?
+    var appearance: NSAppearance?
 }
 
 @MainActor
@@ -33,6 +34,10 @@ class WindowManager {
         configuration: WindowConfiguration
     ) -> NSWindow {
         let window = NSWindow(contentViewController: contentViewController)
+
+        let targetAppearance = configuration.appearance ?? NSApp.appDelegate?.currentThemeAppearance
+            ?? AppDelegate.appearance(for: UserDefaults.standard.string(forKey: "appTheme") ?? "System")
+        window.appearance = targetAppearance
 
         window.styleMask = configuration.styleMask
         window.backingType = configuration.backingType

@@ -118,21 +118,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    func applyTheme(_ theme: String) {
-        let appearance: NSAppearance?
+    private(set) var currentThemeAppearance: NSAppearance?
+
+    static func appearance(for theme: String) -> NSAppearance? {
         switch theme {
         case "Light":
-            appearance = NSAppearance(named: .aqua)
+            return NSAppearance(named: .aqua)
         case "Dark":
-            appearance = NSAppearance(named: .darkAqua)
+            return NSAppearance(named: .darkAqua)
         default:
-            appearance = nil
+            return nil
         }
+    }
 
-        NSApp.appearance = appearance
+    func applyTheme(_ theme: String) {
+        let appearance = Self.appearance(for: theme)
+        currentThemeAppearance = appearance
+
+        NSApp.appearance = nil
+        statusItem?.button?.appearance = nil
+        statusImageView?.appearance = nil
+        statusItem?.button?.window?.appearance = nil
+        statusItem?.button?.needsDisplay = true
+        statusImageView?.needsDisplay = true
         statusItem?.menu?.appearance = appearance
 
         for window in NSApp.windows {
+            guard window !== statusItem?.button?.window else { continue }
             window.appearance = appearance
         }
     }
