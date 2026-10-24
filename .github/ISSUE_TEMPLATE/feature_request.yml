@@ -41,6 +41,7 @@ body:
       description: Which area(s) of AppLocker does this proposal involve?
       options:
         - label: "UI / Liquid Glass Design & Menu Bar Experience"
+        - label: "UI Micro-interactions & Apple Delight (SF Symbols, Transitions)"
         - label: "Application Locking & Interception Rules (Endpoint Security)"
         - label: "Authentication & Biometrics (Touch ID, Password, Apple Watch)"
         - label: "Settings, Configuration & Preferences"

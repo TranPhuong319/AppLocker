@@ -46,9 +46,10 @@ body:
       label: macOS Version
       description: Which version of macOS are you running?
       options:
+        - "macOS 27 Golden Gate (27.x)"
+        - "macOS 26 Tahoe (26.x)"
         - "macOS 15 Sequoia (15.x)"
         - "macOS 14 Sonoma (14.x)"
-        - "Other / Older (Unsupported)"
     validations:
       required: true
 
@@ -58,7 +59,7 @@ body:
       label: Hardware Architecture
       description: What processor architecture is your Mac using?
       options:
-        - "Apple Silicon (M1 / M2 / M3 / M4)"
+        - "Apple Silicon (M1 / M2 / M3 / M4 / M5)"
         - "Intel (x86_64)"
     validations:
       required: true
@@ -68,9 +69,21 @@ body:
     attributes:
       label: AppLocker Version
       description: The version of AppLocker where this issue occurred (e.g., from AppLocker > About).
-      placeholder: "e.g. 1.9.0"
+      placeholder: "e.g. 1.10.0"
     validations:
       required: true
+
+  - type: dropdown
+    id: target_app_type
+    attributes:
+      label: Target Application Type
+      description: What kind of application is experiencing the issue?
+      options:
+        - "Third-Party App (e.g. Chrome, Discord, VS Code)"
+        - "Apple System App (e.g. Safari, Mail, Terminal, System Settings)"
+        - "Mac App Store App"
+        - "Command-line tool or custom executable"
+        - "General / Not app-specific"
 
   - type: checkboxes
     id: security_status
@@ -79,8 +92,8 @@ body:
       description: Select the options that apply to your system configuration.
       options:
         - label: "System Integrity Protection (SIP) is enabled"
-        - label: "AppLocker System Extension is enabled and running (System Settings > Login Items & Extensions)"
-        - label: "Full Disk Access is granted to AppLocker (if applicable)"
+        - label: "AppLocker System Extension is approved and running (System Settings > General > Login Items & Extensions)"
+        - label: "AppLocker has been granted Full Disk Access (System Settings > Privacy & Security > Full Disk Access)"
 
   - type: dropdown
     id: auth_method
@@ -100,8 +113,8 @@ body:
       description: Paste any relevant output from Console.app, os_log, or crash reports here.
       render: shell
       placeholder: |
-        # Example command to filter logs:
-        # log show --predicate 'subsystem == "com.TranPhuong319.AppLocker"' --last 5m
+        # Command to filter logs from both Main App and Endpoint Security Extension:
+        # log show --predicate 'subsystem BEGINSWITH "com.TranPhuong319.AppLocker"' --last 5m
 
   - type: textarea
     id: additional_context
