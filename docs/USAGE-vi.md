@@ -82,14 +82,18 @@ Truy cập cửa sổ quản lý bất kỳ lúc nào bằng cách nhấp vào *
   <p><i>Thao tác nhanh trên thanh Menu Bar</i></p>
 </div>
 
-| Phím tắt | Thao tác Menu | Mô tả |
+| Phím tắt mặc định | Thao tác Menu | Mô tả |
 | :--- | :--- | :--- |
-| `⌘ + ⇧ + L` | **Manage the application list…** | Mở cửa sổ quản lý danh sách ứng dụng (yêu cầu xác thực). |
-| `⌘ + ,` | **Settings…** | Cấu hình kiểm tra cập nhật tự động, tải về và kênh cập nhật (Stable / Beta). |
+| `⌃ + ⇧ + ⌘ + L` | **Manage the application list…** | Mở cửa sổ quản lý danh sách ứng dụng (yêu cầu xác thực). |
+| `⌃ + ⌥ + ⌘ + L` | **Resume Protection** | Tiếp tục kích hoạt lại lá chắn bảo vệ (chỉ hiển thị và kích hoạt khi đang tạm dừng bảo vệ). |
+| `⌘ + ,` | **Settings…** | Mở cửa sổ Cài đặt để tùy chỉnh phím tắt, thông báo, cập nhật và giao diện. |
 | — | **Check for Updates…** | Kiểm tra cập nhật phần mềm thủ công. |
 | — | **About AppLocker** | Xem phiên bản ứng dụng hiện tại và thông tin nhà phát triển. |
 | — | **Uninstall AppLocker…** | Hủy ủy quyền system extension, gỡ bỏ dịch vụ chạy ngầm và gỡ cài đặt AppLocker sạch sẽ. |
 | `⌥` (Giữ) | **Reset AppLocker…** | Đặt lại toàn bộ cài đặt và xóa danh sách ứng dụng bị khóa (yêu cầu xác thực). |
+
+> [!TIP]
+> **Tùy chỉnh phím tắt**: Bạn có thể tùy chỉnh hoặc đặt lại các phím tắt toàn hệ thống về mặc định bất cứ lúc nào tại **Settings (`⌘,`) → General → Keyboard Shortcuts**.
 
 ---
 

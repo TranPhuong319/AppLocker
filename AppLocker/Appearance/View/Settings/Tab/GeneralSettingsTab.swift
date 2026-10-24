@@ -13,6 +13,10 @@ struct GeneralSettingsTab: View {
     @State private var isAgentActive: Bool = true
     @AppStorage("showBlockedNotifications") private var showNotifications: Bool = true
 
+    @State private var appListShortcut: HotKeyShortcut? = HotKeyShortcut.currentAppList
+    @State private var resumeProtectionShortcut: HotKeyShortcut? = HotKeyShortcut.currentResumeProtection
+    @State private var isCustomized: Bool = HotKeyShortcut.isCustomized
+
     init(isMock: Bool = false) {
         self.isMock = isMock
     }
@@ -74,10 +78,45 @@ struct GeneralSettingsTab: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section(header: Text("Keyboard Shortcuts")) {
+                HStack {
+                    Label("Manage the application list", systemImage: "lock.app.dashed")
+                    Spacer()
+                    ShortcutRecorderView(
+                        shortcut: appListShortcut,
+                        onSave: { newShortcut in
+                            saveAppListShortcut(newShortcut)
+                        }
+                    )
+                }
+
+                HStack {
+                    Label("Resume Protection", systemImage: "lock.fill")
+                    Spacer()
+                    ShortcutRecorderView(
+                        shortcut: resumeProtectionShortcut,
+                        onSave: { newShortcut in
+                            saveResumeShortcut(newShortcut)
+                        }
+                    )
+                }
+
+                if isCustomized {
+                    Button("Reset Shortcuts to Defaults", action: resetShortcuts)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .formStyle(.grouped)
         .task {
             checkAgentStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .hotKeySettingsDidChange)) { _ in
+            appListShortcut = HotKeyShortcut.currentAppList
+            resumeProtectionShortcut = HotKeyShortcut.currentResumeProtection
+            isCustomized = HotKeyShortcut.isCustomized
         }
     }
 
@@ -93,6 +132,36 @@ struct GeneralSettingsTab: View {
         if let appDelegate = NSApp.appDelegate {
             isAgentActive = appDelegate.repairAgentService()
         }
+    }
+
+    private func saveAppListShortcut(_ newShortcut: HotKeyShortcut?) {
+        guard !isMock else { return }
+        if let newShortcut, newShortcut == resumeProtectionShortcut {
+            NSSound.beep()
+            return
+        }
+        appListShortcut = newShortcut
+        HotKeyShortcut.currentAppList = newShortcut
+        isCustomized = HotKeyShortcut.isCustomized
+    }
+
+    private func saveResumeShortcut(_ newShortcut: HotKeyShortcut?) {
+        guard !isMock else { return }
+        if let newShortcut, newShortcut == appListShortcut {
+            NSSound.beep()
+            return
+        }
+        resumeProtectionShortcut = newShortcut
+        HotKeyShortcut.currentResumeProtection = newShortcut
+        isCustomized = HotKeyShortcut.isCustomized
+    }
+
+    private func resetShortcuts() {
+        guard !isMock else { return }
+        HotKeyShortcut.resetToDefaults()
+        appListShortcut = HotKeyShortcut.currentAppList
+        resumeProtectionShortcut = HotKeyShortcut.currentResumeProtection
+        isCustomized = false
     }
 }
 

@@ -126,6 +126,7 @@
 		E0FDB00E2F59E37C00D46B01 /* ESTamper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */; };
 		E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */; };
 		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
+		E0FDBC022F59E36600D46B31 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDBC012F59E36600D46B31 /* ShortcutRecorderView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -292,6 +293,7 @@
 		E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESTamper.swift; sourceTree = "<group>"; };
 		E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XPCServer+Batch.swift"; sourceTree = "<group>"; };
 		E0FDDD102F797A8C0078A290 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		E0FDBC012F59E36600D46B31 /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -522,6 +524,7 @@
 				E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */,
 				E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */,
 				E0FDB0032F59E36600D46B01 /* LogSelectionManager.swift */,
+				E0FDBC012F59E36600D46B31 /* ShortcutRecorderView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1027,6 +1030,7 @@
 				E0FD761C2F59E36600D46B9A /* LogsSettingsTab+AutoScroll.swift in Sources */,
 				E0FD761C2F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift in Sources */,
 				E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */,
+				E0FDBC022F59E36600D46B31 /* ShortcutRecorderView.swift in Sources */,
 				E0FDB0062F59E36600D46B01 /* AboutArchitectureBadgesView.swift in Sources */,
 				E0FDB0082F59E36600D46B01 /* ESXPCClient+Requests.swift in Sources */,
 				E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */,
