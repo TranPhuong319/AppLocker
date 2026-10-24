@@ -85,6 +85,7 @@ enum AlertShow {
     private static func runAlert(_ alert: NSAlert) -> NSApplication.ModalResponse {
         let focusedWindow = [NSApp.keyWindow, NSApp.mainWindow].compactMap { $0 }.first(where: isValidSheetWindow)
         if let window = focusedWindow {
+            alert.window.appearance = window.appearance
             var modalResponse: NSApplication.ModalResponse = .alertFirstButtonReturn
             alert.beginSheetModal(for: window) { response in
                 modalResponse = response
@@ -93,6 +94,7 @@ enum AlertShow {
             _ = NSApp.runModal(for: alert.window)
             return modalResponse
         } else {
+            alert.window.appearance = NSApp.appDelegate?.currentThemeAppearance
             return alert.runModal()
         }
     }
