@@ -6,8 +6,8 @@ We provide security updates and patches for versions running on Apple Endpoint S
 
 | Version | Supported | Notes |
 | ------- | :-------: | ----- |
-| 1.9.x   | :white_check_mark: | Latest release branch |
-| 1.6.0 - 1.8.x | :white_check_mark: | Supported (Apple Endpoint Security framework) |
+| 1.10.x  | :white_check_mark: | Latest release branch |
+| 1.6.0 - 1.9.x | :white_check_mark: | Supported (Apple Endpoint Security framework) |
 | < 1.6.0 | :x: | Legacy launcher wrapper (Deprecated & removed) |
 
 ---
