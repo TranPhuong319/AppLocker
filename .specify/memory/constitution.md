@@ -1,10 +1,12 @@
 <!--
 Sync Impact Report:
-- Version change: 1.3.0 → 1.4.0
+- Version change: 1.4.0 → 1.5.0
 - List of modified principles:
-  - Updated Principle II: Expanded process interception mechanics with Telephony bypass rules.
-- Added sections:
-  - Telephony Services, Darwin Notification & Incoming Call Bypass Governance
+  - Principle II: Expanded process interception mechanics with NOTIFY_EXIT queue teardown and batch authentication resolution (SIGCONT vs SIGKILL).
+  - Principle III: Corrected Mach Service identifier to match entitlements and registered system service (`endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc`), and codified OSAllocatedUnfairLock Mach listener synchronization.
+  - Principle V: Clarified BatchAuthView and FuzzySearch role in Shared/UI architecture.
+  - Principle VII: Codified Guardian Watchdog recovery mechanics for unexpected Main App terminations.
+- Added sections: None (Integrated into existing Governance & Principles)
 - Removed sections: None
 - Follow-up TODOs: None
 -->
@@ -24,13 +26,16 @@ The lifecycle of intercepted processes MUST strictly follow the two-phase kernel
 1. `AUTH_EXEC` MUST return `ES_AUTH_RESULT_ALLOW` and record the pending execution path so that the macOS Kernel finishes process instantiation and assigns a valid PID (> 0). In `AUTH_EXEC`, `audit_token_to_pid` returns 0; calling `kill(0, signal)` is strictly prohibited as it targets the entire process group of the caller and disrupts XPC connections.
 2. `NOTIFY_EXEC` MUST extract PID and `audit_token_t` from **`message.event.exec.target.pointee.audit_token`** (representing post-exec state after `execve()`) rather than `message.process.audit_token`. This ensures the Darwin XNU incremented `pidversion` matches and prevents false PID recycling aborts.
 3. Every POSIX signal invocation (`SIGSTOP`, `SIGCONT`, `SIGKILL`) MUST strictly enforce `guard pid > 0, kill(pid, 0) == 0 else { continue }` to skip dead processes. Before resuming or terminating, compare `audit_token_to_pidversion` via `task_info(TASK_AUDIT_TOKEN)` against the stored audit token to prevent sending signals to a recycled process ID.
-4. **Telephony Interception Exception**: When active incoming call state is signaled, verified Apple telephony binaries (`com.apple.mobilephone`, `com.apple.FaceTime`) MUST bypass `SIGSTOP` suspension, preserving user call-alerting UX while maintaining scene-isolated privacy.
+4. **Lifecycle Teardown (`NOTIFY_EXIT`)**: `ESExtension` MUST monitor `NOTIFY_EXIT` to promptly purge exited PIDs from pending verification structures (`removePendingVerification`) and dispatch `notifyProcessExited(pid:)` to `AppLocker` via XPC, eliminating phantom entries in the authentication queue.
+5. **Batch Authentication Resolution Contract**: Intercepted process approval or denial MUST be resolved strictly via XPC: approved PIDs receive `SIGCONT` to resume normal execution; denied, cancelled, or timed-out PIDs receive `SIGKILL` to ensure immediate process termination.
+6. **Telephony Interception Exception**: When active incoming call state is signaled, verified Apple telephony binaries (`com.apple.mobilephone`, `com.apple.FaceTime`) MUST bypass `SIGSTOP` suspension, preserving user call-alerting UX while maintaining scene-isolated privacy.
 
 ### III. Mutual Cryptographic Handshake & Defense in Depth
-All inter-process communication between `AppLocker` (Client) and `ESExtension` (Root Daemon) via Mach Service (`com.TranPhuong319.AppLocker.xpc`) MUST enforce bidirectional cryptographic mutual authentication:
+All inter-process communication between `AppLocker` (Client) and `ESExtension` (Root Daemon) via Mach Service (`endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc`) MUST enforce bidirectional cryptographic mutual authentication:
 1. **Dynamic Caller Validation**: `ESExtension` MUST extract caller audit tokens directly from the kernel to verify executable paths and compute dynamic CDHash matching on-disk binaries before trusting incoming connections.
 2. **ECDSA P-256 Nonce Exchange**: Connection authentication MUST require nonces and signatures exchanged and verified via `CryptoKit` (`P256.Signing`). Unauthenticated commands MUST be rejected immediately. Legacy C-style `SecKey` / `Security` framework APIs are prohibited.
-3. **Tamper Resistance**: System Extension tampering monitors (`ESTamper`) MUST intercept and deny unauthorized termination signals (`AUTH_SIGNAL`) and unauthorized configuration or binary modifications (`AUTH_FILE`).
+3. **Tamper Resistance (`ESTamper`)**: System Extension tampering monitors MUST intercept and deny unauthorized termination signals (`AUTH_SIGNAL`) targeting `AppLocker` or `ESExtension`, and deny unauthorized writes, truncations, or modifications to binary assets and configuration plists on disk (`AUTH_FILE`).
+4. **Mach Service Concurrency**: Active XPC connection dictionaries and listener instances MUST be guarded exclusively using `OSAllocatedUnfairLock` to ensure lock safety across high-frequency kernel dispatch queues.
 
 ### IV. Thread Isolation, Swift 6 Strict Concurrency & Zero Unsafe References
 The entire project MUST strictly compile under **Swift 6 Mode** with full data-race safety enforcement:
@@ -41,9 +46,9 @@ The entire project MUST strictly compile under **Swift 6 Mode** with full data-r
 
 ### V. Clean Architecture, Swift API Design Guidelines & Fluent English Phrasing
 The codebase is strictly separated into three isolated layers with unified controller lifecycle patterns and standardized Swift API design:
-1. **UI & Coordinator Layer (`AppLocker`)**: Handles user interactions, Menu Bar status item, local biometric/passcode prompts (`LocalAuthentication`), settings, and Sparkle updates. All primary window controllers (`AppListWindowController`, `SettingsWindowController`, `AboutWindowController`, `BatchAuthWindowController`) MUST follow the **Persistent Singleton Pattern (`static let shared`)** with pre-warmed hosting layers for instant 0ms presentation.
+1. **UI & Coordinator Layer (`AppLocker`)**: Handles user interactions, Menu Bar status item, local biometric/passcode prompts (`LocalAuthentication`), settings, batch authentication management (`BatchAuthView`), and Sparkle updates. All primary window controllers (`AppListWindowController`, `SettingsWindowController`, `AboutWindowController`, `BatchAuthWindowController`) MUST follow the **Persistent Singleton Pattern (`static let shared`)** with pre-warmed hosting layers for instant 0ms presentation.
 2. **Privileged System Extension (`ESExtension`)**: Operates as a root daemon handling raw Endpoint Security C callbacks, POSIX signal dispatching, and process freezing via instance-level handlers managed by `ESModularClients`.
-3. **Shared Contracts & Models (`Shared`)**: Contains lightweight Codable configuration models (`LockedAppConfig`), strict `@objc` XPC interface protocols (`ESAppProtocol`, `ESXPCProtocol`), and stateless security utilities (`KeychainHelper`, `CDHashHelper`). Overloading optional `@objc` protocol methods with varying parameter counts is prohibited.
+3. **Shared Contracts & Models (`Shared`)**: Contains lightweight Codable configuration models (`LockedAppConfig`), strict `@objc` XPC interface protocols (`ESAppProtocol`, `ESXPCProtocol`), stateless security utilities (`KeychainHelper`, `CDHashHelper`), and search utilities (`FuzzySearch`). Overloading optional `@objc` protocol methods with varying parameter counts is prohibited.
 4. **Fluent API & Phrasing**: Code must read like grammatical, natural English prose at the call site. Mutating functions MUST use imperative verbs (e.g. `lockSelectedApps()`); pure getters MUST use noun phrases without `get` prefix (e.g. `cdHash(for:)`); action selectors (`@objc func`) MUST name the user intent rather than UI widgets.
 
 ### VI. Native macOS Liquid Glass & Human Interface Standards
@@ -58,7 +63,7 @@ Every modification MUST pass strict quality and resilience gates:
 1. **SwiftLint Compliance**: Zero errors, zero warnings (`swiftlint lint`). Cyclomatic complexity $\le 10$, function length $< 50$ lines, line length $\le 120$ characters.
 2. **Unified Logging**: 100% of telemetry and diagnostic messages MUST go through `Logfile` (`os.Logger`). Direct calls to `print()` or `NSLog()` are strictly prohibited.
 3. **Zero Unlogged `try?`**: Never use unlogged `try?` on critical paths (authentication, Keychain, CDHash, I/O). Use strongly typed `LocalizedError` enums.
-4. **Watchdog & Fail-Safe**: ESExtension MUST maintain an internal timeout watchdog to prevent permanent system freezes if the Main App is unresponsive. On app termination, pending queues MUST be flushed gracefully.
+4. **Watchdog & Fail-Safe (Guardian Watchdog)**: `ESExtension` MUST maintain an internal timeout watchdog to prevent permanent system freezes if the Main App is unresponsive. When an unexpected termination of the Main App is detected (`exit.stat != 0` and shutdown was not cleanly authorized), `ESExtension` MUST trigger a 10-second Guardian recovery watchdog to verify recovery or kickstart the agent via `AppLauncherUtils`. On authorized app termination, pending queues MUST be flushed gracefully.
 5. **Strict Resource Teardown**: Observers (`NotificationCenter`), Spotlight queries (`NSMetadataQuery`), timers, and Carbon event handlers MUST be explicitly dismantled in `deinit`.
 6. **App Icon Caching**: App icons MUST be retrieved via `AppIconProvider.shared.icon(forPath:size:)` using in-memory `NSCache` to avoid redundant disk reads.
 7. **Backward Compatibility**: Refactoring or new features MUST NOT break existing protection rules, IPC contracts, or persistent configuration schemas.
@@ -108,4 +113,4 @@ This Constitution serves as the definitive, supreme technical law for the AppLoc
 - **Amendments**: Modifying this Constitution requires updating `.specify/memory/constitution.md`, bumping the version according to Semantic Versioning, updating the Sync Impact Report, and securing maintainer approval.
 - **Enforcement**: Automated tooling, linting, and agent planning workflows MUST validate compliance with these principles before code execution.
 
-**Version**: 1.4.0 | **Ratified**: 2026-08-21 | **Last Amended**: 2026-09-05
+**Version**: 1.5.0 | **Ratified**: 2026-08-21 | **Last Amended**: 2026-10-24

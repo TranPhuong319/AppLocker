@@ -1,7 +1,7 @@
 # Kiến Trúc Hiện Tại Của AppLocker (Existing Architecture)
 
 ## 1. Tổng Quan Hệ Thống (System Overview)
-**AppLocker** là ứng dụng bảo mật chuyên biệt trên macOS (yêu cầu macOS 13+ Ventura trở lên), cung cấp cơ chế khóa và xác thực sinh trắc học (Touch ID) hoặc mật khẩu hệ thống trước khi cho phép các ứng dụng được chỉ định khởi chạy.
+**AppLocker** là ứng dụng bảo mật chuyên biệt trên macOS (yêu cầu macOS 14+ Sonoma trở lên), cung cấp cơ chế khóa và xác thực sinh trắc học (Touch ID) hoặc mật khẩu hệ thống trước khi cho phép các ứng dụng được chỉ định khởi chạy.
 
 Dự án được chia thành 3 cấu phần cốt lõi:
 1. **`AppLocker` (Main Application)**: Ứng dụng GUI người dùng (SwiftUI kết hợp AppKit), chạy ở không gian người dùng (User Space), quản lý danh sách ứng dụng, cấu hình, xử lý xác thực qua `LocalAuthentication`, giao diện Menu Bar và quản lý cửa sổ Batch Auth.
@@ -32,14 +32,14 @@ Dự án được chia thành 3 cấu phần cốt lõi:
   - `ESAuthorizer` (`AUTH_EXEC`, `NOTIFY_EXEC`, `NOTIFY_EXIT`):
     - `AUTH_EXEC`: Cho phép tạo tiến trình để kernel cấp phát PID hợp lệ (`ES_AUTH_RESULT_ALLOW`).
     - `NOTIFY_EXEC`: Lấy PID thật (> 0) và CDHash của tiến trình đích, kiểm tra danh sách khóa, lập tức phát tín hiệu POSIX `kill(targetPid, SIGSTOP)` để đóng băng tiến trình, sau đó gửi XPC notification tới `AppLocker`.
-    - `NOTIFY_EXIT`: Dọn dẹp trạng thái và hàng đợi khi tiến trình kết thúc.
+    - `NOTIFY_EXIT`: Dọn dẹp trạng thái và hàng đợi xác thực (`removePendingVerification`), phát XPC `notifyProcessExited` về AppLocker; đồng thời giám sát sinh tồn của Main App (kích hoạt Guardian Watchdog 10s tự động phục hồi nếu Main App gặp sự cố ngoài ý muốn).
   - `ESTamper` (`AUTH_SIGNAL`, `AUTH_FILE`):
     - Chống can thiệp: Ngăn chặn gửi `SIGKILL`/`SIGSTOP` trái phép vào `AppLocker` hoặc `ESExtension`.
     - Bảo vệ file cấu hình và binary trên đĩa không bị chỉnh sửa khi chưa được cấp quyền.
 - **Quy tắc An Toàn Tín Hiệu POSIX**:
   - Tuyệt đối không gọi `kill(0, signal)` để tránh làm gián đoạn nhóm tiến trình hoặc kết nối XPC. Luôn kiểm tra `guard pid > 0`.
 - **Giao Tiếp Mach Service / XPC Listener (`ESMachListener`)**:
-  - Khởi tạo Mach Service `com.TranPhuong319.AppLocker.xpc`.
+  - Khởi tạo Mach Service `endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc`.
   - Quản lý danh sách kết nối hoạt động với khóa đồng bộ `OSAllocatedUnfairLock`.
 
 ### 2.3. Lớp Bảo Mật & Xác Thực Hai Chiều (Security & Handshake)
