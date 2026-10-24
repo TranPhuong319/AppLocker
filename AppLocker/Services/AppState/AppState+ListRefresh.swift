@@ -60,8 +60,6 @@ extension AppState {
         self.unlockableApps = unlockable
         self.filteredLockedApps = lockedAppsList.filter(matching: self.searchTextLockApps)
         self.filteredUnlockableApps = unlockable.filter(matching: self.searchTextUnlockableApps)
-
-        prefetchUnlockableIcons(apps: unlockable)
     }
 
     private func migrateRenamedApps(allApps: [InstalledApp]) -> Bool {
@@ -102,13 +100,5 @@ extension AppState {
             source: source,
             originalName: originalName
         )
-    }
-
-    private func prefetchUnlockableIcons(apps: [InstalledApp]) {
-        Task(priority: .low) {
-            for app in apps {
-                _ = AppIconProvider.shared.icon(for: app.path, size: 32)
-            }
-        }
     }
 }

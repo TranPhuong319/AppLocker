@@ -15,8 +15,8 @@ final class AppIconProvider {
     private let cache = NSCache<NSString, NSImage>()
 
     private init() {
-        cache.countLimit = 500
-        cache.totalCostLimit = 50 * 1024 * 1024
+        cache.countLimit = 100
+        cache.totalCostLimit = 10 * 1024 * 1024
     }
 
     func cachedIcon(for path: String, size: CGFloat = 32) -> NSImage? {
@@ -37,6 +37,7 @@ final class AppIconProvider {
         let rawIcon: NSImage
         if fileExists {
             rawIcon = NSWorkspace.shared.icon(forFile: appBundlePath)
+            rawIcon.size = NSSize(width: 64, height: 64)
         } else {
             let symbolConfig = NSImage.SymbolConfiguration(pointSize: size, weight: .regular)
                 .applying(.init(hierarchicalColor: .secondaryLabelColor))
@@ -51,7 +52,8 @@ final class AppIconProvider {
         }
 
         if fileExists {
-            let cost = Int(size * size * 4 * 4)
+            let pixelSize = min(Int(size * 2.0), 64)
+            let cost = pixelSize * pixelSize * 4
             cache.setObject(rasterized, forKey: key, cost: cost)
         }
         return rasterized
@@ -65,9 +67,9 @@ final class AppIconProvider {
     }
 
     private func rasterize(image: NSImage, targetSize: CGFloat) -> NSImage {
-        let scale: CGFloat = 2.0
-        let pixelWidth = Int(targetSize * scale)
-        let pixelHeight = Int(targetSize * scale)
+        let pixelSize = min(Int(targetSize * 2.0), 64)
+        let pixelWidth = pixelSize
+        let pixelHeight = pixelSize
 
         guard let bitmapRep = NSBitmapImageRep(
             bitmapDataPlanes: nil,

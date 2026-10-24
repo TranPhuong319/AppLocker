@@ -112,7 +112,7 @@ private extension ContentView {
             } icon: {
                 Image(systemName: "lock.open.trianglebadge.exclamationmark.fill")
                     .foregroundStyle(.orange)
-                    .symbolEffect(.pulse, options: .repeating)
+                    .symbolEffect(.pulse, value: appState.manager.isProtectionDisabled)
             }
         }
         .labelStyle(.iconOnly)
