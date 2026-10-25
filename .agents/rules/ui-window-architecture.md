@@ -6,36 +6,40 @@
   - AppLocker is a first-class macOS citizen, NOT a blown-up iPad app.
   - Must provide comprehensive Menu Bar commands (`CommandMenu`, standard shortcuts like `⌘,` for Settings, `⌘W` for Close, `⌘R` for Refresh), right-click Context Menus (`.contextMenu`), and full keyboard tab-navigation.
 
-- **Strict AppKit Boundary (Window Frame Only)**:
-  - AppKit is strictly forbidden from doing anything except providing a 100% transparent, chrome-bridging window skeleton (`NSWindow`, `NSWindowController`).
-  - **Absolute AppKit Bans**:
-    1. NEVER set `backgroundColor` on `NSWindow` or `NSView` to anything other than `.clear`, and NEVER set `isOpaque = true`.
-    2. NEVER manipulate `CALayer` or view hierarchies directly on `NSHostingView` (`wantsLayer`, `layer.backgroundColor`).
-    3. NEVER intercept window sizing or resizing in AppKit delegates (`windowWillResize`). All frame bounds, min/max dimensions, and aspect ratios must be declared natively in SwiftUI via `.frame(...)`.
-    4. NEVER render static AppKit window titles (`titleVisibility = .hidden`). Window titles belong 100% to SwiftUI (`.navigationTitle(...)`).
-    5. NEVER inject decorative AppKit controls or visual containers (`NSVisualEffectView`, `NSBox`, `NSButton`).
+- **Strict AppKit Boundary & Window Surface Rules**:
+  - AppKit is strictly forbidden from doing anything except providing a clean, chrome-bridging window skeleton (`NSWindow`, `NSWindowController`).
+  - **Window Surface Distinction (Opaque vs. Floating Glass)**:
+    1. *Settings & Document Windows (`fullSizeContentView` + Scrolling)*: MUST set `isOpaque = true` and `backgroundColor = .windowBackgroundColor` (or system canvas). Window Server's native titlebar blur engine **requires an opaque canvas** to calculate blur over scrolling content. Setting `.clear` on scrolling windows destroys the blur shader, causing transparent bleed-through to the desktop/IDE and text collisions.
+    2. *Floating Popups & Auth Dialogs (BatchAuth, Welcome)*: May use `isOpaque = false` and `backgroundColor = .clear` when rendered with pure SwiftUI custom floating material layers.
+  - **SwiftUI NavigationSplitView Toolbar Bridging Mandate**:
+    - **Absolute Ban on `NSWindow(contentViewController:)` for NavigationSplitView**: Initializing `NSWindow(contentViewController: hostingController)` or manually assigning `window.toolbar = NSToolbar(...)` causes AppKit to hijack toolbar ownership, completely suppressing the native sidebar toggle button `[ | ]` (`com.apple.SwiftUI.navigationSplitView.toggleSidebar`).
+    - **Mandatory `contentView` Pattern**: Windows hosting `NavigationSplitView` MUST be initialized via `WindowManager.createWindow(contentView: hostingController.view, configuration: config)` (using `NSWindow(contentRect:styleMask:backing:defer:)`). This allows SwiftUI's AppKit adapter to directly install the native `[ | ]` toggle, `splitViewSeparator`, and bridge toolbar items and `.navigationTitle(...)`.
   - **Mandatory Skeleton Configuration**:
     - `styleMask` MUST include `.fullSizeContentView` so SwiftUI canvas expands across the entire window.
-    - `titlebarAppearsTransparent = true` and `titleVisibility = .hidden`.
+    - `titleVisibility = .visible` for windows utilizing `.navigationTitle(...)` in the toolbar (avoid `.hidden` which forcibly suppresses the title).
+    - `titlebarSeparatorStyle = .none` (MANDATORY: permanently eliminates AppKit's automatic 1px divider line when scrolling, preserving seamless optical continuity between titlebar and content).
     - `isMovableByWindowBackground = false` (dragging strictly isolated to SwiftUI `WindowDragArea`).
     - On `NSHostingController`, ALWAYS enable `sceneBridgingOptions = [.toolbars, .title]` AND `sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]`.
-    - For windows without interactive SwiftUI toolbar buttons (`BatchAuthWindowController`, `WelcomeWindowController`, `AboutWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` at the AppKit level is required to activate macOS unified toolbar frame and large Squircle corner curvature without rendering duplicate centered pill items.
-    - All windows MUST be created via `WindowManager.createWindow` using the transparent skeleton defaults.
+    - For non-interactive windows without SwiftUI toolbars (`BatchAuthWindowController`, `WelcomeWindowController`, `AboutWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` at AppKit level remains valid to force squircle corners without pill items.
+    - All windows MUST be created via `WindowManager.createWindow`.
 
-- **Traffic Light Margin & Inset**:
-  - Always provide top padding (`~14pt`) and leading inset (`54–68pt`) in top window headers to cleanly isolate traffic light buttons (close/minimize/zoom) from clipping window corners or content text.
-
-- **Titlebar Drag Isolation**:
-  - Enforce `isMovableByWindowBackground = false` on `NSWindow` instances.
-  - Wrap top header views in `WindowDragArea` using native `window.performDrag(with:)` so dragging is strictly isolated to the titlebar region.
-
-- **Native Toolbar & Search Expansion**:
-  - ALWAYS use Apple native `.searchable(...)` for toolbar search to ensure macOS automatically expands and collapses the search bar cleanly.
-  - NEVER shove custom text fields or expanding search hierarchies inside `ToolbarItem`, as narrow windows (e.g. width $\le 450\text{pt}$) will trigger AppKit toolbar layout collapse and push items into an overflow menu (`>>`).
+- **Unified Toolbar & NavigationSplitView Architecture**:
+  - *Native Sidebar Toggle*: NEVER lock or disable sidebar collapsing with `SidebarCollapsePreventer`, `canCollapse = false`, or `columnVisibility: .constant(.all)`. Always allow `NavigationSplitView` to natively manage the sidebar toggle button (`[ | ]`), which automatically anchors next to the Traffic Lights in the sidebar column.
+  - *Sidebar Tracking Separator*: Let AppKit natively coordinate the vertical divider between sidebar and detail content across resizes via `NSToolbarSidebarTrackingSeparatorItemIdentifier`.
+  - *Compact Single-Line Titlebar*:
+    - Keep `.navigationTitle(...)` strictly single-line.
+    - NEVER inject `.navigationSubtitle(...)` into the toolbar of settings or management windows. A 2-story subtitle expands toolbar height from compact (~48pt) to ~56–60pt, causing an unaligned, lopsided height mismatch with the 1-story sidebar. Subtitles or section descriptions belong strictly in the content layer (e.g., section headers or body text).
+  - *Pixel-Perfect Vertical Top Alignment (`.padding(.top, -16)` Trick)*:
+    - The first element of the sidebar list and the top edge of the first content card/group in the detail view MUST align at the identical vertical $Y$-coordinate.
+    - Native `Form` containers in `NavigationSplitView` detail columns introduce an intrinsic system top inset (~16pt) below the toolbar. Apply `.padding(.top, -16)` to the detail view (`detailContent.padding(.top, -16)`) to eliminate this awkward offset and achieve seamless baseline alignment with the sidebar navigation.
+  - *No Fake Material Overlays for Toolbars*:
+    - NEVER place a manual `Rectangle().fill(.material)` or `.mask(LinearGradient(...))` as an overlay to simulate a toolbar. In Dark Mode, `Material` has intrinsic luminosity that creates a visible, contrasting gray box at rest and produces an unnatural, blurry color fog when saturated content scrolls underneath.
+    - Rely 100% on native AppKit Window Server titlebar blur achieved via `fullSizeContentView` + `titlebarSeparatorStyle = .none` + native `NSToolbar` over `windowBackgroundColor`.
+  - *Ponytail Navigation Rule*: Do NOT inject `.searchable(...)` into sidebars with $\le 6$ fixed navigation items. Search fields in compact sidebars create visual clutter without providing usability benefits.
 
 - **Scrollable Header Optical Blur vs. Strict Clipping Patterns**:
-  - *Pattern A (Optical Glass Scattering Behind Header)*: For headers with scrollable content passing underneath, overlay the header/toolbar region with `Rectangle().fill(.clear).frame(height: ...).liquidGlassBar().ignoresSafeArea(edges: .top).allowsHitTesting(false)`. This applies macOS 26 native `.glassEffect(in: Rectangle())` to optically scatter and refract content scrolling under the header without interfering with window dragging or button clicks.
-  - *Pattern B (Clean Bound / Zero Collision)*: Use `VStack(spacing: ...) { headerView; ScrollView { ... }.clipped() }` to strictly confine the scrolling area below the header without content peeking into the titlebar or traffic lights.
+  - *Pattern A (Native Titlebar Optical Blur)*: For headers with scrollable content passing underneath, extend the scroll view to the window boundary (`.ignoresSafeArea(edges: .top)`) and configure `window.titlebarSeparatorStyle = .none`. macOS Window Server automatically renders hardware-accelerated optical blur over the scrolling content without line dividers or color bleeding.
+  - *Pattern B (Clean Bound / Zero Collision)*: Use `VStack(spacing: 0) { headerView; ScrollView { ... }.clipped() }` to strictly confine the scrolling area below the header without content peeking into the titlebar or traffic lights.
 
 ---
 

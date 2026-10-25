@@ -26,46 +26,23 @@ final class SettingsNavigator {
     }
 }
 
-// MARK: - Sidebar Collapse Preventer
+// MARK: - Native Window Configurator
 
-struct SidebarCollapsePreventer: NSViewRepresentable {
+@MainActor
+private struct WindowConfigurator: NSViewRepresentable {
+    let configure: @MainActor (NSWindow) -> Void
+
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
-        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else {
-            return view
-        }
-        DispatchQueue.main.async {
-            guard let splitView = view.enclosingSplitView,
-                  let splitViewController = splitView.delegate as? NSSplitViewController,
-                  let sidebarItem = splitViewController.splitViewItems.first else {
-                return
+        Task { @MainActor in
+            if let window = view.window {
+                configure(window)
             }
-            sidebarItem.canCollapse = false
-            sidebarItem.canCollapseFromWindowResize = false
         }
         return view
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {}
-}
-
-private extension NSView {
-    var enclosingSplitView: NSSplitView? {
-        var current = superview
-        while let view = current {
-            if let split = view as? NSSplitView {
-                return split
-            }
-            current = view.superview
-        }
-        return nil
-    }
-}
-
-private extension View {
-    func preventSidebarCollapse() -> some View {
-        background(SidebarCollapsePreventer())
-    }
 }
 
 // MARK: - Main Settings View
@@ -95,15 +72,16 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationSplitView(columnVisibility: .constant(.all)) {
+        NavigationSplitView {
             List(SettingsTab.allCases, id: \.self, selection: $navigator.selectedTab) { tab in
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     Label {
                         Text(tab.displayName)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 13, weight: tab == navigator.selectedTab ? .medium : .regular))
                     } icon: {
                         Image(systemName: tab.iconName)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(tab == navigator.selectedTab ? Color.accentColor : .secondary)
+                            .frame(width: 20)
                     }
 
                     if tab == .security {
@@ -115,19 +93,18 @@ struct SettingsView: View {
                         .help(isSecurityUnlocked ? "Lock security settings" : "Unlock security settings")
                     }
                 }
+                .padding(.vertical, 2)
                 .tag(tab)
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 150, ideal: 150, max: 150)
-            .preventSidebarCollapse()
+            .navigationSplitViewColumnWidth(min: 170, ideal: 170, max: 240)
         } detail: {
             detailContent(for: navigator.selectedTab)
                 .padding(.top, -16)
                 .frame(minWidth: 440, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(.windowBackground)
                 .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {
-                    ToolbarItem(placement: .navigation) {
+                    ToolbarItemGroup(placement: .navigation) {
                         ControlGroup {
                             Button(action: goBack) {
                                 Image(systemName: "chevron.left")
@@ -150,6 +127,11 @@ struct SettingsView: View {
             minHeight: WindowLayout.settingsMinSize.height,
             maxHeight: .infinity
         )
+        .background(
+            WindowConfigurator { window in
+                window.titlebarSeparatorStyle = .none
+            }
+        )
         .onChange(of: navigator.selectedTab) { _, newTab in
             handleTabChange(to: newTab)
         }
@@ -162,6 +144,19 @@ struct SettingsView: View {
             }
         } else if navigator.selectedTab != .security {
             navigator.selectedTab = .security
+        } else {
+            Task {
+                do {
+                    let success = try await AuthenticationManager.authenticate(
+                        reason: String(localized: "unlock security settings")
+                    )
+                    if success {
+                        withAnimation(.snappy(duration: 0.3)) {
+                            isSecurityUnlocked = true
+                        }
+                    }
+                } catch {}
+            }
         }
     }
 

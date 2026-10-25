@@ -27,10 +27,13 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         config.minSize = WindowLayout.settingsMinSize
         config.maxSize = nil
         config.autosaveName = "SettingsWindow"
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
+        config.titlebarAppearsTransparent = false
+        config.titlebarSeparatorStyle = .none
+        config.titleVisibility = .visible
 
-        let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        let toolbar = NSToolbar(identifier: "SettingsToolbar")
-        window.toolbar = toolbar
+        let window = WindowManager.createWindow(contentView: hostingController.view, configuration: config)
 
         super.init(window: window)
         window.delegate = self
