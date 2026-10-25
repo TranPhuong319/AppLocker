@@ -50,9 +50,11 @@ Project rules and architecture guidelines are organized into domain-specific mod
    - Apple Delight micro-effects: "Delight by Default" mandate (chủ động thêm subtle effects ở bất kỳ nơi nào có thể); magic symbol replacements, directional numeric transitions (`.numericText(value:)`), discrete action feedback (bounce/rotate/pulse).
 
 7. **[macOS Window Architecture & Platform Integrity](rules/ui-window-architecture.md)**:
-   - 100% transparent AppKit window skeleton & SwiftUI UI ownership (no opaque backgrounds, no CALayer hacks).
-   - Traffic light insets (`~14pt` top, `54–68pt` leading), titlebar drag isolation (`WindowDragArea`).
-   - Native `.searchable` toolbar integration; optical glass scattering vs. strict clipping scroll patterns.
+   - Window surface distinction: Opaque system canvas (`.windowBackgroundColor`) for scrolling/settings windows (enables Window Server blur); transparent skeleton for floating dialogs.
+   - Mandatory `contentView = hostingController.view` via `WindowManager.createWindow(contentView:)` (ban on `NSWindow(contentViewController:)` for NavigationSplitView) to preserve native `[ | ]` sidebar toggle.
+   - Mandatory `titlebarSeparatorStyle = .none` to permanently eliminate the 1px divider when scrolling.
+   - Native Window Server titlebar blur over scrolling content: MUST enforce `titlebarAppearsTransparent = false` (true forcibly disables Window Server blur shader). Zero artificial SwiftUI `.material` overlays.
+   - Unified Toolbar & NavigationSplitView baseline synchronization: Compact single-line titlebar mandate; `.padding(.top, -16)` offset trick to vertically sync detail content baseline with sidebar navigation rows; native `[ | ]` sidebar toggle without disabling collapse.
    - Modern UI state management (`@Observable` macro over Combine/ObservableObject).
 
 8. **[XPC Resilience & IPC Lifecycle](rules/xpc-and-security.md)**:
