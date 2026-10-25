@@ -22,6 +22,7 @@ extension ESManager {
 
         cacheMainAppPID(from: conn)
         flushPendingNotifications(to: conn, uid: uid)
+        reNotifyPendingVerificationProcesses(to: conn, uid: uid)
 
         Logfile.esXPC.debug(
             """

@@ -12,9 +12,13 @@ import os
 extension ESManager {
     // MARK: - Pending Verification PID & Path Management
 
-    func markPendingVerification(pid: pid_t, token: audit_token_t) {
+    func markPendingVerification(pid: pid_t, token: audit_token_t, notification: BlockedNotification) {
         pendingPIDLock.withLock {
-            pendingVerificationProcesses[pid] = (token: token, registeredAt: ContinuousClock.now)
+            pendingVerificationProcesses[pid] = PendingProcessRecord(
+                token: token,
+                notification: notification,
+                registeredAt: ContinuousClock.now
+            )
         }
     }
 
@@ -206,5 +210,55 @@ extension ESManager {
             processedCount += 1
         }
         return processedCount
+    }
+
+    // MARK: - Fail-Closed Recovery on Main App Disconnect
+
+    func handleMainAppDisconnect() {
+        let hasPending = pendingPIDLock.withLock { () -> Bool in
+            guard !self.pendingVerificationProcesses.isEmpty else { return false }
+            // Gia hạn lại timer để Watchdog không kill khi AppLocker đang khởi động lại
+            let now = ContinuousClock.now
+            for pid in self.pendingVerificationProcesses.keys {
+                self.pendingVerificationProcesses[pid]?.registeredAt = now
+            }
+            return true
+        }
+
+        if hasPending {
+            let userUID = stateLock.withLock { activeUserUID } ?? getuid()
+            Logfile.endpointSecurity.warning(
+                """
+                [ESManager] AppLocker disconnected with pending processes! \
+                Preserving Fail-Closed queue & kickstarting agent for UID: \(userUID, privacy: .public)...
+                """
+            )
+            AppLauncherUtils.forceEnableAndRestartAgent(for: userUID)
+        }
+    }
+
+    func reNotifyPendingVerificationProcesses(to conn: NSXPCConnection, uid: uid_t) {
+        let pendingRecords = pendingPIDLock.withLock { () -> [BlockedNotification] in
+            self.pendingVerificationProcesses.values
+                .filter { $0.notification.uid == uid }
+                .map { $0.notification }
+        }
+        guard !pendingRecords.isEmpty else { return }
+
+        Logfile.esXPC.notice(
+            """
+            [ESConnections] AppLocker reconnected. Resending \(pendingRecords.count, privacy: .public) \
+            pending processes for UID \(uid, privacy: .public)...
+            """
+        )
+        for item in pendingRecords {
+            self.performNotifyBlockRequest(
+                conn: conn,
+                name: item.name,
+                path: item.path,
+                cdhash: item.cdhash,
+                targetPid: item.targetPid
+            )
+        }
     }
 }
