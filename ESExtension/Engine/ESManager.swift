@@ -26,7 +26,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     var configMonitorSources: [String: DispatchSourceFileSystemObject] = [:]
     var configDebounceTimer: DispatchSourceTimer?
 
-    struct BlockedNotification {
+    struct BlockedNotification: Sendable {
         let name: String
         let path: String
         let cdhash: String
@@ -36,9 +36,15 @@ final class ESManager: NSObject, @unchecked Sendable {
         let targetPid: pid_t
     }
 
+    struct PendingProcessRecord: Sendable {
+        let token: audit_token_t
+        let notification: BlockedNotification
+        var registeredAt: ContinuousClock.Instant
+    }
+
     var pendingNotifications: [BlockedNotification] = []
     let pendingPIDLock = OSAllocatedUnfairLock()
-    var pendingVerificationProcesses: [pid_t: (token: audit_token_t, registeredAt: ContinuousClock.Instant)] = [:]
+    var pendingVerificationProcesses: [pid_t: PendingProcessRecord] = [:]
 
     struct XPCConn: @unchecked Sendable, Equatable {
         let connection: NSXPCConnection

@@ -39,9 +39,7 @@ extension ESManager {
                 return
             }
 
-            let isAuthorizedSender = processIDLock.withLock {
-                senderPid == authenticatedMainAppPID || senderPid == getpid()
-            }
+            let isAuthorizedSender = (senderPid == getpid())
 
             if !isAuthorizedSender {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)

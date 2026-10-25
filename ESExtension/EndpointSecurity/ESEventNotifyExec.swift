@@ -124,8 +124,10 @@ extension ESManager {
             return
         }
 
+        guard kill(targetPid, 0) == 0 else { return }
+
         // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
-        markPendingVerification(pid: targetPid, token: token)
+        markPendingVerification(pid: targetPid, token: token, notification: notification)
         let result = kill(targetPid, SIGSTOP)
         let version = audit_token_to_pidversion(token)
         Logfile.endpointSecurity.debug(
