@@ -19,7 +19,7 @@
     - `titleVisibility = .visible` for windows utilizing `.navigationTitle(...)` in the toolbar (avoid `.hidden` which forcibly suppresses the title).
     - `titlebarSeparatorStyle = .none` (MANDATORY: permanently eliminates AppKit's automatic 1px divider line when scrolling, preserving seamless optical continuity between titlebar and content).
     - `isMovableByWindowBackground = false` (dragging strictly isolated to SwiftUI `WindowDragArea`).
-    - On `NSHostingController`, ALWAYS enable `sceneBridgingOptions = [.toolbars, .title]` AND `sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]`.
+    - On `NSHostingController`, ALWAYS enable `sceneBridgingOptions = [.toolbars, .title]`. For two-column resizable windows (`NavigationSplitView`), leave `sizingOptions = []` and enforce limits strictly via `window.minSize` and `windowWillResize(_:to:)` to prevent `NSHostingController` from overriding `window.minSize`.
     - For non-interactive windows without SwiftUI toolbars (`BatchAuthWindowController`, `WelcomeWindowController`, `AboutWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` at AppKit level remains valid to force squircle corners without pill items.
     - All windows MUST be created via `WindowManager.createWindow`.
 
