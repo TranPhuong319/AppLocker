@@ -60,6 +60,61 @@ extension AppState {
         self.unlockableApps = unlockable
         self.filteredLockedApps = lockedAppsList.filter(matching: self.searchTextLockApps)
         self.filteredUnlockableApps = unlockable.filter(matching: self.searchTextUnlockableApps)
+        self.verifyAndHealLockedCDHashes()
+    }
+
+    func verifyAndHealLockedCDHashes() {
+        cdhashScanTask?.cancel()
+        let currentLocked = manager.lockedApps
+        guard !currentLocked.isEmpty else { return }
+
+        cdhashScanTask = Task.detached(priority: .utility) { [weak self] in
+            guard let self else { return }
+            var updatedHashes: [String: String] = [:]
+
+            for (path, config) in currentLocked {
+                guard !Task.isCancelled else { return }
+                if let newHash = self.detectStaleCDHash(for: path, config: config) {
+                    updatedHashes[path] = newHash
+                }
+            }
+
+            guard !updatedHashes.isEmpty, !Task.isCancelled else { return }
+            await self.applyHealedCDHashes(updatedHashes)
+        }
+    }
+
+    nonisolated private func detectStaleCDHash(for path: String, config: LockedAppConfig) -> String? {
+        guard FileManager.default.fileExists(atPath: path) else { return nil }
+
+        let bundle = Bundle(url: URL(fileURLWithPath: path))
+        let execPath = bundle?.executablePath ?? path
+
+        guard let currentHash = cdHash(for: execPath) ?? cdHash(for: path) else { return nil }
+        let cleanCurrent = currentHash.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let cleanConfig = config.cdhash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+        return cleanCurrent != cleanConfig ? cleanCurrent : nil
+    }
+
+    private func applyHealedCDHashes(_ updatedHashes: [String: String]) {
+        var hasChanged = false
+        for (path, newHash) in updatedHashes {
+            if let existing = manager.lockedApps[path],
+               existing.cdhash?.lowercased() != newHash {
+                Logfile.policy.notice(
+                    """
+                    [LockES] Self-healing CDHash for \(existing.name ?? path, privacy: .public): \
+                    \(existing.cdhash ?? "nil", privacy: .public) -> \(newHash, privacy: .public)
+                    """
+                )
+                manager.lockedApps[path]?.cdhash = newHash
+                hasChanged = true
+            }
+        }
+        if hasChanged {
+            manager.save()
+        }
     }
 
     private func migrateRenamedApps(allApps: [InstalledApp]) -> Bool {

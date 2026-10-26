@@ -135,6 +135,9 @@ extension XPCServer {
             Rejected: \(rejectedPIDs, privacy: .public)
             """
         )
+        for app in batchApps where app.isSelected && approvedPIDs.contains(app.pid) {
+            AppState.shared.manager.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
+        }
         ESXPCClient.shared.processPendingApps(
             approvedPIDs: approvedPIDs,
             rejectedPIDs: rejectedPIDs

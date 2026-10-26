@@ -32,6 +32,12 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     @ObservationIgnored
     var pendingMissingCheckTask: Task<Void, Never>?
     @ObservationIgnored
+    var cdhashScanTask: Task<Void, Never>?
+    @ObservationIgnored
+    var cdhashPeriodicTask: Task<Void, Never>?
+    @ObservationIgnored
+    var directoryWatcherDebounceTask: Task<Void, Never>?
+    @ObservationIgnored
     var directoryWatcherSource: DispatchSourceFileSystemObject?
 
     var manager: LockES
@@ -91,14 +97,29 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             setupSpotlightQuery()
             startApplicationsWatcher()
             setupApplicationLifecycleObservers()
+            setupPeriodicCDHashScan()
             refreshAppLists()
         }
     }
 
     deinit {
+        cdhashScanTask?.cancel()
+        cdhashPeriodicTask?.cancel()
+        directoryWatcherDebounceTask?.cancel()
         pendingMissingCheckTask?.cancel()
         directoryWatcherSource?.cancel()
         NotificationCenter.default.removeObserver(self)
+    }
+
+    private func setupPeriodicCDHashScan() {
+        cdhashPeriodicTask?.cancel()
+        cdhashPeriodicTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1800))
+                guard !Task.isCancelled, let self = self else { break }
+                self.verifyAndHealLockedCDHashes()
+            }
+        }
     }
 
     private func setupApplicationLifecycleObservers() {
