@@ -32,9 +32,9 @@
   - *Compact Single-Line Titlebar*:
     - Keep `.navigationTitle(...)` strictly single-line.
     - NEVER inject `.navigationSubtitle(...)` into the toolbar of settings or management windows. A 2-story subtitle expands toolbar height from compact (~48pt) to ~56–60pt, causing an unaligned, lopsided height mismatch with the 1-story sidebar. Subtitles or section descriptions belong strictly in the content layer (e.g., section headers or body text).
-  - *Pixel-Perfect Vertical Top Alignment (`.padding(.top, -16)` Trick)*:
-    - The first element of the sidebar list and the top edge of the first content card/group in the detail view MUST align at the identical vertical $Y$-coordinate.
-    - Native `Form` containers in `NavigationSplitView` detail columns introduce an intrinsic system top inset (~16pt) below the toolbar. Apply `.padding(.top, -16)` to the detail view (`detailContent.padding(.top, -16)`) to eliminate this awkward offset and achieve seamless baseline alignment with the sidebar navigation.
+  - *Vertical Top Alignment in Detail Columns*:
+    - The first element of the sidebar and the top edge of the detail view content should visually align.
+    - When native `Form` containers in `NavigationSplitView` detail columns introduce an unwanted system top inset (~16pt), `.padding(.top, -16)` may be applied to offset it. Do not apply negative padding unconditionally if content uses standard `ScrollView` or custom stacks where no default inset exists.
   - *No Fake Material Overlays for Toolbars*:
     - NEVER place a manual `Rectangle().fill(.material)` or `.mask(LinearGradient(...))` as an overlay to simulate a toolbar. In Dark Mode, `Material` has intrinsic luminosity that creates a visible, contrasting gray box at rest and produces an unnatural, blurry color fog when saturated content scrolls underneath.
     - Rely 100% on native AppKit Window Server titlebar blur achieved via `fullSizeContentView` + `titlebarSeparatorStyle = .none` + native `NSToolbar` over `windowBackgroundColor`.

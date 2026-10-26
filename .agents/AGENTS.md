@@ -2,71 +2,24 @@
 
 ## Operational Safety & Rule Governance
 
-- **Rule Size Ceiling ($\le 12,000$ chars/bytes)**: Every rule file in `.agents/rules/` and `AGENTS.md` must stay strictly under 12,000 characters/bytes. Decompose any rule approaching this limit into focused domain sub-modules.
-- **On-Demand Rule Loading**: When executing a task, identify its specific domain and ONLY load the corresponding rule file from [`.agents/rules/`](rules/). NEVER load all rule files at once.
+- **Rule Size Ceiling ($\le 12,000$ chars/bytes)**: Every rule file in `.agents/rules/` and `AGENTS.md` must stay strictly under 12,000 characters/bytes.
+- **On-Demand Rule Loading**: Identify the active task's domain and load ONLY the corresponding rule file from [`.agents/rules/`](rules/). Do NOT load all rule files into context at once.
 - **No Unsolicited Commits/Pushes**: NEVER run `git commit`, `git push`, or alter repository git state unless explicitly requested by the user.
 
 ---
 
-## Domain-Specific Architecture & Rule Modules
+## Domain Rule Routing
 
-Project rules and architecture guidelines are organized into domain-specific modules in [`.agents/rules/`](rules/):
+| Domain | File | Primary Scope |
+|---|---|---|
+| **Clean Architecture & APIs** | [`rules/architecture.md`](rules/architecture.md) | YAGNI, 3-tier API precedence, CryptoKit, NSCache, no Obj-C KVC/reflection. |
+| **Endpoint Security & Kernel** | [`rules/endpoint-security.md`](rules/endpoint-security.md) | `AUTH_EXEC` PID=0 guard, `NOTIFY_EXEC` post-exec target token, PID recycling defense, watchdog. |
+| **Unified Logging** | [`rules/logging.md`](rules/logging.md) | `os.Logger` (`Logfile`), semantic levels (`.debug` to `.fault`), `privacy: .public` on IDs, zero `print()`. |
+| **Concurrency & Actors** | [`rules/concurrency.md`](rules/concurrency.md) | `@MainActor` UI/XPC lifecycle, background queues for heavy I/O, Swift 6 safety. |
+| **Swift Quality & Style** | [`rules/swift-quality.md`](rules/swift-quality.md) | SwiftLint compliance, fluent API naming, strongly-typed errors, `[weak self]` in closures. |
+| **UI Design & Materials** | [`rules/ui-design.md`](rules/ui-design.md) | Liquid Glass vs Material, semantic colors, deliberate SF symbol state transitions (`.replace.magic`). |
+| **macOS Window Architecture** | [`rules/ui-window-architecture.md`](rules/ui-window-architecture.md) | `WindowManager.createWindow`, opaque canvas + Window Server titlebar blur, fluid NavigationSplitView detail. |
+| **XPC Resilience & IPC** | [`rules/xpc-and-security.md`](rules/xpc-and-security.md) | Explicit protocols (no optional overloads), auto-reconnect, Security-Scoped Bookmarks. |
+| **Localization & Language** | [`rules/localization.md`](rules/localization.md) | English base String catalog keys; user communication in Vietnamese with standard English technical terms. |
+| **Git Commit Workflow** | [`rules/git-commits.md`](rules/git-commits.md) | Conventional Commits (`feat`, `fix`, `perf`, `chore`), Sparkle user-facing subjects, dev-facing bodies. |
 
-1. **[Clean Architecture & Platform API](rules/architecture.md)**:
-   - Ponytail (YAGNI), Linus's Law (preserve userspace experience & visual integrity).
-   - No Objective-C runtime reflection (KVC / selectors).
-   - 3-tier API precedence (Public First $\rightarrow$ Public API + Private ID via Bridging Header $\rightarrow$ Strict Private API Ban).
-   - CryptoKit & AppIconProvider caching (`NSCache`).
-   - Swift concurrency over GCD, Combine filter debouncing, resource cleanup in `deinit`.
-
-2. **[Endpoint Security & Low-Level Process Control](rules/endpoint-security.md)**:
-   - `AUTH_EXEC` PID assignment timing (`pid = 0`, never call `kill(0, signal)`).
-   - `NOTIFY_EXEC` pre-exec vs post-exec audit tokens (`pidversion` increment rule).
-   - POSIX liveness & PID recycling defense.
-   - Extension safety valve (watchdog) & graceful termination flush.
-
-3. **[Unified Logging & Observability](rules/logging.md)**:
-   - Apple Unified Logging (`os.Logger`) category hierarchy (`Logfile`).
-   - Semantic log level decision matrix (`.debug`, `.info`, `.notice`, `.warning`, `.error`, `.fault`).
-   - Structured privacy interpolation (`privacy: .public`). Zero `print()` / `NSLog()`.
-
-4. **[Swift Concurrency & Thread Isolation](rules/concurrency.md)**:
-   - Minimize `nonisolated(unsafe)`, prefer instance methods and dependency injection.
-   - `@MainActor` enforcement for UI state models, XPCServer, and window controllers.
-   - Background queue isolation for I/O & cryptography; structured task cancellation tracking.
-
-5. **[Swift Quality, Linting & API Style](rules/swift-quality.md)**:
-   - Zero deprecated API tolerance (macOS 14+); mandatory SwiftLint (0 errors, 0 warnings).
-   - Function complexity ($\le 10$), body length ($\le 50$), parameters ($\le 5$), line length ($\le 120$), file length ($\le 300$, decompose when $\ge 300$).
-   - Fluent English API phrasing, strongly typed errors, `[weak self]` in escaping closures/Tasks.
-
-6. **[Liquid Glass & macOS UI Design](rules/ui-design.md)**:
-   - HIG Materials architecture: Functional Layer (`glassEffect`) vs. Content Layer (`Material`).
-   - Strict content layer glass ban (transient interaction exception only).
-   - Liquid Glass variants: `regular` for text/sidebars; `clear` for media + 35% dimming layer.
-   - Semantic system colors (zero hardcoded hex/RGB), WCAG 4.5:1 contrast, concentric curvature ($r_{\text{in}} = r_{\text{out}} - p$).
-   - Mandatory icon `.accessibilityLabel`, destructive action confirmation safeguards.
-   - **Ưu tiên hiệu ứng Magic Replacement**: Luôn chủ động ưu tiên thêm hiệu ứng chuyển đổi Magic (`.replace.magic(fallback: .downUp.byLayer)`) ở bất kỳ nơi nào có thể khi biểu tượng SF Symbol thay đổi trạng thái (toggle, feedback, copy, update).
-   - Apple Delight micro-effects: "Delight by Default" mandate (chủ động thêm subtle effects ở bất kỳ nơi nào có thể); magic symbol replacements, directional numeric transitions (`.numericText(value:)`), discrete action feedback (bounce/rotate/pulse).
-
-7. **[macOS Window Architecture & Platform Integrity](rules/ui-window-architecture.md)**:
-   - Window surface distinction: Opaque system canvas (`.windowBackgroundColor`) for scrolling/settings windows (enables Window Server blur); transparent skeleton for floating dialogs.
-   - Mandatory `contentView = hostingController.view` via `WindowManager.createWindow(contentView:)` (ban on `NSWindow(contentViewController:)` for NavigationSplitView) to preserve native `[ | ]` sidebar toggle.
-   - Mandatory `titlebarSeparatorStyle = .none` to permanently eliminate the 1px divider when scrolling.
-   - Native Window Server titlebar blur over scrolling content: MUST enforce `titlebarAppearsTransparent = false` (true forcibly disables Window Server blur shader). Zero artificial SwiftUI `.material` overlays.
-   - Unified Toolbar & NavigationSplitView baseline synchronization: Compact single-line titlebar mandate; `.padding(.top, -16)` offset trick to vertically sync detail content baseline with sidebar navigation rows; native `[ | ]` sidebar toggle without disabling collapse; fluid detail column layout without rigid minWidth (prevents jitter and >> toolbar overflow).
-   - Modern UI state management (`@Observable` macro over Combine/ObservableObject).
-
-8. **[XPC Resilience & IPC Lifecycle](rules/xpc-and-security.md)**:
-   - Explicit XPC protocol definitions without optional method overloads.
-   - Auto-reconnect on invalidation, safe proxy error handling.
-   - Persistent Security-Scoped Bookmarks & chunked streamed I/O.
-
-9. **[Localization & Communication Guidelines](rules/localization.md)**:
-   - English base localization keys with static String literals (clean Xcode string catalog extraction).
-   - Primary communication in Vietnamese with standard technical terms in English.
-
-10. **[Git Commit Style & Operational Safety Guidelines](rules/git-commits.md)**:
-    - Absolute ban on unsolicited commits & pushes (`git commit`, `git push` only when requested).
-    - Conventional commit types (`feat`, `fix`, `perf`, `chore`, `refactor`, `ci`, `docs`, `test`).
-    - Subject for users (Sparkle changelog), body for developers.

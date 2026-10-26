@@ -1,106 +1,38 @@
 # Liquid Glass & macOS UI Design Guidelines
 
-## Apple HIG Materials & Liquid Glass Architecture
+## 1. Materials & Layer Architecture
 
-- **Functional Layer (Liquid Glass) vs. Content Layer (Standard Materials)**:
-  - **Floating Functional Layer**: Strictly reserve Liquid Glass for navigation and controls (toolbars, sidebars, tab bars, floating action pills). Liquid Glass floats above the content layer, allowing underlying content to peek and scroll through while maintaining crisp control legibility.
-  - **Strict Content Layer Ban**: NEVER use Liquid Glass in the content layer (e.g., list row backgrounds, content cards, static panel backgrounds). Overusing glass in content creates visual fragmentation, dark-box artifacts, and confusing hierarchy. Use Standard Materials (`Material`, `NSVisualEffectMaterial`) for content-layer structure.
-  - **Transient Interaction Exception**: Controls within the content layer with temporary interactive states (such as active sliders, toggles, or scrubbers) may adopt Liquid Glass styling *only* while actively being manipulated to highlight interactivity.
-  - **Use Liquid Glass Sparingly**: Rely on Apple native components (`NavigationSplitView`, `NavigationStack`, `Form`, `List`, `.toolbar`) to adopt Liquid Glass automatically. Limit custom `.glassEffect` to essential primary functional elements; overusing it distracts from core content.
-
-- **Liquid Glass Variants (Regular vs. Clear)**:
-  - **Regular Variant (Default)**: Automatically blurs and adjusts background luminosity. Mandatory for sidebars, popovers, alerts, dialogs, and components containing text.
-  - **Clear Variant**: Highly translucent; ONLY use for components floating over visually rich media backgrounds (photos, video players).
-  - **Dimming Layer Rule**: When using Clear Liquid Glass over bright content, always add a dark dimming layer with ~35% opacity behind the component to preserve text contrast and legibility (omit only if the background is inherently dark or provided by AVKit).
-
-- **Standard Materials & Vibrancy in Content Layer**:
-  - **Semantic Selection Over Apparent Color**: Choose materials (`ultraThin`, `thin`, `regular`, `thick`) based on semantic purpose and structural depth, NEVER based on temporary apparent color, because system settings (Dark Mode, High Contrast) dynamically change rendering.
-    - *Thicker materials*: Use when high contrast is required for fine text and subtle iconography.
-    - *Thinner materials*: Use to maintain ambient context of background content.
-  - **Mandatory System Vibrancy**: Always use system vibrant colors (`.primary`, `.secondary`, `.tertiary`, `NSColor.labelColor`, etc.) on top of materials. Never use flat static colors that wash out under variable background brightness.
-  - **macOS Blending Mode**: Consciously choose `NSVisualEffectBlendingMode`: `.behindWindow` for desktop-blended chrome/sidebars, and `.withinWindow` for content-layer division within the app canvas.
-
-- **Adopting Liquid Glass Engineering & Layout Rules**:
-  - **`GlassEffectContainer` for Rendering & Morphing**: When combining multiple custom Liquid Glass controls or action pills, ALWAYS group them within `GlassEffectContainer`. This optimizes GPU composition performance and enables fluid geometric morphing between adjacent glass shapes.
-  - **Toolbar Item Hiding Rule (No Empty Glass Pills)**: When hiding an action in a toolbar, toggle the toolbar item itself (`NSToolbarItem.isHidden` in AppKit or conditional `.toolbar` item placement in SwiftUI). NEVER hide only the child view inside the item, as doing so leaves an empty Liquid Glass capsule/pill in the toolbar.
-  - **No Redundant Materials in Popovers & Sheets**: System sheets and popovers natively adopt Liquid Glass and updated corner radii. NEVER inject custom `NSVisualEffectView` or `.background(.ultraThinMaterial)` inside popover/sheet content views, which creates muddy double-layered blurs.
-  - **Concentric Curvature**: Shape radii of buttons, nested pills, and inner containers must align concentrically with the hardware and window boundary radius.
-  - **Section Header Title-Style Capitalization**: Section headers in `List`, `Table`, and `Form` now adopt title-style capitalization natively. NEVER force all-caps strings (`.uppercased()`) in section titles; use standard Title Case strings.
-  - **Icons & Accessibility Over Shared Backgrounds**: In toolbars and button groups that share a Liquid Glass background, prefer iconography over mixed text/icons for clarity, and ALWAYS attach `.accessibilityLabel(...)` to every icon.
-  - **Scroll Edge Protection**: Ensure custom bars overlaying scroll views utilize scroll edge protection (`scrollEdgeEffectStyle(_:for:)` or our Optical Glass Scattering pattern) so text scrolling beneath controls doesn't degrade control contrast.
+- **Functional Layer vs. Content Layer**:
+  - **Floating Functional Layer (`.glassEffect`)**: Strictly reserve Liquid Glass for navigation chrome and floating controls (toolbars, sidebars, floating action pills).
+  - **Content Layer (`Material`)**: Use native standard materials (`Material`, `.ultraThinMaterial`, `NSVisualEffectView`) for cards, panels, and lists. NEVER put Liquid Glass on static content cards or list rows.
+  - **Window Blending Harmony**: On opaque canvas windows (`isOpaque = true`, `windowBackgroundColor`), do NOT use `.behindWindow` blending. Rely on Window Server native titlebar blur. Use `.withinWindow` blending only when dividing internal content layers.
+- **Native Platform First**: Rely on native SwiftUI components (`NavigationSplitView`, `Form`, `List`, `.toolbar`) which adopt system materials automatically.
+- **Sheets & Popovers**: Never inject custom visual effect views or redundant background materials inside native sheets/popovers; system chrome already manages vibrancy.
 
 ---
 
-## Color, Contrast & Semantic Palette
+## 2. Colors, Contrast & Typography
 
-- **Strict Semantic Color Mandate**:
-  - NEVER hardcode hex or static RGB colors (`Color(hex: ...)`, `Color.black`, `Color.white`) for surfaces, controls, borders, or text.
-  - ALWAYS use semantic system colors (`Color.primary`, `Color.secondary`, `Color(nsColor: .windowBackgroundColor)`, `Color(nsColor: .controlBackgroundColor)`, `Color(nsColor: .separatorColor)`) to guarantee flawless adaptation across Light Mode, Dark Mode, and High Contrast.
-- **WCAG Contrast Ratios**:
-  - Maintain a minimum contrast ratio of **4.5:1** for body text and **3:1** for large text, headers, and essential iconography.
-- **Judicious Accent/Tint Usage**:
-  - Use tint/accent color sparingly to signify primary interactivity or selected state. Overusing tint colors across decorative elements dilutes their communicative power and confuses users about what is clickable.
-- **No Color-Only Signifiers**:
-  - NEVER communicate status, errors, or critical state solely through color (e.g. green/red dots). Always pair color with descriptive text, tooltips, or distinct iconography (e.g. checkmark, warning triangle) to support color-blind users.
+- **Semantic System Colors**: NEVER hardcode static colors (`Color.black`, `Color.white`, hex values) for surfaces or text. Always use semantic colors (`Color.primary`, `Color.secondary`, `Color(nsColor: .windowBackgroundColor)`, `Color(nsColor: .separatorColor)`).
+- **Accessible State Signifiers**: Pair colors with clear icons or text (e.g. checkmark, warning triangle); never rely on color alone to indicate error or status.
+- **Dynamic Typography**: Prefer semantic font styles (`.headline`, `.subheadline`, `.body`, `.caption`) over hardcoded point sizes. Avoid defensive `.lineLimit(1)` that clips localized text.
 
 ---
 
-## Typography & Layout Adaptability
+## 3. Interaction, Modals & Safety
 
-- **Semantic Text Styles**:
-  - Prefer semantic styles (`.font(.title)`, `.font(.headline)`, `.font(.body)`, `.font(.caption)`) over hardcoded point sizes (`.font(.system(size: 16))`) to ensure proper optical scaling and accessibility responsiveness.
-- **No Harmful Text Truncation**:
-  - Avoid defensive `.lineLimit(1)` on vital labels, titles, or status messages. Allow multi-line wrapping and vertical expansion so translated strings and large text sizes do not end up clipped with ellipsis (`...`).
-- **Section Header Casing**:
-  - Use standard Title-Style Capitalization for Section headers in `List`, `Table`, and `Form`. Never force `.uppercased()` on headers.
-- **Concentric Curvature Formula**:
-  - Maintain visual continuity by ensuring inner nested corner radii are concentric with outer containers and window borders:
-    $$\text{Radius}_{\text{inner}} = \text{Radius}_{\text{outer}} - \text{Padding}$$
+- **Pointer & Hover**: Provide clear pointer feedback (`.onHover`, `.pointerStyle`) on interactive custom controls.
+- **Destructive Actions**: Use `role: .destructive`, red accent, and mandatory confirmation dialogues (`confirmationDialog` / `alert`) for non-undoable operations.
+- **Self-Contained Modals**: Reserve sheets for atomic tasks (settings, adding items). Always provide explicit dismiss buttons (`Done` / `Cancel`) and discard prompts if modified.
 
 ---
 
-## Interaction, Pointer & Modal Safety
+## 4. Purposeful Delight & SF Symbols
 
-- **Pointer Feedback & Hit Targets**:
-  - Ensure interactive controls provide clear pointer hover states (`.onHover`, `.pointerStyle`) and adequate click bounds.
-  - In touch contexts (or catalyst/touch-friendly elements), maintain a minimum interactive hit target of **$44 \times 44\text{pt}$**, expanding with `.contentShape(Rectangle())` if the visual icon is smaller.
-- **Destructive Action Protection**:
-  - Destructive actions (e.g. deleting items, resetting databases, revoking access) must use `role: .destructive`, red accenting, and a mandatory confirmation alert/dialogue (`confirmationDialog`, `alert`) if non-undoable.
-  - NEVER position a destructive button directly adjacent to the primary positive action without confirmation safeguards.
-- **Modal vs. In-Place Flow**:
-  - Reserve modal sheets for self-contained, atomic tasks (settings, composition, item creation). Do not use sheets for continuous navigation or stack multiple modals.
-  - Sheets must always provide explicit, unequivocal dismiss mechanisms (`Done` or `Cancel`).
-  - Protect unsaved work: if a user attempts to dismiss a sheet with modified state, present a confirmation discard prompt.
-
----
-
-## Accessibility (A11y) & System Settings Alignment
-
-- **Mandatory Accessibility Labels on Icons**:
-  - Every icon-only button (`Image(systemName: ...)`) MUST have an explicit `.accessibilityLabel("Action Name")` and, where appropriate, an `.accessibilityHint(...)`.
-- **System Accessibility Override Compliance**:
-  - Strictly rely on native materials (`.glassEffect`, `Material`, `NSVisualEffectView`) so the OS can automatically convert translucency to high-contrast opaque backgrounds when the user enables **Reduce Transparency** or **Increase Contrast**.
-  - Check `@Environment(\.accessibilityReduceMotion)` before executing decorative physics animations, parallax, or aggressive shape morphing.
-
----
-
-## Apple Delight: Micro-Interactions, SF Symbols & Directional Transitions
-
-- **Proactive Micro-Effects Mandate ("Delight by Default")**:
-  - Always proactively identify and incorporate subtle, delightful micro-effects wherever possible. Never leave the UI visually static or lifeless: every state transition, user action, counter change, or background update should offer organic, tactile feedback.
-- **Ưu tiên hàng đầu cho Magic Replacement & State Morphing**:
-  - LUÔN CHỦ ĐỘNG ƯU TIÊN HÀNG ĐẦU thêm hiệu ứng chuyển đổi Magic (`.replace.magic(fallback: .downUp.byLayer)`) ở bất kỳ nơi nào có thể khi biểu tượng SF Symbol thay đổi trạng thái (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `circle` $\leftrightarrow$ `checkmark.circle.fill`, `doc.on.doc` $\leftrightarrow$ `checkmark`, `square.stack.3d.up` $\leftrightarrow$ `square.stack.3d.up.fill`).
-  - Phải luôn có fallback `.replace.downUp.byLayer` trên macOS 14. Tuyệt đối không hoán đổi icon đột ngột mà không có animation.
-- **Directional Numeric Transitions (`.numericText`)**:
-  - Whenever numbers change (item counts, queue badges, log entry totals, timers):
-    - MUST apply `.contentTransition(.numericText(value: Double(count)))` with `.monospacedDigit()` and `.animation(.snappy(duration: 0.25), value: count)`.
-    - Always pass `value:` so numbers roll up on increase and roll down on decrease.
-- **Tactile Discrete Symbol Effects (Bounce / Rotate / Pulse)**:
-  - Add purpose-driven symbol effects to reinforce user intent and platform vitality:
-    - **Bounce** (`.bounce` / `BounceSymbolEffect.bounce`): Trigger on item additions, selections, queue enqueueing, or blocked execution alerts.
-    - **Rotate** (`.rotate.byLayer` on macOS 15+, fallback `.bounce` on macOS 14): Trigger on refresh/reload/sync actions to signal live scanning.
-    - **Pulse** (`.pulse.byLayer`): Use on security emblems or status badges during indeterminate background work or active monitoring.
-- **Dynamic Menubar Status & Native Restraint**:
-  - Menubar icons must dynamically reflect real-time operational posture (`lock.fill` active, `lock.open.fill` paused, warning badge if extension is down), bounce on intercepted events, and indicate updates (`arrow.down.circle.fill`).
-  - Do NOT manually attach custom icons to system-managed menu items (such as `Settings…` or `Quit`) that modern macOS automatically decorates.
+- **Deliberate State Transitions (Magic Replacement)**:
+  - When an SF Symbol toggles or updates state (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `doc.on.doc` $\leftrightarrow$ `checkmark`), use `.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))`.
+- **Directional Numeric Transitions**:
+  - When dynamic numbers change (counters, queue badges), apply `.contentTransition(.numericText(value: Double(count)))` with `.monospacedDigit()`.
+- **Restraint Over Clutter**:
+  - Add discrete effects (`.bounce`, `.rotate`) only to acknowledge explicit user actions (enqueuing, refreshing). Never apply decorative micro-effects that distract from content or cause continuous CPU/GPU wakeups.
 
