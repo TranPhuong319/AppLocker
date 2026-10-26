@@ -54,7 +54,7 @@ Project rules and architecture guidelines are organized into domain-specific mod
    - Mandatory `contentView = hostingController.view` via `WindowManager.createWindow(contentView:)` (ban on `NSWindow(contentViewController:)` for NavigationSplitView) to preserve native `[ | ]` sidebar toggle.
    - Mandatory `titlebarSeparatorStyle = .none` to permanently eliminate the 1px divider when scrolling.
    - Native Window Server titlebar blur over scrolling content: MUST enforce `titlebarAppearsTransparent = false` (true forcibly disables Window Server blur shader). Zero artificial SwiftUI `.material` overlays.
-   - Unified Toolbar & NavigationSplitView baseline synchronization: Compact single-line titlebar mandate; `.padding(.top, -16)` offset trick to vertically sync detail content baseline with sidebar navigation rows; native `[ | ]` sidebar toggle without disabling collapse.
+   - Unified Toolbar & NavigationSplitView baseline synchronization: Compact single-line titlebar mandate; `.padding(.top, -16)` offset trick to vertically sync detail content baseline with sidebar navigation rows; native `[ | ]` sidebar toggle without disabling collapse; fluid detail column layout without rigid minWidth (prevents jitter and >> toolbar overflow).
    - Modern UI state management (`@Observable` macro over Combine/ObservableObject).
 
 8. **[XPC Resilience & IPC Lifecycle](rules/xpc-and-security.md)**:

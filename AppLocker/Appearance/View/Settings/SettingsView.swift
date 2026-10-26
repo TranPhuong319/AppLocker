@@ -101,7 +101,7 @@ struct SettingsView: View {
         } detail: {
             detailContent(for: navigator.selectedTab)
                 .padding(.top, -16)
-                .frame(minWidth: 440, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {
                     ToolbarItemGroup(placement: .navigation) {
@@ -121,12 +121,6 @@ struct SettingsView: View {
                 }
         }
         .navigationSplitViewStyle(.balanced)
-        .frame(
-            minWidth: WindowLayout.settingsMinSize.width,
-            maxWidth: .infinity,
-            minHeight: WindowLayout.settingsMinSize.height,
-            maxHeight: .infinity
-        )
         .background(
             WindowConfigurator { window in
                 window.titlebarSeparatorStyle = .none
