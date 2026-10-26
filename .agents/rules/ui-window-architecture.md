@@ -24,7 +24,10 @@
     - All windows MUST be created via `WindowManager.createWindow`.
 
 - **Unified Toolbar & NavigationSplitView Architecture**:
-  - *Native Sidebar Toggle*: NEVER lock or disable sidebar collapsing with `SidebarCollapsePreventer`, `canCollapse = false`, or `columnVisibility: .constant(.all)`. Always allow `NavigationSplitView` to natively manage the sidebar toggle button (`[ | ]`), which automatically anchors next to the Traffic Lights in the sidebar column.
+  - *Native Sidebar Toggle & Fluid Detail Layout*:
+    - NEVER lock or disable sidebar collapsing with `SidebarCollapsePreventer`, canCollapse = false, or `columnVisibility: .constant(.all)`. Always allow `NavigationSplitView` to natively manage the sidebar toggle button (`[ | ]`), which automatically anchors next to the Traffic Lights in the sidebar column.
+    - **Zero Rigid Constraints on Detail Columns**: NEVER assign `.frame(minWidth: ...)` / `.frame(minHeight: ...)` to the detail view or wrap `NavigationSplitView` in an outer `.frame(minWidth: ...)`. Placing `minWidth`/`minHeight` on child views causes AppKit's `NSSplitView` translation animation to violently push detail content outside the window frame during slide-in, triggering spurious vertical window height stretching via `NSHostingController` sizing passes, an abrupt layout snap (jitter), and macOS's emergency toolbar overflow chevron (`>>`). Detail views MUST use fluid layout (`.frame(maxWidth: .infinity, maxHeight: .infinity)`).
+    - **Window-Level `minSize` & Toolbar Headroom**: Window minimum dimensions MUST be enforced strictly at the `NSWindow` level (`config.minSize = WindowLayout.settingsMinSize`, minimum $\ge 680\text{pt}$ for two-column settings windows). This mathematically guarantees safe minimum detail width ($\text{Detail minWidth} = \text{Window minWidth} - \text{Sidebar maxWidth}$) without inner constraint collision and provides sufficient toolbar headroom so toolbar items never overflow to trigger `>>`.
   - *Sidebar Tracking Separator*: Let AppKit natively coordinate the vertical divider between sidebar and detail content across resizes via `NSToolbarSidebarTrackingSeparatorItemIdentifier`.
   - *Compact Single-Line Titlebar*:
     - Keep `.navigationTitle(...)` strictly single-line.
