@@ -186,4 +186,19 @@ class LockES {
         if isProtectionDisabled { return false }
         return lockedApps[path] != nil
     }
+
+    func updateCDHashIfNeeded(for path: String, cdhash: String) {
+        guard let config = lockedApps[path] else { return }
+        let cleanHash = cdhash.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !cleanHash.isEmpty, config.cdhash?.lowercased() != cleanHash else { return }
+
+        Logfile.policy.notice(
+            """
+            [LockES] Auto-healing CDHash for \(config.name ?? path, privacy: .public): \
+            \(config.cdhash ?? "nil", privacy: .public) -> \(cleanHash, privacy: .public)
+            """
+        )
+        lockedApps[path]?.cdhash = cleanHash
+        save()
+    }
 }

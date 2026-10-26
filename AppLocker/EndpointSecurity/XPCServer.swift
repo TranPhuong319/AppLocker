@@ -233,6 +233,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
             Logfile.appXPC.notice(
                 "[Auth] Auth OK for \(app.name, privacy: .public) (PID: \(app.pid, privacy: .public))"
             )
+            AppState.shared.manager.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
             ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
         } else {
             if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel {
@@ -267,6 +268,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
         self.isUpgradingToBatch = false
         if success {
             self.pendingApps.removeAll { $0.id == app.id }
+            AppState.shared.manager.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
             ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
         }
         if !self.pendingApps.isEmpty {

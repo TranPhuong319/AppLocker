@@ -225,14 +225,13 @@ extension AppState {
 
         let source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: descriptor,
-            eventMask: [.write, .extend, .rename, .delete],
+            eventMask: [.write, .extend, .rename, .delete, .attrib],
             queue: .main
         )
 
         source.setEventHandler { [weak self] in
             MainActor.assumeIsolated {
-                self?.refreshInstalledApps()
-                self?.refreshAppLists()
+                self?.handleApplicationsDirectoryInterrupt()
             }
         }
 
@@ -242,5 +241,19 @@ extension AppState {
 
         self.directoryWatcherSource = source
         source.resume()
+    }
+
+    func handleApplicationsDirectoryInterrupt() {
+        directoryWatcherDebounceTask?.cancel()
+        directoryWatcherDebounceTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled, let self = self else { return }
+            Logfile.policy.debug(
+                "[AppState] /Applications interrupt received. Refreshing installed apps & healing CDHashes..."
+            )
+            self.refreshInstalledApps()
+            self.refreshAppLists()
+            self.verifyAndHealLockedCDHashes()
+        }
     }
 }
