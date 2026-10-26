@@ -8,9 +8,9 @@
 - **Cyclomatic Complexity**: Keep function cyclomatic complexity $\le 10$. Extract helper methods for complex branching or dispatch logic.
 - **Function Body Length & Parameters**: Keep function bodies under 50 lines and parameters $\le 5$. Group parameters into structs (e.g. `BlockedExecContext`) when exceeding 5 parameters.
 - **Line Length**: Limit lines to $\le 120$ characters. Format function calls, declarations, and log messages across multiple lines or use multiline strings.
-- **File Length & Modular Decomposition**: Files should stay under 300 lines. If any file reaches or exceeds 300 lines ($\ge 300$), proactively propose and perform modular file decomposition by extracting standalone components, views, or helper models into dedicated, single-responsibility files.
-- **Identifier Naming**: All variable and function names MUST be $\ge 3$ characters long. Use `// swiftlint:disable:next identifier_name` strictly when overriding AppKit/macOS private selectors (e.g. `_registerWithIntentsFramework()`).
-- **Trailing Closures**: Do NOT use trailing closure syntax when passing multiple closure arguments (e.g. for `Button(action:label:)`, explicitly pass `label: { ... }`).
+- **File Length & Cohesion**: Prefer cohesive, focused files. Decompose only when a component, view, or helper is independently reusable or when separating distinct responsibilities improves readability. Avoid speculative file fragmentation that creates micro-files for single-use subviews.
+- **Identifier Naming**: Use descriptive names ($\ge 3$ characters), except for standard idiomatic variables in loops or math contexts (`id`, `to`, `at`, `dx`, `dy`, `i`). Use `// swiftlint:disable:next identifier_name` strictly when overriding AppKit/macOS private selectors (e.g. `_registerWithIntentsFramework()`).
+- **Trailing Closures**: Follow standard Swift multiple trailing closure syntax (e.g. `Button { ... } label: { ... }`). Ensure label closures remain clear and readable.
 
 ---
 

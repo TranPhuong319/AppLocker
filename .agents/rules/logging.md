@@ -29,31 +29,11 @@ public enum Logfile {
 | **`.error`** | Operation failures, unexpected exceptions, syscall errors. | File write failure, failed to send SIGKILL/SIGCONT, XPC proxy acquisition failed, extension install failed. |
 | **`.fault`** | Invariant violations, active tampering, critical corruption. | Binary CDHash mismatch between runtime process and disk, safety valve hard deadline exceeded. |
 
-## 3. Step-by-Step Recipe: How to Write Logs for Any Code/Feature
+## 3. Log Formatting Rules
 
-Whenever adding logging to any function, handler, or component, strictly follow these 5 steps:
-
-1. **Step 1: Choose the Matching Logger Domain**:
-   - UI / App Lifecycle / Updater $\rightarrow$ `Logfile.app`
-   - Policy / Config Store / Rules $\rightarrow$ `Logfile.policy`
-   - Main App IPC / XPC Server & Client $\rightarrow$ `Logfile.appXPC`
-   - Main App Keychain & Touch ID $\rightarrow$ `Logfile.security`
-   - Endpoint Security Interception / Watchdog $\rightarrow$ `Logfile.endpointSecurity`
-   - ESExtension IPC / Mach Listener $\rightarrow$ `Logfile.esXPC`
-   - ESExtension Signature / Caller Validation $\rightarrow$ `Logfile.esSecurity`
-
-2. **Step 2: Select the Exact Semantic Level**:
-   - Never default to `.log(...)` blindly. Use `.debug` for internal logic, `.info` for transitions, `.notice` for security actions, `.warning` for fallbacks, `.error` for failures, `.fault` for tampering.
-
-3. **Step 3: Structure the Message with a Tag/Prefix**:
-   - Format: `[Component/Tag] Action description - Details`
-   - Example: `Logfile.policy.debug("[ConfigStore] Saved \(count, privacy: .public) apps to disk")`
-
-4. **Step 4: Explicit Privacy Interpolation for Diagnostic IDs**:
-   - Mark non-sensitive system identifiers as `privacy: .public` (e.g., PIDs, paths, counts, durations, status codes) so they are readable in Console.app and `log stream` without being redacted into `<private>`.
-
-5. **Step 5: Zero `print()` / `NSLog()` Tolerance**:
-   - Absolutely NEVER use `print()` or `NSLog()`. All logging MUST go through `Logfile`.
+- **Prefix & Tagging**: Always prefix messages with component identifier: `[Component] Action description - Details` (e.g. `Logfile.policy.debug("[ConfigStore] Saved \(count, privacy: .public) apps to disk")`).
+- **Privacy Interpolation**: Mark diagnostic identifiers (PIDs, paths, counts, durations, status codes) as `privacy: .public` to avoid `<private>` redaction in Console.app.
+- **Zero `print()` / `NSLog()`**: Absolutely never use `print()` or `NSLog()`. All logging must route through `Logfile`.
 
 ## 4. Concrete Code Examples
 
