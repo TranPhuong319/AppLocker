@@ -100,7 +100,7 @@ struct SettingsView: View {
             .navigationSplitViewColumnWidth(min: 170, ideal: 170, max: 240)
         } detail: {
             detailContent(for: navigator.selectedTab)
-                .padding(.top, -16)
+                .padding(.top, navigator.selectedTab == .logs ? 0 : -16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {

@@ -17,7 +17,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private init() {
         let hostingController = NSHostingController(rootView: SettingsView(navigator: navigator))
         hostingController.sceneBridgingOptions = [.toolbars, .title]
-        hostingController.sizingOptions = [.minSize, .maxSize]
+        hostingController.sizingOptions = []
         let initialSize = navigator.selectedTab.preferredSize
         hostingController.view.setFrameSize(initialSize)
 
@@ -65,6 +65,17 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         NotificationCenter.default.post(name: .settingsWindowWillClose, object: window)
+    }
+
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        var constrained = frameSize
+        if constrained.width < WindowLayout.settingsMinSize.width {
+            constrained.width = WindowLayout.settingsMinSize.width
+        }
+        if constrained.height < WindowLayout.settingsMinSize.height {
+            constrained.height = WindowLayout.settingsMinSize.height
+        }
+        return constrained
     }
 
     func resizeWindow(for tab: SettingsTab, animate: Bool = true) {
