@@ -6,6 +6,256 @@
       "generatesSymbol": false,
       "shouldTranslate": false
     },
+    "Access Denied: %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Từ chối truy cập: %@"
+          }
+        }
+      }
+    },
+    "Activity": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoạt động"
+          }
+        }
+      }
+    },
+    "Allowed Launch: %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép khởi chạy: %@"
+          }
+        }
+      }
+    },
+    "Anti-Tamper Shield: %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chống can thiệp: %@"
+          }
+        }
+      }
+    },
+    "Attempted %lld times": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cố mở %lld lần"
+          }
+        }
+      }
+    },
+    "Attempted to open %lld times": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cố mở %lld lần"
+          }
+        }
+      }
+    },
+    "Attempted to tamper %lld times": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cố can thiệp %lld lần"
+          }
+        }
+      }
+    },
+    "Opened %lld times": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã mở %lld lần"
+          }
+        }
+      }
+    },
+    "Blocked signal to %@ • %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chặn can thiệp tới %@ • %@"
+          }
+        }
+      }
+    },
+    "PID %@ • %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PID %@ • %@"
+          }
+        }
+      }
+    },
+    "Timed out • PID %@ • %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hết hạn xác thực • PID %@ • %@"
+          }
+        }
+      }
+    },
+    "Cancelled • PID %@ • %@": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã huỷ bởi người dùng • PID %@ • %@"
+          }
+        }
+      }
+    },
+    "Timed Out": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hết hạn xác thực"
+          }
+        }
+      }
+    },
+    "Cancelled by User": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã huỷ bởi người dùng"
+          }
+        }
+      }
+    },
+    "Clear Activity": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xoá hoạt động"
+          }
+        }
+      }
+    },
+    "Clear current activity view": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xoá hiển thị hoạt động phiên này"
+          }
+        }
+      }
+    },
+    "Copy Info": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sao chép thông tin"
+          }
+        }
+      }
+    },
+    "Could not load activity": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không thể tải hoạt động"
+          }
+        }
+      }
+    },
+    "Diagnostics": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chẩn đoán"
+          }
+        }
+      }
+    },
+    "Loading activity…": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang tải hoạt động…"
+          }
+        }
+      }
+    },
+    "No Security Activity Found": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có hoạt động bảo mật nào"
+          }
+        }
+      }
+    },
+    "Refresh activity": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Làm mới hoạt động"
+          }
+        }
+      }
+    },
+    "Reveal in Finder": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở trong Finder"
+          }
+        }
+      }
+    },
+    "Search activity…": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tìm kiếm hoạt động…"
+          }
+        }
+      }
+    },
+    "Security events like app locks, approvals, and tamper attempts will appear here.": {
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Các sự kiện bảo mật như khoá app, cho phép và chống can thiệp sẽ xuất hiện ở đây."
+          }
+        }
+      }
+    },
     "%@ has been blocked from launching.": {
       "localizations": {
         "vi": {

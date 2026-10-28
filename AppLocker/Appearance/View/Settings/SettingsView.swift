@@ -100,7 +100,7 @@ struct SettingsView: View {
             .navigationSplitViewColumnWidth(min: 170, ideal: 170, max: 240)
         } detail: {
             detailContent(for: navigator.selectedTab)
-                .padding(.top, navigator.selectedTab == .logs ? 0 : -16)
+                .padding(.top, (navigator.selectedTab == .diagnostics || navigator.selectedTab == .activity) ? 0 : -16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {
@@ -205,11 +205,13 @@ struct SettingsView: View {
             GeneralSettingsTab(isMock: isMock)
         case .security:
             SecuritySettingsTab(isUnlocked: $isSecurityUnlocked, isMock: isMock)
-        case .updates:
-            UpdatesSettingsTab(isMock: isMock)
+        case .activity:
+            ActivitySettingsTab(isMock: isMock)
         case .appearance:
             AppearanceSettingsTab(isMock: isMock)
-        case .logs:
+        case .updates:
+            UpdatesSettingsTab(isMock: isMock)
+        case .diagnostics:
             LogsSettingsTab(isMock: isMock)
         }
     }

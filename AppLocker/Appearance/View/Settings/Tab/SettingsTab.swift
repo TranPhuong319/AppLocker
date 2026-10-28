@@ -36,9 +36,10 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
 enum SettingsTab: String, CaseIterable, Identifiable {
     case general = "General"
     case security = "Security"
-    case updates = "Updates"
+    case activity = "Activity"
     case appearance = "Appearance"
-    case logs = "Logs"
+    case updates = "Updates"
+    case diagnostics = "Diagnostics"
 
     var id: String { self.rawValue }
 
@@ -46,9 +47,10 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "General"
         case .security: return "Security"
-        case .updates: return "Updates"
+        case .activity: return "Activity"
         case .appearance: return "Appearance"
-        case .logs: return "Logs"
+        case .updates: return "Updates"
+        case .diagnostics: return "Diagnostics"
         }
     }
 
@@ -56,9 +58,10 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "gearshape"
         case .security: return "lock.shield"
-        case .updates: return "arrow.triangle.2.circlepath"
+        case .activity: return "clock.badge.checkmark"
         case .appearance: return "paintpalette"
-        case .logs: return "list.bullet.clipboard"
+        case .updates: return "arrow.triangle.2.circlepath"
+        case .diagnostics: return "stethoscope"
         }
     }
 
@@ -68,11 +71,13 @@ enum SettingsTab: String, CaseIterable, Identifiable {
             return WindowLayout.settingsGeneralSize
         case .security:
             return WindowLayout.settingsSecuritySize
-        case .updates:
-            return WindowLayout.settingsUpdatesSize
+        case .activity:
+            return WindowLayout.settingsActivitySize
         case .appearance:
             return WindowLayout.settingsAppearanceSize
-        case .logs:
+        case .updates:
+            return WindowLayout.settingsUpdatesSize
+        case .diagnostics:
             return WindowLayout.settingsLogsSize
         }
     }

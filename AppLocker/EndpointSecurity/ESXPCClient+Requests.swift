@@ -83,6 +83,7 @@ extension ESXPCClient {
     func processPendingApps(
         approvedPIDs: [Int32],
         rejectedPIDs: [Int32],
+        rejectionReason: String = "UserCancel",
         retry: Int = 0,
         completion: @escaping @Sendable (Bool) -> Void
     ) {
@@ -107,6 +108,7 @@ extension ESXPCClient {
                     self?.processPendingApps(
                         approvedPIDs: approvedPIDs,
                         rejectedPIDs: rejectedPIDs,
+                        rejectionReason: rejectionReason,
                         retry: retry + 1,
                         completion: completion
                     )
@@ -117,11 +119,16 @@ extension ESXPCClient {
             guard let proxy = self.proxy(conn: conn, actionName: "processPendingApps", onError: { completion(false) })
             else { return }
 
-            proxy.processPendingApps(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs) { success in
+            proxy.processPendingApps(
+                approvedPIDs: approvedPIDs,
+                rejectedPIDs: rejectedPIDs,
+                rejectionReason: rejectionReason
+            ) { success in
                 Logfile.appXPC.debug(
                     """
                     [ESXPCClient] processPendingApps reply: \(success, privacy: .public) \
-                    (Approved: \(approvedPIDs, privacy: .public), Rejected: \(rejectedPIDs, privacy: .public))
+                    (Approved: \(approvedPIDs, privacy: .public), Rejected: \(rejectedPIDs, privacy: .public), \
+                    Reason: \(rejectionReason, privacy: .public))
                     """
                 )
                 completion(success)
@@ -139,6 +146,16 @@ extension ESXPCClient {
             guard let proxy = self.proxy(conn: conn, actionName: "updateIncomingCallRingingState") else { return }
             proxy.updateIncomingCallRingingState(isRinging)
             Logfile.appXPC.debug("[ESXPCClient] updateIncomingCallRingingState sent: \(isRinging, privacy: .public)")
+        }
+    }
+
+    func refreshPendingWatchdog(pids: [Int32]) {
+        guard !pids.isEmpty else { return }
+        xpcQueue.async { [weak self] in
+            guard let self, let conn = self.connection else { return }
+            guard let proxy = self.proxy(conn: conn, actionName: "refreshPendingWatchdog") else { return }
+            proxy.refreshPendingWatchdog(pids: pids)
+            Logfile.appXPC.debug("[ESXPCClient] refreshPendingWatchdog sent for \(pids.count) PIDs")
         }
     }
 }

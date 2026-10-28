@@ -42,20 +42,62 @@ extension ESManager {
             let isAuthorizedSender = (senderPid == getpid())
 
             if !isAuthorizedSender {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                let senderPath = safePath(fromFilePointer: messagePtr.process.pointee.executable)
-                    ?? processPath(for: senderPid)
-                    ?? "PID \(senderPid)"
-                Logfile.endpointSecurity.warning(
-                    """
-                    [AuthSignal] SECURITY SHIELD: Denied SIGCONT from \(senderPath, privacy: .public) \
-                    (PID \(senderPid, privacy: .public)) to pending PID \(targetPid, privacy: .public)
-                    """
+                handleUnauthorizedSignal(
+                    message: message,
+                    targetPid: targetPid,
+                    targetAppName: expectedRecord.notification.name,
+                    senderPid: senderPid,
+                    valve: valve
                 )
                 return
             }
         }
 
         _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+    }
+
+    private func handleUnauthorizedSignal(
+        message: ESMessage,
+        targetPid: pid_t,
+        targetAppName: String,
+        senderPid: pid_t,
+        valve: ESSafetyValve
+    ) {
+        _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        let processPtr = message.pointee.process.pointee
+        let senderPath = safePath(fromFilePointer: processPtr.executable)
+            ?? processPath(for: senderPid)
+            ?? "PID \(senderPid)"
+
+        let isLaunchMachinery = senderPath.hasSuffix("/launchservicesd") || senderPath.hasSuffix("/launchd")
+        if isLaunchMachinery {
+            Logfile.endpointSecurity.debug(
+                """
+                [AuthSignal] Denied launch machinery SIGCONT from \(senderPath, privacy: .public) \
+                to pending PID \(targetPid, privacy: .public)
+                """
+            )
+            return
+        }
+
+        let responsiblePid = audit_token_to_pid(processPtr.responsible_audit_token)
+        let responsiblePath = processPath(for: responsiblePid)
+        let senderDisplayName: String = {
+            if let respPath = responsiblePath, respPath.contains(".app") {
+                return self.computeAppName(forExecPath: respPath)
+            }
+            if senderPath.starts(with: "/") {
+                return self.computeAppName(forExecPath: senderPath)
+            }
+            return senderPath
+        }()
+
+        Logfile.endpointSecurity.warning(
+            """
+            [SecurityEvent:TamperBlocked] Target: \(targetAppName, privacy: .public) \
+            (PID \(targetPid, privacy: .public)) | Sender: \(senderDisplayName, privacy: .public) \
+            (PID \(senderPid, privacy: .public)) | SenderPath: \(senderPath, privacy: .public)
+            """
+        )
     }
 }

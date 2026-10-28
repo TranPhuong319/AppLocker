@@ -39,7 +39,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = self
 
         navigator.onTabChanged = { [weak self] newTab, oldTab in
-            guard newTab == .logs || oldTab == .logs else { return }
+            guard newTab.preferredSize != oldTab.preferredSize else { return }
             self?.resizeWindow(for: newTab)
         }
     }
@@ -52,7 +52,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if let tab {
             let oldTab = shared.navigator.selectedTab
             shared.navigator.selectedTab = tab
-            if (tab == .logs || oldTab == .logs) && tab != oldTab {
+            if tab.preferredSize != oldTab.preferredSize && tab != oldTab {
                 shared.resizeWindow(for: tab, animate: false)
             }
         }

@@ -216,7 +216,7 @@ final class LogStore {
 
 // MARK: - Log Reader Actor
 
-private actor LogReader {
+actor LogReader {
     static let shared = LogReader()
 
     func query(since: Date, strictlyAfter: Bool) throws -> [AppLogEntry] {
