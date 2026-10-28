@@ -53,8 +53,35 @@ extension AppDelegate {
     }
 
     @objc func openSystemSettingsForExtension() {
-        SMAppService.openSystemSettingsLoginItems()
-        ExtensionInstaller.shared.install()
+        let directURLString = "x-apple.systempreferences:com.apple.ExtensionsPreferences"
+            + "?extensionPointIdentifier=com.apple.system_extension.endpoint_security.extension-point"
+
+        guard let targetURL = URL(string: directURLString) else {
+            SMAppService.openSystemSettingsLoginItems()
+            return
+        }
+
+        Task { @MainActor in
+            if !ExtensionInstaller.shared.isInstalled {
+                Logfile.app.notice(
+                    "[Actions] ES extension not installed/active. Activating and delaying System Settings open."
+                )
+                ExtensionInstaller.shared.install()
+                try? await Task.sleep(for: .seconds(1.5))
+            }
+
+            let isRunning = NSRunningApplication
+                .runningApplications(withBundleIdentifier: "com.apple.systempreferences")
+                .contains { !$0.isTerminated }
+
+            NSWorkspace.shared.open(targetURL)
+
+            if !isRunning {
+                // Cold start: Re-trigger URL after ExtensionKit initializes its view hierarchy
+                try? await Task.sleep(for: .milliseconds(1200))
+                NSWorkspace.shared.open(targetURL)
+            }
+        }
     }
 
     @objc func resumeProtection() {
