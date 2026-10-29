@@ -68,6 +68,7 @@ extension ESManager: NSXPCListenerDelegate {
             let wasMainApp = self.processIDLock.withLock { () -> Bool in
                 if let mainPID = self.authenticatedMainAppPID, pid_t(processID) == mainPID {
                     self.authenticatedMainAppPID = nil
+                    self.authenticatedMainAppPIDVersion = nil
                     Logfile.esXPC.debug(
                         "[ESMachListener] Cleared authenticated main app PID on connection invalidation"
                     )
