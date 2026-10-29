@@ -80,6 +80,7 @@ public struct SecurityActivityItem: Identifiable, Sendable, Equatable {
     public let senderName: String?
     public let senderPid: Int32?
     public let senderPath: String?
+    public let tamperAction: String?
     public var repeatCount: Int
 
     public init(
@@ -93,6 +94,7 @@ public struct SecurityActivityItem: Identifiable, Sendable, Equatable {
         senderName: String? = nil,
         senderPid: Int32? = nil,
         senderPath: String? = nil,
+        tamperAction: String? = nil,
         repeatCount: Int = 1
     ) {
         self.id = id
@@ -105,6 +107,7 @@ public struct SecurityActivityItem: Identifiable, Sendable, Equatable {
         self.senderName = senderName
         self.senderPid = senderPid
         self.senderPath = senderPath
+        self.tamperAction = tamperAction
         self.repeatCount = repeatCount
     }
 
@@ -125,6 +128,9 @@ public struct SecurityActivityItem: Identifiable, Sendable, Equatable {
         }
         if let sPath = senderPath, !sPath.isEmpty {
             lines.append("Sender Path: \(sPath)")
+        }
+        if let action = tamperAction, !action.isEmpty {
+            lines.append("Action: \(action)")
         }
         lines.append("Time: \(dateFormatter.string(from: date))")
         if repeatCount > 1 {

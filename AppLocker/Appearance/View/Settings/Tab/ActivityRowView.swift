@@ -125,8 +125,23 @@ struct ActivityRowView: View {
         let relTime = relativeFormatter.localizedString(for: item.date, relativeTo: currentDate)
         let pidDisplay = String(item.targetPid)
         if item.type == .tamperBlocked {
-            let targetDisplay = "\(item.targetAppName) (PID \(item.targetPid))"
-            Text("Blocked signal to \(targetDisplay) • \(relTime)")
+            if item.targetAppName == "Config" {
+                switch item.tamperAction {
+                case "Delete":
+                    Text("Blocked deleting Config • \(relTime)")
+                case "Rename":
+                    Text("Blocked renaming Config • \(relTime)")
+                case "Truncate":
+                    Text("Blocked truncating Config • \(relTime)")
+                case "Write":
+                    Text("Blocked writing to Config • \(relTime)")
+                default:
+                    Text("Blocked modifying Config • \(relTime)")
+                }
+            } else {
+                let targetDisplay = "\(item.targetAppName) (PID \(item.targetPid))"
+                Text("Blocked signal to \(targetDisplay) • \(relTime)")
+            }
         } else if item.type == .rejected, let reason = item.denialReason {
             switch reason {
             case .timedOut:

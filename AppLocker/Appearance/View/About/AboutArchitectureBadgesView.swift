@@ -69,13 +69,30 @@ struct AboutArchitectureBadgesView: View {
     }
 
     private var architectureName: LocalizedStringKey {
+        switch currentArchitecture {
+        case .appleSilicon:
+            return "Apple Silicon"
+        case .intel:
+            return "Intel (x86_64)"
+        case .universal:
+            return "Universal"
+        }
+    }
+
+    private var currentArchitecture: ArchitectureType {
         #if arch(arm64)
-        return "Apple Silicon"
+        return .appleSilicon
         #elseif arch(x86_64)
-        return "Intel (x86_64)"
+        return .intel
         #else
-        return "Universal"
+        return .universal
         #endif
+    }
+
+    private enum ArchitectureType {
+        case appleSilicon
+        case intel
+        case universal
     }
 
     private func badgePill(icon: String, text: LocalizedStringKey, color: Color) -> some View {
