@@ -75,25 +75,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 #if !DEBUG
         if !isLaunchedByLaunchd && !isFirstStart {
-            if !isAgentActive {
-                Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
-                _ = manageAgent(action: .install)
-            }
-
-            guard isAgentActive else { return }
-
-            Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-            process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
-            do {
-                try process.run()
-                NSApp.terminate(nil)
+            if handoverToLaunchdIfManual() {
                 return
-            } catch {
-                Logfile.app.error(
-                    "[Bootstrap] Failed to kickstart via launchctl: \(error.localizedDescription, privacy: .public)"
-                )
             }
         }
 #endif
@@ -110,6 +93,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             launchConfig()
         }
     }
+
+#if !DEBUG
+    @MainActor
+    private func handoverToLaunchdIfManual() -> Bool {
+        if !isAgentActive {
+            Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
+            _ = manageAgent(action: .install)
+        }
+
+        guard isAgentActive else {
+            let statusDesc = SMAppService.agent(plistName: "\(Self.plistName).plist").status.description
+            Logfile.app.warning(
+                "[Bootstrap] Agent is not active (\(statusDesc, privacy: .public)). Continuing to run directly."
+            )
+            return false
+        }
+
+        Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
+        var kickstartSucceeded = runLaunchctlKickstart(timeout: .seconds(3))
+
+        // If kickstart failed or timed out (e.g. launchd in penalty box or corrupted agent state):
+        if !kickstartSucceeded {
+            Logfile.app.warning("[Bootstrap] Initial launchctl kickstart failed. Force re-registering agent...")
+            let reRegistered = forceReRegisterAgent()
+            if reRegistered {
+                kickstartSucceeded = runLaunchctlKickstart(timeout: .seconds(3))
+            }
+        }
+
+        if kickstartSucceeded {
+            Logfile.app.notice("[Bootstrap] Successfully kickstarted launchd instance. Terminating manual launcher.")
+            NSApp.terminate(nil)
+            return true
+        }
+
+        Logfile.app.warning(
+            """
+            [Bootstrap] Could not hand over to launchctl. \
+            Continuing to run current manual instance directly.
+            """
+        )
+        return false
+    }
+#endif
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {

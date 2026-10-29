@@ -97,6 +97,52 @@ extension AppDelegate {
     }
 
     @discardableResult
+    func forceReRegisterAgent(plistName: String = AppDelegate.plistName) -> Bool {
+        #if DEBUG
+        Logfile.app.debug("[Agent] Skipping forceReRegisterAgent in DEBUG mode")
+        return true
+        #else
+        let agent = SMAppService.agent(plistName: "\(plistName).plist")
+        Logfile.app.info("[Agent] Force re-registering agent to reset launchd state...")
+        do {
+            try? agent.unregister()
+            try agent.register()
+            let statusDesc = agent.status.description
+            Logfile.app.notice("[Agent] Force re-register succeeded. Status: \(statusDesc, privacy: .public)")
+            return agent.status == .enabled
+        } catch {
+            Logfile.app.error("[Agent] Force re-register failed: \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+        #endif
+    }
+
+    func runLaunchctlKickstart(timeout: Duration = .seconds(3)) -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
+        do {
+            try process.run()
+        } catch {
+            Logfile.app.error("[Bootstrap] Failed to run launchctl: \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+
+        let start = ContinuousClock.now
+        while process.isRunning && ContinuousClock.now - start < timeout {
+            usleep(50_000) // 50ms
+        }
+
+        if process.isRunning {
+            Logfile.app.warning("[Bootstrap] launchctl kickstart timed out after 3s. Terminating command.")
+            process.terminate()
+            return false
+        }
+
+        return process.terminationStatus == 0
+    }
+
+    @discardableResult
     func checkAgentStatus() -> Bool {
         isAgentActive
     }
