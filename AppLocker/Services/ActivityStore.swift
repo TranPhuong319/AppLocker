@@ -176,9 +176,10 @@ final class ActivityStore {
             let isSameTarget = item.targetAppName == current.targetAppName
             let isSameType = item.type == current.type
             let isSameReason = item.denialReason == current.denialReason
+            let isSameAction = item.tamperAction == current.tamperAction
             let isWithinWindow = abs(item.date.timeIntervalSince(current.date)) <= windowSeconds
 
-            if isSameTarget && isSameType && isSameReason && isWithinWindow {
+            if isSameTarget && isSameType && isSameReason && isSameAction && isWithinWindow {
                 current.repeatCount += item.repeatCount
             } else {
                 result.append(current)
@@ -246,34 +247,18 @@ final class ActivityStore {
     }
 
     nonisolated private static func parseTamperSecurityEvent(message: String, date: Date) -> SecurityActivityItem? {
-        guard let targetRange = message.range(of: "Target: ") else { return nil }
-        let afterTarget = message[targetRange.upperBound...]
-        guard let targetPidRange = afterTarget.range(of: " (PID ") else { return nil }
-        let targetName = String(afterTarget[..<targetPidRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+        guard let targetRaw = extractField(from: message, prefix: "Target: "),
+              let pidOpen = targetRaw.range(of: " (PID "),
+              targetRaw.hasSuffix(")") else { return nil }
 
-        let afterTargetPid = afterTarget[targetPidRange.upperBound...]
-        guard let targetCloseParen = afterTargetPid.range(of: ")") else { return nil }
-        guard let targetPid = Int32(afterTargetPid[..<targetCloseParen.lowerBound]) else { return nil }
+        let targetName = String(targetRaw[..<pidOpen.lowerBound]).trimmingCharacters(in: .whitespaces)
+        let pidText = targetRaw[pidOpen.upperBound...].dropLast()
+        guard let targetPid = Int32(pidText) else { return nil }
 
-        var senderName: String?
-        var senderPid: Int32?
-        if let senderRange = message.range(of: " | Sender: ") {
-            let afterSender = message[senderRange.upperBound...]
-            if let sPidRange = afterSender.range(of: " (PID ") {
-                senderName = String(afterSender[..<sPidRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-                let afterSPid = afterSender[sPidRange.upperBound...]
-                if let sClose = afterSPid.range(of: ")") {
-                    senderPid = Int32(afterSPid[..<sClose.lowerBound])
-                }
-            } else if let endRange = afterSender.range(of: " | ") {
-                senderName = String(afterSender[..<endRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-            }
-        }
-
-        var senderPath: String?
-        if let pathRange = message.range(of: " | SenderPath: ") {
-            senderPath = String(message[pathRange.upperBound...]).trimmingCharacters(in: .whitespaces)
-        }
+        let senderRaw = extractField(from: message, prefix: " | Sender: ")
+        let (senderName, senderPid) = parseSenderInfo(from: senderRaw)
+        let senderPath = extractField(from: message, prefix: " | SenderPath: ", delimiter: nil)
+        let tamperAction = extractField(from: message, prefix: " | Action: ")
 
         return SecurityActivityItem(
             date: date,
@@ -282,7 +267,31 @@ final class ActivityStore {
             targetPid: targetPid,
             senderName: senderName,
             senderPid: senderPid,
-            senderPath: senderPath
+            senderPath: senderPath,
+            tamperAction: tamperAction
         )
+    }
+
+    nonisolated private static func extractField(
+        from message: String,
+        prefix: String,
+        delimiter: String? = " | "
+    ) -> String? {
+        guard let range = message.range(of: prefix) else { return nil }
+        let after = message[range.upperBound...]
+        if let delimiter, let delimRange = after.range(of: delimiter) {
+            return String(after[..<delimRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+        }
+        return String(after).trimmingCharacters(in: .whitespaces)
+    }
+
+    nonisolated private static func parseSenderInfo(from raw: String?) -> (String?, Int32?) {
+        guard let raw else { return (nil, nil) }
+        guard let open = raw.range(of: " (PID "), raw.hasSuffix(")") else {
+            return (raw, nil)
+        }
+        let name = String(raw[..<open.lowerBound]).trimmingCharacters(in: .whitespaces)
+        let pidText = raw[open.upperBound...].dropLast()
+        return (name, Int32(pidText))
     }
 }

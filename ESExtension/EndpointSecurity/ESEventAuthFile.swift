@@ -95,9 +95,18 @@ extension ESManager {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             return
         }
+
+        // Allow read-only access and let kernel cache the result
+        if !isWriteIntent(message.pointee.event.open.fflag) {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            return
+        }
+
         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        let isTruncate = (message.pointee.event.open.fflag & Int32(O_TRUNC)) != 0
+        logConfigTamperBlocked(message: message, action: isTruncate ? "Truncate" : "Write")
         Logfile.endpointSecurity.warning(
-            "[AuthFile] PRIVACY_LOCK [OPEN] DENY access to config: \(path, privacy: .public)"
+            "[AuthFile] PRIVACY_LOCK [OPEN] DENY write to config: \(path, privacy: .public)"
         )
     }
 
@@ -106,6 +115,12 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve
     ) {
+        let filename = (path as NSString).lastPathComponent
+        if filename == ".DS_Store" || filename == ".localized" || filename.hasPrefix(".com.apple.") {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            return
+        }
+
         guard isWriteIntent(message.pointee.event.open.fflag) else {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
@@ -129,13 +144,22 @@ extension ESManager {
         valve: ESSafetyValve
     ) {
         let targetToken = message.pointee.event.unlink.target.pointee.path
-        let isProtected = isProtectedConfigPath(targetToken) ||
+        if let targetPath = string(from: targetToken) {
+            let filename = (targetPath as NSString).lastPathComponent
+            if filename == ".DS_Store" || filename == ".localized" || filename.hasPrefix(".com.apple.") {
+                _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+                return
+            }
+        }
+        let isConfig = isProtectedConfigPath(targetToken)
+        let isProtected = isConfig ||
                           isInsideProtectedFolder(targetToken) ||
                           isAppBundlePath(targetToken)
         handleProtectedMutationAuth(
             message: message,
             valve: valve,
             isTargetProtected: isProtected,
+            isConfig: isConfig,
             operationName: "UNLINK"
         )
     }
@@ -147,7 +171,8 @@ extension ESManager {
     ) {
         let renameEvent = message.pointee.event.rename
         let srcPathToken = renameEvent.source.pointee.path
-        let srcIsProtected = isProtectedConfigPath(srcPathToken) ||
+        let isConfig = isProtectedConfigPath(srcPathToken)
+        let srcIsProtected = isConfig ||
                              isInsideProtectedFolder(srcPathToken) ||
                              isAppBundlePath(srcPathToken)
         let dstIsProtected = isRenameDestinationProtected(renameEvent)
@@ -168,9 +193,26 @@ extension ESManager {
         }
 
         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+        if isConfig {
+            let action = isTrashDestination(renameEvent) ? "Delete" : "Rename"
+            logConfigTamperBlocked(message: message, action: action)
+        }
         Logfile.endpointSecurity.warning(
             "[AuthFile] SELF_PROT [RENAME] DENY (Protected): (Process: \(procID, privacy: .public))"
         )
+    }
+
+    private func isTrashDestination(_ renameEvent: es_event_rename_t) -> Bool {
+        if renameEvent.destination_type == ES_DESTINATION_TYPE_EXISTING_FILE {
+            if let dstPath = string(from: renameEvent.destination.existing_file.pointee.path) {
+                return dstPath.contains("/.Trash") || dstPath.contains("/.Trashes")
+            }
+        } else if renameEvent.destination_type == ES_DESTINATION_TYPE_NEW_PATH {
+            if let dirPath = string(from: renameEvent.destination.new_path.dir.pointee.path) {
+                return dirPath.contains("/.Trash") || dirPath.contains("/.Trashes")
+            }
+        }
+        return false
     }
 
     private func isRenameDestinationProtected(_ renameEvent: es_event_rename_t) -> Bool {
@@ -204,13 +246,15 @@ extension ESManager {
         valve: ESSafetyValve
     ) {
         let targetToken = message.pointee.event.truncate.target.pointee.path
-        let isProtected = isProtectedConfigPath(targetToken) ||
+        let isConfig = isProtectedConfigPath(targetToken)
+        let isProtected = isConfig ||
                           isInsideProtectedFolder(targetToken) ||
                           isAppBundlePath(targetToken)
         handleProtectedMutationAuth(
             message: message,
             valve: valve,
             isTargetProtected: isProtected,
+            isConfig: isConfig,
             operationName: "TRUNCATE"
         )
     }
@@ -221,12 +265,24 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve,
         isTargetProtected: Bool,
+        isConfig: Bool = false,
         operationName: String
     ) {
         if isTargetProtected {
             let procID = Self.signingID(for: message)
             guard isAuthorized(message) else {
                 _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+                if isConfig {
+                    let action: String = {
+                        switch operationName {
+                        case "UNLINK": return "Delete"
+                        case "RENAME": return "Rename"
+                        case "TRUNCATE": return "Truncate"
+                        default: return "Write"
+                        }
+                    }()
+                    logConfigTamperBlocked(message: message, action: action)
+                }
                 Logfile.endpointSecurity.warning(
                     """
                     [AuthFile] SELF_PROT [\(operationName)] DENY (Unauthorized): \
@@ -245,6 +301,33 @@ extension ESManager {
             return
         }
         _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+    }
+
+    private func logConfigTamperBlocked(message: ESMessage, action: String) {
+        let processPtr = message.pointee.process.pointee
+        let senderPid = audit_token_to_pid(processPtr.audit_token)
+        let senderPath = string(from: processPtr.executable.pointee.path)
+            ?? processPath(for: senderPid)
+            ?? "PID \(senderPid)"
+        let responsiblePid = audit_token_to_pid(processPtr.responsible_audit_token)
+        let responsiblePath = processPath(for: responsiblePid)
+        let senderDisplayName: String = {
+            if let respPath = responsiblePath, respPath.contains(".app") {
+                return self.computeAppName(forExecPath: respPath)
+            }
+            if senderPath.starts(with: "/") {
+                return self.computeAppName(forExecPath: senderPath)
+            }
+            return senderPath
+        }()
+
+        Logfile.endpointSecurity.warning(
+            """
+            [SecurityEvent:TamperBlocked] Target: Config (PID 0) | Sender: \(senderDisplayName, privacy: .public) \
+            (PID \(senderPid, privacy: .public)) | Action: \(action, privacy: .public) \
+            | SenderPath: \(senderPath, privacy: .public)
+            """
+        )
     }
 
     func handleAuthExchangedata(
