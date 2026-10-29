@@ -129,6 +129,9 @@ struct SettingsView: View {
         .onChange(of: navigator.selectedTab) { _, newTab in
             handleTabChange(to: newTab)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .settingsWindowWillClose)) { _ in
+            isSecurityUnlocked = false
+        }
     }
 
     private func toggleSecurityLock() {

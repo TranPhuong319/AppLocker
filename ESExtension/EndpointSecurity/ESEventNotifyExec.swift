@@ -61,12 +61,18 @@ extension ESManager {
         suspendAndNotifyBlockedProcess(notification: notification, targetPid: targetPid, token: token)
     }
 
-    private func isAppLockerSelfExecution(signingID: String, token: audit_token_t, pid: pid_t) -> Bool {
+    private func isAppLockerSelfExecution(
+        signingID: String,
+        token: audit_token_t,
+        pid: pid_t
+    ) -> Bool {
         guard signingID == "com.TranPhuong319.AppLocker" else { return false }
+
+        // Cryptographic Signature Verification
         if CodeSignatureValidator.validate(auditToken: token, requirement: CodeSignatureValidator.mainAppRequirement) {
             Logfile.endpointSecurity.info(
                 """
-                [NotifyExec] AppLocker self-execution allowed, bypassing lock policy \
+                [NotifyExec] AppLocker self-execution verified & allowed, bypassing lock policy \
                 (PID \(pid, privacy: .public))
                 """
             )

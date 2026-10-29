@@ -61,20 +61,22 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        if isAuthorized(message) {
-            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-            let sigID = Self.signingID(for: message)
-            Logfile.endpointSecurity.debug(
-                "[AuthFile] OPEN ALLOW: \(path, privacy: .public) (\(sigID, privacy: .public))"
-            )
-            return
-        }
-
+        // Fast-path: Allow read-only access and let kernel cache the result (zero signature overhead)
         if !isWriteIntent(message.pointee.event.open.fflag) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             let sigID = Self.signingID(for: message)
             Logfile.endpointSecurity.debug(
                 "[AuthFile] OPEN ALLOW (Read-only): \(path, privacy: .public) (\(sigID, privacy: .public))"
+            )
+            return
+        }
+
+        // Mutation / Write-Intent: verify authorization (cached PID or signed with project cert)
+        if isAuthorized(message) {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+            let sigID = Self.signingID(for: message)
+            Logfile.endpointSecurity.debug(
+                "[AuthFile] OPEN ALLOW (Write-Intent): \(path, privacy: .public) (\(sigID, privacy: .public))"
             )
             return
         }
@@ -91,14 +93,14 @@ extension ESManager {
         message: ESMessage,
         valve: ESSafetyValve
     ) {
-        if isAuthorized(message) {
-            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
-            return
-        }
-
         // Allow read-only access and let kernel cache the result
         if !isWriteIntent(message.pointee.event.open.fflag) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+            return
+        }
+
+        if isAuthorized(message) {
+            _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             return
         }
 

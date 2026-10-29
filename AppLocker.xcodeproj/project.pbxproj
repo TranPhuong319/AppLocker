@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E01814A62F137F500093583F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E01814A52F137F500093583F /* Sparkle */; };
 		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
+		E0361AD12E879EC400A37773 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
 		E03BB181305AA41B009552C2 /* CodeSignatureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */; };
 		E03BB182305AA41B009552C3 /* CodeSignatureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */; };
 		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
@@ -18,6 +19,10 @@
 		E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97B2FA5994C00827F2C /* AboutView.swift */; };
 		E07DF98D2FA5994C00827F2C /* AboutView+SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */; };
 		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
+		E0AC00022F59E36600D46B01 /* ActivityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00012F59E36600D46B01 /* ActivityModel.swift */; };
+		E0AC00042F59E36600D46B02 /* ActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00032F59E36600D46B02 /* ActivityStore.swift */; };
+		E0AC00062F59E36600D46B03 /* ActivityRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00052F59E36600D46B03 /* ActivityRowView.swift */; };
+		E0AC00082F59E36600D46B04 /* ActivitySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 		E0DA1B44301AF5D300ABE155 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
@@ -38,10 +43,6 @@
 		E0FD75FF2F59E36600D46B31 /* ExtensionInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */; };
 		E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B31 /* LogStore.swift */; };
 		E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */; };
-		E0AC00022F59E36600D46B01 /* ActivityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00012F59E36600D46B01 /* ActivityModel.swift */; };
-		E0AC00042F59E36600D46B02 /* ActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00032F59E36600D46B02 /* ActivityStore.swift */; };
-		E0AC00062F59E36600D46B03 /* ActivityRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00052F59E36600D46B03 /* ActivityRowView.swift */; };
-		E0AC00082F59E36600D46B04 /* ActivitySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */; };
 		E0FD76012F59E36600D46B31 /* LockES.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E22F59E36600D46B31 /* LockES.swift */; };
 		E0FD76022F59E36600D46B31 /* ESXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */; };
 		E0FD76032F59E36600D46B31 /* AppIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DC2F59E36600D46B31 /* AppIconProvider.swift */; };
@@ -129,8 +130,8 @@
 		E0FDB00C2F59E37C00D46B01 /* ESAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */; };
 		E0FDB00E2F59E37C00D46B01 /* ESTamper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */; };
 		E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */; };
-		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
 		E0FDBC022F59E36600D46B31 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDBC012F59E36600D46B31 /* ShortcutRecorderView.swift */; };
+		E0FDDD122F797A8C0078A290 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDDD102F797A8C0078A290 /* WindowManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,6 +187,10 @@
 		E07DF9782FA5993F00827F2C /* AboutWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutWindowController.swift; sourceTree = "<group>"; };
 		E07DF97B2FA5994C00827F2C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AboutView+SystemInfo.swift"; sourceTree = "<group>"; };
+		E0AC00012F59E36600D46B01 /* ActivityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityModel.swift; sourceTree = "<group>"; };
+		E0AC00032F59E36600D46B02 /* ActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityStore.swift; sourceTree = "<group>"; };
+		E0AC00052F59E36600D46B03 /* ActivityRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRowView.swift; sourceTree = "<group>"; };
+		E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySettingsTab.swift; sourceTree = "<group>"; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
@@ -240,10 +245,6 @@
 		E0FD75E22F59E36600D46B31 /* LockES.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockES.swift; sourceTree = "<group>"; };
 		E0FD75E32F59E36600D46B31 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
 		E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilterModels.swift; sourceTree = "<group>"; };
-		E0AC00012F59E36600D46B01 /* ActivityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityModel.swift; sourceTree = "<group>"; };
-		E0AC00032F59E36600D46B02 /* ActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityStore.swift; sourceTree = "<group>"; };
-		E0AC00052F59E36600D46B03 /* ActivityRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRowView.swift; sourceTree = "<group>"; };
-		E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75E62F59E36600D46B31 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
 		E0FD75E82F59E36600D46B31 /* AppLocker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppLocker.entitlements; sourceTree = "<group>"; };
 		E0FD75E92F59E36600D46B31 /* com.TranPhuong319.AppLocker.agent.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = com.TranPhuong319.AppLocker.agent.plist; sourceTree = "<group>"; };
@@ -300,8 +301,8 @@
 		E0FDB00B2F59E37C00D46B01 /* ESAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESAuthorizer.swift; sourceTree = "<group>"; };
 		E0FDB00D2F59E37C00D46B01 /* ESTamper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESTamper.swift; sourceTree = "<group>"; };
 		E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XPCServer+Batch.swift"; sourceTree = "<group>"; };
-		E0FDDD102F797A8C0078A290 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		E0FDBC012F59E36600D46B31 /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
+		E0FDDD102F797A8C0078A290 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -312,6 +313,7 @@
 				E01814A62F137F500093583F /* Sparkle in Frameworks */,
 				E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */,
 				E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */,
+				E0361AD12E879EC400A37773 /* libbsm.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -872,7 +874,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2620;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					E050B43F2E86FB33003AEA49 = {
 						CreatedOnToolsVersion = 26.0;
@@ -950,7 +952,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# 1. Ký Framework Sparkle nếu có\nif [ -d \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Frameworks/Sparkle.framework\" ]; then\n    /usr/bin/codesign --force --deep --sign \"TranPhuong319\" \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Frameworks/Sparkle.framework\"\nfi\n\n# 2. Ký System Extension bên trong App\nif [ -d \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Library/SystemExtensions/com.TranPhuong319.AppLocker.ESExtension.systemextension\" ]; then\n    /usr/bin/codesign --force --deep --sign \"TranPhuong319\" --entitlements \"$SRCROOT/ESExtension/ESExtension.entitlements\" \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Library/SystemExtensions/com.TranPhuong319.AppLocker.ESExtension.systemextension\"\nfi\n\n# 3. Ký toàn bộ AppLocker.app với Entitlements của App chính\nAPP_ENT=\"$SRCROOT/AppLocker/AppLocker.entitlements\"\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n    TMP_ENT=\"/tmp/AppLocker.debug.entitlements\"\n    cp \"$APP_ENT\" \"$TMP_ENT\"\n    /usr/libexec/PlistBuddy -c \"Add :com.apple.security.get-task-allow bool true\" \"$TMP_ENT\" 2>/dev/null || /usr/libexec/PlistBuddy -c \"Set :com.apple.security.get-task-allow true\" \"$TMP_ENT\"\n    APP_ENT=\"$TMP_ENT\"\nfi\n/usr/bin/codesign --force --deep --sign \"TranPhuong319\" --entitlements \"$APP_ENT\" \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME\"\n";
+			shellScript = "CS_OPTS=\"\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n    CS_OPTS=\"--options runtime,library\"\nfi\n\n# 1. Ký Framework Sparkle nếu có\nif [ -d \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Frameworks/Sparkle.framework\" ]; then\n    /usr/bin/codesign --force --deep --sign \"TranPhuong319\" \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Frameworks/Sparkle.framework\"\nfi\n\n# 2. Ký System Extension bên trong App\nif [ -d \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Library/SystemExtensions/com.TranPhuong319.AppLocker.ESExtension.systemextension\" ]; then\n    /usr/bin/codesign --force --deep --sign \"TranPhuong319\" $CS_OPTS --entitlements \"$SRCROOT/ESExtension/ESExtension.entitlements\" \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/Contents/Library/SystemExtensions/com.TranPhuong319.AppLocker.ESExtension.systemextension\"\nfi\n\n# 3. Ký toàn bộ AppLocker.app với Entitlements của App chính\nAPP_ENT=\"$SRCROOT/AppLocker/AppLocker.entitlements\"\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n    TMP_ENT=\"/tmp/AppLocker.debug.entitlements\"\n    cp \"$APP_ENT\" \"$TMP_ENT\"\n    /usr/libexec/PlistBuddy -c \"Add :com.apple.security.get-task-allow bool true\" \"$TMP_ENT\" 2>/dev/null || /usr/libexec/PlistBuddy -c \"Set :com.apple.security.get-task-allow true\" \"$TMP_ENT\"\n    APP_ENT=\"$TMP_ENT\"\nfi\n/usr/bin/codesign --force --deep --sign \"TranPhuong319\" $CS_OPTS --entitlements \"$APP_ENT\" \"$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME\"\n";
 		};
 		E03BB17B305AA31B009552C6 /* Prepare Embedded Extensions */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1148,6 +1150,7 @@
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-1";
 				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
@@ -1168,6 +1171,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.ESExtension;
 				PRODUCT_NAME = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1181,6 +1185,7 @@
 				SKIP_INSTALL = YES;
 				STRINGS_FILE_OUTPUT_ENCODING = binary;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ESExtension/Bridging-Header.h";
@@ -1199,6 +1204,7 @@
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)-0";
 				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
@@ -1219,6 +1225,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker.ESExtension;
 				PRODUCT_NAME = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1232,6 +1239,7 @@
 				SKIP_INSTALL = YES;
 				STRINGS_FILE_OUTPUT_ENCODING = binary;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ESExtension/Bridging-Header.h";
@@ -1350,6 +1358,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = 749P55DL5L;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1391,7 +1400,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
@@ -1415,6 +1424,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1426,6 +1436,8 @@
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				STRINGS_FILE_OUTPUT_ENCODING = binary;
+				STRIP_INSTALLED_PRODUCT = NO;
+				STRIP_SWIFT_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1448,7 +1460,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 0;
-				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1472,6 +1484,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = "$(MARKETING_VERSION)";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.TranPhuong319.AppLocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1483,6 +1496,8 @@
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				STRINGS_FILE_OUTPUT_ENCODING = binary;
+				STRIP_INSTALLED_PRODUCT = NO;
+				STRIP_SWIFT_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;

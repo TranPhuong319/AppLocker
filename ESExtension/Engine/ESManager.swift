@@ -60,6 +60,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     var activeConnections: [XPCConn] = []
     var authenticatedConnections: Set<ObjectIdentifier> = []
     var authenticatedMainAppPID: pid_t?
+    var authenticatedMainAppPIDVersion: Int32?
     var lastKnownMainAppPID: pid_t?
     var activeUserUID: uid_t?
     var isShutdownAuthorized: Bool = false
@@ -128,7 +129,23 @@ final class ESManager: NSObject, @unchecked Sendable {
     func isCurrentConnectionAuthenticated() -> Bool {
         guard let connection = NSXPCConnection.current() else { return false }
         let connID = ObjectIdentifier(connection)
-        return xpcConnectionLock.withLock { authenticatedConnections.contains(connID) }
+
+        // 1. Connection must have passed initial cryptographic handshake
+        let isKnown = xpcConnectionLock.withLock { authenticatedConnections.contains(connID) }
+        guard isKnown else { return false }
+
+        // 2. Fast-Path Audit Token & PID/PIDVersion Match (Anti-PID Recycling & Port Hijacking)
+        let token = connection.auditToken
+        let callerPID = audit_token_to_pid(token)
+        let callerPIDVersion = audit_token_to_pidversion(token)
+
+        return processIDLock.withLock {
+            guard let expectedPID = self.authenticatedMainAppPID,
+                  let expectedVersion = self.authenticatedMainAppPIDVersion else {
+                return false
+            }
+            return callerPID == expectedPID && callerPIDVersion == expectedVersion
+        }
     }
 
     func allowConfigAccess(
@@ -148,9 +165,13 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void) {
         guard isCurrentConnectionAuthenticated() else {
+            Logfile.endpointSecurity.fault(
+                "[ESManager] authorizeShutdown REJECTED: Connection not authenticated or PID mismatch"
+            )
             reply(false)
             return
         }
+
         stateLock.withLock {
             self.isShutdownAuthorized = authorized
         }
@@ -169,12 +190,14 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     func cacheMainAppPID(from connection: NSXPCConnection) {
         let processID = pid_t(connection.processIdentifier)
+        var auditToken = connection.auditToken
+        let pidVersion = audit_token_to_pidversion(auditToken)
         processIDLock.withLock {
             self.authenticatedMainAppPID = processID
+            self.authenticatedMainAppPIDVersion = pidVersion
             self.lastKnownMainAppPID = processID
         }
 
-        var auditToken = connection.auditToken
         let userUID = audit_token_to_euid(auditToken)
         stateLock.withLock {
             self.activeUserUID = userUID
