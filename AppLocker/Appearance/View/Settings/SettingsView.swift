@@ -225,7 +225,7 @@ struct SettingsView: View {
         case .updates:
             UpdatesSettingsTab(isMock: isMock)
         case .diagnostics:
-            LogsSettingsTab(isMock: isMock)
+            DiagnosticsSettingsTab(isMock: isMock)
         }
     }
 }

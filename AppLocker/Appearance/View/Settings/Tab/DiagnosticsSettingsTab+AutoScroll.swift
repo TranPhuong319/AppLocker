@@ -1,5 +1,5 @@
 //
-//  LogsSettingsTab+AutoScroll.swift
+//  DiagnosticsSettingsTab+AutoScroll.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 03/10/26.
@@ -87,7 +87,7 @@ final class LogDragAutoScroller {
 
 // MARK: - Drag Gesture & Auto-Scroll Wiring
 
-extension LogsSettingsTab {
+extension DiagnosticsSettingsTab {
     func logDragGesture(proxy: ScrollViewProxy) -> some Gesture {
         DragGesture(minimumDistance: 4, coordinateSpace: .named("LogViewport"))
             .onChanged { value in

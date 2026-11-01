@@ -78,7 +78,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .updates:
             return WindowLayout.settingsUpdatesSize
         case .diagnostics:
-            return WindowLayout.settingsLogsSize
+            return WindowLayout.settingsDiagnosticsSize
         }
     }
 

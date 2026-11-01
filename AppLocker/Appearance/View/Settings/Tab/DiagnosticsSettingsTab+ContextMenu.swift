@@ -1,5 +1,5 @@
 //
-//  LogsSettingsTab+ContextMenu.swift
+//  DiagnosticsSettingsTab+ContextMenu.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 03/10/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-extension LogsSettingsTab {
+extension DiagnosticsSettingsTab {
     @ViewBuilder
     func bottomBar(proxy: ScrollViewProxy) -> some View {
         HStack(spacing: 8) {
