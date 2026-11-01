@@ -62,6 +62,22 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
             NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
         }
     }
+
+    func updater(
+        _ updater: SPUUpdater,
+        userDidMake choice: SPUUserUpdateChoice,
+        forUpdate updateItem: SUAppcastItem,
+        state: SPUUserUpdateState
+    ) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            if choice == .skip {
+                self.downloadState = .notDownloaded
+                AppUpdater.shared.handleNoUpdateFound()
+                NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
+            }
+        }
+    }
 }
 
 // MARK: - AppUpdater (OWNER OF DELEGATE)
@@ -243,12 +259,10 @@ final class AppUpdater: NSObject {
         let displayVer = item.displayVersionString
         let buildVer = item.versionString
         self.availableUpdateVersion = (displayVer != buildVer) ? "\(displayVer) (\(buildVer))" : displayVer
-        NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
     }
 
     func handleNoUpdateFound() {
         self.availableUpdateVersion = nil
-        NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
     }
 
     var automaticallyChecksForUpdates: Bool {

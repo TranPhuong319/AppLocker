@@ -321,6 +321,16 @@
         }
       }
     },
+    "Applications you add will require authentication to launch." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các ứng dụng bạn thêm sẽ yêu cầu xác thực khi mở."
+          }
+        }
+      }
+    },
     "AppLocker Icon" : {
       "localizations" : {
         "vi" : {
@@ -1561,6 +1571,16 @@
         }
       }
     },
+    "No Locked Applications" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có ứng dụng bị khoá"
+          }
+        }
+      }
+    },
     "No Security Activity Found" : {
       "localizations" : {
         "vi" : {
@@ -1782,6 +1802,16 @@
         }
       }
     },
+    "Reload Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải lại nhật ký"
+          }
+        }
+      }
+    },
     "Remove" : {
       "localizations" : {
         "vi" : {
@@ -1862,6 +1892,16 @@
         }
       }
     },
+    "Retry" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử lại"
+          }
+        }
+      }
+    },
     "Reveal in Finder" : {
       "localizations" : {
         "vi" : {
@@ -1938,6 +1978,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Các sự kiện bảo mật như khoá app, cho phép và chống can thiệp sẽ xuất hiện ở đây."
+          }
+        }
+      }
+    },
+    "Security Settings Locked" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã khoá cài đặt bảo mật"
           }
         }
       }
@@ -2449,26 +2499,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn đang chuẩn bị gỡ cài đặt AppLocker. Việc làm này sẽ xoá tuỳ chọn khoá ứng dụng cho toàn bộ người dùng trên máy Mac này\n\nBạn có muốn tiếp tục không?"
-          }
-        }
-      }
-    },
-    "Reload Logs" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tải lại nhật ký"
-          }
-        }
-      }
-    },
-    "Retry" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thử lại"
           }
         }
       }

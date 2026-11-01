@@ -40,7 +40,7 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
     private static func createHostingController() -> NSHostingController<ContentView> {
         let hostingController = NSHostingController(rootView: ContentView())
         hostingController.sceneBridgingOptions = [.toolbars, .title]
-        hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
+        hostingController.sizingOptions = []
         hostingController.view.setFrameSize(WindowLayout.mainSize)
         return hostingController
     }

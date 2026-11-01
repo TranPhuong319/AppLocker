@@ -18,6 +18,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             contentView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .navigationTitle("Locked application")
                 .searchable(
                     text: $appState.searchTextLockApps,
@@ -77,6 +78,10 @@ private extension ContentView {
     var contentView: some View {
         if appState.lockedAppObjects.isEmpty {
             emptyStateView
+                .ignoresSafeArea()
+        } else if appState.filteredLockedApps.isEmpty {
+            ContentUnavailableView.search(text: appState.searchTextLockApps)
+                .ignoresSafeArea()
         } else {
             mainListView
         }
@@ -122,11 +127,19 @@ private extension ContentView {
 
     @ViewBuilder
     var emptyStateView: some View {
-        Text("There is no locked application.")
-            .foregroundStyle(.secondary)
-            .font(.title3)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .padding(.horizontal, 14)
+        ContentUnavailableView {
+            Label("No Locked Applications", systemImage: "lock.slash")
+        } description: {
+            Text("Applications you add will require authentication to launch.")
+        } actions: {
+            Button {
+                appState.openAddApp()
+            } label: {
+                Label("Add Application", systemImage: "plus")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+        }
     }
 
     @ViewBuilder
