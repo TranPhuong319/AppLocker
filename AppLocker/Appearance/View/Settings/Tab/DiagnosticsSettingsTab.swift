@@ -1,5 +1,5 @@
 //
-//  LogsSettingsTab.swift
+//  DiagnosticsSettingsTab.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 30/9/25.
@@ -9,9 +9,9 @@ import SwiftUI
 import OSLog
 import UniformTypeIdentifiers
 
-// MARK: - Logs Settings Tab
+// MARK: - Diagnostics Settings Tab
 
-struct LogsSettingsTab: View {
+struct DiagnosticsSettingsTab: View {
     let isMock: Bool
 
     @AppStorage("collapseRepeatingLogs") var collapseRepeatingLogs: Bool = true
@@ -47,11 +47,11 @@ struct LogsSettingsTab: View {
     }
 
     var body: some View {
-        logListContent
+        diagnosticsListContent
             .searchable(text: $logStore.searchText, prompt: "Search logs…")
             .modifier(LogSearchFocusModifier(isFocused: $isSearchFocused))
             .toolbar {
-                logsToolbarContent
+                diagnosticsToolbarContent
             }
             .task {
                 guard !isMock else { return }
@@ -89,10 +89,10 @@ struct LogsSettingsTab: View {
             }
     }
 
-    // MARK: - Log List Content
+    // MARK: - Diagnostics Content
 
     @ViewBuilder
-    private var logListContent: some View {
+    private var diagnosticsListContent: some View {
         if logStore.isLoading && logStore.entries.isEmpty {
             loadingPlaceholder
         } else if let error = logStore.errorMessage, logStore.entries.isEmpty {
@@ -100,11 +100,11 @@ struct LogsSettingsTab: View {
         } else if logStore.filteredEntries.isEmpty {
             emptyPlaceholder
         } else {
-            logList
+            diagnosticsList
         }
     }
 
-    private var logList: some View {
+    private var diagnosticsList: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 scrollContent
@@ -201,6 +201,6 @@ struct LogsSettingsTab: View {
 }
 
 #Preview {
-    LogsSettingsTab(isMock: true)
+    DiagnosticsSettingsTab(isMock: true)
         .frame(width: 600, height: 400)
 }

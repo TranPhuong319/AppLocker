@@ -1,5 +1,5 @@
 //
-//  LogsSettingsTab+Toolbar.swift
+//  DiagnosticsSettingsTab+Toolbar.swift
 //  AppLocker
 //
 //  Created by Doe Phương on 05/10/26.
@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-extension LogsSettingsTab {
+extension DiagnosticsSettingsTab {
     @ToolbarContentBuilder
-    var logsToolbarContent: some ToolbarContent {
+    var diagnosticsToolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             timeRangePicker
             processPicker
