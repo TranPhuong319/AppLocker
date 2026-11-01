@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-struct LockedAppConfig: Codable, Hashable {
+struct LockedAppConfig: Codable, Hashable, Sendable {
     let bundleID: String
     let path: String
     var execFile: String?

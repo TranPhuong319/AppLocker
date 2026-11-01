@@ -147,28 +147,37 @@ extension LogsSettingsTab {
     }
 
     var loadingPlaceholder: some View {
-        VStack(spacing: 12) {
+        ContentUnavailableView {
             ProgressView()
-            Text("Loading logs…").font(.caption).foregroundStyle(.secondary)
+                .controlSize(.regular)
+                .padding(.bottom, 2)
+            Text("Loading logs…")
+                .font(.headline)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     func errorPlaceholder(_ message: String) -> some View {
-        VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle").font(.title2).foregroundStyle(.orange)
-            Text("Could not load logs").fontWeight(.medium)
-            Text(message).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+        ContentUnavailableView {
+            Label("Could not load logs", systemImage: "exclamationmark.triangle.fill")
+        } description: {
+            Text(message)
+        } actions: {
+            Button("Reload Logs") {
+                logStore.startPolling()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
         }
-        .padding().frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     var emptyPlaceholder: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "text.page.slash").font(.title2).foregroundStyle(.secondary)
-            Text("No log entries found").fontWeight(.medium).foregroundStyle(.secondary)
-            Text("Try adjusting the time range or filters.").font(.caption).foregroundStyle(.tertiary)
-        }
+        ContentUnavailableView(
+            "No log entries found",
+            systemImage: "text.page.slash",
+            description: Text("Try adjusting the time range or filters.")
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 

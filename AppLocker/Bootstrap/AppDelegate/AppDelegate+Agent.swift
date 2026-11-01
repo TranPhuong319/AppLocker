@@ -117,7 +117,7 @@ extension AppDelegate {
         #endif
     }
 
-    func runLaunchctlKickstart(timeout: Duration = .seconds(3)) -> Bool {
+    func runLaunchctlKickstart(timeout: Duration = .seconds(3)) async -> Bool {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
@@ -130,7 +130,15 @@ extension AppDelegate {
 
         let start = ContinuousClock.now
         while process.isRunning && ContinuousClock.now - start < timeout {
-            usleep(50_000) // 50ms
+            do {
+                try await Task.sleep(for: .milliseconds(50))
+            } catch is CancellationError {
+                Logfile.app.info("[Bootstrap] launchctl wait task cancelled.")
+                break
+            } catch {
+                Logfile.app.warning("[Bootstrap] Sleep interrupted: \(error.localizedDescription, privacy: .public)")
+                break
+            }
         }
 
         if process.isRunning {

@@ -30,7 +30,7 @@ extension ESManager {
         let uid = audit_token_to_euid(token)
         var targetProcess = messagePtr.event.exec.target.pointee
         let cdhashData = Data(bytes: &targetProcess.cdhash, count: 20)
-        let cdhashHex = cdhashData.map { String(format: "%02x", $0) }.joined()
+        let cdhashHex = cdhashData.hexEncodedString
 
         guard isProcessBlocked(path: path, cdhashData: cdhashData, cdhashHex: cdhashHex, uid: uid) else {
             return
@@ -175,24 +175,22 @@ extension ESManager {
     private func isPathInLockedBundle(path: String, uid: uid_t) -> Bool {
         guard let userBundlePaths = lockedBundlePaths[uid], !userBundlePaths.isEmpty else { return false }
         let normalizedExecPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
-        var url = URL(fileURLWithPath: normalizedExecPath)
+        let bundleURL = URL(fileURLWithPath: normalizedExecPath).enclosingAppBundleURL
+        guard bundleURL.pathExtension.lowercased() == "app" else { return false }
 
-        while url.pathComponents.count > 1 {
-            let currentPath = url.path
-            let stdPath = (currentPath as NSString).standardizingPath
-            let normCurrent = normalizeFirmlinkPath(stdPath)
-            let matchesBundle = userBundlePaths.contains(currentPath)
-                || userBundlePaths.contains(stdPath)
-                || userBundlePaths.contains(normCurrent)
-            if matchesBundle {
-                if let bundle = Bundle(url: url), let mainExec = bundle.executablePath {
-                    let normPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
-                    let normMainExec = normalizeFirmlinkPath((mainExec as NSString).standardizingPath)
-                    return normPath == normMainExec
-                }
-                return false
+        let currentPath = bundleURL.path
+        let stdPath = (currentPath as NSString).standardizingPath
+        let normCurrent = normalizeFirmlinkPath(stdPath)
+        let matchesBundle = userBundlePaths.contains(currentPath)
+            || userBundlePaths.contains(stdPath)
+            || userBundlePaths.contains(normCurrent)
+
+        if matchesBundle {
+            if let bundle = Bundle(url: bundleURL), let mainExec = bundle.executablePath {
+                let normPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
+                let normMainExec = normalizeFirmlinkPath((mainExec as NSString).standardizingPath)
+                return normPath == normMainExec
             }
-            url.deleteLastPathComponent()
         }
         return false
     }

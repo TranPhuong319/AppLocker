@@ -7,12 +7,12 @@
 
 import AppKit
 
-enum AppSource: String {
+enum AppSource: String, Sendable {
     case user = "Applications"
     case system = "System"
 }
 
-struct InstalledApp: Identifiable, Hashable {
+struct InstalledApp: Identifiable, Hashable, Sendable {
     let id: String
     let name: String
     let originalName: String?
@@ -93,5 +93,13 @@ extension Bundle {
     @MainActor
     var appIcon: NSImage {
         NSApplication.shared.applicationIconImage ?? NSImage(named: NSImage.applicationIconName) ?? NSImage()
+    }
+}
+
+// MARK: - Pasteboard Helper
+extension NSPasteboard {
+    public func copyText(_ text: String) {
+        clearContents()
+        setString(text, forType: .string)
     }
 }

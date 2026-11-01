@@ -48,7 +48,16 @@ final class ActivityStore {
         reload()
         pollingTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(3))
+                do {
+                    try await Task.sleep(for: .seconds(3))
+                } catch is CancellationError {
+                    break
+                } catch {
+                    Logfile.app.warning(
+                        "[ActivityStore] Polling sleep interrupted: \(error.localizedDescription, privacy: .public)"
+                    )
+                    break
+                }
                 guard !Task.isCancelled, let self else { break }
                 await self.fetchLatest()
             }
@@ -82,14 +91,28 @@ final class ActivityStore {
         filterTask?.cancel()
         filterTask = Task { [weak self] in
             if debounceMs > 0 {
-                try? await Task.sleep(nanoseconds: debounceMs * 1_000_000)
+                do {
+                    try await Task.sleep(for: .milliseconds(debounceMs))
+                } catch is CancellationError {
+                    return
+                } catch {
+                    Logfile.app.warning(
+                        "[ActivityStore] Debounce sleep interrupted: \(error.localizedDescription, privacy: .public)"
+                    )
+                    return
+                }
             }
             guard !Task.isCancelled, let self else { return }
             await self.applyFilters()
         }
     }
 
-    // MARK: - Private Fetching & Parsing
+    // MARK: - Private Fetching & Filtering
+
+    private func queryActivities(since: Date, strictlyAfter: Bool) async throws -> [SecurityActivityItem] {
+        let logEntries = try await LogReader.shared.query(since: since, strictlyAfter: strictlyAfter)
+        return logEntries.compactMap { Self.parseSecurityEvent(from: $0) }
+    }
 
     private func fetchActivities() async {
         isLoading = true
@@ -97,10 +120,9 @@ final class ActivityStore {
         let since = selectedTimeRange.since
 
         do {
-            let logEntries = try await LogReader.shared.query(since: since, strictlyAfter: false)
+            let parsed = try await queryActivities(since: since, strictlyAfter: false)
             guard !Task.isCancelled else { return }
 
-            let parsed = logEntries.compactMap { Self.parseSecurityEvent(from: $0) }
             let filtered = if let cleared = clearedBeforeDate {
                 parsed.filter { $0.date > cleared }
             } else {
@@ -125,11 +147,8 @@ final class ActivityStore {
         let since = rawItems.last?.date ?? clearedBeforeDate ?? selectedTimeRange.since
 
         do {
-            let newLogEntries = try await LogReader.shared.query(since: since, strictlyAfter: true)
-            guard !Task.isCancelled, !newLogEntries.isEmpty else { return }
-
-            let newActivities = newLogEntries.compactMap { Self.parseSecurityEvent(from: $0) }
-            guard !newActivities.isEmpty else { return }
+            let newActivities = try await queryActivities(since: since, strictlyAfter: true)
+            guard !Task.isCancelled, !newActivities.isEmpty else { return }
 
             self.rawItems.append(contentsOf: newActivities)
             await self.applyFilters()
@@ -153,145 +172,11 @@ final class ActivityStore {
                     || (item.senderName?.localizedCaseInsensitiveContains(search) ?? false)
                     || (item.targetAppPath?.localizedCaseInsensitiveContains(search) ?? false)
             }
-            // Sort newest first
             let sorted = filtered.sorted { $0.date > $1.date }
             return Self.groupActivities(sorted)
         }.value
 
         guard !Task.isCancelled else { return }
         self.items = results
-    }
-
-    // MARK: - 30s Grouping & Parsing Heuristics
-
-    nonisolated static func groupActivities(
-        _ items: [SecurityActivityItem],
-        windowSeconds: TimeInterval = 30.0
-    ) -> [SecurityActivityItem] {
-        guard !items.isEmpty else { return [] }
-        var result: [SecurityActivityItem] = []
-        var current = items[0]
-
-        for item in items.dropFirst() {
-            let isSameTarget = item.targetAppName == current.targetAppName
-            let isSameType = item.type == current.type
-            let isSameReason = item.denialReason == current.denialReason
-            let isSameAction = item.tamperAction == current.tamperAction
-            let isWithinWindow = abs(item.date.timeIntervalSince(current.date)) <= windowSeconds
-
-            if isSameTarget && isSameType && isSameReason && isSameAction && isWithinWindow {
-                current.repeatCount += item.repeatCount
-            } else {
-                result.append(current)
-                current = item
-            }
-        }
-        result.append(current)
-        return result
-    }
-
-    nonisolated static func parseSecurityEvent(from entry: AppLogEntry) -> SecurityActivityItem? {
-        let msg = entry.message
-        if msg.contains("[SecurityEvent:Approved]") {
-            return parseSimpleSecurityEvent(type: .approved, message: msg, date: entry.date)
-        } else if msg.contains("[SecurityEvent:Rejected]") {
-            return parseSimpleSecurityEvent(type: .rejected, message: msg, date: entry.date)
-        } else if msg.contains("[SecurityEvent:TamperBlocked]") {
-            return parseTamperSecurityEvent(message: msg, date: entry.date)
-        }
-        return nil
-    }
-
-    nonisolated private static func parseSimpleSecurityEvent(
-        type: SecurityEventType,
-        message: String,
-        date: Date
-    ) -> SecurityActivityItem? {
-        guard let appRange = message.range(of: "App: ") else { return nil }
-        let afterApp = message[appRange.upperBound...]
-        guard let pidRange = afterApp.range(of: " (PID ") else { return nil }
-        let appName = String(afterApp[..<pidRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-
-        let afterPid = afterApp[pidRange.upperBound...]
-        guard let closeParenRange = afterPid.range(of: ")") else { return nil }
-        let pidStr = String(afterPid[..<closeParenRange.lowerBound])
-        guard let pid = Int32(pidStr) else { return nil }
-
-        var path: String?
-        if let pathRange = message.range(of: " | Path: ") {
-            let afterStart = message[pathRange.upperBound...]
-            if let reasonRange = afterStart.range(of: " | Reason: ") {
-                path = String(afterStart[..<reasonRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-            } else {
-                path = String(afterStart).trimmingCharacters(in: .whitespaces)
-            }
-        }
-
-        var denialReason: DenialReason?
-        if type == .rejected {
-            if message.contains("Reason: Timeout") {
-                denialReason = .timedOut
-            } else if message.contains("Reason: UserCancel") {
-                denialReason = .userCancelled
-            }
-        }
-
-        return SecurityActivityItem(
-            date: date,
-            type: type,
-            targetAppName: appName,
-            targetAppPath: path,
-            targetPid: pid,
-            denialReason: denialReason
-        )
-    }
-
-    nonisolated private static func parseTamperSecurityEvent(message: String, date: Date) -> SecurityActivityItem? {
-        guard let targetRaw = extractField(from: message, prefix: "Target: "),
-              let pidOpen = targetRaw.range(of: " (PID "),
-              targetRaw.hasSuffix(")") else { return nil }
-
-        let targetName = String(targetRaw[..<pidOpen.lowerBound]).trimmingCharacters(in: .whitespaces)
-        let pidText = targetRaw[pidOpen.upperBound...].dropLast()
-        guard let targetPid = Int32(pidText) else { return nil }
-
-        let senderRaw = extractField(from: message, prefix: " | Sender: ")
-        let (senderName, senderPid) = parseSenderInfo(from: senderRaw)
-        let senderPath = extractField(from: message, prefix: " | SenderPath: ", delimiter: nil)
-        let tamperAction = extractField(from: message, prefix: " | Action: ")
-
-        return SecurityActivityItem(
-            date: date,
-            type: .tamperBlocked,
-            targetAppName: targetName,
-            targetPid: targetPid,
-            senderName: senderName,
-            senderPid: senderPid,
-            senderPath: senderPath,
-            tamperAction: tamperAction
-        )
-    }
-
-    nonisolated private static func extractField(
-        from message: String,
-        prefix: String,
-        delimiter: String? = " | "
-    ) -> String? {
-        guard let range = message.range(of: prefix) else { return nil }
-        let after = message[range.upperBound...]
-        if let delimiter, let delimRange = after.range(of: delimiter) {
-            return String(after[..<delimRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-        }
-        return String(after).trimmingCharacters(in: .whitespaces)
-    }
-
-    nonisolated private static func parseSenderInfo(from raw: String?) -> (String?, Int32?) {
-        guard let raw else { return (nil, nil) }
-        guard let open = raw.range(of: " (PID "), raw.hasSuffix(")") else {
-            return (raw, nil)
-        }
-        let name = String(raw[..<open.lowerBound]).trimmingCharacters(in: .whitespaces)
-        let pidText = raw[open.upperBound...].dropLast()
-        return (name, Int32(pidText))
     }
 }

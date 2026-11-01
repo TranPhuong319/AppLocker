@@ -141,22 +141,25 @@ struct LogEntryRow: View {
     }
 
     private func copyEntry() {
-        NSPasteboard.general.clearContents()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        NSPasteboard.general.setString(
-            entry.formatted(dateFormatter: formatter),
-            forType: .string
-        )
+        NSPasteboard.general.copyText(entry.formatted(dateFormatter: formatter))
         withAnimation {
             isCopied = true
         }
         Task {
-            try? await Task.sleep(for: .seconds(1.5))
-            await MainActor.run {
-                withAnimation {
-                    isCopied = false
-                }
+            do {
+                try await Task.sleep(for: .seconds(1.5))
+            } catch is CancellationError {
+                return
+            } catch {
+                Logfile.app.warning(
+                    "[LogEntryRow] Copy timer interrupted: \(error.localizedDescription, privacy: .public)"
+                )
+                return
+            }
+            withAnimation {
+                isCopied = false
             }
         }
     }

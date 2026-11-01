@@ -53,7 +53,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             let oldTab = shared.navigator.selectedTab
             shared.navigator.selectedTab = tab
             if tab.preferredSize != oldTab.preferredSize && tab != oldTab {
-                shared.resizeWindow(for: tab, animate: false)
+                shared.resizeWindow(for: tab)
             }
         }
         guard let window = shared.window else { return }
@@ -78,7 +78,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         return constrained
     }
 
-    func resizeWindow(for tab: SettingsTab, animate: Bool = true) {
+    func resizeWindow(for tab: SettingsTab) {
         guard let window else { return }
 
         let targetContentSize = tab.preferredSize
@@ -90,9 +90,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let currentFrame = window.frame
         let widthChanged = abs(currentFrame.width - targetFrameSize.width) > 1
         let heightChanged = abs(currentFrame.height - targetFrameSize.height) > 1
-        guard widthChanged || heightChanged else {
-            return
-        }
+        guard widthChanged || heightChanged else { return }
 
         let currentTop = currentFrame.origin.y + currentFrame.size.height
         let newOriginY = currentTop - targetFrameSize.height
@@ -105,12 +103,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         let screenFrame = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame
         let finalFrame = constrained(frame: newFrame, targetSize: targetFrameSize, within: screenFrame)
-
-        if animate && window.isVisible {
-            window.setFrame(finalFrame, display: true, animate: true)
-        } else {
-            window.setFrame(finalFrame, display: true)
-        }
+        window.setFrame(finalFrame, display: true, animate: window.isVisible)
     }
 
     private func extraFrameInsets(for window: NSWindow) -> (width: CGFloat, height: CGFloat) {

@@ -224,7 +224,7 @@ struct ScrollBottomTracker: NSViewRepresentable {
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
-        DispatchQueue.main.async {
+        Task { @MainActor in
             guard let scrollView = view.enclosingScrollView else { return }
             context.coordinator.attach(to: scrollView, notify: onAtBottomChanged)
         }
@@ -236,8 +236,7 @@ struct ScrollBottomTracker: NSViewRepresentable {
 
     @MainActor
     final class Coordinator: NSObject {
-        // Required for Swift 6 nonisolated deinit cleanup of non-Sendable NSObjectProtocol
-        nonisolated(unsafe) private var token: (any NSObjectProtocol)?
+        private var token: (any NSObjectProtocol)?
 
         func attach(to scrollView: NSScrollView, notify: @escaping @Sendable (Bool) -> Void) {
             scrollView.contentView.postsBoundsChangedNotifications = true
@@ -258,7 +257,7 @@ struct ScrollBottomTracker: NSViewRepresentable {
             notify(visibleMaxY >= docHeight - 40)
         }
 
-        deinit {
+        isolated deinit {
             if let token { NotificationCenter.default.removeObserver(token) }
         }
     }

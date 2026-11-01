@@ -205,15 +205,23 @@ struct ActivityRowView: View {
 
     private func copyEntry() {
         let text = item.clipboardFormattedText(dateFormatter: dateFormatter)
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
+        NSPasteboard.general.copyText(text)
 
         withAnimation(.snappy(duration: 0.2)) {
             isCopied = true
         }
 
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 1_800_000_000)
+            do {
+                try await Task.sleep(for: .seconds(1.8))
+            } catch is CancellationError {
+                return
+            } catch {
+                Logfile.app.warning(
+                    "[ActivityRow] Copy timer interrupted: \(error.localizedDescription, privacy: .public)"
+                )
+                return
+            }
             withAnimation(.snappy(duration: 0.2)) {
                 isCopied = false
             }
@@ -221,18 +229,7 @@ struct ActivityRowView: View {
     }
 
     private func revealInFinder(path: String) {
-        let url = appBundleOrFileURL(for: path)
+        let url = URL(fileURLWithPath: path).enclosingAppBundleURL
         NSWorkspace.shared.activateFileViewerSelecting([url])
-    }
-
-    private func appBundleOrFileURL(for path: String) -> URL {
-        var current = URL(fileURLWithPath: path)
-        while current.pathComponents.count > 1 {
-            if current.pathExtension == "app" {
-                return current
-            }
-            current.deleteLastPathComponent()
-        }
-        return URL(fileURLWithPath: path)
     }
 }

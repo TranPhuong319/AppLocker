@@ -38,7 +38,7 @@ struct ActivitySettingsTab: View {
             .toolbar {
                 activityToolbarContent
             }
-            .onAppear {
+            .task {
                 guard !isMock else { return }
                 activityStore.selectedTimeRange = storedTimeRange
                 activityStore.startPolling()
@@ -96,46 +96,37 @@ struct ActivitySettingsTab: View {
     // MARK: - Placeholders
 
     private var loadingPlaceholder: some View {
-        VStack(spacing: 12) {
+        ContentUnavailableView {
             ProgressView()
                 .controlSize(.regular)
+                .padding(.bottom, 2)
             Text("Loading activity…")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.headline)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func errorPlaceholder(_ message: String) -> some View {
-        VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.title2)
-                .foregroundStyle(.orange)
-            Text("Could not load activity")
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("Could not load activity", systemImage: "exclamationmark.triangle.fill")
+        } description: {
             Text(message)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+        } actions: {
+            Button("Retry") {
+                activityStore.startPolling()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
         }
-        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var emptyPlaceholder: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "shield.slash")
-                .font(.system(size: 32))
-                .foregroundStyle(.secondary)
-            Text("No Security Activity Found")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            Text("Security events like app locks, approvals, and tamper attempts will appear here.")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 320)
-        }
+        ContentUnavailableView(
+            "No Security Activity Found",
+            systemImage: "shield.slash",
+            description: Text("Security events like app locks, approvals, and tamper attempts will appear here.")
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -165,6 +156,14 @@ struct ActivitySettingsTab: View {
         Button(action: {
             refreshTrigger += 1
             guard !isMock else { return }
+            #if DEBUG
+            if NSEvent.modifierFlags.contains(.option) {
+                activityStore.stopPolling()
+                activityStore.items = []
+                activityStore.errorMessage = "The operation couldn’t be completed. (OSLogStore error 1 - Access Denied)"
+                return
+            }
+            #endif
             activityStore.reload()
         }, label: {
             Label {
@@ -201,5 +200,5 @@ struct ActivitySettingsTab: View {
 
 #Preview {
     ActivitySettingsTab(isMock: true)
-        .frame(width: 800, height: 500)
+        .frame(width: 680, height: 460)
 }

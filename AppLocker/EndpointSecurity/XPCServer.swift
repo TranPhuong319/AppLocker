@@ -12,9 +12,10 @@ import Observation
 import os
 
 @Observable
-final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
-    static let shared = XPCServer()
-    @MainActor var lastAuthTimestampsByPath: [String: Date] = [:]
+@MainActor
+final class XPCServer: NSObject, ESXPCProtocol {
+    nonisolated static let shared = XPCServer()
+    var lastAuthTimestampsByPath: [String: Date] = [:]
 
     var authError: String?
     var pendingApps: [PendingAppItem] = []
@@ -30,7 +31,7 @@ final class XPCServer: NSObject, ESXPCProtocol, @unchecked Sendable {
     var isUpgradingToBatch: Bool = false
     var isRestartingBatchWithNewApps: Bool = false
 
-    override init() { super.init() }
+    nonisolated override init() { super.init() }
 
     // MARK: - Luồng Phụ (Background XPC Receiver)
     // Extension -> App notification when exec attempted and app suspended for pending verification

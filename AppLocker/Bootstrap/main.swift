@@ -8,11 +8,13 @@
 import AppKit
 import Darwin
 
+#if !DEBUG
 // Chặn dyld injection khi chạy ở môi trường dev/hackintosh tắt SIP
 if getenv("DYLD_INSERT_LIBRARIES") != nil {
     fputs("[SECURITY] Malicious DYLD environment variables detected. Terminating process.\n", stderr)
     exit(127)
 }
+#endif
 
 // Tắt log rác hệ thống (AppIntents / OS Activity) và tự động đăng ký Shortcuts
 setenv("OS_ACTIVITY_MODE", "disable", 1)
