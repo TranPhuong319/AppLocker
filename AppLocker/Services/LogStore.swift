@@ -63,7 +63,16 @@ final class LogStore {
         reload()
         pollingTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(3))
+                do {
+                    try await Task.sleep(for: .seconds(3))
+                } catch is CancellationError {
+                    break
+                } catch {
+                    Logfile.app.warning(
+                        "[LogStore] Polling sleep interrupted: \(error.localizedDescription, privacy: .public)"
+                    )
+                    break
+                }
                 guard !Task.isCancelled, let self else { break }
                 await self.fetchLatest()
             }
@@ -97,7 +106,16 @@ final class LogStore {
         filterTask?.cancel()
         filterTask = Task { [weak self] in
             if debounceMs > 0 {
-                try? await Task.sleep(nanoseconds: debounceMs * 1_000_000)
+                do {
+                    try await Task.sleep(for: .milliseconds(debounceMs))
+                } catch is CancellationError {
+                    return
+                } catch {
+                    Logfile.app.warning(
+                        "[LogStore] Debounce sleep interrupted: \(error.localizedDescription, privacy: .public)"
+                    )
+                    return
+                }
             }
             guard !Task.isCancelled, let self else { return }
             await self.applyFilters()

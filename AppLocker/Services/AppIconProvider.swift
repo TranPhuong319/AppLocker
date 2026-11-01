@@ -117,13 +117,6 @@ final class AppIconProvider {
     }
 
     private func resolveAppBundlePath(from path: String) -> String {
-        var url = URL(fileURLWithPath: path)
-        while url.path != "/" && url.pathComponents.count > 1 {
-            if url.pathExtension.lowercased() == "app" {
-                return url.path
-            }
-            url = url.deletingLastPathComponent()
-        }
-        return path
+        URL(fileURLWithPath: path).enclosingAppBundleURL.path
     }
 }

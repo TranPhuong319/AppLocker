@@ -2452,6 +2452,26 @@
           }
         }
       }
+    },
+    "Reload Logs" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải lại nhật ký"
+          }
+        }
+      }
+    },
+    "Retry" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử lại"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

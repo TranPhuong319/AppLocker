@@ -54,16 +54,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     Logfile.app.debug("[Bootstrap] Parent process exited.")
                 }
                 self?.enforceSingleInstance(ignoringPID: parentProcessID)
-                self?.finishLaunchSetup()
+                await self?.finishLaunchSetup()
             }
         } else {
             enforceSingleInstance()
-            finishLaunchSetup()
+            Task { @MainActor [weak self] in
+                await self?.finishLaunchSetup()
+            }
         }
     }
 
     @MainActor
-    private func finishLaunchSetup() {
+    private func finishLaunchSetup() async {
 
 #if !DEBUG
         checkAndMoveToApplications()
@@ -75,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 #if !DEBUG
         if !isLaunchedByLaunchd && !isFirstStart {
-            if handoverToLaunchdIfManual() {
+            if await handoverToLaunchdIfManual() {
                 return
             }
         }
@@ -96,7 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 #if !DEBUG
     @MainActor
-    private func handoverToLaunchdIfManual() -> Bool {
+    private func handoverToLaunchdIfManual() async -> Bool {
         if !isAgentActive {
             Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
             _ = manageAgent(action: .install)
@@ -111,14 +113,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
-        var kickstartSucceeded = runLaunchctlKickstart(timeout: .seconds(3))
+        var kickstartSucceeded = await runLaunchctlKickstart(timeout: .seconds(3))
 
         // If kickstart failed or timed out (e.g. launchd in penalty box or corrupted agent state):
         if !kickstartSucceeded {
             Logfile.app.warning("[Bootstrap] Initial launchctl kickstart failed. Force re-registering agent...")
             let reRegistered = forceReRegisterAgent()
             if reRegistered {
-                kickstartSucceeded = runLaunchctlKickstart(timeout: .seconds(3))
+                kickstartSucceeded = await runLaunchctlKickstart(timeout: .seconds(3))
             }
         }
 

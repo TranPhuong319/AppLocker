@@ -143,11 +143,11 @@ final class HotKeyManager {
         case resumeProtection = 2
     }
 
-    nonisolated(unsafe) private var appListHotKeyRef: EventHotKeyRef?
-    nonisolated(unsafe) private var resumeHotKeyRef: EventHotKeyRef?
-    nonisolated(unsafe) private var eventHandlerRef: EventHandlerRef?
-    nonisolated(unsafe) private var protectionStatusObserver: (any NSObjectProtocol)?
-    nonisolated(unsafe) private var hotKeySettingsObserver: (any NSObjectProtocol)?
+    private var appListHotKeyRef: EventHotKeyRef?
+    private var resumeHotKeyRef: EventHotKeyRef?
+    private var eventHandlerRef: EventHandlerRef?
+    private var protectionStatusObserver: (any NSObjectProtocol)?
+    private var hotKeySettingsObserver: (any NSObjectProtocol)?
 
     init() {
         installEventHandler()
@@ -155,7 +155,7 @@ final class HotKeyManager {
         setupObservers()
     }
 
-    deinit {
+    isolated deinit {
         if let protectionStatusObserver {
             NotificationCenter.default.removeObserver(protectionStatusObserver)
         }

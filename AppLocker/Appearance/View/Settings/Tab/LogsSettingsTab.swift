@@ -53,7 +53,7 @@ struct LogsSettingsTab: View {
             .toolbar {
                 logsToolbarContent
             }
-            .onAppear {
+            .task {
                 guard !isMock else { return }
                 logStore.selectedTimeRange = storedTimeRange
                 logStore.selectedSubsystem = storedSubsystem

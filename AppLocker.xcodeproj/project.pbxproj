@@ -23,6 +23,7 @@
 		E0AC00042F59E36600D46B02 /* ActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00032F59E36600D46B02 /* ActivityStore.swift */; };
 		E0AC00062F59E36600D46B03 /* ActivityRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00052F59E36600D46B03 /* ActivityRowView.swift */; };
 		E0AC00082F59E36600D46B04 /* ActivitySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */; };
+		E0AC000A2F59E36600D46B05 /* ActivityStore+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */; };
 		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
 		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 		E0DA1B44301AF5D300ABE155 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
@@ -191,6 +192,7 @@
 		E0AC00032F59E36600D46B02 /* ActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityStore.swift; sourceTree = "<group>"; };
 		E0AC00052F59E36600D46B03 /* ActivityRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRowView.swift; sourceTree = "<group>"; };
 		E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySettingsTab.swift; sourceTree = "<group>"; };
+		E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityStore+Parsing.swift"; sourceTree = "<group>"; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
@@ -650,6 +652,7 @@
 				E0FD75E32F59E36600D46B98 /* LogFilterModels.swift */,
 				E0AC00012F59E36600D46B01 /* ActivityModel.swift */,
 				E0AC00032F59E36600D46B02 /* ActivityStore.swift */,
+				E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1045,6 +1048,7 @@
 				E0FD761C2F59E36600D46B9B /* LogsSettingsTab+Toolbar.swift in Sources */,
 				E0AC00022F59E36600D46B01 /* ActivityModel.swift in Sources */,
 				E0AC00042F59E36600D46B02 /* ActivityStore.swift in Sources */,
+				E0AC000A2F59E36600D46B05 /* ActivityStore+Parsing.swift in Sources */,
 				E0AC00062F59E36600D46B03 /* ActivityRowView.swift in Sources */,
 				E0AC00082F59E36600D46B04 /* ActivitySettingsTab.swift in Sources */,
 				E0FDB0022F59E36600D46B01 /* ThemeThumbnailView.swift in Sources */,
@@ -1418,8 +1422,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				INFOPLIST_KEY_NSPrincipalClass = AppLocker.CustomApplication;
 				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications";
-				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -1478,8 +1482,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
+				INFOPLIST_KEY_NSPrincipalClass = AppLocker.CustomApplication;
 				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "This application needs permission to install System Extension to monitor and block startup applications in the list of locked applications";
-				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;

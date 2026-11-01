@@ -8,6 +8,30 @@
 import Foundation
 import Security
 
+// MARK: - Data Hex Encoding
+
+extension Data {
+    public var hexEncodedString: String {
+        map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+// MARK: - URL App Bundle Resolution
+
+extension URL {
+    /// Returns the enclosing .app bundle URL if this URL is inside an application bundle, or self otherwise.
+    public var enclosingAppBundleURL: URL {
+        var current = self
+        while current.pathComponents.count > 1 {
+            if current.pathExtension.lowercased() == "app" {
+                return current
+            }
+            current.deleteLastPathComponent()
+        }
+        return self
+    }
+}
+
 /// Extract cdhash (Code Directory Hash) of a signed binary/bundle on disk in <1ms without reading full binary data.
 public func cdHash(for path: String) -> String? {
     let url = URL(fileURLWithPath: path)
@@ -23,5 +47,5 @@ public func cdHash(for path: String) -> String? {
           let primaryCDHash = cdhashes.first else {
         return nil
     }
-    return primaryCDHash.map { String(format: "%02x", $0) }.joined()
+    return primaryCDHash.hexEncodedString
 }

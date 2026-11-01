@@ -145,9 +145,7 @@ final class LogSelectionManager {
             .map { $0.entry.formatted(dateFormatter: dateFormatter) }
             .joined(separator: "\n")
 
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-
+        NSPasteboard.general.copyText(text)
         triggerCopiedFeedback()
     }
 
@@ -155,11 +153,7 @@ final class LogSelectionManager {
         _ entry: AppLogEntry,
         dateFormatter: DateFormatter
     ) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(
-            entry.formatted(dateFormatter: dateFormatter),
-            forType: .string
-        )
+        NSPasteboard.general.copyText(entry.formatted(dateFormatter: dateFormatter))
     }
 
     func pruneInvalidSelection(validIDs: Set<UUID>) {

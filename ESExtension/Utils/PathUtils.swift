@@ -61,17 +61,15 @@ func normalizeFirmlinkPath(_ path: String) -> String {
 extension ESManager {
     // Compute app bundle name for an exec path (best-effort).
     func computeAppName(forExecPath path: String) -> String {
-        var url = URL(fileURLWithPath: path)
-        while url.pathComponents.count > 1 {
-            if url.pathExtension == "app" {
-                let bundle = Bundle(url: url)
-                let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-                    ?? bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String
-                return name ?? url.deletingPathExtension().lastPathComponent
-            }
-            url.deleteLastPathComponent()
+        let fileURL = URL(fileURLWithPath: path)
+        let bundleURL = fileURL.enclosingAppBundleURL
+        if bundleURL.pathExtension.lowercased() == "app" {
+            let bundle = Bundle(url: bundleURL)
+            let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+                ?? bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String
+            return name ?? bundleURL.deletingPathExtension().lastPathComponent
         }
-        return URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+        return fileURL.deletingPathExtension().lastPathComponent
     }
 
     // MARK: - Protected Paths & Verification

@@ -100,8 +100,18 @@ struct SettingsView: View {
             .navigationSplitViewColumnWidth(min: 170, ideal: 170, max: 240)
         } detail: {
             detailContent(for: navigator.selectedTab)
-                .padding(.top, (navigator.selectedTab == .diagnostics || navigator.selectedTab == .activity) ? 0 : -16)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .id(navigator.selectedTab)
+                .padding(
+                    .top,
+                    (navigator.selectedTab == .diagnostics || navigator.selectedTab == .activity) ? 0 : -16
+                )
+                .frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity,
+                    alignment: (navigator.selectedTab == .diagnostics || navigator.selectedTab == .activity)
+                        ? .center
+                        : .topLeading
+                )
                 .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {
                     ToolbarItemGroup(placement: .navigation) {

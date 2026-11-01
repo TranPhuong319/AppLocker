@@ -5,10 +5,11 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
-import SwiftUI
 import AppKit
+import SwiftUI
 
-class WelcomeWindowController: NSWindowController, NSWindowDelegate {
+@MainActor
+final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
     static var shared: WelcomeWindowController?
     var isCompletingOnboarding = false
 

@@ -25,22 +25,7 @@ enum SystemEnvironment {
     }
 
     static var osVersion: String {
-        let version = ProcessInfo.processInfo.operatingSystemVersion
-        let patchSuffix = version.patchVersion > 0 ? ".\(version.patchVersion)" : ""
-        let versionStr = "\(version.majorVersion).\(version.minorVersion)\(patchSuffix)"
-
-        var size = 0
-        sysctlbyname("kern.osversion", nil, &size, nil, 0)
-        if size > 0 {
-            var buffer = [CChar](repeating: 0, count: size)
-            sysctlbyname("kern.osversion", &buffer, &size, nil, 0)
-            let build = buffer.withUnsafeBufferPointer { ptr -> String in
-                guard let baseAddress = ptr.baseAddress else { return "" }
-                return String(cString: baseAddress)
-            }.trimmingCharacters(in: .whitespacesAndNewlines)
-            return "macOS \(versionStr) (\(build))"
-        }
-        return "macOS \(versionStr)"
+        "macOS " + ProcessInfo.processInfo.operatingSystemVersionString.replacingOccurrences(of: "Version ", with: "")
     }
 
     static var isRunningUnderRosetta: Bool {
