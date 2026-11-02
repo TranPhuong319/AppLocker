@@ -13,10 +13,28 @@ final class AppIconProvider {
     static let shared = AppIconProvider()
 
     private let cache = NSCache<NSString, NSImage>()
+    private var placeholderCache: [Int: NSImage] = [:]
 
     private init() {
-        cache.countLimit = 100
-        cache.totalCostLimit = 10 * 1024 * 1024
+        cache.countLimit = 500
+        cache.totalCostLimit = 50 * 1024 * 1024
+    }
+
+    func defaultPlaceholder(size: CGFloat = 32) -> NSImage {
+        let intSize = Int(size)
+        if let cached = placeholderCache[intSize] {
+            return cached
+        }
+        let rawIcon = NSWorkspace.shared.icon(for: .applicationBundle)
+        let rasterized = rasterize(image: rawIcon, targetSize: size)
+        placeholderCache[intSize] = rasterized
+        return rasterized
+    }
+
+    func preloadIcons(for paths: [String], size: CGFloat = 32) {
+        for path in paths {
+            _ = icon(for: path, size: size)
+        }
     }
 
     func cachedIcon(for path: String, size: CGFloat = 32) -> NSImage? {
