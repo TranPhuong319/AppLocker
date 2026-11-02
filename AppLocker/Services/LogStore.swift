@@ -18,7 +18,7 @@ import UniformTypeIdentifiers
 final class LogStore {
     var entries: [AppLogEntry] = []
     var filteredEntries: [AppLogEntry] = []
-    var isLoading: Bool = false
+    var isLoading: Bool = true
     var errorMessage: String?
 
     var searchText: String = "" {
@@ -190,8 +190,8 @@ final class LogStore {
                 parsed
             }
             self.entries = filtered
-            self.isLoading = false
             await self.applyFilters()
+            self.isLoading = false
         } catch {
             guard !Task.isCancelled else { return }
             self.isLoading = false
