@@ -93,9 +93,9 @@ struct DiagnosticsSettingsTab: View {
 
     @ViewBuilder
     private var diagnosticsListContent: some View {
-        if logStore.isLoading && logStore.entries.isEmpty {
+        if logStore.isLoading && logStore.filteredEntries.isEmpty {
             loadingPlaceholder
-        } else if let error = logStore.errorMessage, logStore.entries.isEmpty {
+        } else if let error = logStore.errorMessage, logStore.filteredEntries.isEmpty {
             errorPlaceholder(error)
         } else if logStore.filteredEntries.isEmpty {
             emptyPlaceholder

@@ -17,7 +17,7 @@ import SwiftUI
 final class ActivityStore {
     var rawItems: [SecurityActivityItem] = []
     var items: [SecurityActivityItem] = []
-    var isLoading: Bool = false
+    var isLoading: Bool = true
     var errorMessage: String?
 
     var searchText: String = "" {
@@ -130,8 +130,8 @@ final class ActivityStore {
             }
 
             self.rawItems = filtered
-            self.isLoading = false
             await self.applyFilters()
+            self.isLoading = false
         } catch {
             guard !Task.isCancelled else { return }
             self.isLoading = false
