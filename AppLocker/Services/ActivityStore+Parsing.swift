@@ -66,9 +66,9 @@ extension ActivityStore {
             ?? extractField(from: message, prefix: " | Path: ", delimiter: nil)
 
         let denialReason: DenialReason? = if type == .rejected {
-            if message.contains("Reason: Timeout") {
+            if message.contains("Reason: \(AuthDecisionReason.timeout.rawValue)") {
                 .timedOut
-            } else if message.contains("Reason: UserCancel") {
+            } else if message.contains("Reason: \(AuthDecisionReason.userCancel.rawValue)") {
                 .userCancelled
             } else {
                 nil

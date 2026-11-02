@@ -31,7 +31,7 @@ extension XPCServer {
             }
             if !Task.isCancelled && self.remainingSeconds == 0 {
                 Logfile.appXPC.warning("[Auth] Timeout reached! Auto cancelling all pending PIDs.")
-                self.handleCancel(reason: "Timeout")
+                self.handleCancel(reason: AuthDecisionReason.timeout.rawValue)
             }
         }
     }
@@ -117,7 +117,10 @@ extension XPCServer {
     }
 
     @MainActor
-    private func handleBatchFailure(batchApps: [PendingAppItem], reason: String = "UserCancel") {
+    private func handleBatchFailure(
+        batchApps: [PendingAppItem],
+        reason: String = AuthDecisionReason.userCancel.rawValue
+    ) {
         let allPIDs = batchApps.map(\.pid)
         guard !allPIDs.isEmpty else { return }
         Logfile.appXPC.warning(
@@ -148,12 +151,15 @@ extension XPCServer {
             """
         )
         for app in batchApps where app.isSelected && approvedPIDs.contains(app.pid) {
-            AppState.shared.manager.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
+            LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
         }
+        let reason = rejectedPIDs.isEmpty
+            ? AuthDecisionReason.userApprove.rawValue
+            : AuthDecisionReason.userCancel.rawValue
         ESXPCClient.shared.processPendingApps(
             approvedPIDs: approvedPIDs,
             rejectedPIDs: rejectedPIDs,
-            rejectionReason: "UserCancel"
+            rejectionReason: reason
         ) { _ in }
     }
 
@@ -182,7 +188,7 @@ extension XPCServer {
     }
 
     @MainActor
-    func handleCancel(reason: String = "UserCancel") {
+    func handleCancel(reason: String = AuthDecisionReason.userCancel.rawValue) {
         stopCountdownTimer()
         isAuthenticatingSingleApp = false
         isAuthenticatingBatch = false

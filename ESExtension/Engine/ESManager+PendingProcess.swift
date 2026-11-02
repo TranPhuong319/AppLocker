@@ -139,7 +139,8 @@ extension ESManager {
         Logfile.endpointSecurity.notice(
             """
             [SecurityEvent:Rejected] App: \(app.name, privacy: .public) \
-            (PID \(pid, privacy: .public)) | Path: \(app.path, privacy: .public) | Reason: Timeout
+            (PID \(pid, privacy: .public)) | Path: \(app.path, privacy: .public) \
+            | Reason: \(AuthDecisionReason.timeout.rawValue, privacy: .public)
             """
         )
 
@@ -159,7 +160,11 @@ extension ESManager {
 
     // MARK: - Batch Execution (SIGCONT / SIGKILL)
 
-    func processPendingBatch(approved: [Int32], rejected: [Int32], rejectionReason: String = "UserCancel") -> Bool {
+    func processPendingBatch(
+        approved: [Int32],
+        rejected: [Int32],
+        rejectionReason: String = AuthDecisionReason.userCancel.rawValue
+    ) -> Bool {
         let approvedCount = processApprovedPIDs(approved)
         let rejectedCount = processRejectedPIDs(rejected, reason: rejectionReason)
         let processedCount = approvedCount + rejectedCount

@@ -83,10 +83,16 @@ extension ESXPCClient {
     func processPendingApps(
         approvedPIDs: [Int32],
         rejectedPIDs: [Int32],
-        rejectionReason: String = "UserCancel",
+        rejectionReason: String? = nil,
         retry: Int = 0,
         completion: @escaping @Sendable (Bool) -> Void
     ) {
+        let finalReason = rejectionReason ?? (
+            rejectedPIDs.isEmpty
+                ? AuthDecisionReason.userApprove.rawValue
+                : AuthDecisionReason.userCancel.rawValue
+        )
+
         xpcQueue.async { [weak self] in
             guard let self else {
                 completion(false)
@@ -108,7 +114,7 @@ extension ESXPCClient {
                     self?.processPendingApps(
                         approvedPIDs: approvedPIDs,
                         rejectedPIDs: rejectedPIDs,
-                        rejectionReason: rejectionReason,
+                        rejectionReason: finalReason,
                         retry: retry + 1,
                         completion: completion
                     )
@@ -122,13 +128,13 @@ extension ESXPCClient {
             proxy.processPendingApps(
                 approvedPIDs: approvedPIDs,
                 rejectedPIDs: rejectedPIDs,
-                rejectionReason: rejectionReason
+                rejectionReason: finalReason
             ) { success in
                 Logfile.appXPC.debug(
                     """
                     [ESXPCClient] processPendingApps reply: \(success, privacy: .public) \
                     (Approved: \(approvedPIDs, privacy: .public), Rejected: \(rejectedPIDs, privacy: .public), \
-                    Reason: \(rejectionReason, privacy: .public))
+                    Reason: \(finalReason, privacy: .public))
                     """
                 )
                 completion(success)
