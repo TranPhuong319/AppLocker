@@ -51,13 +51,13 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
         config.title = String(localized: "Locked application")
         config.styleMask = [.titled, .closable, .fullSizeContentView]
         config.titleVisibility = .visible
-        config.titlebarAppearsTransparent = true
+        config.titlebarAppearsTransparent = false
         config.level = .floating
         config.size = size
         config.minSize = size
         config.maxSize = size
-        config.isOpaque = false
-        config.backgroundColor = .clear
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
 
         let window = WindowManager.createWindow(contentViewController: contentVC, configuration: config)
         window.titlebarSeparatorStyle = .none

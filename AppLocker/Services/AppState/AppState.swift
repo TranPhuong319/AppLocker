@@ -16,29 +16,11 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
 
     let selfBundlePath = Bundle.main.bundleURL.path
     let selfBundleName = Bundle.main.bundleURL.lastPathComponent
-    var metadataQuery: NSMetadataQuery?
-    @ObservationIgnored
-    var spotlightTask: Task<Void, Never>?
-    @ObservationIgnored
-    var appScanTask: Task<Void, Never>?
-    @ObservationIgnored
-    var cachedFileSystemApps: [InstalledApp] = []
-    @ObservationIgnored
-    var cachedSpotlightApps: [InstalledApp] = []
-    var lastInstalledPathSet: Set<String> = []
 
     @ObservationIgnored
     private var searchUnlockableAppsTask: Task<Void, Never>?
     @ObservationIgnored
     var pendingMissingCheckTask: Task<Void, Never>?
-    @ObservationIgnored
-    var cdhashScanTask: Task<Void, Never>?
-    @ObservationIgnored
-    var cdhashPeriodicTask: Task<Void, Never>?
-    @ObservationIgnored
-    var directoryWatcherDebounceTask: Task<Void, Never>?
-    @ObservationIgnored
-    var directoryWatcherSource: DispatchSourceFileSystemObject?
 
     var manager: LockES
     var showingAddApp = false
@@ -84,52 +66,51 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     }
 
     init(manager: LockES? = nil, isMock: Bool = false) {
-        self.manager = manager ?? LockES()
+        self.manager = manager ?? LockES.shared
         self.isMock = isMock
 
         super.init()
 
         if !isMock {
-            self.manager.bootstrap { [weak self] in
-                self?.refreshAppLists()
-            }
-            refreshInstalledApps()
-            setupSpotlightQuery()
-            startApplicationsWatcher()
-            setupApplicationLifecycleObservers()
-            setupPeriodicCDHashScan()
+            setupNotificationObservers()
             refreshAppLists()
         }
     }
 
     deinit {
-        cdhashScanTask?.cancel()
-        cdhashPeriodicTask?.cancel()
-        directoryWatcherDebounceTask?.cancel()
         pendingMissingCheckTask?.cancel()
-        directoryWatcherSource?.cancel()
+        searchUnlockableAppsTask?.cancel()
         NotificationCenter.default.removeObserver(self)
     }
 
-    private func setupPeriodicCDHashScan() {
-        cdhashPeriodicTask?.cancel()
-        cdhashPeriodicTask = Task { @MainActor [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1800))
-                guard !Task.isCancelled, let self = self else { break }
-                self.verifyAndHealLockedCDHashes()
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            forName: .installedAppsDidUpdate,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshAppLists()
             }
         }
-    }
 
-    private func setupApplicationLifecycleObservers() {
+        NotificationCenter.default.addObserver(
+            forName: .lockedAppsDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshAppLists()
+            }
+        }
+
         NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.refreshInstalledApps()
+                AppScannerService.shared.refreshInstalledApps()
                 self?.refreshAppLists()
             }
         }

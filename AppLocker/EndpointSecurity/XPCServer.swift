@@ -41,11 +41,15 @@ final class XPCServer: NSObject, ESXPCProtocol {
         )
 
         Task { @MainActor in
-            if AppState.shared.manager.isProtectionDisabled {
+            if LockES.shared.isProtectionDisabled {
                 Logfile.appXPC.info(
                     "[Auth] Protection disabled. Approving PID \(pid, privacy: .public) (\(name, privacy: .public))"
                 )
-                ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+                ESXPCClient.shared.processPendingApps(
+                    approvedPIDs: [pid],
+                    rejectedPIDs: [],
+                    rejectionReason: AuthDecisionReason.userApprove.rawValue
+                ) { _ in }
                 return
             }
             XPCServer.shared.addPendingAuth(name: name, path: path, cdhash: cdhash, pid: pid)
@@ -111,7 +115,7 @@ final class XPCServer: NSObject, ESXPCProtocol {
 
     @MainActor
     private func pruneExpiredGracePeriodEntries() {
-        let timeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
+        let timeoutMinutes = LockES.shared.autoLockTimeoutMinutes
         guard timeoutMinutes > 0 else { return }
         let cutoff = Date().addingTimeInterval(-Double(timeoutMinutes * 60))
         self.lastAuthTimestampsByPath = self.lastAuthTimestampsByPath.filter { $0.value > cutoff }
@@ -120,21 +124,29 @@ final class XPCServer: NSObject, ESXPCProtocol {
     @MainActor
     private func checkGracePeriod(name: String, path: String, pid: Int32) -> Bool {
         pruneExpiredGracePeriodEntries()
-        let timeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
+        let timeoutMinutes = LockES.shared.autoLockTimeoutMinutes
         if timeoutMinutes > 0, let lastAuth = self.lastAuthTimestampsByPath[path] {
             let elapsed = Date().timeIntervalSince(lastAuth)
             if elapsed < Double(timeoutMinutes * 60) {
                 Logfile.appXPC.info(
                     "[Auth] Grace period active (\(Int(elapsed))s) for \(name, privacy: .public). Auto-approving."
                 )
-                ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+                ESXPCClient.shared.processPendingApps(
+                    approvedPIDs: [pid],
+                    rejectedPIDs: [],
+                    rejectionReason: AuthDecisionReason.userApprove.rawValue
+                ) { _ in }
                 return true
             }
         } else if timeoutMinutes == -1, self.lastAuthTimestampsByPath[path] != nil {
             Logfile.appXPC.info(
                 "[Auth] Grace period active (Sleep) for \(name, privacy: .public). Auto-approving."
             )
-            ESXPCClient.shared.processPendingApps(approvedPIDs: [pid], rejectedPIDs: []) { _ in }
+            ESXPCClient.shared.processPendingApps(
+                approvedPIDs: [pid],
+                rejectedPIDs: [],
+                rejectionReason: AuthDecisionReason.userApprove.rawValue
+            ) { _ in }
             return true
         }
         return false
@@ -295,8 +307,12 @@ extension XPCServer {
             Logfile.appXPC.notice(
                 "[Auth] Auth OK for \(app.name, privacy: .public) (PID: \(app.pid, privacy: .public))"
             )
-            AppState.shared.manager.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
-            ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
+            LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
+            ESXPCClient.shared.processPendingApps(
+                approvedPIDs: [app.pid],
+                rejectedPIDs: [],
+                rejectionReason: AuthDecisionReason.userApprove.rawValue
+            ) { _ in }
         } else {
             handleSingleAppRejection(app: app, error: error)
         }
@@ -310,7 +326,7 @@ extension XPCServer {
     private func handleSingleAppRejection(app: PendingAppItem, error: Error?) {
         let rejectionReason: String
         if let laError = error as? LAError, laError.code == .userCancel {
-            rejectionReason = "UserCancel"
+            rejectionReason = AuthDecisionReason.userCancel.rawValue
             Logfile.appXPC.notice(
                 """
                 [Auth] Cancelled by user. Rejecting PID: \(app.pid, privacy: .public) \
@@ -318,7 +334,7 @@ extension XPCServer {
                 """
             )
         } else if let laError = error as? LAError, laError.code == .appCancel {
-            rejectionReason = "Timeout"
+            rejectionReason = AuthDecisionReason.timeout.rawValue
             Logfile.appXPC.notice(
                 """
                 [Auth] Watchdog timeout cancelled prompt. Rejecting PID: \(app.pid, privacy: .public) \
@@ -326,7 +342,7 @@ extension XPCServer {
                 """
             )
         } else if let error {
-            rejectionReason = "UserCancel"
+            rejectionReason = AuthDecisionReason.userCancel.rawValue
             Logfile.appXPC.error(
                 """
                 [Auth] Auth failed with error: \(error.localizedDescription, privacy: .public). \
@@ -334,7 +350,7 @@ extension XPCServer {
                 """
             )
         } else {
-            rejectionReason = "Timeout"
+            rejectionReason = AuthDecisionReason.timeout.rawValue
             Logfile.appXPC.notice(
                 "[Auth] Watchdog timeout forced rejection for PID: \(app.pid, privacy: .public)"
             )
@@ -354,8 +370,12 @@ extension XPCServer {
         self.currentSingleAppPID = nil
         if success {
             self.pendingApps.removeAll { $0.id == app.id }
-            AppState.shared.manager.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
-            ESXPCClient.shared.processPendingApps(approvedPIDs: [app.pid], rejectedPIDs: []) { _ in }
+            LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
+            ESXPCClient.shared.processPendingApps(
+                approvedPIDs: [app.pid],
+                rejectedPIDs: [],
+                rejectionReason: AuthDecisionReason.userApprove.rawValue
+            ) { _ in }
         }
         if !self.pendingApps.isEmpty {
             self.processIncomingQueue()

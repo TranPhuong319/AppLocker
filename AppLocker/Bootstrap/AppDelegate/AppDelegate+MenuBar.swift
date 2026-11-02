@@ -62,7 +62,7 @@ extension AppDelegate: NSMenuDelegate {
         let symbolName: String
         if !ExtensionInstaller.shared.isInstalled {
             symbolName = "lock.trianglebadge.exclamationmark.fill"
-        } else if AppState.shared.manager.isProtectionDisabled {
+        } else if LockES.shared.isProtectionDisabled {
             symbolName = "lock.open.fill"
         } else if AppUpdater.shared.hasAvailableUpdate {
             symbolName = "arrowshape.down.circle"
@@ -161,7 +161,7 @@ extension AppDelegate: NSMenuDelegate {
         )
         menu.addItem(infoItem)
 
-        if AppState.shared.manager.isProtectionDisabled {
+        if LockES.shared.isProtectionDisabled {
             let resumeShortcut = HotKeyShortcut.currentResumeProtection
             let resumeItem = NSMenuItem(
                 title: String(localized: "Resume Protection"),
