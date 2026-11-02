@@ -1561,22 +1561,22 @@
         }
       }
     },
-    "No log entries found" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không tìm thấy nhật ký nào"
-          }
-        }
-      }
-    },
     "No Locked Applications" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chưa có ứng dụng bị khoá"
+          }
+        }
+      }
+    },
+    "No log entries found" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy nhật ký nào"
           }
         }
       }
@@ -2204,6 +2204,7 @@
       }
     },
     "There is no locked application." : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
