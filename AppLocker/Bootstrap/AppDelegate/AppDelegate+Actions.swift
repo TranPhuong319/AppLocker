@@ -85,8 +85,8 @@ extension AppDelegate {
     }
 
     @objc func resumeProtection() {
-        guard AppState.shared.manager.isProtectionDisabled else { return }
-        AppState.shared.manager.setProtectionDisabled(false)
+        guard LockES.shared.isProtectionDisabled else { return }
+        LockES.shared.setProtectionDisabled(false)
         Logfile.app.notice("[Actions] Protection resumed by user")
     }
 

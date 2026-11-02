@@ -49,10 +49,6 @@ struct ContentView: View {
                     }
                 }
         }
-        .background(
-            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
-                .ignoresSafeArea()
-        )
         .sheet(isPresented: $appState.showingAddApp) {
             AddAppSheet(appState: appState, unfocus: unfocus)
         }
@@ -160,7 +156,6 @@ private extension ContentView {
         .scrollIndicators(.hidden)
         .background(Color.clear.contentShape(Rectangle()).onTapGesture { unfocus() })
         .safeAreaPadding(.bottom, appState.deleteQueue.isEmpty ? 10 : 62)
-        .mask(scrollEdgeDissolveMask)
         .overlay(alignment: .bottom) {
             if !appState.deleteQueue.isEmpty {
                 deleteQueueNotificationBar
@@ -186,32 +181,6 @@ private extension ContentView {
                     onUnfocus: unfocus
                 )
             }
-        }
-    }
-
-    var scrollEdgeDissolveMask: some View {
-        VStack(spacing: 0) {
-            LinearGradient(
-                stops: [
-                    .init(color: .black.opacity(0), location: 0),
-                    .init(color: .black, location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 20)
-
-            Rectangle()
-
-            LinearGradient(
-                stops: [
-                    .init(color: .black, location: 0),
-                    .init(color: .black.opacity(0), location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 16)
         }
     }
 

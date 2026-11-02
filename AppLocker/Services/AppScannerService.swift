@@ -1,49 +1,89 @@
 //
-//  AppState+Spotlight.swift
+//  AppScannerService.swift
 //  AppLocker
 //
-//  Created by Doe Phương on 16/8/26.
+//  Created by Doe Phương on 1/11/26.
 //
 
 import CoreServices
 import Foundation
+import Observation
 
-extension AppState {
+extension Notification.Name {
+    static let installedAppsDidUpdate = Notification.Name("installedAppsDidUpdate")
+}
+
+@Observable
+@MainActor
+class AppScannerService: NSObject {
+    static let shared = AppScannerService()
+
+    let selfBundlePath = Bundle.main.bundleURL.path
+
+    var installedApps: [InstalledApp] = []
+
+    @ObservationIgnored
+    nonisolated(unsafe) var metadataQuery: NSMetadataQuery?
+    @ObservationIgnored
+    var spotlightTask: Task<Void, Never>?
+    @ObservationIgnored
+    var appScanTask: Task<Void, Never>?
+    @ObservationIgnored
+    var cachedFileSystemApps: [InstalledApp] = []
+    @ObservationIgnored
+    var cachedSpotlightApps: [InstalledApp] = []
+    var lastInstalledPathSet: Set<String> = []
+
+    @ObservationIgnored
+    var directoryWatcherDebounceTask: Task<Void, Never>?
+    @ObservationIgnored
+    var directoryWatcherSource: DispatchSourceFileSystemObject?
+
+    override init() {
+        super.init()
+    }
+
+    deinit {
+        spotlightTask?.cancel()
+        appScanTask?.cancel()
+        directoryWatcherDebounceTask?.cancel()
+        directoryWatcherSource?.cancel()
+        metadataQuery?.stop()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    func start() {
+        refreshInstalledApps()
+        setupSpotlightQuery()
+        startApplicationsWatcher()
+    }
+
+    // MARK: - Spotlight Query Setup
     func setupSpotlightQuery() {
+        guard metadataQuery == nil else { return }
+
         let query = NSMetadataQuery()
         query.operationQueue = .main
         self.metadataQuery = query
 
         NotificationCenter.default.addObserver(
-            self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidFinishGathering,
+            self,
+            selector: #selector(queryDidUpdate),
+            name: .NSMetadataQueryDidFinishGathering,
             object: query
         )
         NotificationCenter.default.addObserver(
-            self, selector: #selector(queryDidUpdate), name: .NSMetadataQueryDidUpdate,
+            self,
+            selector: #selector(queryDidUpdate),
+            name: .NSMetadataQueryDidUpdate,
             object: query
         )
 
         query.predicate = NSPredicate(
-            format:
-                "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
+            format: "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
         )
-        metadataQuery?.searchScopes = ["/Applications", "/System/Applications"]
-        metadataQuery?.start()
-    }
-
-    func refreshInstalledApps() {
-        appScanTask?.cancel()
-        let bundlePath = selfBundlePath
-
-        appScanTask = Task { @MainActor [weak self] in
-            let scanned = await Task.detached(priority: .userInitiated) {
-                AppState.scanFileSystemApps(excluding: bundlePath)
-            }.value
-
-            guard let self = self, !Task.isCancelled else { return }
-            self.cachedFileSystemApps = scanned
-            self.mergeAndPublishInstalledApps()
-        }
+        query.searchScopes = ["/Applications", "/System/Applications"]
+        query.start()
     }
 
     @objc func queryDidUpdate(_ notification: Notification) {
@@ -85,6 +125,22 @@ extension AppState {
         }
     }
 
+    // MARK: - File System Scanner
+    func refreshInstalledApps() {
+        appScanTask?.cancel()
+        let bundlePath = selfBundlePath
+
+        appScanTask = Task { @MainActor [weak self] in
+            let scanned = await Task.detached(priority: .userInitiated) {
+                AppScannerService.scanFileSystemApps(excluding: bundlePath)
+            }.value
+
+            guard let self = self, !Task.isCancelled else { return }
+            self.cachedFileSystemApps = scanned
+            self.mergeAndPublishInstalledApps()
+        }
+    }
+
     private func mergeAndPublishInstalledApps() {
         var appMap: [String: InstalledApp] = [:]
         let fileManager = FileManager.default
@@ -112,10 +168,11 @@ extension AppState {
         }
 
         let installedAppsList = Array(appMap.values)
-        if installedAppsList != self.manager.allApps || self.manager.allApps.isEmpty {
+        if installedAppsList != self.installedApps || self.installedApps.isEmpty {
             self.lastInstalledPathSet = Set(installedAppsList.map { $0.path })
-            self.manager.allApps = installedAppsList
-            self.refreshAppLists()
+            self.installedApps = installedAppsList
+            LockES.shared.handleInstalledAppsChanged(installedAppsList)
+            NotificationCenter.default.post(name: .installedAppsDidUpdate, object: nil)
         }
     }
 
@@ -143,7 +200,7 @@ extension AppState {
                     seenPaths.insert(fullPath)
 
                     let originalName = (fileName as NSString).deletingPathExtension
-                    let meta = resolveMetadata(at: fullPath, fallback: originalName)
+                    let meta = InstalledApp.resolveMetadata(at: fullPath, fallback: originalName)
                     let source: AppSource = fullPath.hasPrefix("/System") ? .system : .user
                     apps.append(
                         InstalledApp(
@@ -168,56 +225,7 @@ extension AppState {
         return apps
     }
 
-    nonisolated static func resolveMetadata(
-        at path: String,
-        fallback: String
-    ) -> (name: String, bundleID: String) {
-        let url = URL(fileURLWithPath: path)
-        var name = fallback
-        var bundleID = ""
-
-        if let mdItem = MDItemCreateWithURL(kCFAllocatorDefault, url as CFURL) {
-            if let rawName = MDItemCopyAttribute(mdItem, kMDItemDisplayName) as? String {
-                let clean = rawName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
-                if !clean.isEmpty && clean != path {
-                    name = clean
-                }
-            }
-            if let bid = MDItemCopyAttribute(mdItem, kMDItemCFBundleIdentifier) as? String {
-                bundleID = bid
-            }
-        }
-
-        if bundleID.isEmpty || name == fallback {
-            if let bundle = Bundle(url: url) {
-                if bundleID.isEmpty {
-                    bundleID = bundle.bundleIdentifier ?? ""
-                }
-                if name == fallback {
-                    name = localizedBundleName(bundle: bundle, fallback: fallback)
-                }
-            }
-        }
-
-        return (name, bundleID)
-    }
-
-    private nonisolated static func localizedBundleName(bundle: Bundle, fallback: String) -> String {
-        if let displayName = bundle.localizedInfoDictionary?["CFBundleDisplayName"] as? String,
-            !displayName.isEmpty {
-            return displayName
-        }
-        if let bundleName = bundle.localizedInfoDictionary?["CFBundleName"] as? String,
-            !bundleName.isEmpty {
-            return bundleName
-        }
-        return fallback
-    }
-
-    nonisolated static func resolveDisplayName(at path: String, fallback: String) -> String {
-        resolveMetadata(at: path, fallback: fallback).name
-    }
-
+    // MARK: - Directory Watcher
     func startApplicationsWatcher() {
         guard directoryWatcherSource == nil else { return }
         let descriptor = open("/Applications", O_EVTONLY)
@@ -249,11 +257,10 @@ extension AppState {
             try? await Task.sleep(for: .milliseconds(500))
             guard !Task.isCancelled, let self = self else { return }
             Logfile.policy.debug(
-                "[AppState] /Applications interrupt received. Refreshing installed apps & healing CDHashes..."
+                "[AppScannerService] /Applications interrupt received. Refreshing installed apps & healing CDHashes..."
             )
             self.refreshInstalledApps()
-            self.refreshAppLists()
-            self.verifyAndHealLockedCDHashes()
+            LockES.shared.verifyAndHealLockedCDHashes()
         }
     }
 }

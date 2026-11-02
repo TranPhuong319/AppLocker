@@ -12,7 +12,7 @@ struct AboutArchitectureBadgesView: View {
     @State private var showSystemInfo: Bool = false
 
     init(isExtensionActive: Bool? = nil) {
-        _isExtensionActive = State(initialValue: isExtensionActive ?? !AppState.shared.manager.isProtectionDisabled)
+        _isExtensionActive = State(initialValue: isExtensionActive ?? !LockES.shared.isProtectionDisabled)
     }
 
     var body: some View {
@@ -32,7 +32,7 @@ struct AboutArchitectureBadgesView: View {
             architectureButton
         }
         .onReceive(NotificationCenter.default.publisher(for: .protectionStatusDidChange)) { _ in
-            isExtensionActive = !AppState.shared.manager.isProtectionDisabled
+            isExtensionActive = !LockES.shared.isProtectionDisabled
         }
     }
 

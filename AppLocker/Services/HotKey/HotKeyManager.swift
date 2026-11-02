@@ -211,7 +211,7 @@ final class HotKeyManager {
     }
 
     func updateResumeProtectionHotKey() {
-        let isSuspended = AppState.shared.manager.isProtectionDisabled
+        let isSuspended = LockES.shared.isProtectionDisabled
         if let ref = resumeHotKeyRef {
             UnregisterEventHotKey(ref)
             resumeHotKeyRef = nil
