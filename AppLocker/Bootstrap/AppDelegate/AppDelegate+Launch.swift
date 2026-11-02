@@ -10,6 +10,12 @@ import AppKit
 extension AppDelegate {
     @MainActor
     func launchConfig() {
+        Logfile.app.debug("[Launch] Bootstrapping LockES domain core service...")
+        LockES.shared.bootstrap()
+
+        Logfile.app.debug("[Launch] Starting AppScannerService...")
+        AppScannerService.shared.start()
+
         Logfile.app.debug("[Launch] Starting UI components on app launch...")
         self.setupUIComponents()
 
@@ -60,7 +66,7 @@ extension AppDelegate {
     @MainActor
     private func handleWorkspaceSleep() {
         XPCServer.shared.lastAuthTimestampsByPath.removeAll()
-        let timeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
+        let timeoutMinutes = LockES.shared.autoLockTimeoutMinutes
         if timeoutMinutes != 0 {
             Logfile.app.info(
                 """
@@ -68,7 +74,7 @@ extension AppDelegate {
                 Re-enabling application lock.
                 """
             )
-            AppState.shared.manager.setProtectionDisabled(false)
+            LockES.shared.setProtectionDisabled(false)
         }
     }
 }
