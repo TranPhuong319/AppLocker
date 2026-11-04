@@ -2,7 +2,7 @@
 //  LogSelectionManager.swift
 //  AppLocker
 //
-//  Created by AppLocker
+//  Created by Doe Phương on 1/10/26.
 //
 
 import SwiftUI

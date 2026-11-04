@@ -11,6 +11,50 @@ import LocalAuthentication
 import Observation
 import os
 
+struct PendingAppItem: Identifiable, Hashable, Sendable {
+    let id = UUID()
+    let name: String
+    let path: String
+    let cdhash: String
+    let pid: Int32
+    var isSelected: Bool = true
+}
+
+struct XPCServerDependencies: @unchecked Sendable {
+    var userDefaults: UserDefaults = .standard
+    var authenticate: @MainActor (String) async throws -> Bool = {
+        try await AuthenticationManager.authenticate(reason: $0)
+    }
+    var cancelAuth: @MainActor () -> Void = {
+        AuthenticationManager.cancelCurrentAuthentication()
+    }
+    var onProcessPendingApps: @MainActor ([Int32], [Int32], String) -> Void = {
+        ESXPCClient.shared.processPendingApps(approvedPIDs: $0, rejectedPIDs: $1, rejectionReason: $2) { _ in }
+    }
+    var onRefreshWatchdog: @MainActor ([Int32]) -> Void = {
+        ESXPCClient.shared.refreshPendingWatchdog(pids: $0)
+    }
+    #if TESTING
+    var isBatchWindowVisible: @MainActor () -> Bool = { false }
+    var onShowBatchWindow: @MainActor () -> Void = {}
+    var onHideBatchWindow: @MainActor () -> Void = {}
+    var onSendBlockedNotification: @MainActor (String) -> Void = { _ in }
+    #else
+    var isBatchWindowVisible: @MainActor () -> Bool = {
+        BatchAuthWindowController.shared.isWindowVisible
+    }
+    var onShowBatchWindow: @MainActor () -> Void = {
+        BatchAuthWindowController.shared.showWindow()
+    }
+    var onHideBatchWindow: @MainActor () -> Void = {
+        BatchAuthWindowController.shared.hideWindow()
+    }
+    var onSendBlockedNotification: @MainActor (String) -> Void = {
+        NSApp.appDelegate?.sendBlockedNotification(appName: $0)
+    }
+    #endif
+}
+
 @Observable
 @MainActor
 final class XPCServer: NSObject, ESXPCProtocol {
@@ -31,6 +75,8 @@ final class XPCServer: NSObject, ESXPCProtocol {
     var isUpgradingToBatch: Bool = false
     var isRestartingBatchWithNewApps: Bool = false
 
+    @ObservationIgnored var dependencies = XPCServerDependencies()
+
     nonisolated override init() { super.init() }
 
     // MARK: - Luồng Phụ (Background XPC Receiver)
@@ -45,20 +91,16 @@ final class XPCServer: NSObject, ESXPCProtocol {
                 Logfile.appXPC.info(
                     "[Auth] Protection disabled. Approving PID \(pid, privacy: .public) (\(name, privacy: .public))"
                 )
-                ESXPCClient.shared.processPendingApps(
-                    approvedPIDs: [pid],
-                    rejectedPIDs: [],
-                    rejectionReason: AuthDecisionReason.userApprove.rawValue
-                ) { _ in }
+                self.dependencies.onProcessPendingApps([pid], [], AuthDecisionReason.userApprove.rawValue)
                 return
             }
-            XPCServer.shared.addPendingAuth(name: name, path: path, cdhash: cdhash, pid: pid)
+            self.addPendingAuth(name: name, path: path, cdhash: cdhash, pid: pid)
         }
     }
 
     nonisolated func notifyProcessExited(pid: Int32) {
         Task { @MainActor in
-            XPCServer.shared.removePendingProcess(pid: pid)
+            self.removePendingProcess(pid: pid)
         }
     }
 
@@ -95,7 +137,7 @@ final class XPCServer: NSObject, ESXPCProtocol {
             self.singleAppWatchdogTask = nil
             self.currentSingleAppPID = nil
             self.isAuthenticatingSingleApp = false
-            AuthenticationManager.cancelCurrentAuthentication()
+            self.dependencies.cancelAuth()
         }
 
         // If all pending and active batch apps are gone, cancel any active Touch ID prompt and hide window
@@ -104,12 +146,12 @@ final class XPCServer: NSObject, ESXPCProtocol {
                 Logfile.appXPC.info("[Auth] All batch processes exited. Cancelling active authentication.")
                 self.isAuthenticatingBatch = false
                 self.isRestartingBatchWithNewApps = false
-                AuthenticationManager.cancelCurrentAuthentication()
+                self.dependencies.cancelAuth()
             }
             self.stopCountdownTimer()
             self.pendingDebounceTask?.cancel()
             self.pendingDebounceTask = nil
-            BatchAuthWindowController.shared.hideWindow()
+            self.dependencies.onHideBatchWindow()
         }
     }
 
@@ -131,22 +173,14 @@ final class XPCServer: NSObject, ESXPCProtocol {
                 Logfile.appXPC.info(
                     "[Auth] Grace period active (\(Int(elapsed))s) for \(name, privacy: .public). Auto-approving."
                 )
-                ESXPCClient.shared.processPendingApps(
-                    approvedPIDs: [pid],
-                    rejectedPIDs: [],
-                    rejectionReason: AuthDecisionReason.userApprove.rawValue
-                ) { _ in }
+                self.dependencies.onProcessPendingApps([pid], [], AuthDecisionReason.userApprove.rawValue)
                 return true
             }
         } else if timeoutMinutes == -1, self.lastAuthTimestampsByPath[path] != nil {
             Logfile.appXPC.info(
                 "[Auth] Grace period active (Sleep) for \(name, privacy: .public). Auto-approving."
             )
-            ESXPCClient.shared.processPendingApps(
-                approvedPIDs: [pid],
-                rejectedPIDs: [],
-                rejectionReason: AuthDecisionReason.userApprove.rawValue
-            ) { _ in }
+            self.dependencies.onProcessPendingApps([pid], [], AuthDecisionReason.userApprove.rawValue)
             return true
         }
         return false
@@ -169,14 +203,15 @@ final class XPCServer: NSObject, ESXPCProtocol {
                 """
             )
 
-            let showNotifications = UserDefaults.standard.object(forKey: "showBlockedNotifications") as? Bool ?? true
+            let showNotifications = dependencies.userDefaults.object(forKey: "showBlockedNotifications") as? Bool
+                ?? true
             if showNotifications {
-                NSApp.appDelegate?.sendBlockedNotification(appName: name)
+                dependencies.onSendBlockedNotification(name)
             }
         }
 
         // If BatchAuthWindow is ALREADY open, update timer
-        if BatchAuthWindowController.shared.isWindowVisible {
+        if dependencies.isBatchWindowVisible() {
             self.startOrResetCountdownTimer()
             return
         }
@@ -191,7 +226,7 @@ final class XPCServer: NSObject, ESXPCProtocol {
                 """
             )
             self.isRestartingBatchWithNewApps = true
-            AuthenticationManager.cancelCurrentAuthentication()
+            self.dependencies.cancelAuth()
             return
         }
 
@@ -205,7 +240,7 @@ final class XPCServer: NSObject, ESXPCProtocol {
                 self.singleAppWatchdogTask?.cancel()
                 self.singleAppWatchdogTask = nil
                 self.currentSingleAppPID = nil
-                AuthenticationManager.cancelCurrentAuthentication()
+                self.dependencies.cancelAuth()
             }
             return
         }
@@ -216,169 +251,6 @@ final class XPCServer: NSObject, ESXPCProtocol {
             try? await Task.sleep(for: .milliseconds(250))
             guard !Task.isCancelled else { return }
             self?.processIncomingQueue()
-        }
-    }
-}
-
-// MARK: - Single App Authentication Extension
-
-extension XPCServer {
-    @MainActor
-    func processIncomingQueue() {
-        pendingDebounceTask?.cancel()
-        pendingDebounceTask = nil
-        guard !pendingApps.isEmpty, !isAuthenticating, !BatchAuthWindowController.shared.isWindowVisible else { return }
-
-        if pendingApps.count == 1 {
-            let app = pendingApps[0]
-            isAuthenticatingSingleApp = true
-            currentSingleAppPID = app.pid
-
-            startSingleAppWatchdog(for: app)
-
-            let reason = String(format: String(localized: "open %@"), app.name)
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                do {
-                    let success = try await AuthenticationManager.authenticate(reason: reason)
-                    self.handleSingleAppAuthResult(app: app, success: success, error: nil)
-                } catch {
-                    self.handleSingleAppAuthResult(app: app, success: false, error: error)
-                }
-            }
-        } else {
-            startOrResetCountdownTimer()
-            BatchAuthWindowController.shared.showWindow()
-        }
-    }
-
-    @MainActor
-    private func startSingleAppWatchdog(for app: PendingAppItem) {
-        singleAppWatchdogTask?.cancel()
-        let configuredSeconds = UserDefaults.standard.integer(forKey: "batchAuthCountdownSeconds")
-        let timeoutSeconds: Double = configuredSeconds > 0 ? Double(configuredSeconds) : 30.0
-
-        singleAppWatchdogTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(timeoutSeconds))
-            guard !Task.isCancelled,
-                  let self,
-                  self.isAuthenticatingSingleApp,
-                  self.currentSingleAppPID == app.pid else {
-                return
-            }
-            Logfile.appXPC.warning(
-                """
-                [Auth] Single app watchdog timeout (\(timeoutSeconds)s) reached for \
-                \(app.name, privacy: .public) (PID \(app.pid, privacy: .public)). \
-                Cancelling LAContext to release suspended process.
-                """
-            )
-            AuthenticationManager.cancelCurrentAuthentication()
-
-            // Safety fallback: If LAContext doesn't resume within 2 seconds, force rejection
-            try? await Task.sleep(for: .seconds(2))
-            guard !Task.isCancelled,
-                  self.isAuthenticatingSingleApp,
-                  self.currentSingleAppPID == app.pid else {
-                return
-            }
-            Logfile.appXPC.error(
-                "[Auth] LAContext did not resume continuation in time. Force rejecting PID: \(app.pid)"
-            )
-            self.handleSingleAppAuthResult(app: app, success: false, error: nil)
-        }
-    }
-
-    @MainActor
-    private func handleSingleAppAuthResult(app: PendingAppItem, success: Bool, error: Error? = nil) {
-        self.singleAppWatchdogTask?.cancel()
-        self.singleAppWatchdogTask = nil
-        self.currentSingleAppPID = nil
-        self.isAuthenticatingSingleApp = false
-        if self.isUpgradingToBatch {
-            handleBatchUpgradeAuthResult(app: app, success: success)
-            return
-        }
-
-        self.pendingApps.removeAll { $0.id == app.id }
-
-        if success {
-            self.lastAuthTimestampsByPath[app.path] = Date()
-            Logfile.appXPC.notice(
-                "[Auth] Auth OK for \(app.name, privacy: .public) (PID: \(app.pid, privacy: .public))"
-            )
-            LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
-            ESXPCClient.shared.processPendingApps(
-                approvedPIDs: [app.pid],
-                rejectedPIDs: [],
-                rejectionReason: AuthDecisionReason.userApprove.rawValue
-            ) { _ in }
-        } else {
-            handleSingleAppRejection(app: app, error: error)
-        }
-
-        if !self.pendingApps.isEmpty {
-            self.processIncomingQueue()
-        }
-    }
-
-    @MainActor
-    private func handleSingleAppRejection(app: PendingAppItem, error: Error?) {
-        let rejectionReason: String
-        if let laError = error as? LAError, laError.code == .userCancel {
-            rejectionReason = AuthDecisionReason.userCancel.rawValue
-            Logfile.appXPC.notice(
-                """
-                [Auth] Cancelled by user. Rejecting PID: \(app.pid, privacy: .public) \
-                (\(app.name, privacy: .public))
-                """
-            )
-        } else if let laError = error as? LAError, laError.code == .appCancel {
-            rejectionReason = AuthDecisionReason.timeout.rawValue
-            Logfile.appXPC.notice(
-                """
-                [Auth] Watchdog timeout cancelled prompt. Rejecting PID: \(app.pid, privacy: .public) \
-                (\(app.name, privacy: .public))
-                """
-            )
-        } else if let error {
-            rejectionReason = AuthDecisionReason.userCancel.rawValue
-            Logfile.appXPC.error(
-                """
-                [Auth] Auth failed with error: \(error.localizedDescription, privacy: .public). \
-                Rejecting PID: \(app.pid, privacy: .public)
-                """
-            )
-        } else {
-            rejectionReason = AuthDecisionReason.timeout.rawValue
-            Logfile.appXPC.notice(
-                "[Auth] Watchdog timeout forced rejection for PID: \(app.pid, privacy: .public)"
-            )
-        }
-        ESXPCClient.shared.processPendingApps(
-            approvedPIDs: [],
-            rejectedPIDs: [app.pid],
-            rejectionReason: rejectionReason
-        ) { _ in }
-    }
-
-    @MainActor
-    private func handleBatchUpgradeAuthResult(app: PendingAppItem, success: Bool) {
-        self.isUpgradingToBatch = false
-        self.singleAppWatchdogTask?.cancel()
-        self.singleAppWatchdogTask = nil
-        self.currentSingleAppPID = nil
-        if success {
-            self.pendingApps.removeAll { $0.id == app.id }
-            LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
-            ESXPCClient.shared.processPendingApps(
-                approvedPIDs: [app.pid],
-                rejectedPIDs: [],
-                rejectionReason: AuthDecisionReason.userApprove.rawValue
-            ) { _ in }
-        }
-        if !self.pendingApps.isEmpty {
-            self.processIncomingQueue()
         }
     }
 }

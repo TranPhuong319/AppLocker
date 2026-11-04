@@ -10,6 +10,23 @@ import Foundation
 import os
 
 final class ESTamper: ESClientObject, @unchecked Sendable {
+    static let protectedAllowlistPaths: [(path: String, type: es_mute_path_type_t)] = [
+        ("/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
+        ("/System/Volumes/Data/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
+        ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
+        ("/System/Volumes/Data/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
+    ]
+
+    static let subscribedEvents: [es_event_type_t] = [
+        ES_EVENT_TYPE_AUTH_OPEN,
+        ES_EVENT_TYPE_AUTH_UNLINK,
+        ES_EVENT_TYPE_AUTH_RENAME,
+        ES_EVENT_TYPE_AUTH_TRUNCATE,
+        ES_EVENT_TYPE_AUTH_EXCHANGEDATA,
+        ES_EVENT_TYPE_AUTH_CLONE,
+        ES_EVENT_TYPE_AUTH_LINK
+    ]
+
     init() { super.init(name: "TamperResistance") }
     func start() -> Bool { createClient() }
 
@@ -29,27 +46,13 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
             )
         }
         self.setupAllowlist()
-        _ = self.subscribe([
-            ES_EVENT_TYPE_AUTH_OPEN,
-            ES_EVENT_TYPE_AUTH_UNLINK,
-            ES_EVENT_TYPE_AUTH_RENAME,
-            ES_EVENT_TYPE_AUTH_TRUNCATE,
-            ES_EVENT_TYPE_AUTH_EXCHANGEDATA,
-            ES_EVENT_TYPE_AUTH_CLONE,
-            ES_EVENT_TYPE_AUTH_LINK
-        ])
+        _ = self.subscribe(Self.subscribedEvents)
         #endif
     }
 
     private func setupAllowlist() {
-        let paths: [(path: String, type: es_mute_path_type_t)] = [
-            ("/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
-            ("/System/Volumes/Data/Users/Shared/AppLocker", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
-            ("/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX),
-            ("/System/Volumes/Data/Applications/AppLocker.app", ES_MUTE_PATH_TYPE_TARGET_PREFIX)
-        ]
         if let client = self.client {
-            for item in paths {
+            for item in Self.protectedAllowlistPaths {
                 let res = es_mute_path(client, item.path, item.type)
                 Logfile.endpointSecurity.debug(
                     """

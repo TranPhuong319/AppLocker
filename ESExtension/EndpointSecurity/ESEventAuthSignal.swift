@@ -10,19 +10,62 @@ import EndpointSecurity
 import Foundation
 import os
 
+struct SignalEventContext: Sendable {
+    let targetPID: pid_t
+    let targetAuditToken: audit_token_t
+    let senderPID: pid_t
+    let senderExecutablePath: String?
+    let senderResponsibleAuditToken: audit_token_t?
+    let sig: Int32
+
+    init(
+        targetPID: pid_t,
+        targetAuditToken: audit_token_t,
+        senderPID: pid_t,
+        senderExecutablePath: String? = nil,
+        senderResponsibleAuditToken: audit_token_t? = nil,
+        sig: Int32
+    ) {
+        self.targetPID = targetPID
+        self.targetAuditToken = targetAuditToken
+        self.senderPID = senderPID
+        self.senderExecutablePath = senderExecutablePath
+        self.senderResponsibleAuditToken = senderResponsibleAuditToken
+        self.sig = sig
+    }
+}
+
 extension ESManager {
     func handleAuthSignal(client: OpaquePointer, message: ESMessage, valve: ESSafetyValve) {
         let messagePtr = message.pointee
-        let targetPid = audit_token_to_pid(messagePtr.event.signal.target.pointee.audit_token)
-        let senderPid = audit_token_to_pid(messagePtr.process.pointee.audit_token)
+        let targetToken = messagePtr.event.signal.target.pointee.audit_token
+        let targetPid = audit_token_to_pid(targetToken)
+        let processPtr = messagePtr.process.pointee
+        let senderPid = audit_token_to_pid(processPtr.audit_token)
         let sig = messagePtr.event.signal.sig
+
+        let context = SignalEventContext(
+            targetPID: targetPid,
+            targetAuditToken: targetToken,
+            senderPID: senderPid,
+            senderExecutablePath: safePath(fromFilePointer: processPtr.executable),
+            senderResponsibleAuditToken: processPtr.responsible_audit_token,
+            sig: sig
+        )
+        evaluateAuthSignal(context: context, valve: valve)
+    }
+
+    func evaluateAuthSignal(context: SignalEventContext, valve: any ESAuthResponding) {
+        let targetPid = context.targetPID
+        let senderPid = context.senderPID
+        let sig = context.sig
 
         let pendingEntry = pendingPIDLock.withLock {
             pendingVerificationProcesses[targetPid]
         }
 
         if let expectedRecord = pendingEntry, sig == SIGCONT {
-            let targetToken = messagePtr.event.signal.target.pointee.audit_token
+            let targetToken = context.targetAuditToken
             let expectedVersion = audit_token_to_pidversion(expectedRecord.token)
             let currentVersion = audit_token_to_pidversion(targetToken)
 
@@ -43,10 +86,8 @@ extension ESManager {
 
             if !isAuthorizedSender {
                 handleUnauthorizedSignal(
-                    message: message,
-                    targetPid: targetPid,
+                    context: context,
                     targetAppName: expectedRecord.notification.name,
-                    senderPid: senderPid,
                     valve: valve
                 )
                 return
@@ -57,15 +98,14 @@ extension ESManager {
     }
 
     private func handleUnauthorizedSignal(
-        message: ESMessage,
-        targetPid: pid_t,
+        context: SignalEventContext,
         targetAppName: String,
-        senderPid: pid_t,
-        valve: ESSafetyValve
+        valve: any ESAuthResponding
     ) {
+        let targetPid = context.targetPID
+        let senderPid = context.senderPID
         _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-        let processPtr = message.pointee.process.pointee
-        let senderPath = safePath(fromFilePointer: processPtr.executable)
+        let senderPath = context.senderExecutablePath
             ?? processPath(for: senderPid)
             ?? "PID \(senderPid)"
 
@@ -80,7 +120,7 @@ extension ESManager {
             return
         }
 
-        let responsiblePid = audit_token_to_pid(processPtr.responsible_audit_token)
+        let responsiblePid = context.senderResponsibleAuditToken.map { audit_token_to_pid($0) } ?? 0
         let responsiblePath = processPath(for: responsiblePid)
         let senderDisplayName: String = {
             if let respPath = responsiblePath, respPath.contains(".app") {

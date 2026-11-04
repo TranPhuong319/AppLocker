@@ -42,7 +42,9 @@ extension ESManager: NSXPCListenerDelegate {
             """
         )
 
-        guard CodeSignatureValidator.validateXPCConnection(newConnection) else {
+        let isSignatureValid = customConnectionValidator?(newConnection)
+            ?? CodeSignatureValidator.validateXPCConnection(newConnection)
+        guard isSignatureValid else {
             Logfile.esXPC.error(
                 """
                 [ESMachListener] Rejecting connection: Client signature verification failed \

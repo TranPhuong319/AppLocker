@@ -15,6 +15,11 @@ import os
 final class ESManager: NSObject, @unchecked Sendable {
     var authorizer: ESAuthorizer?
     var tamper: ESTamper?
+    let isTesting: Bool
+    var customBaseConfigDirectoryURL: URL?
+    var customConnectionValidator: (@Sendable (NSXPCConnection) -> Bool)?
+    var telephonySignatureValidator: (@Sendable (String) -> Bool)?
+    var lastKickstartedUID: uid_t?
 
     // MARK: - State
     let stateLock = OSAllocatedUnfairLock()
@@ -81,8 +86,19 @@ final class ESManager: NSObject, @unchecked Sendable {
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.emergency",
         qos: .userInteractive)
 
-    override init() {
+    convenience override init() {
+        self.init(isTesting: false)
+    }
+
+    init(isTesting: Bool, baseConfigDirectoryURL: URL? = nil) {
+        self.isTesting = isTesting
+        self.customBaseConfigDirectoryURL = baseConfigDirectoryURL
         super.init()
+
+        guard !isTesting else {
+            return
+        }
+
         Logfile.endpointSecurity.info("[ESManager] Initializing Endpoint Security manager...")
 
         // 1. Setup Clients
