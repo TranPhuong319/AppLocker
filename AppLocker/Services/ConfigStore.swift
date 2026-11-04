@@ -22,24 +22,41 @@ struct ConfigLoadResult {
     )
 }
 
-final class ConfigStore: Sendable {
+final class ConfigStore: @unchecked Sendable {
     static let shared = ConfigStore()
     static let baseDirectoryURL = UserConfig.baseDirectoryURL
+
+    let baseDirectoryURL: URL
+    let userDefaults: UserDefaults
+    let currentUID: uid_t
+    let customSelfBundleID: String?
+    let customSelfBundlePath: String?
 
     var userDirectoryURL: URL {
         configURL.deletingLastPathComponent()
     }
 
     var configURL: URL {
-        UserConfig.configURL(for: getuid())
+        UserConfig.configURL(for: currentUID, baseDirectoryURL: baseDirectoryURL)
     }
 
-    private init() {
-        ensureDirectoryExists(Self.baseDirectoryURL)
+    init(
+        baseDirectoryURL: URL = UserConfig.baseDirectoryURL,
+        userDefaults: UserDefaults = .standard,
+        uid: uid_t = getuid(),
+        selfBundleID: String? = nil,
+        selfBundlePath: String? = nil
+    ) {
+        self.baseDirectoryURL = baseDirectoryURL
+        self.userDefaults = userDefaults
+        self.currentUID = uid
+        self.customSelfBundleID = selfBundleID
+        self.customSelfBundlePath = selfBundlePath
+        ensureDirectoryExists(self.baseDirectoryURL)
         ensureDirectoryExists(userDirectoryURL)
     }
 
-    private func ensureDirectoryExists(_ url: URL) {
+    func ensureDirectoryExists(_ url: URL) {
         #if DEBUG
         guard !PreviewEnvironment.isRunningInPreview else { return }
         #endif
@@ -74,8 +91,13 @@ final class ConfigStore: Sendable {
     func load() -> ConfigLoadResult {
         migrateLegacyConfigIfNeeded()
 
-        guard let config = UserConfig.load(for: getuid()) else {
-            return .empty
+        guard let config = UserConfig.load(for: currentUID, baseDirectoryURL: baseDirectoryURL) else {
+            return ConfigLoadResult(
+                apps: [:],
+                isDisabled: false,
+                allowIncomingCalls: true,
+                autoLockTimeoutMinutes: userDefaults.integer(forKey: "autoLockTimeoutMinutes")
+            )
         }
 
         var apps: [String: LockedAppConfig] = [:]
@@ -84,7 +106,7 @@ final class ConfigStore: Sendable {
         }
 
         let autoLockTimeout = config.autoLockTimeoutMinutes
-            ?? UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
+            ?? userDefaults.integer(forKey: "autoLockTimeoutMinutes")
 
         var needsSave = config.autoLockTimeoutMinutes == nil
         sanitizeAppsSelfLockout(&apps, needsSave: &needsSave)
@@ -104,66 +126,6 @@ final class ConfigStore: Sendable {
             allowIncomingCalls: config.allowIncomingCalls ?? true,
             autoLockTimeoutMinutes: autoLockTimeout
         )
-    }
-
-    private func sanitizeAppsSelfLockout(
-        _ apps: inout [String: LockedAppConfig],
-        needsSave: inout Bool
-    ) {
-        let myBundleID = Bundle.main.bundleIdentifier ?? "com.TranPhuong319.AppLocker"
-        let myPath = Bundle.main.bundlePath
-        let myRealPath = URL(fileURLWithPath: myPath).resolvingSymlinksInPath().path
-        let myCDHash = cdHash(for: myPath)
-
-        let containsSelf = apps.values.contains {
-            isSelfApp(
-                $0,
-                currentBundleID: myBundleID,
-                currentPath: myPath,
-                currentRealPath: myRealPath,
-                currentCDHash: myCDHash
-            )
-        }
-
-        if containsSelf {
-            apps = apps.filter {
-                !isSelfApp(
-                    $0.value,
-                    currentBundleID: myBundleID,
-                    currentPath: myPath,
-                    currentRealPath: myRealPath,
-                    currentCDHash: myCDHash
-                )
-            }
-            needsSave = true
-            Logfile.policy.notice("[ConfigStore] Self-healing: Removed AppLocker from locked config")
-        }
-    }
-
-    private func isSelfApp(
-        _ config: LockedAppConfig,
-        currentBundleID: String,
-        currentPath: String,
-        currentRealPath: String,
-        currentCDHash: String?
-    ) -> Bool {
-        if !config.bundleID.isEmpty, config.bundleID == currentBundleID {
-            return true
-        }
-
-        let targetPath = config.path
-        let targetRealPath = URL(fileURLWithPath: targetPath).resolvingSymlinksInPath().path
-        if targetPath == currentPath || targetRealPath == currentRealPath {
-            return true
-        }
-
-        if let configCDHash = config.cdhash?.lowercased(), !configCDHash.isEmpty,
-           let myCDHash = currentCDHash?.lowercased(),
-           configCDHash == myCDHash {
-            return true
-        }
-
-        return false
     }
 
     func save(
@@ -197,7 +159,7 @@ final class ConfigStore: Sendable {
             Logfile.policy.debug(
                 """
                 [ConfigStore] Saved \(map.count, privacy: .public) apps for uid \
-                \(getuid(), privacy: .public) at \(self.configURL.path, privacy: .public)
+                \(self.currentUID, privacy: .public) at \(self.configURL.path, privacy: .public)
                 """
             )
         } catch {
@@ -210,11 +172,11 @@ final class ConfigStore: Sendable {
         #if DEBUG
         guard !PreviewEnvironment.isRunningInPreview else { return true }
         #endif
-        if let domain = Bundle.main.bundleIdentifier {
-            UserDefaults.standard.removePersistentDomain(forName: domain)
+        if userDefaults === UserDefaults.standard, let domain = Bundle.main.bundleIdentifier {
+            userDefaults.removePersistentDomain(forName: domain)
         }
         do {
-            let targetURL = purgeAll ? Self.baseDirectoryURL : userDirectoryURL
+            let targetURL = purgeAll ? baseDirectoryURL : userDirectoryURL
             if FileManager.default.fileExists(atPath: targetURL.path) {
                 try FileManager.default.removeItem(at: targetURL)
             }
@@ -222,58 +184,6 @@ final class ConfigStore: Sendable {
         } catch {
             Logfile.policy.error("[ConfigStore] Error deleting config directory: \(error.localizedDescription)")
             return false
-        }
-    }
-
-    private func parseLegacyConfigs(from data: Data) -> [String: UserConfig] {
-        let decoder = PropertyListDecoder()
-        if let fullConfig = try? decoder.decode([String: UserConfig].self, from: data) {
-            return fullConfig
-        }
-        if let userConfig = try? decoder.decode(UserConfig.self, from: data) {
-            return [String(getuid()): userConfig]
-        }
-        if let oldDict = try? decoder.decode([String: [LockedAppConfig]].self, from: data) {
-            return oldDict.mapValues { UserConfig(isDisabled: false, apps: $0) }
-        }
-        if let apps = try? decoder.decode([LockedAppConfig].self, from: data) {
-            return [String(getuid()): UserConfig(isDisabled: false, apps: apps)]
-        }
-        return [:]
-    }
-
-    private func migrateLegacyConfigIfNeeded() {
-        let legacyURL = Self.baseDirectoryURL.appendingPathComponent("config.plist")
-        guard !FileManager.default.fileExists(atPath: configURL.path),
-              FileManager.default.fileExists(atPath: legacyURL.path),
-              let legacyData = try? Data(contentsOf: legacyURL) else {
-            return
-        }
-
-        let configsToMigrate = parseLegacyConfigs(from: legacyData)
-        guard !configsToMigrate.isEmpty else { return }
-
-        let encoder = PropertyListEncoder()
-        encoder.outputFormat = .binary
-        var allSucceeded = true
-
-        for (uidString, userConfig) in configsToMigrate {
-            guard let uid = uid_t(uidString) else { continue }
-            let targetURL = UserConfig.configURL(for: uid)
-            ensureDirectoryExists(targetURL.deletingLastPathComponent())
-            do {
-                let data = try encoder.encode(userConfig)
-                try data.write(to: targetURL, options: .atomic)
-            } catch {
-                allSucceeded = false
-                Logfile.policy.error(
-                    "[ConfigStore] Failed to write migrated config for UID \(uidString): \(error.localizedDescription)"
-                )
-            }
-        }
-        if allSucceeded {
-            try? FileManager.default.removeItem(at: legacyURL)
-            Logfile.policy.info("[ConfigStore] Legacy config migrated successfully.")
         }
     }
 }

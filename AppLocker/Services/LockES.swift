@@ -11,6 +11,7 @@ import Observation
 
 extension Notification.Name {
     static let lockedAppsDidChange = Notification.Name("lockedAppsDidChange")
+    static let protectionStatusDidChange = Notification.Name("protectionStatusDidChange")
 }
 
 @Observable

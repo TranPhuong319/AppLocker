@@ -2,7 +2,7 @@
 //  XPCServer+Batch.swift
 //  AppLocker
 //
-//  Created by AppLocker
+//  Created by Doe Phương on 4/10/26.
 //
 
 import AppKit
@@ -16,11 +16,11 @@ extension XPCServer {
     @MainActor
     func startOrResetCountdownTimer() {
         countdownTask?.cancel()
-        let configuredSeconds = UserDefaults.standard.integer(forKey: "batchAuthCountdownSeconds")
+        let configuredSeconds = dependencies.userDefaults.integer(forKey: "batchAuthCountdownSeconds")
         remainingSeconds = configuredSeconds > 0 ? configuredSeconds : 30
 
         let allPIDs = pendingApps.map(\.pid)
-        ESXPCClient.shared.refreshPendingWatchdog(pids: allPIDs)
+        dependencies.onRefreshWatchdog(allPIDs)
 
         countdownTask = Task { @MainActor [weak self] in
             guard let self else { return }
@@ -48,21 +48,21 @@ extension XPCServer {
         isAuthenticatingBatch = true
         isRestartingBatchWithNewApps = false
         stopCountdownTimer()
-        BatchAuthWindowController.shared.hideWindow()
+        dependencies.onHideBatchWindow()
 
         let approvedPIDs = pendingApps.filter(\.isSelected).map(\.pid)
         let rejectedPIDs = pendingApps.filter { !$0.isSelected }.map(\.pid)
         self.activeBatchApps = pendingApps
         pendingApps.removeAll()
 
-        ESXPCClient.shared.refreshPendingWatchdog(pids: approvedPIDs + rejectedPIDs)
+        dependencies.onRefreshWatchdog(approvedPIDs + rejectedPIDs)
 
         let reason = String(format: String(localized: "open %d application(s)"), approvedPIDs.count)
         Task { @MainActor [weak self] in
             guard let self else { return }
             let success: Bool
             do {
-                success = try await AuthenticationManager.authenticate(reason: reason)
+                success = try await self.dependencies.authenticate(reason)
             } catch {
                 if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel {
                     Logfile.appXPC.notice("[Auth] Batch auth cancelled by user.")
@@ -129,11 +129,7 @@ extension XPCServer {
             Rejecting PIDs: \(allPIDs, privacy: .public)
             """
         )
-        ESXPCClient.shared.processPendingApps(
-            approvedPIDs: [],
-            rejectedPIDs: allPIDs,
-            rejectionReason: reason
-        ) { _ in }
+        dependencies.onProcessPendingApps([], allPIDs, reason)
     }
 
     @MainActor
@@ -156,11 +152,7 @@ extension XPCServer {
         let reason = rejectedPIDs.isEmpty
             ? AuthDecisionReason.userApprove.rawValue
             : AuthDecisionReason.userCancel.rawValue
-        ESXPCClient.shared.processPendingApps(
-            approvedPIDs: approvedPIDs,
-            rejectedPIDs: rejectedPIDs,
-            rejectionReason: reason
-        ) { _ in }
+        dependencies.onProcessPendingApps(approvedPIDs, rejectedPIDs, reason)
     }
 
     @MainActor
@@ -193,7 +185,7 @@ extension XPCServer {
         isAuthenticatingSingleApp = false
         isAuthenticatingBatch = false
         isRestartingBatchWithNewApps = false
-        BatchAuthWindowController.shared.hideWindow()
+        dependencies.onHideBatchWindow()
         let allPIDs = (pendingApps + activeBatchApps).map(\.pid)
         pendingApps.removeAll()
         activeBatchApps.removeAll()
@@ -201,11 +193,7 @@ extension XPCServer {
             Logfile.appXPC.notice(
                 "[Auth] Cancelled (\(reason, privacy: .public)). Rejecting all PIDs: \(allPIDs, privacy: .public)"
             )
-            ESXPCClient.shared.processPendingApps(
-                approvedPIDs: [],
-                rejectedPIDs: allPIDs,
-                rejectionReason: reason
-            ) { _ in }
+            dependencies.onProcessPendingApps([], allPIDs, reason)
         }
     }
 }

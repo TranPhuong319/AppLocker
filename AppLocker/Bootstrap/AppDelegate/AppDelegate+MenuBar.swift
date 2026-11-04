@@ -281,7 +281,3 @@ extension AppDelegate: NSMenuDelegate {
         #endif
     }
 }
-
-extension Notification.Name {
-    static let protectionStatusDidChange = Notification.Name("protectionStatusDidChange")
-}

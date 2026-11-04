@@ -2,7 +2,7 @@
 //  AboutArchitectureBadgesView.swift
 //  AppLocker
 //
-//  Created by AppLocker
+//  Created by Doe Phương on 4/10/26.
 //
 
 import SwiftUI

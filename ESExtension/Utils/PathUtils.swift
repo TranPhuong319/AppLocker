@@ -75,22 +75,34 @@ extension ESManager {
     // MARK: - Protected Paths & Verification
 
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker
-    func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
-        guard let raw = string(from: esPath) else { return false }
-        let path = normalizeFirmlinkPath(raw)
+    func isInsideProtectedFolder(_ rawPath: String) -> Bool {
+        let path = normalizeFirmlinkPath(rawPath)
         return path == "/Users/Shared/AppLocker" || path.hasPrefix("/Users/Shared/AppLocker/")
     }
 
-    func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
+    func isInsideProtectedFolder(_ esPath: es_string_token_t) -> Bool {
         guard let raw = string(from: esPath) else { return false }
-        let path = normalizeFirmlinkPath(raw)
+        return isInsideProtectedFolder(raw)
+    }
+
+    func isProtectedConfigPath(_ rawPath: String) -> Bool {
+        let path = normalizeFirmlinkPath(rawPath)
         return (path.hasPrefix("/Users/Shared/AppLocker/") && path.hasSuffix("/config.plist"))
             || path == "/Users/Shared/AppLocker/config.plist"
     }
 
+    func isProtectedConfigPath(_ esPath: es_string_token_t) -> Bool {
+        guard let raw = string(from: esPath) else { return false }
+        return isProtectedConfigPath(raw)
+    }
+
+    func isAppBundlePath(_ rawPath: String) -> Bool {
+        let path = normalizeFirmlinkPath(rawPath)
+        return path == "/Applications/AppLocker.app" || path.hasPrefix("/Applications/AppLocker.app/")
+    }
+
     func isAppBundlePath(_ esPath: es_string_token_t) -> Bool {
         guard let raw = string(from: esPath) else { return false }
-        let path = normalizeFirmlinkPath(raw)
-        return path == "/Applications/AppLocker.app" || path.hasPrefix("/Applications/AppLocker.app/")
+        return isAppBundlePath(raw)
     }
 }

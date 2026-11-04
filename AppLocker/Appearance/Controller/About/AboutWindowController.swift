@@ -2,7 +2,7 @@
 //  AboutWindowController.swift
 //  AppLocker
 //
-//  Created by AppLocker
+//  Created by Doe Phương on 2/5/26.
 //
 
 import AppKit

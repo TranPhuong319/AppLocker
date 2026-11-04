@@ -3,7 +3,10 @@
 ## Swift Quality & Linting Rules
 
 - **Zero Deprecated API Tolerance**: ALWAYS verify that any Apple platform API, SDK enum case, or Swift standard library feature is NOT deprecated for the current deployment target (macOS 14+). Always use the modern, active replacement (e.g. `TaskPriority.high` instead of `.userInteractive`, `.task` instead of `.onAppear`, `SMAppService` instead of `SMJobBless`).
-- **Mandatory SwiftLint Execution**: ALWAYS execute `swiftlint lint` after any code modification or refactoring to verify 0 errors and 0 warnings before concluding work. Fix any lint issues immediately.
+- **Mandatory Verification Pipeline (`Lint -> Build -> Test`)**: ALWAYS execute the 3-step verification sequence after any code modification or refactoring before concluding work:
+  1. `swiftlint lint --strict` (verify 0 errors and 0 warnings).
+  2. `xcodebuild build -scheme AppLocker -destination 'platform=macOS'` (verify clean compilation).
+  3. `xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests` (verify all unit tests pass).
 - **Type Nesting**: Do NOT nest types (structs/enums/classes) more than 1 level deep (e.g. use `WindowLayout.AddApp` instead of `WindowLayout.Sheet.AddApp`).
 - **Cyclomatic Complexity**: Keep function cyclomatic complexity $\le 10$. Extract helper methods for complex branching or dispatch logic.
 - **Function Body Length & Parameters**: Keep function bodies under 50 lines and parameters $\le 5$. Group parameters into structs (e.g. `BlockedExecContext`) when exceeding 5 parameters.

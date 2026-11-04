@@ -17,6 +17,10 @@ private struct LoadedConfigs {
 extension ESManager {
     static var baseConfigDirectory: String { UserConfig.baseDirectoryURL.path }
 
+    var activeBaseConfigDirectoryURL: URL {
+        customBaseConfigDirectoryURL ?? UserConfig.baseDirectoryURL
+    }
+
     /// Đọc cấu hình từ tất cả các file /Users/Shared/AppLocker/<UID>/config.plist và cập nhật vào bộ nhớ ngay lập tức
     func loadInitialConfigSync() {
         guard let configs = readConfigsFromDisk() else {
@@ -40,7 +44,8 @@ extension ESManager {
     }
 
     private func readConfigsFromDisk() -> LoadedConfigs? {
-        let baseDir = UserConfig.baseDirectoryURL.path
+        let baseURL = activeBaseConfigDirectoryURL
+        let baseDir = baseURL.path
         guard FileManager.default.fileExists(atPath: baseDir) else {
             Logfile.endpointSecurity.debug(
                 "[ESConfig] Base config directory not found at \(baseDir, privacy: .public). Skipping load."
@@ -52,7 +57,7 @@ extension ESManager {
         var newBundlePaths: [uid_t: Set<String>] = [:]
         var newAllowIncomingCalls: [uid_t: Bool] = [:]
 
-        let configs = UserConfig.loadAll()
+        let configs = UserConfig.loadAll(baseDirectoryURL: baseURL)
         for (uid, userConfig) in configs {
             newAllowIncomingCalls[uid] = userConfig.allowIncomingCalls ?? true
 
@@ -186,7 +191,9 @@ extension ESManager {
         }
         stateLock.withLock {
             self.rawCurrentLanguage = code
-            UserDefaults.standard.set([code], forKey: "AppleLanguages")
+            if !self.isTesting {
+                UserDefaults.standard.set([code], forKey: "AppleLanguages")
+            }
             Logfile.endpointSecurity.debug("[ESConfig] ES process language updated to: \(code, privacy: .public)")
         }
     }

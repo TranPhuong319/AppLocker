@@ -105,7 +105,10 @@ extension ESManager {
                 )
                 self.pendingNotifications.append(notification)
             }
-            AppLauncherUtils.forceEnableAndRestartAgent(for: notification.uid)
+            stateLock.withLock { self.lastKickstartedUID = notification.uid }
+            if !isTesting {
+                AppLauncherUtils.forceEnableAndRestartAgent(for: notification.uid)
+            }
         }
     }
 

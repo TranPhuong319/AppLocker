@@ -167,6 +167,14 @@ class ESClientObject: @unchecked Sendable {
         return true
     }
 
+    static func computeDeadlineBudget(nanosUntilDeadline: UInt64) -> (headroom: Int64, processingBudget: Int64) {
+        let budget = Double(nanosUntilDeadline) * 0.8
+        let rawHeadroom = Int64(nanosUntilDeadline) - Int64(budget)
+        let finalHeadroom = min(5_000_000_000, max(1_000_000_000, rawHeadroom))
+        let finalProcessingBudget = max(0, Int64(nanosUntilDeadline) - finalHeadroom)
+        return (finalHeadroom, finalProcessingBudget)
+    }
+
     private func handleMessageWithDeadline(
         esClient: OpaquePointer,
         message: ESMessage,
@@ -178,10 +186,7 @@ class ESClientObject: @unchecked Sendable {
         let now = mach_absolute_time()
         let timeRemaining = (deadline > now) ? (deadline - now) : 0
         let nanosUntilDeadline = ESManager.machTimeToNanos(timeRemaining)
-        let budget = Double(nanosUntilDeadline) * 0.8
-        let rawHeadroom = Int64(nanosUntilDeadline) - Int64(budget)
-        let finalHeadroom = min(5_000_000_000, max(1_000_000_000, rawHeadroom))
-        let finalProcessingBudget = max(0, Int64(nanosUntilDeadline) - finalHeadroom)
+        let (_, finalProcessingBudget) = Self.computeDeadlineBudget(nanosUntilDeadline: nanosUntilDeadline)
 
         manager.emergencyTimerQueue.asyncAfter(
             deadline: .now() + .nanoseconds(Int(finalProcessingBudget))) {

@@ -4,6 +4,10 @@
 
 - **Rule Size Ceiling ($\le 12,000$ chars/bytes)**: Every rule file in `.agents/rules/` and `AGENTS.md` must stay strictly under 12,000 characters/bytes.
 - **On-Demand Rule Loading**: Identify the active task's domain and load ONLY the corresponding rule file from [`.agents/rules/`](rules/). Do NOT load all rule files into context at once.
+- **Mandatory Verification Pipeline (`Lint -> Build -> Test`)**: After any code modification or refactoring, ALWAYS execute the 3-step verification pipeline in strict order before concluding work:
+  1. `swiftlint lint --strict` (must pass with 0 warnings and 0 errors).
+  2. Build target(s) (`xcodebuild build -scheme AppLocker -destination 'platform=macOS'`).
+  3. Run Unit Tests (`xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests`).
 - **No Unsolicited Commits/Pushes**: NEVER run `git commit`, `git push`, or alter repository git state unless explicitly requested by the user.
 
 ---

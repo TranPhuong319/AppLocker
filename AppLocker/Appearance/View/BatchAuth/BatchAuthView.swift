@@ -8,15 +8,6 @@
 import SwiftUI
 import AppKit
 
-struct PendingAppItem: Identifiable, Hashable {
-    let id = UUID()
-    let name: String
-    let path: String
-    let cdhash: String
-    let pid: Int32
-    var isSelected: Bool = true
-}
-
 struct BatchAuthView: View {
     @Bindable var server: XPCServer
     var onAuthenticate: () -> Void
