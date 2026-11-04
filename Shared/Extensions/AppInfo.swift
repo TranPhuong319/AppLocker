@@ -38,6 +38,17 @@ struct InstalledApp: Identifiable, Hashable, Sendable {
 }
 
 // MARK: - Mock Data for Previews
+#if DEBUG
+/// Detects Xcode Previews / Playgrounds. Debug-only so Release builds never
+/// branch on environment variables inside security-sensitive code paths.
+enum PreviewEnvironment {
+    static var isRunningInPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" ||
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PLAYGROUNDS"] == "1"
+    }
+}
+#endif
+
 extension InstalledApp {
     static let mockChrome = InstalledApp(
         name: "Google Chrome",
