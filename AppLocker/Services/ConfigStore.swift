@@ -40,6 +40,9 @@ final class ConfigStore: Sendable {
     }
 
     private func ensureDirectoryExists(_ url: URL) {
+        #if DEBUG
+        guard !PreviewEnvironment.isRunningInPreview else { return }
+        #endif
         let attributes: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
         do {
             try FileManager.default.createDirectory(
@@ -169,6 +172,9 @@ final class ConfigStore: Sendable {
         allowIncomingCalls: Bool = true,
         autoLockTimeoutMinutes: Int = 0
     ) {
+        #if DEBUG
+        guard !PreviewEnvironment.isRunningInPreview else { return }
+        #endif
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
 
@@ -201,6 +207,9 @@ final class ConfigStore: Sendable {
 
     @discardableResult
     func removeConfig(purgeAll: Bool = false) -> Bool {
+        #if DEBUG
+        guard !PreviewEnvironment.isRunningInPreview else { return true }
+        #endif
         if let domain = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: domain)
         }

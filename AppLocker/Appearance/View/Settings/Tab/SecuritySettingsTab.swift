@@ -20,7 +20,11 @@ struct SecuritySettingsTab: View {
 
     init(isUnlocked: Binding<Bool> = .constant(false), isMock: Bool = false) {
         self._isUnlocked = isUnlocked
+        #if DEBUG
+        self.isMock = isMock || PreviewEnvironment.isRunningInPreview
+        #else
         self.isMock = isMock
+        #endif
     }
 
     var body: some View {
@@ -35,6 +39,11 @@ struct SecuritySettingsTab: View {
             syncProtectionStatus()
         }
         .onDisappear {
+            if !isMock {
+                isUnlocked = false
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
             if !isMock {
                 isUnlocked = false
             }
@@ -204,7 +213,7 @@ struct SecuritySettingsTab: View {
     }
 
     private func handleLockToggle(newValue: Bool) {
-        if !newValue {
+        if !isMock && !newValue {
             let confirmation = AlertShow.show(
                 title: String(localized: "Turn Off Application Lock?"),
                 message: String(localized: """
