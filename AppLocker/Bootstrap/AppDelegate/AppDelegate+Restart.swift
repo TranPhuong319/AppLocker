@@ -11,15 +11,12 @@ import Foundation
 extension AppDelegate {
 
     func selfRemoveApp() async -> Bool {
-        await withCheckedContinuation { continuation in
-            NSWorkspace.shared.recycle([Bundle.main.bundleURL]) { _, error in
-                if let error {
-                    Logfile.app.error("[Lifecycle] Failed to move app to Trash: \(error.localizedDescription)")
-                    continuation.resume(returning: false)
-                } else {
-                    continuation.resume(returning: true)
-                }
-            }
+        do {
+            _ = try await NSWorkspace.shared.recycle([Bundle.main.bundleURL])
+            return true
+        } catch {
+            Logfile.app.error("[Lifecycle] Failed to move app to Trash: \(error.localizedDescription)")
+            return false
         }
     }
 
@@ -34,13 +31,13 @@ extension AppDelegate {
         configuration.createsNewApplicationInstance = true
         configuration.arguments = ["-waitForPID", "\(pid)"]
 
-        NSWorkspace.shared.openApplication(at: bundleURL, configuration: configuration) { _, error in
-            if let error = error {
+        Task { @MainActor in
+            do {
+                _ = try await NSWorkspace.shared.openApplication(at: bundleURL, configuration: configuration)
+            } catch {
                 Logfile.app.error("[Lifecycle] App restart error: \(error.localizedDescription)")
             }
-            Task { @MainActor in
-                NSApp.terminate(nil)
-            }
+            NSApp.terminate(nil)
         }
     }
 }
