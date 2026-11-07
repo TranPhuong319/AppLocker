@@ -17,6 +17,7 @@ extension AppDelegate {
         AppScannerService.shared.start()
 
         Logfile.app.debug("[Launch] Starting UI components on app launch...")
+        AuthCoordinator.shared.configureUIDependencies()
         self.setupUIComponents()
 
         Logfile.app.debug("[Launch] Starting Call Services observer...")
@@ -65,7 +66,7 @@ extension AppDelegate {
     @objc
     @MainActor
     private func handleWorkspaceSleep() {
-        XPCServer.shared.lastAuthTimestampsByPath.removeAll()
+        AuthCoordinator.shared.resetGracePeriods()
         let timeoutMinutes = LockES.shared.autoLockTimeoutMinutes
         if timeoutMinutes != 0 {
             Logfile.app.info(

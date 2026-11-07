@@ -89,7 +89,13 @@ extension ESManager {
         let cdhashData = context.cdhashData
         let cdhashHex = context.cdhashHex
 
-        guard isProcessBlocked(path: path, cdhashData: cdhashData, cdhashHex: cdhashHex, uid: uid) else {
+        guard isProcessBlocked(
+            path: path,
+            cdhashData: cdhashData,
+            cdhashHex: cdhashHex,
+            signingID: signingID,
+            uid: uid
+        ) else {
             return false
         }
 

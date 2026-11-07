@@ -11,6 +11,7 @@ import os
 private struct LoadedConfigs {
     let cdhashes: [uid_t: Set<String>]
     let bundlePaths: [uid_t: Set<String>]
+    let bundleIDs: [uid_t: Set<String>]
     let incomingCalls: [uid_t: Bool]
 }
 
@@ -31,6 +32,7 @@ extension ESManager {
         self.stateLock.withLock {
             self.lockedCDHashes = configs.cdhashes
             self.lockedBundlePaths = configs.bundlePaths
+            self.lockedBundleIDs = configs.bundleIDs
             self.allowIncomingCallsByUID = configs.incomingCalls
         }
 
@@ -55,6 +57,7 @@ extension ESManager {
 
         var newCDHashes: [uid_t: Set<String>] = [:]
         var newBundlePaths: [uid_t: Set<String>] = [:]
+        var newBundleIDs: [uid_t: Set<String>] = [:]
         var newAllowIncomingCalls: [uid_t: Bool] = [:]
 
         let configs = UserConfig.loadAll(baseDirectoryURL: baseURL)
@@ -62,21 +65,30 @@ extension ESManager {
             newAllowIncomingCalls[uid] = userConfig.allowIncomingCalls ?? true
 
             guard !userConfig.isDisabled else { continue }
-            let (cdhashes, bundlePaths) = extractHashesAndPaths(from: userConfig.apps)
-            newCDHashes[uid] = cdhashes
-            newBundlePaths[uid] = bundlePaths
+            let extracted = extractHashesAndPaths(from: userConfig.apps)
+            newCDHashes[uid] = extracted.cdhashes
+            newBundlePaths[uid] = extracted.bundlePaths
+            newBundleIDs[uid] = extracted.bundleIDs
         }
 
         return LoadedConfigs(
             cdhashes: newCDHashes,
             bundlePaths: newBundlePaths,
+            bundleIDs: newBundleIDs,
             incomingCalls: newAllowIncomingCalls
         )
     }
 
-    private func extractHashesAndPaths(from apps: [LockedAppConfig]) -> (Set<String>, Set<String>) {
+    private struct ExtractedAppRules {
+        let cdhashes: Set<String>
+        let bundlePaths: Set<String>
+        let bundleIDs: Set<String>
+    }
+
+    private func extractHashesAndPaths(from apps: [LockedAppConfig]) -> ExtractedAppRules {
         var cdhashes = Set<String>()
         var bundlePaths = Set<String>()
+        var bundleIDs = Set<String>()
 
         for app in apps {
             let path1 = app.path
@@ -86,13 +98,17 @@ extension ESManager {
             bundlePaths.insert(path2)
             bundlePaths.insert(realPath)
 
+            if !app.bundleID.isEmpty {
+                bundleIDs.insert(app.bundleID)
+            }
+
             let resolvedCDHash = app.cdhash ?? cdHash(for: path1)
             if let hash = resolvedCDHash, !hash.isEmpty {
                 cdhashes.insert(hash.lowercased())
             }
         }
 
-        return (cdhashes, bundlePaths)
+        return ExtractedAppRules(cdhashes: cdhashes, bundlePaths: bundlePaths, bundleIDs: bundleIDs)
     }
 
     func startConfigMonitoring() {

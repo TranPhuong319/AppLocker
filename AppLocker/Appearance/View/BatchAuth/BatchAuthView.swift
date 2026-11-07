@@ -9,17 +9,17 @@ import SwiftUI
 import AppKit
 
 struct BatchAuthView: View {
-    @Bindable var server: XPCServer
+    @Bindable var coordinator: AuthCoordinator
     var onAuthenticate: () -> Void
     var onCancel: () -> Void
     @State private var maxButtonWidth: CGFloat?
 
     var selectedCount: Int {
-        server.pendingApps.filter { $0.isSelected }.count
+        coordinator.pendingApps.filter { $0.isSelected }.count
     }
 
     var headerTitle: String {
-        let count = server.pendingApps.count
+        let count = coordinator.pendingApps.count
         if count <= 1 {
             return String(localized: "Do you want to launch this application?")
         } else {
@@ -42,7 +42,7 @@ struct BatchAuthView: View {
 
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6) {
-                        ForEach($server.pendingApps) { $app in
+                        ForEach($coordinator.pendingApps) { $app in
                             BatchAppRowView(app: $app, icon: appIcon(for: app.path))
                         }
                     }
@@ -84,14 +84,14 @@ struct BatchAuthView: View {
             Text(
                 String(
                     format: String(localized: "Automatically close the application after %d seconds"),
-                    server.remainingSeconds
+                    coordinator.remainingSeconds
                 )
             )
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
-                .contentTransition(.numericText(value: Double(server.remainingSeconds)))
-                .animation(.snappy(duration: 0.3), value: server.remainingSeconds)
+                .contentTransition(.numericText(value: Double(coordinator.remainingSeconds)))
+                .animation(.snappy(duration: 0.3), value: coordinator.remainingSeconds)
         }
         .padding(.horizontal, 16)
         .padding(.top, 0)
@@ -235,9 +235,9 @@ struct BatchAppRowView: View {
 }
 
 private struct BatchAuthViewPreviewWrapper: View {
-    @State private var server: XPCServer = {
-        let xpcServer = XPCServer()
-        xpcServer.pendingApps = [
+    @State private var coordinator: AuthCoordinator = {
+        let authCoord = AuthCoordinator()
+        authCoord.pendingApps = [
             PendingAppItem(
                 name: "Safari",
                 path: "/Applications/Safari.app/Contents/MacOS/Safari",
@@ -260,16 +260,16 @@ private struct BatchAuthViewPreviewWrapper: View {
                 isSelected: false
             )
         ]
-        xpcServer.remainingSeconds = 60
-        return xpcServer
+        authCoord.remainingSeconds = 60
+        return authCoord
     }()
     private let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     var body: some View {
         BatchAuthView(
-            server: server,
+            coordinator: coordinator,
             onAuthenticate: {
-                let count = server.pendingApps.filter(\.isSelected).count
+                let count = coordinator.pendingApps.filter(\.isSelected).count
                 Logfile.appXPC.debug("[Preview] Mock Authenticate triggered for \(count, privacy: .public) apps")
             },
             onCancel: {
@@ -278,8 +278,8 @@ private struct BatchAuthViewPreviewWrapper: View {
         )
         .frame(width: WindowLayout.batchAuthSize.width, height: WindowLayout.batchAuthSize.height)
         .onReceive(timer) { _ in
-            if server.remainingSeconds > 0 {
-                server.remainingSeconds -= 1
+            if coordinator.remainingSeconds > 0 {
+                coordinator.remainingSeconds -= 1
             }
         }
     }

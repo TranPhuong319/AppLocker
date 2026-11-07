@@ -15,11 +15,10 @@ extension Notification.Name {
 
 @Observable
 @MainActor
-class AppScannerService: NSObject {
+final class AppScannerService: NSObject {
     static let shared = AppScannerService()
 
     let selfBundlePath = Bundle.main.bundleURL.path
-
     var installedApps: [InstalledApp] = []
 
     @ObservationIgnored
@@ -29,15 +28,9 @@ class AppScannerService: NSObject {
     @ObservationIgnored
     var appScanTask: Task<Void, Never>?
     @ObservationIgnored
-    var cachedFileSystemApps: [InstalledApp] = []
-    @ObservationIgnored
-    var cachedSpotlightApps: [InstalledApp] = []
-    var lastInstalledPathSet: Set<String> = []
-
-    @ObservationIgnored
     var directoryWatcherDebounceTask: Task<Void, Never>?
     @ObservationIgnored
-    var directoryWatcherSource: DispatchSourceFileSystemObject?
+    var directoryWatcherSources: [DispatchSourceFileSystemObject] = []
 
     override init() {
         super.init()
@@ -47,18 +40,110 @@ class AppScannerService: NSObject {
         spotlightTask?.cancel()
         appScanTask?.cancel()
         directoryWatcherDebounceTask?.cancel()
-        directoryWatcherSource?.cancel()
+        directoryWatcherSources.forEach { $0.cancel() }
         metadataQuery?.stop()
         NotificationCenter.default.removeObserver(self)
     }
 
     func start() {
         refreshInstalledApps()
+        startApplicationsWatchers()
         setupSpotlightQuery()
-        startApplicationsWatcher()
     }
 
-    // MARK: - Spotlight Query Setup
+    // MARK: - Primary Source: Kernel kqueue Watchers on /Applications & /System/Applications
+
+    func startApplicationsWatchers(paths: [String] = ["/Applications", "/System/Applications"]) {
+        guard directoryWatcherSources.isEmpty else { return }
+
+        for path in paths {
+            let descriptor = open(path, O_EVTONLY)
+            guard descriptor >= 0 else { continue }
+
+            let source = DispatchSource.makeFileSystemObjectSource(
+                fileDescriptor: descriptor,
+                eventMask: [.write, .extend, .rename, .delete, .attrib],
+                queue: .main
+            )
+
+            source.setEventHandler { [weak self] in
+                MainActor.assumeIsolated {
+                    self?.handleDirectoryInterrupt(for: path)
+                }
+            }
+
+            source.setCancelHandler {
+                close(descriptor)
+            }
+
+            directoryWatcherSources.append(source)
+            source.resume()
+        }
+    }
+
+    func handleDirectoryInterrupt(for path: String) {
+        directoryWatcherDebounceTask?.cancel()
+        directoryWatcherDebounceTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled, let self else { return }
+            Logfile.policy.debug(
+                "[AppScannerService] \(path, privacy: .public) interrupt received. Refreshing installed apps..."
+            )
+            self.refreshInstalledApps()
+            LockES.shared.verifyAndHealLockedCDHashes()
+        }
+    }
+
+    // MARK: - Fast 1-Pass Shallow Scan directly from VFS
+
+    func refreshInstalledApps() {
+        appScanTask?.cancel()
+        let bundlePath = selfBundlePath
+
+        appScanTask = Task { @MainActor [weak self] in
+            let scanned = await Task.detached(priority: .userInitiated) {
+                AppScannerService.scanApplicationsDirectories(excluding: bundlePath)
+            }.value
+
+            guard let self, !Task.isCancelled else { return }
+            self.publishInstalledApps(scanned)
+        }
+    }
+
+    nonisolated static func scanApplicationsDirectories(
+        directories: [String] = ["/Applications", "/System/Applications", "/System/Applications/Utilities"],
+        excluding selfBundlePath: String = ""
+    ) -> [InstalledApp] {
+        let fileManager = FileManager.default
+        var apps: [InstalledApp] = []
+        var seenPaths = Set<String>()
+
+        for dir in directories {
+            guard let fileNames = try? fileManager.contentsOfDirectory(atPath: dir) else { continue }
+            for fileName in fileNames where fileName.hasSuffix(".app") && !fileName.hasPrefix(".") {
+                let fullPath = (dir as NSString).appendingPathComponent(fileName)
+                guard fullPath != selfBundlePath, !seenPaths.contains(fullPath) else { continue }
+                seenPaths.insert(fullPath)
+
+                let originalName = (fileName as NSString).deletingPathExtension
+                let meta = InstalledApp.resolveMetadata(at: fullPath, fallback: originalName)
+                let source: AppSource = fullPath.hasPrefix("/System") ? .system : .user
+                apps.append(
+                    InstalledApp(
+                        name: meta.name,
+                        bundleID: meta.bundleID,
+                        path: fullPath,
+                        source: source,
+                        originalName: originalName
+                    )
+                )
+            }
+        }
+        return apps.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    // MARK: - Secondary Source: Spotlight NSMetadataQuery (Metadata Refinement)
+
     func setupSpotlightQuery() {
         guard metadataQuery == nil else { return }
 
@@ -88,18 +173,17 @@ class AppScannerService: NSObject {
 
     @objc func queryDidUpdate(_ notification: Notification) {
         spotlightTask?.cancel()
-
         spotlightTask = Task { @MainActor [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
-            guard let self = self, !Task.isCancelled else { return }
+            guard let self, !Task.isCancelled else { return }
 
             let results = self.metadataQuery?.results as? [NSMetadataItem] ?? []
-            self.cachedSpotlightApps = self.parseSpotlightResults(results)
-            self.mergeAndPublishInstalledApps()
+            let parsed = self.parseSpotlightResults(results)
+            self.refineWithSpotlightMetadata(parsed)
         }
     }
 
-    private func parseSpotlightResults(_ results: [NSMetadataItem]) -> [InstalledApp] {
+    nonisolated func parseSpotlightResults(_ results: [NSMetadataItem]) -> [InstalledApp] {
         results.compactMap { item in
             guard let path = item.value(forAttribute: "kMDItemPath") as? String,
                 path != selfBundlePath,
@@ -125,142 +209,44 @@ class AppScannerService: NSObject {
         }
     }
 
-    // MARK: - File System Scanner
-    func refreshInstalledApps() {
-        appScanTask?.cancel()
-        let bundlePath = selfBundlePath
+    func refineWithSpotlightMetadata(_ spotlightApps: [InstalledApp]) {
+        guard !spotlightApps.isEmpty else { return }
+        var currentMap = Dictionary(uniqueKeysWithValues: installedApps.map { ($0.path, $0) })
+        var updated = false
 
-        appScanTask = Task { @MainActor [weak self] in
-            let scanned = await Task.detached(priority: .userInitiated) {
-                AppScannerService.scanFileSystemApps(excluding: bundlePath)
-            }.value
-
-            guard let self = self, !Task.isCancelled else { return }
-            self.cachedFileSystemApps = scanned
-            self.mergeAndPublishInstalledApps()
-        }
-    }
-
-    private func mergeAndPublishInstalledApps() {
-        var appMap: [String: InstalledApp] = [:]
-        let fileManager = FileManager.default
-
-        for app in cachedFileSystemApps where fileManager.fileExists(atPath: app.path) {
-            appMap[app.path] = app
-        }
-
-        for app in cachedSpotlightApps where fileManager.fileExists(atPath: app.path) {
-            if let existing = appMap[app.path] {
-                let name = (!app.name.isEmpty && app.name != app.path) ? app.name : existing.name
-                let bundleID = !app.bundleID.isEmpty ? app.bundleID : existing.bundleID
-                let originalName = existing.originalName ?? app.originalName
-                appMap[app.path] = InstalledApp(
-                    name: name,
-                    bundleID: bundleID,
-                    path: app.path,
-                    source: existing.source ?? app.source,
-                    originalName: originalName
-                )
-            } else if (app.path.hasPrefix("/Applications/") || app.path.hasPrefix("/System/Applications/"))
-                && !app.path.contains(".app/") {
-                appMap[app.path] = app
-            }
-        }
-
-        let installedAppsList = Array(appMap.values)
-        if installedAppsList != self.installedApps || self.installedApps.isEmpty {
-            self.lastInstalledPathSet = Set(installedAppsList.map { $0.path })
-            self.installedApps = installedAppsList
-            LockES.shared.handleInstalledAppsChanged(installedAppsList)
-            NotificationCenter.default.post(name: .installedAppsDidUpdate, object: nil)
-        }
-    }
-
-    nonisolated static func scanFileSystemApps(excluding selfBundlePath: String) -> [InstalledApp] {
-        let fileManager = FileManager.default
-        let excludedExts: Set<String> = ["app", "framework", "plugin", "bundle", "kext", "savedstate"]
-        var apps: [InstalledApp] = []
-        var seenPaths = Set<String>()
-        var visitedDirs = Set<String>()
-        var dirsToScan = ["/Applications", "/System/Applications"]
-
-        while !dirsToScan.isEmpty {
-            let currentDir = dirsToScan.removeFirst()
-            guard visitedDirs.insert(currentDir).inserted,
-                let fileNames = try? fileManager.contentsOfDirectory(atPath: currentDir)
-            else { continue }
-
-            for fileName in fileNames where !fileName.hasPrefix(".") {
-                let fullPath = (currentDir as NSString).appendingPathComponent(fileName)
-                if fileName.hasSuffix(".app") {
-                    guard fullPath != selfBundlePath,
-                        !fullPath.contains(".app/"),
-                        !seenPaths.contains(fullPath)
-                    else { continue }
-                    seenPaths.insert(fullPath)
-
-                    let originalName = (fileName as NSString).deletingPathExtension
-                    let meta = InstalledApp.resolveMetadata(at: fullPath, fallback: originalName)
-                    let source: AppSource = fullPath.hasPrefix("/System") ? .system : .user
-                    apps.append(
-                        InstalledApp(
-                            name: meta.name,
-                            bundleID: meta.bundleID,
-                            path: fullPath,
-                            source: source,
-                            originalName: originalName
-                        )
+        for app in spotlightApps {
+            if let existing = currentMap[app.path] {
+                let nameChanged = !app.name.isEmpty && app.name != existing.name
+                let bundleIDAdded = existing.bundleID.isEmpty && !app.bundleID.isEmpty
+                if nameChanged || bundleIDAdded {
+                    currentMap[app.path] = InstalledApp(
+                        name: nameChanged ? app.name : existing.name,
+                        bundleID: !app.bundleID.isEmpty ? app.bundleID : existing.bundleID,
+                        path: existing.path,
+                        source: existing.source,
+                        originalName: existing.originalName
                     )
-                } else {
-                    var isDir: ObjCBool = false
-                    if fileManager.fileExists(atPath: fullPath, isDirectory: &isDir), isDir.boolValue {
-                        let ext = (fileName as NSString).pathExtension.lowercased()
-                        if !excludedExts.contains(ext) {
-                            dirsToScan.append(fullPath)
-                        }
-                    }
+                    updated = true
                 }
-            }
-        }
-        return apps
-    }
-
-    // MARK: - Directory Watcher
-    func startApplicationsWatcher() {
-        guard directoryWatcherSource == nil else { return }
-        let descriptor = open("/Applications", O_EVTONLY)
-        guard descriptor >= 0 else { return }
-
-        let source = DispatchSource.makeFileSystemObjectSource(
-            fileDescriptor: descriptor,
-            eventMask: [.write, .extend, .rename, .delete, .attrib],
-            queue: .main
-        )
-
-        source.setEventHandler { [weak self] in
-            MainActor.assumeIsolated {
-                self?.handleApplicationsDirectoryInterrupt()
+            } else {
+                currentMap[app.path] = app
+                updated = true
             }
         }
 
-        source.setCancelHandler {
-            close(descriptor)
+        if updated {
+            let sorted = Array(currentMap.values).sorted {
+                $0.name.localizedStandardCompare($1.name) == .orderedAscending
+            }
+            publishInstalledApps(sorted)
         }
-
-        self.directoryWatcherSource = source
-        source.resume()
     }
 
-    func handleApplicationsDirectoryInterrupt() {
-        directoryWatcherDebounceTask?.cancel()
-        directoryWatcherDebounceTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(500))
-            guard !Task.isCancelled, let self = self else { return }
-            Logfile.policy.debug(
-                "[AppScannerService] /Applications interrupt received. Refreshing installed apps & healing CDHashes..."
-            )
-            self.refreshInstalledApps()
-            LockES.shared.verifyAndHealLockedCDHashes()
+    func publishInstalledApps(_ newApps: [InstalledApp]) {
+        if newApps != self.installedApps || self.installedApps.isEmpty {
+            self.installedApps = newApps
+            LockES.shared.handleInstalledAppsChanged(newApps)
+            NotificationCenter.default.post(name: .installedAppsDidUpdate, object: nil)
         }
     }
 }
