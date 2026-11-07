@@ -132,11 +132,13 @@ extension ESManager {
             return senderPath
         }()
 
+        let responsiblePathArg = responsiblePath ?? ""
         Logfile.endpointSecurity.warning(
             """
             [SecurityEvent:TamperBlocked] Target: \(targetAppName, privacy: .public) \
             (PID \(targetPid, privacy: .public)) | Sender: \(senderDisplayName, privacy: .public) \
-            (PID \(senderPid, privacy: .public)) | SenderPath: \(senderPath, privacy: .public)
+            (PID \(senderPid, privacy: .public)) | SenderPath: \(senderPath, privacy: .public) \
+            | ResponsiblePath: \(responsiblePathArg, privacy: .public)
             """
         )
     }

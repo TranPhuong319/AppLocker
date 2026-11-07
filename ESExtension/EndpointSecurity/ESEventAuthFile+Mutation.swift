@@ -173,11 +173,12 @@ extension ESManager {
         } else {
             senderPath
         }
+        let responsiblePathArg = responsiblePath ?? ""
         Logfile.endpointSecurity.warning(
             """
             [SecurityEvent:TamperBlocked] Target: Config (PID 0) | Sender: \(senderDisplayName, privacy: .public) \
             (PID \(senderPid, privacy: .public)) | Action: \(action, privacy: .public) \
-            | SenderPath: \(senderPath, privacy: .public)
+            | SenderPath: \(senderPath, privacy: .public) | ResponsiblePath: \(responsiblePathArg, privacy: .public)
             """
         )
     }
