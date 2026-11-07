@@ -19,7 +19,6 @@ struct RecordedBatchDecision: Sendable, Equatable {
 
 @Suite("Anonymous NSXPCListener Handshake, Anti-Spoofing & Batch Auth Queue Tests", .serialized)
 struct XPCAuthenticationAndBatchTests {
-
     @Test("Anonymous NSXPCListener connects client to ESManager(isTesting: true) and executes ESAppProtocol")
     func anonymousXpcListenerHandshakeAndAppProtocolRequests() throws {
         let tempDir = FileManager.default.temporaryDirectory
@@ -38,10 +37,7 @@ struct XPCAuthenticationAndBatchTests {
         connection.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
         connection.exportedObject = MockESXPCNotificationSink()
         connection.resume()
-        defer {
-            connection.invalidate()
-            listener.invalidate()
-        }
+        defer { connection.invalidate(); listener.invalidate() }
 
         let proxy = try #require(connection.remoteObjectProxy as? ESAppProtocol)
         #expect(callAllowConfigAccess(proxy: proxy, pid: getpid()) == true)
@@ -88,16 +84,12 @@ struct XPCAuthenticationAndBatchTests {
         let connection = NSXPCConnection(listenerEndpoint: listener.endpoint)
         connection.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
         connection.resumeAndExpectError(errorBox: errorBox)
-        defer {
-            connection.invalidate()
-            listener.invalidate()
-        }
+        defer { connection.invalidate(); listener.invalidate() }
 
         let deadline = Date().addingTimeInterval(2.0)
         while !errorBox.withLock({ $0 }) && Date() < deadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.02))
         }
-
         #expect(errorBox.withLock { $0 } == true)
     }
 
@@ -108,62 +100,52 @@ struct XPCAuthenticationAndBatchTests {
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        let server = XPCServer()
-        server.dependencies.userDefaults = defaults
-
+        let coordinator = makeTestCoordinator(defaults: defaults)
         var batchWindowShown = false
         var cancelCalledCount = 0
-        var processedBatches: [RecordedBatchDecision] = []
 
-        server.dependencies.isBatchWindowVisible = { batchWindowShown }
-        server.dependencies.onShowBatchWindow = { batchWindowShown = true }
-        server.dependencies.onHideBatchWindow = { batchWindowShown = false }
-        server.dependencies.cancelAuth = { cancelCalledCount += 1 }
-        server.dependencies.onRefreshWatchdog = { _ in }
-        server.dependencies.onProcessPendingApps = { approved, rejected, reason in
-            processedBatches.append(RecordedBatchDecision(approved: approved, rejected: rejected, reason: reason))
+        coordinator.dependencies.isBatchWindowVisible = { batchWindowShown }
+        coordinator.dependencies.showBatchWindow = { batchWindowShown = true }
+        coordinator.dependencies.hideBatchWindow = { batchWindowShown = false }
+        coordinator.dependencies.cancelAuth = { cancelCalledCount += 1 }
+
+        coordinator.addPendingAuth(name: "Safari", path: "/Applications/Safari.app", cdhash: "hash1", pid: 1001)
+        let singleAuthCont = await coordinator.waitForAuthStart {
+            coordinator.processIncomingQueue()
         }
+        #expect(coordinator.isAuthenticatingSingleApp == true)
+        #expect(coordinator.currentSingleAppPID == 1001)
 
-        var singleAuthContinuation: CheckedContinuation<Bool, Error>?
-        server.dependencies.authenticate = { _ in
-            try await withCheckedThrowingContinuation { cont in
-                singleAuthContinuation = cont
-            }
-        }
-
-        server.addPendingAuth(name: "Safari", path: "/Applications/Safari.app", cdhash: "hash1", pid: 1001)
-        server.processIncomingQueue()
-        #expect(server.isAuthenticatingSingleApp == true)
-        #expect(server.currentSingleAppPID == 1001)
-        try await Task.sleep(for: .milliseconds(20))
-
-        server.addPendingAuth(name: "Notes", path: "/System/Applications/Notes.app", cdhash: "hash2", pid: 1002)
-        #expect(server.isUpgradingToBatch == true)
+        coordinator.addPendingAuth(name: "Notes", path: "/System/Applications/Notes.app", cdhash: "hash2", pid: 1002)
+        #expect(coordinator.isUpgradingToBatch == true)
         #expect(cancelCalledCount == 1)
 
-        singleAuthContinuation?.resume(returning: false)
-        try await Task.sleep(for: .milliseconds(50))
-
+        await withCheckedContinuation { cont in
+            coordinator.dependencies.showBatchWindow = {
+                batchWindowShown = true
+                cont.resume()
+            }
+            singleAuthCont.resume(returning: false)
+        }
         #expect(batchWindowShown == true)
-        #expect(server.pendingApps.count == 2)
+        #expect(coordinator.pendingApps.count == 2)
 
-        server.pendingApps[1].isSelected = false
-        server.dependencies.authenticate = { _ in true }
-
-        server.handleAuthenticate()
-        try await Task.sleep(for: .milliseconds(50))
-
+        coordinator.pendingApps[1].isSelected = false
+        coordinator.dependencies.authenticate = { _ in true }
+        let decision1 = await coordinator.waitForDecision {
+            coordinator.handleAuthenticate()
+        }
         #expect(batchWindowShown == false)
-        #expect(processedBatches.count == 1)
-        #expect(processedBatches.first?.approved == [1001])
-        #expect(processedBatches.first?.rejected == [1002])
-        #expect(processedBatches.first?.reason == AuthDecisionReason.userCancel.rawValue)
+        #expect(decision1.approved == [1001])
+        #expect(decision1.rejected == [1002])
+        #expect(decision1.reason == AuthDecisionReason.userCancel.rawValue)
 
-        server.addPendingAuth(name: "Music", path: "/System/Applications/Music.app", cdhash: "hash3", pid: 1003)
-        server.handleCancel(reason: AuthDecisionReason.userCancel.rawValue)
-        #expect(processedBatches.count == 2)
-        #expect(processedBatches.last?.approved == [])
-        #expect(processedBatches.last?.rejected == [1003])
+        let decision2 = await coordinator.waitForDecision {
+            coordinator.addPendingAuth(name: "Music", path: "/Applications/Music.app", cdhash: "hash3", pid: 1003)
+            coordinator.handleCancel(reason: AuthDecisionReason.userCancel.rawValue)
+        }
+        #expect(decision2.approved == [])
+        #expect(decision2.rejected == [1003])
     }
 }
 
@@ -177,142 +159,114 @@ extension XPCAuthenticationAndBatchTests {
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        let server = XPCServer()
-        server.dependencies.userDefaults = defaults
-
+        let coordinator = makeTestCoordinator(defaults: defaults)
         var notifiedApps: [String] = []
-        var decisions: [RecordedBatchDecision] = []
 
-        server.dependencies.onSendBlockedNotification = { notifiedApps.append($0) }
-        server.dependencies.onProcessPendingApps = { approved, rejected, reason in
-            decisions.append(RecordedBatchDecision(approved: approved, rejected: rejected, reason: reason))
-        }
+        coordinator.dependencies.sendBlockedNotification = { notifiedApps.append($0) }
 
         // 1. Notification enabled (default) + Single App Approved
-        server.dependencies.authenticate = { _ in true }
-        server.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "zalo_hash", pid: 2001)
-        server.processIncomingQueue()
-        try await Task.sleep(for: .milliseconds(40))
+        coordinator.dependencies.authenticate = { _ in true }
+        let decision1 = await coordinator.waitForDecision {
+            coordinator.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "zalo_hash", pid: 2001)
+            coordinator.processIncomingQueue()
+        }
 
         #expect(notifiedApps == ["Zalo"])
-        #expect(decisions.last?.approved == [2001])
-        #expect(decisions.last?.rejected == [])
-        #expect(decisions.last?.reason == AuthDecisionReason.userApprove.rawValue)
-        #expect(server.lastAuthTimestampsByPath["/Applications/Zalo.app"] != nil)
+        #expect(decision1.approved == [2001])
+        #expect(decision1.rejected == [])
+        #expect(decision1.reason == AuthDecisionReason.userApprove.rawValue)
+        #expect(coordinator.lastAuthTimestampsByPath["/Applications/Zalo.app"] != nil)
 
         // 2. Notification disabled + LAError.userCancel -> UserCancel reason
         defaults.set(false, forKey: "showBlockedNotifications")
-        server.dependencies.authenticate = { _ in throw LAError(.userCancel) }
-        server.addPendingAuth(name: "Photos", path: "/System/Applications/Photos.app", cdhash: "photos_hash", pid: 2002)
-        server.processIncomingQueue()
-        try await Task.sleep(for: .milliseconds(40))
+        coordinator.dependencies.authenticate = { _ in throw LAError(.userCancel) }
+        let decision2 = await coordinator.waitForDecision {
+            coordinator.addPendingAuth(name: "Photos", path: "/Applications/Photos.app", cdhash: "ph1", pid: 2002)
+            coordinator.processIncomingQueue()
+        }
 
         #expect(notifiedApps == ["Zalo"])
-        #expect(decisions.last?.approved == [])
-        #expect(decisions.last?.rejected == [2002])
-        #expect(decisions.last?.reason == AuthDecisionReason.userCancel.rawValue)
+        #expect(decision2.approved == [])
+        #expect(decision2.rejected == [2002])
+        #expect(decision2.reason == AuthDecisionReason.userCancel.rawValue)
 
         // 3. LAError.appCancel -> Timeout reason
-        server.dependencies.authenticate = { _ in throw LAError(.appCancel) }
-        server.addPendingAuth(name: "Phone", path: "/System/Applications/Phone.app", cdhash: "phone_hash", pid: 2003)
-        server.processIncomingQueue()
-        try await Task.sleep(for: .milliseconds(40))
+        coordinator.dependencies.authenticate = { _ in throw LAError(.appCancel) }
+        let decision3 = await coordinator.waitForDecision {
+            coordinator.addPendingAuth(name: "Phone", path: "/Applications/Phone.app", cdhash: "ph2", pid: 2003)
+            coordinator.processIncomingQueue()
+        }
 
-        #expect(decisions.last?.approved == [])
-        #expect(decisions.last?.rejected == [2003])
-        #expect(decisions.last?.reason == AuthDecisionReason.timeout.rawValue)
+        #expect(decision3.approved == [])
+        #expect(decision3.rejected == [2003])
+        #expect(decision3.reason == AuthDecisionReason.timeout.rawValue)
     }
 
     @Test("Process exit during single or batch auth cancels LAContext and hides batch window when empty")
     @MainActor
     func processExitCleanupCancelsAuthAndHidesWindow() async throws {
-        let server = XPCServer()
+        let coordinator = makeTestCoordinator()
         var cancelCount = 0
         var hideWindowCount = 0
 
-        server.dependencies.cancelAuth = { cancelCount += 1 }
-        server.dependencies.onHideBatchWindow = { hideWindowCount += 1 }
-        server.dependencies.onRefreshWatchdog = { _ in }
-
-        var authContinuation: CheckedContinuation<Bool, Error>?
-        server.dependencies.authenticate = { _ in
-            try await withCheckedThrowingContinuation { cont in
-                authContinuation = cont
-            }
-        }
+        coordinator.dependencies.cancelAuth = { cancelCount += 1 }
+        coordinator.dependencies.hideBatchWindow = { hideWindowCount += 1 }
 
         // 1. Single app exits while Touch ID prompt is active
-        server.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "h1", pid: 3001)
-        server.processIncomingQueue()
-        try await Task.sleep(for: .milliseconds(20))
-        #expect(server.isAuthenticatingSingleApp == true)
+        coordinator.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "h1", pid: 3001)
+        let authCont = await coordinator.waitForAuthStart {
+            coordinator.processIncomingQueue()
+        }
+        #expect(coordinator.isAuthenticatingSingleApp == true)
 
-        server.removePendingProcess(pid: 3001)
-        #expect(server.isAuthenticatingSingleApp == false)
+        coordinator.removePendingProcess(pid: 3001)
+        #expect(coordinator.isAuthenticatingSingleApp == false)
         #expect(cancelCount == 1)
         #expect(hideWindowCount == 1)
-        authContinuation?.resume(returning: false)
-        try await Task.sleep(for: .milliseconds(20))
+        authCont.resume(returning: false)
+        await Task.yield()
 
         // 2. Batch apps exit one by one -> window hides only when last process exits
-        server.addPendingAuth(name: "App1", path: "/Applications/App1.app", cdhash: "h2", pid: 3002)
-        server.addPendingAuth(name: "App2", path: "/Applications/App2.app", cdhash: "h3", pid: 3003)
-        server.processIncomingQueue()
+        coordinator.addPendingAuth(name: "App1", path: "/Applications/App1.app", cdhash: "h2", pid: 3002)
+        coordinator.addPendingAuth(name: "App2", path: "/Applications/App2.app", cdhash: "h3", pid: 3003)
+        coordinator.processIncomingQueue()
 
-        server.removePendingProcess(pid: 3002)
-        #expect(server.pendingApps.map(\.pid) == [3003])
+        coordinator.removePendingProcess(pid: 3002)
+        #expect(coordinator.pendingApps.map(\.pid) == [3003])
         #expect(hideWindowCount == 1)
 
-        server.removePendingProcess(pid: 3003)
-        #expect(server.pendingApps.isEmpty)
+        coordinator.removePendingProcess(pid: 3003)
+        #expect(coordinator.pendingApps.isEmpty)
         #expect(hideWindowCount == 2)
     }
 
     @Test("New app arriving during active batch Touch ID merges into batch and auto re-authenticates")
     @MainActor
     func batchMidAuthArrivalMergesAndReAuthenticates() async throws {
-        let server = XPCServer()
+        let coordinator = makeTestCoordinator()
         var cancelCount = 0
-        var decisions: [RecordedBatchDecision] = []
 
-        server.dependencies.cancelAuth = { cancelCount += 1 }
-        server.dependencies.onRefreshWatchdog = { _ in }
-        server.dependencies.onHideBatchWindow = {}
-        server.dependencies.onProcessPendingApps = { approved, rejected, reason in
-            decisions.append(RecordedBatchDecision(approved: approved, rejected: rejected, reason: reason))
+        coordinator.dependencies.cancelAuth = { cancelCount += 1 }
+
+        coordinator.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "h1", pid: 4001)
+        coordinator.addPendingAuth(name: "Photos", path: "/Applications/Photos.app", cdhash: "h2", pid: 4002)
+        let firstBatchCont = await coordinator.waitForAuthStart {
+            coordinator.handleAuthenticate()
         }
-
-        var firstBatchContinuation: CheckedContinuation<Bool, Error>?
-        var attempt = 0
-        server.dependencies.authenticate = { _ in
-            attempt += 1
-            if attempt == 1 {
-                return try await withCheckedThrowingContinuation { cont in
-                    firstBatchContinuation = cont
-                }
-            }
-            return true
-        }
-
-        server.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "h1", pid: 4001)
-        server.addPendingAuth(name: "Photos", path: "/System/Applications/Photos.app", cdhash: "h2", pid: 4002)
-        server.handleAuthenticate()
-        try await Task.sleep(for: .milliseconds(20))
-        #expect(server.isAuthenticatingBatch == true)
+        #expect(coordinator.isAuthenticatingBatch == true)
 
         // 3rd app arrives while batch Touch ID is on screen
-        server.addPendingAuth(name: "Phone", path: "/System/Applications/Phone.app", cdhash: "h3", pid: 4003)
-        #expect(server.isRestartingBatchWithNewApps == true)
+        coordinator.addPendingAuth(name: "Phone", path: "/Applications/Phone.app", cdhash: "h3", pid: 4003)
+        #expect(coordinator.isRestartingBatchWithNewApps == true)
         #expect(cancelCount == 1)
 
-        // First LAContext finishes with cancellation -> auto re-authenticates after 250ms with all 3 apps
-        firstBatchContinuation?.resume(throwing: LAError(.appCancel))
-        try await Task.sleep(for: .milliseconds(350))
+        let decision = await coordinator.waitForDecision {
+            coordinator.dependencies.authenticate = { _ in true }
+            firstBatchCont.resume(throwing: LAError(.appCancel))
+        }
 
-        #expect(attempt == 2)
-        #expect(decisions.count == 1)
-        #expect(decisions.first?.approved == [4001, 4002, 4003])
-        #expect(decisions.first?.rejected == [])
+        #expect(decision.approved == [4001, 4002, 4003])
+        #expect(decision.rejected == [])
     }
 
     @Test("Grace period allows immediate relaunch without re-prompting Touch ID")
@@ -322,24 +276,108 @@ extension XPCAuthenticationAndBatchTests {
         LockES.shared.autoLockTimeoutMinutes = 5
         defer { LockES.shared.autoLockTimeoutMinutes = originalTimeout }
 
-        let server = XPCServer()
+        let coordinator = makeTestCoordinator()
         var approvedPIDs: [Int32] = []
-        server.dependencies.onProcessPendingApps = { approved, _, _ in
+        coordinator.dependencies.processPendingApps = { approved, _, _ in
             approvedPIDs.append(contentsOf: approved)
         }
 
-        // Simulate successful initial auth
-        server.lastAuthTimestampsByPath["/Applications/Zalo.app"] = Date()
-
-        // 1. Relaunch within grace period -> auto-approves immediately without adding to pendingApps
-        server.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "hash_zalo", pid: 5001)
-
+        coordinator.lastAuthTimestampsByPath["/Applications/Zalo.app"] = Date()
+        coordinator.addPendingAuth(name: "Zalo", path: "/Applications/Zalo.app", cdhash: "hash_zalo", pid: 5001)
         #expect(approvedPIDs == [5001])
-        #expect(server.pendingApps.isEmpty)
+        #expect(coordinator.pendingApps.isEmpty)
 
-        // 2. Different app not in grace period -> added to pendingApps
-        server.addPendingAuth(name: "Photos", path: "/System/Applications/Photos.app", cdhash: "hash_photos", pid: 5002)
-        #expect(server.pendingApps.map(\.pid) == [5002])
+        coordinator.addPendingAuth(name: "Photos", path: "/System/Applications/Photos.app", cdhash: "hash_p", pid: 5002)
+        #expect(coordinator.pendingApps.map(\.pid) == [5002])
+    }
+
+    @Test("Single app auth cancellation does not emit duplicate rejection on delayed completion")
+    @MainActor
+    func singleAppCancelDoesNotEmitDuplicateRejection() async throws {
+        let coordinator = makeTestCoordinator()
+        var duplicateDecisions: [RecordedBatchDecision] = []
+
+        coordinator.addPendingAuth(name: "Notes", path: "/Applications/Notes.app", cdhash: "h_notes", pid: 6001)
+        let authCont = await coordinator.waitForAuthStart {
+            coordinator.processIncomingQueue()
+        }
+        #expect(coordinator.isAuthenticatingSingleApp == true)
+
+        let decision = await coordinator.waitForDecision {
+            coordinator.handleCancel(reason: AuthDecisionReason.userCancel.rawValue)
+        }
+        #expect(decision.rejected == [6001])
+
+        coordinator.dependencies.processPendingApps = { approved, rejected, reason in
+            duplicateDecisions.append(RecordedBatchDecision(approved: approved, rejected: rejected, reason: reason))
+        }
+        authCont.resume(throwing: LAError(.userCancel))
+        await Task.yield()
+        #expect(duplicateDecisions.isEmpty)
+    }
+
+    @Test("XPCServer forwards incoming notifications to AuthCoordinator")
+    @MainActor
+    func xpcServerForwardsNotificationsToAuthCoordinator() async throws {
+        let server = XPCServer.shared
+        let originalProtection = LockES.shared.isProtectionDisabled
+        LockES.shared.isProtectionDisabled = false
+        defer {
+            LockES.shared.isProtectionDisabled = originalProtection
+            AuthCoordinator.shared.removePendingProcess(pid: 7001)
+        }
+
+        server.notifyBlockedExec(name: "Safari", path: "/Applications/Safari.app", cdhash: "test_hash", pid: 7001)
+        while !AuthCoordinator.shared.pendingApps.contains(where: { $0.pid == 7001 }) {
+            await Task.yield()
+        }
+        #expect(AuthCoordinator.shared.pendingApps.contains(where: { $0.pid == 7001 }))
+
+        server.notifyProcessExited(pid: 7001)
+        while AuthCoordinator.shared.pendingApps.contains(where: { $0.pid == 7001 }) {
+            await Task.yield()
+        }
+        #expect(!AuthCoordinator.shared.pendingApps.contains(where: { $0.pid == 7001 }))
+    }
+}
+
+@MainActor
+private func makeTestCoordinator(defaults: UserDefaults? = nil) -> AuthCoordinator {
+    let coordinator = AuthCoordinator()
+    if let defaults { coordinator.dependencies.userDefaults = defaults }
+    coordinator.dependencies.isBatchWindowVisible = { false }
+    coordinator.dependencies.showBatchWindow = {}
+    coordinator.dependencies.hideBatchWindow = {}
+    coordinator.dependencies.sendBlockedNotification = { _ in }
+    coordinator.dependencies.cancelAuth = {}
+    coordinator.dependencies.refreshWatchdog = { _ in }
+    coordinator.dependencies.processPendingApps = { _, _, _ in }
+    coordinator.dependencies.sleep = {
+        if $0 < .seconds(1) { await Task.yield() } else { try await Task.sleep(for: $0) }
+    }
+    return coordinator
+}
+
+@MainActor
+private extension AuthCoordinator {
+    func waitForDecision(action: () -> Void) async -> RecordedBatchDecision {
+        await withCheckedContinuation { cont in
+            self.dependencies.processPendingApps = { approved, rejected, reason in
+                cont.resume(returning: RecordedBatchDecision(approved: approved, rejected: rejected, reason: reason))
+            }
+            action()
+        }
+    }
+
+    func waitForAuthStart(action: () -> Void) async -> CheckedContinuation<Bool, Error> {
+        await withCheckedContinuation { cont in
+            self.dependencies.authenticate = { _ in
+                try await withCheckedThrowingContinuation { authCont in
+                    cont.resume(returning: authCont)
+                }
+            }
+            action()
+        }
     }
 }
 

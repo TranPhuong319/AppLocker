@@ -122,6 +122,38 @@ struct EndpointSecurityProtectionTests {
         #expect(renameRec.lastMethod == .authResult(ES_AUTH_RESULT_DENY))
     }
 
+    @Test("ESSafetyValve suppresses duplicate responses on same message preventing kernel extension termination")
+    func safetyValveSuppressesDuplicateResponsesPreventingKernelKill() {
+        let responder = MockAuthResponder()
+        var valve: ESSafetyValve? = ESSafetyValve(
+            eventType: ES_EVENT_TYPE_AUTH_EXEC,
+            actionType: ES_ACTION_TYPE_AUTH,
+            responder: { method, cache in responder.recordMethod(method, cache: cache) }
+        )
+
+        // 1. First response on message succeeds
+        let firstResult = valve?.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+        #expect(firstResult == true)
+        #expect(responder.callCount == 1)
+        #expect(responder.lastResult == ES_AUTH_RESULT_ALLOW)
+        #expect(responder.lastCache == true)
+
+        // 2. Intentional duplicate response on identical message must be filtered out
+        let duplicateResult = valve?.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+        #expect(duplicateResult == false)
+        #expect(responder.callCount == 1)
+
+        // 3. Conflicting duplicate response (e.g. DENY after ALLOW) must also be filtered out
+        let conflictingResult = valve?.respond(ES_AUTH_RESULT_DENY, cache: false)
+        #expect(conflictingResult == false)
+        #expect(responder.callCount == 1)
+        #expect(responder.lastResult == ES_AUTH_RESULT_ALLOW)
+
+        // 4. Deinit of already-responded valve must not trigger fallback response
+        valve = nil
+        #expect(responder.callCount == 1)
+    }
+
     // MARK: - Pillar 2: Inverted Path Muting & 7-Event File Tamper Resistance (Google Santa style)
 
     @Test("ESTamper subscribes to 7 file events and protects allowlist prefixes")

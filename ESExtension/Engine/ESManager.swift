@@ -25,6 +25,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     let stateLock = OSAllocatedUnfairLock()
     var lockedCDHashes: [uid_t: Set<String>] = [:]
     var lockedBundlePaths: [uid_t: Set<String>] = [:]
+    var lockedBundleIDs: [uid_t: Set<String>] = [:]
     var allowIncomingCallsByUID: [uid_t: Bool] = [:]
     var isIncomingCallActive: Bool = false
     var rawCurrentLanguage: String = Locale.preferredLanguages.first ?? "en"

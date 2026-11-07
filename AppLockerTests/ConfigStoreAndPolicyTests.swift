@@ -217,4 +217,96 @@ struct ConfigStoreAndPolicyTests {
         let pendingRecord = manager.pendingPIDLock.withLock { manager.pendingVerificationProcesses[childPID] }
         #expect(pendingRecord != nil)
     }
+
+    @Test("ESManager isProcessBlocked blocks symlinked bundle, symlinked executable, and CDHash evasion")
+    func notifyExecPolicyBlocksSymlinks() throws {
+        let env = try makeIsolatedEnvironment()
+        defer { env.cleanup() }
+
+        // Setup real bundle
+        let realBundle = env.tempDir.appendingPathComponent("LockedApp.app")
+        let macosDir = realBundle.appendingPathComponent("Contents/MacOS")
+        try FileManager.default.createDirectory(at: macosDir, withIntermediateDirectories: true)
+        let realExec = macosDir.appendingPathComponent("LockedApp")
+        try "binary-content".write(to: realExec, atomically: true, encoding: .utf8)
+
+        // Setup Info.plist
+        let infoPlist = realBundle.appendingPathComponent("Contents/Info.plist")
+        let plistXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0"><dict>
+        <key>CFBundleExecutable</key><string>LockedApp</string>
+        <key>CFBundleIdentifier</key><string>com.test.locked</string>
+        </dict></plist>
+        """
+        try plistXML.write(to: infoPlist, atomically: true, encoding: .utf8)
+
+        // Create symlink to .app bundle
+        let symlinkBundle = env.tempDir.appendingPathComponent("SymlinkAlias.app")
+        try FileManager.default.createSymbolicLink(at: symlinkBundle, withDestinationURL: realBundle)
+
+        // Create symlink to executable
+        let symlinkExec = env.tempDir.appendingPathComponent("symlink_exec_bin")
+        try FileManager.default.createSymbolicLink(at: symlinkExec, withDestinationURL: realExec)
+
+        let manager = ESManager(isTesting: true, baseConfigDirectoryURL: env.tempDir)
+        let uid = getuid()
+        let fakeCDHash = "AABBCCDDEEFF00112233445566778899AABBCCDD"
+        let cdhashData = Data(repeating: 0xAA, count: 20)
+        let zeroData = Data(repeating: 0, count: 20)
+
+        manager.stateLock.withLock {
+            manager.lockedBundlePaths[uid] = [realBundle.path]
+            manager.lockedCDHashes[uid] = [fakeCDHash]
+        }
+
+        // 1. CDHash defense: Even with completely arbitrary path or symlink, CDHash matches -> BLOCKED
+        let blockedByCDHash = manager.isProcessBlocked(
+            path: symlinkExec.path,
+            cdhashData: cdhashData,
+            cdhashHex: fakeCDHash,
+            uid: uid
+        )
+        #expect(blockedByCDHash == true)
+
+        // 2. Symlinked bundle defense (with zero CDHash fallback) -> BLOCKED
+        let symlinkedExecPath = symlinkBundle.appendingPathComponent("Contents/MacOS/LockedApp").path
+        let blockedBySymlinkBundle = manager.isProcessBlocked(
+            path: symlinkedExecPath,
+            cdhashData: zeroData,
+            cdhashHex: "",
+            uid: uid
+        )
+        #expect(blockedBySymlinkBundle == true)
+    }
+
+    @Test("ESManager isProcessBlocked blocks app moved outside /Applications with new CDHash via signingID")
+    func notifyExecPolicyBlocksMovedAppWithNewCDHashViaSigningID() throws {
+        let env = try makeIsolatedEnvironment()
+        defer { env.cleanup() }
+
+        let manager = ESManager(isTesting: true, baseConfigDirectoryURL: env.tempDir)
+        let uid = getuid()
+        manager.stateLock.withLock {
+            manager.lockedBundleIDs[uid] = ["com.test.locked"]
+            manager.lockedBundlePaths[uid] = ["/Applications/LockedApp.app"]
+            manager.lockedCDHashes[uid] = ["1111222233334444555566667777888899990000"]
+        }
+
+        // Attacker updated binary with new CDHash, deleted /Applications/LockedApp.app,
+        // and runs it from /tmp/Evasion.app
+        let newCDHashHex = "9999888877776666555544443333222211110000"
+        let newData = Data(repeating: 0x99, count: 20)
+        let movedPath = "/tmp/Evasion.app/Contents/MacOS/Binary"
+
+        let isBlocked = manager.isProcessBlocked(
+            path: movedPath,
+            cdhashData: newData,
+            cdhashHex: newCDHashHex,
+            signingID: "com.test.locked",
+            uid: uid
+        )
+        #expect(isBlocked == true)
+    }
 }

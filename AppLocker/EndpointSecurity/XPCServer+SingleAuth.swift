@@ -11,7 +11,7 @@ import os
 
 // MARK: - Single App Authentication Extension
 
-extension XPCServer {
+extension AuthCoordinator {
     @MainActor
     func processIncomingQueue() {
         pendingDebounceTask?.cancel()
@@ -20,8 +20,7 @@ extension XPCServer {
 
         if pendingApps.count == 1 {
             let app = pendingApps[0]
-            isAuthenticatingSingleApp = true
-            currentSingleAppPID = app.pid
+            phase = .single(pid: app.pid, upgradingToBatch: false)
 
             startSingleAppWatchdog(for: app)
 
@@ -37,7 +36,7 @@ extension XPCServer {
             }
         } else {
             startOrResetCountdownTimer()
-            dependencies.onShowBatchWindow()
+            dependencies.showBatchWindow()
         }
     }
 
@@ -48,9 +47,9 @@ extension XPCServer {
         let timeoutSeconds: Double = configuredSeconds > 0 ? Double(configuredSeconds) : 30.0
 
         singleAppWatchdogTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(timeoutSeconds))
+            guard let self else { return }
+            try? await self.dependencies.sleep(.seconds(timeoutSeconds))
             guard !Task.isCancelled,
-                  let self,
                   self.isAuthenticatingSingleApp,
                   self.currentSingleAppPID == app.pid else {
                 return
@@ -65,7 +64,7 @@ extension XPCServer {
             self.dependencies.cancelAuth()
 
             // Safety fallback: If LAContext doesn't resume within 2 seconds, force rejection
-            try? await Task.sleep(for: .seconds(2))
+            try? await self.dependencies.sleep(.seconds(2))
             guard !Task.isCancelled,
                   self.isAuthenticatingSingleApp,
                   self.currentSingleAppPID == app.pid else {
@@ -82,10 +81,17 @@ extension XPCServer {
     private func handleSingleAppAuthResult(app: PendingAppItem, success: Bool, error: Error? = nil) {
         self.singleAppWatchdogTask?.cancel()
         self.singleAppWatchdogTask = nil
-        self.currentSingleAppPID = nil
-        self.isAuthenticatingSingleApp = false
-        if self.isUpgradingToBatch {
+
+        let wasUpgrading = self.isUpgradingToBatch
+        self.phase = .idle
+
+        if wasUpgrading {
             handleBatchUpgradeAuthResult(app: app, success: success)
+            return
+        }
+
+        // Guard against duplicate / late completion if process was already cancelled or exited
+        guard self.pendingApps.contains(where: { $0.id == app.id }) else {
             return
         }
 
@@ -97,7 +103,7 @@ extension XPCServer {
                 "[Auth] Auth OK for \(app.name, privacy: .public) (PID: \(app.pid, privacy: .public))"
             )
             LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
-            self.dependencies.onProcessPendingApps(
+            self.dependencies.processPendingApps(
                 [app.pid],
                 [],
                 AuthDecisionReason.userApprove.rawValue
@@ -144,7 +150,7 @@ extension XPCServer {
                 "[Auth] Watchdog timeout forced rejection for PID: \(app.pid, privacy: .public)"
             )
         }
-        self.dependencies.onProcessPendingApps(
+        self.dependencies.processPendingApps(
             [],
             [app.pid],
             rejectionReason
@@ -153,14 +159,13 @@ extension XPCServer {
 
     @MainActor
     private func handleBatchUpgradeAuthResult(app: PendingAppItem, success: Bool) {
-        self.isUpgradingToBatch = false
+        self.phase = .idle
         self.singleAppWatchdogTask?.cancel()
         self.singleAppWatchdogTask = nil
-        self.currentSingleAppPID = nil
         if success {
             self.pendingApps.removeAll { $0.id == app.id }
             LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
-            self.dependencies.onProcessPendingApps(
+            self.dependencies.processPendingApps(
                 [app.pid],
                 [],
                 AuthDecisionReason.userApprove.rawValue

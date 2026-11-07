@@ -33,10 +33,21 @@ extension ESManager {
         return false
     }
 
-    func isProcessBlocked(path: String, cdhashData: Data, cdhashHex: String, uid: uid_t) -> Bool {
+    func isProcessBlocked(
+        path: String,
+        cdhashData: Data,
+        cdhashHex: String,
+        signingID: String = "Unsigned/Unknown",
+        uid: uid_t
+    ) -> Bool {
         let isZeroCDHash = cdhashData.allSatisfy { $0 == 0 }
         return stateLock.withLock { () -> Bool in
             if !isZeroCDHash, let userCDHashes = lockedCDHashes[uid], userCDHashes.contains(cdhashHex) {
+                return true
+            }
+            if signingID != "Unsigned/Unknown" && !signingID.isEmpty,
+               let userBundleIDs = lockedBundleIDs[uid],
+               userBundleIDs.contains(signingID) {
                 return true
             }
             return isPathInLockedBundle(path: path, uid: uid)
@@ -52,14 +63,19 @@ extension ESManager {
         let currentPath = bundleURL.path
         let stdPath = (currentPath as NSString).standardizingPath
         let normCurrent = normalizeFirmlinkPath(stdPath)
+        let realBundlePath = normalizeFirmlinkPath(bundleURL.resolvingSymlinksInPath().path)
         let matchesBundle = userBundlePaths.contains(currentPath)
             || userBundlePaths.contains(stdPath)
             || userBundlePaths.contains(normCurrent)
+            || userBundlePaths.contains(realBundlePath)
 
         if matchesBundle {
-            if let bundle = Bundle(url: bundleURL), let mainExec = bundle.executablePath {
-                let normPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
-                let normMainExec = normalizeFirmlinkPath((mainExec as NSString).standardizingPath)
+            let targetURL = userBundlePaths.contains(realBundlePath)
+                ? URL(fileURLWithPath: realBundlePath)
+                : bundleURL
+            if let bundle = Bundle(url: targetURL), let mainExec = bundle.executablePath {
+                let normPath = normalizeFirmlinkPath(URL(fileURLWithPath: path).resolvingSymlinksInPath().path)
+                let normMainExec = normalizeFirmlinkPath(URL(fileURLWithPath: mainExec).resolvingSymlinksInPath().path)
                 return normPath == normMainExec
             }
         }

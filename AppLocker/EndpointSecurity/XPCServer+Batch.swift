@@ -12,7 +12,7 @@ import OSLog
 
 // MARK: - Batch Authentication & Notifications Extension
 
-extension XPCServer {
+extension AuthCoordinator {
     @MainActor
     func startOrResetCountdownTimer() {
         countdownTask?.cancel()
@@ -20,12 +20,12 @@ extension XPCServer {
         remainingSeconds = configuredSeconds > 0 ? configuredSeconds : 30
 
         let allPIDs = pendingApps.map(\.pid)
-        dependencies.onRefreshWatchdog(allPIDs)
+        dependencies.refreshWatchdog(allPIDs)
 
         countdownTask = Task { @MainActor [weak self] in
             guard let self else { return }
             while !Task.isCancelled && self.remainingSeconds > 0 {
-                try? await Task.sleep(for: .seconds(1))
+                try? await self.dependencies.sleep(.seconds(1))
                 guard !Task.isCancelled else { break }
                 self.remainingSeconds -= 1
             }
@@ -45,17 +45,16 @@ extension XPCServer {
     @MainActor
     func handleAuthenticate() {
         guard !isAuthenticating else { return }
-        isAuthenticatingBatch = true
-        isRestartingBatchWithNewApps = false
+        phase = .batch(restartingWithNewApps: false)
         stopCountdownTimer()
-        dependencies.onHideBatchWindow()
+        dependencies.hideBatchWindow()
 
         let approvedPIDs = pendingApps.filter(\.isSelected).map(\.pid)
         let rejectedPIDs = pendingApps.filter { !$0.isSelected }.map(\.pid)
         self.activeBatchApps = pendingApps
         pendingApps.removeAll()
 
-        dependencies.onRefreshWatchdog(approvedPIDs + rejectedPIDs)
+        dependencies.refreshWatchdog(approvedPIDs + rejectedPIDs)
 
         let reason = String(format: String(localized: "open %d application(s)"), approvedPIDs.count)
         Task { @MainActor [weak self] in
@@ -71,7 +70,6 @@ extension XPCServer {
                 }
                 success = false
             }
-            self.isAuthenticatingBatch = false
             self.handleBatchAuthResult(
                 success: success,
                 approvedPIDs: approvedPIDs,
@@ -91,7 +89,7 @@ extension XPCServer {
             return
         }
 
-        isRestartingBatchWithNewApps = false
+        phase = .idle
         let batchApps = activeBatchApps
         activeBatchApps.removeAll()
 
@@ -129,7 +127,7 @@ extension XPCServer {
             Rejecting PIDs: \(allPIDs, privacy: .public)
             """
         )
-        dependencies.onProcessPendingApps([], allPIDs, reason)
+        dependencies.processPendingApps([], allPIDs, reason)
     }
 
     @MainActor
@@ -152,12 +150,12 @@ extension XPCServer {
         let reason = rejectedPIDs.isEmpty
             ? AuthDecisionReason.userApprove.rawValue
             : AuthDecisionReason.userCancel.rawValue
-        dependencies.onProcessPendingApps(approvedPIDs, rejectedPIDs, reason)
+        dependencies.processPendingApps(approvedPIDs, rejectedPIDs, reason)
     }
 
     @MainActor
     private func handleBatchAutoReAuthenticateWithNewApps() {
-        self.isRestartingBatchWithNewApps = false
+        phase = .idle
         Logfile.appXPC.notice(
             "[Auth] New app arrived during batch auth. Merging into batch and auto re-authenticating..."
         )
@@ -173,7 +171,7 @@ extension XPCServer {
         // Delay 250ms for previous LocalAuthentication sheet to fully dismiss, then re-prompt
         Task { @MainActor [weak self] in
             guard let self else { return }
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await self.dependencies.sleep(.milliseconds(250))
             guard !self.isAuthenticating else { return }
             self.handleAuthenticate()
         }
@@ -182,10 +180,10 @@ extension XPCServer {
     @MainActor
     func handleCancel(reason: String = AuthDecisionReason.userCancel.rawValue) {
         stopCountdownTimer()
-        isAuthenticatingSingleApp = false
-        isAuthenticatingBatch = false
-        isRestartingBatchWithNewApps = false
-        dependencies.onHideBatchWindow()
+        singleAppWatchdogTask?.cancel()
+        singleAppWatchdogTask = nil
+        phase = .idle
+        dependencies.hideBatchWindow()
         let allPIDs = (pendingApps + activeBatchApps).map(\.pid)
         pendingApps.removeAll()
         activeBatchApps.removeAll()
@@ -193,7 +191,7 @@ extension XPCServer {
             Logfile.appXPC.notice(
                 "[Auth] Cancelled (\(reason, privacy: .public)). Rejecting all PIDs: \(allPIDs, privacy: .public)"
             )
-            dependencies.onProcessPendingApps([], allPIDs, reason)
+            dependencies.processPendingApps([], allPIDs, reason)
         }
     }
 }
