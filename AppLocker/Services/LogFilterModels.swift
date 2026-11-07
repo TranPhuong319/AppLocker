@@ -129,6 +129,16 @@ enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
         case .fault: return .fault
         }
     }
+
+    var color: Color {
+        switch self {
+        case .fault: return Color(red: 0.85, green: 0.1, blue: 0.25)
+        case .error: return .red
+        case .notice: return .purple
+        case .info: return .blue
+        case .debug, .all: return Color(nsColor: .tertiaryLabelColor)
+        }
+    }
 }
 
 // MARK: - App Log Entry
