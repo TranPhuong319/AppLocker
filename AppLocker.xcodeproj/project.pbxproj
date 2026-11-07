@@ -77,7 +77,6 @@
 		E0FD761C2F59E36600D46B94 /* UpdatesSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */; };
 		E0FD761C2F59E36600D46B95 /* AppearanceSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */; };
 		E0FD761C2F59E36600D46B96 /* DiagnosticsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B96 /* DiagnosticsSettingsTab.swift */; };
-		E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */; };
 		E0FD761C2F59E36600D46B99 /* DiagnosticsSettingsTab+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B99 /* DiagnosticsSettingsTab+ContextMenu.swift */; };
 		E0FD761C2F59E36600D46B9A /* DiagnosticsSettingsTab+AutoScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9A /* DiagnosticsSettingsTab+AutoScroll.swift */; };
 		E0FD761C2F59E36600D46B9B /* DiagnosticsSettingsTab+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9B /* DiagnosticsSettingsTab+Toolbar.swift */; };
@@ -288,7 +287,6 @@
 		E0FD75B62F59E36600D46B94 /* UpdatesSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatesSettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B95 /* AppearanceSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsTab.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B96 /* DiagnosticsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsSettingsTab.swift; sourceTree = "<group>"; };
-		E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntryRow.swift; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B99 /* DiagnosticsSettingsTab+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiagnosticsSettingsTab+ContextMenu.swift"; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B9A /* DiagnosticsSettingsTab+AutoScroll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiagnosticsSettingsTab+AutoScroll.swift"; sourceTree = "<group>"; };
 		E0FD75B62F59E36600D46B9B /* DiagnosticsSettingsTab+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiagnosticsSettingsTab+Toolbar.swift"; sourceTree = "<group>"; };
@@ -631,7 +629,6 @@
 				E0E611F73073D43B00BA7F3B /* Tab */,
 				E0FD75B62F59E36600D46B31 /* SettingsView.swift */,
 				E0FDB0012F59E36600D46B01 /* ThemeThumbnailView.swift */,
-				E0FD75B62F59E36600D46B97 /* LogEntryRow.swift */,
 				E0A9143E309B725900E22661 /* LogSelectionManager.swift */,
 				E0FDBC012F59E36600D46B31 /* ShortcutRecorderView.swift */,
 			);
@@ -1215,7 +1212,6 @@
 				E0FD76002F59E36600D46B31 /* LogStore.swift in Sources */,
 				E0FD76002F59E36600D46B98 /* LogFilterModels.swift in Sources */,
 				E0FD761C2F59E36600D46B96 /* DiagnosticsSettingsTab.swift in Sources */,
-				E0FD761C2F59E36600D46B97 /* LogEntryRow.swift in Sources */,
 				E0FD761C2F59E36600D46B99 /* DiagnosticsSettingsTab+ContextMenu.swift in Sources */,
 				E0FD761C2F59E36600D46B9A /* DiagnosticsSettingsTab+AutoScroll.swift in Sources */,
 				E0FD761C2F59E36600D46B9B /* DiagnosticsSettingsTab+Toolbar.swift in Sources */,

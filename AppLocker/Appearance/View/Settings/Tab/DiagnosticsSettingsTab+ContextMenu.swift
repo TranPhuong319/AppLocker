@@ -9,7 +9,7 @@ import SwiftUI
 
 extension DiagnosticsSettingsTab {
     @ViewBuilder
-    func bottomBar(proxy: ScrollViewProxy) -> some View {
+    var bottomBar: some View {
         HStack(spacing: 8) {
             statusText
             if selectionManager.hasSelection {
@@ -21,7 +21,7 @@ extension DiagnosticsSettingsTab {
                 Button(action: {
                     withAnimation(.snappy(duration: 0.25)) {
                         isAtBottom = true
-                        proxy.scrollTo("log_bottom", anchor: .bottom)
+                        scrollToBottomTrigger += 1
                     }
                 }, label: {
                     Label("Jump to bottom", systemImage: "arrow.down.to.line").font(.caption)
@@ -29,6 +29,7 @@ extension DiagnosticsSettingsTab {
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
                 .transition(.opacity)
+                .help("Jump to bottom")
             }
         }
         .padding(.horizontal, 14)
@@ -107,34 +108,6 @@ extension DiagnosticsSettingsTab {
     }
 
     @ViewBuilder
-    func rowContextMenu(for item: GroupedLogEntry, index: Int) -> some View {
-        Button {
-            if selectionManager.hasSelection {
-                selectionManager.copySelected(entries: displayEntries, dateFormatter: dateFormatter)
-            } else {
-                selectionManager.copySingleEntry(item.entry, dateFormatter: dateFormatter)
-            }
-        } label: {
-            let count = selectionManager.selectedCount
-            Label(count > 1 ? "Copy \(count) Selected Logs" : "Copy Log", systemImage: "doc.on.doc")
-        }
-
-        Divider()
-
-        Button {
-            selectionManager.selectAll(entries: displayEntries)
-        } label: {
-            Label("Select All", systemImage: "checklist")
-        }
-
-        if selectionManager.hasSelection {
-            Button { selectionManager.deselectAll() } label: {
-                Label("Deselect All", systemImage: "xmark.circle")
-            }
-        }
-    }
-
-    @ViewBuilder
     var statusText: some View {
         let count = collapseRepeatingLogs ? displayEntries.count : logStore.filteredEntries.count
         let total = logStore.filteredEntries.count
@@ -181,29 +154,131 @@ extension DiagnosticsSettingsTab {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: - Drag Selection Helpers
-
     @ViewBuilder
-    var dragSelectionOverlay: some View {
-        if let rect = selectionManager.dragSelectionRect {
-            Rectangle()
-                .fill(Color(nsColor: .controlAccentColor).opacity(0.14))
-                .overlay(
-                    Rectangle()
-                        .stroke(Color(nsColor: .controlAccentColor).opacity(0.5), lineWidth: 1)
-                )
-                .frame(width: rect.width, height: rect.height)
-                .offset(x: rect.minX, y: rect.minY)
-                .allowsHitTesting(false)
+    var diagnosticsTableView: some View {
+        Table(displayEntries, selection: $selectionManager.selectedIDs) {
+            TableColumn("Time") { item in
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(item.entry.resolvedLevel.color)
+                        .frame(width: 6, height: 6)
+                    Text(dateFormatter.string(from: item.entry.date))
+                        .font(.system(.caption, design: .monospaced))
+                }
+            }
+            .width(min: 145, ideal: 155, max: 170)
+
+            TableColumn("Level") { item in
+                Text(item.entry.resolvedLevel.shortTag)
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+            }
+            .width(min: 45, ideal: 50, max: 60)
+
+            TableColumn("Process") { item in
+                Text(item.entry.subsystemShort)
+                    .font(.system(.caption, design: .monospaced))
+                    .fontWeight(.medium)
+            }
+            .width(min: 80, ideal: 100, max: 130)
+
+            TableColumn("Category") { item in
+                Text(item.entry.category)
+                    .font(.system(.caption, design: .monospaced))
+            }
+            .width(min: 70, ideal: 90, max: 130)
+
+            TableColumn("Message") { item in
+                HStack(spacing: 6) {
+                    Text(item.entry.message)
+                        .font(.system(.caption, design: .monospaced))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    if item.count > 1 {
+                        Text("×\(item.count)")
+                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Capsule().fill(Color(nsColor: .quaternaryLabelColor)))
+                    }
+                    Spacer()
+                    LogRowCopyButton(entry: item.entry, dateFormatter: dateFormatter)
+                }
+            }
         }
-    }
-}
+        .defaultScrollAnchor(.bottom)
+        .background(ScrollBottomTracker(
+            isAtBottom: $isAtBottom,
+            triggerScrollToBottom: scrollToBottomTrigger
+        ))
+        .onChange(of: displayEntries.count) { _, _ in
+            guard isAtBottom, !selectionManager.hasSelection else { return }
+            scrollToBottomTrigger += 1
+        }
+        .onChange(of: logStore.filteredEntries.count) { _, _ in
+            guard isAtBottom, !selectionManager.hasSelection else { return }
+            scrollToBottomTrigger += 1
+        }
+        .onChange(of: refreshTrigger) { _, _ in
+            scrollToBottomTrigger += 1
+        }
+        .task {
+            try? await Task.sleep(for: .milliseconds(100))
+            scrollToBottomTrigger += 1
+        }
+        .contextMenu(forSelectionType: UUID.self) { selectedIDs in
+            let targetIDs = selectedIDs.isEmpty ? selectionManager.selectedIDs : selectedIDs
+            Button {
+                let selected = displayEntries.filter { targetIDs.contains($0.id) }
+                let text = selected
+                    .map { $0.entry.formatted(dateFormatter: dateFormatter) }
+                    .joined(separator: "\n")
+                guard !text.isEmpty else { return }
+                NSPasteboard.general.copyText(text)
+            } label: {
+                let count = targetIDs.count
+                Label(count > 1 ? "Copy \(count) Selected Logs" : "Copy Log", systemImage: "doc.on.doc")
+            }
 
-// MARK: - Row Bounds Preference
+            if targetIDs.count == 1,
+               let firstID = targetIDs.first,
+               let targetEntry = displayEntries.first(where: { $0.id == firstID }) {
+                Button {
+                    NSPasteboard.general.copyText(targetEntry.entry.message)
+                } label: {
+                    Label("Copy Message Only", systemImage: "text.quote")
+                }
+            }
 
-struct LogRowBoundsPreference: PreferenceKey {
-    static let defaultValue: [UUID: CGRect] = [:]
-    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
-        value.merge(nextValue()) { $1 }
+            Divider()
+
+            Button {
+                selectionManager.selectAll(entries: displayEntries)
+            } label: {
+                Label("Select All", systemImage: "checklist")
+            }
+
+            if !targetIDs.isEmpty {
+                Button {
+                    selectionManager.deselectAll()
+                } label: {
+                    Label("Deselect All", systemImage: "xmark.circle")
+                }
+            }
+        } primaryAction: { selectedIDs in
+            let targetIDs = selectedIDs.isEmpty ? selectionManager.selectedIDs : selectedIDs
+            let selected = displayEntries.filter { targetIDs.contains($0.id) }
+            let text = selected
+                .map { $0.entry.formatted(dateFormatter: dateFormatter) }
+                .joined(separator: "\n")
+            guard !text.isEmpty else { return }
+            NSPasteboard.general.copyText(text)
+        }
+        .safeAreaInset(edge: .bottom) {
+            bottomBar
+        }
+        .background {
+            keyboardShortcutsLayer
+        }
     }
 }

@@ -23,10 +23,9 @@ struct DiagnosticsSettingsTab: View {
     @State var isExporting: Bool = false
     @State var isExportSuccess: Bool = false
     @State var resetExportTask: Task<Void, Never>?
-    @State var isAtBottom: Bool = true
     @State var refreshTrigger: Int = 0
-    @State var rowFrames: [UUID: CGRect] = [:]
-    @State var dragAutoScroller = LogDragAutoScroller()
+    @State var isAtBottom: Bool = true
+    @State var scrollToBottomTrigger: Int = 0
     @FocusState var isSearchFocused: Bool
     @Environment(\.controlActiveState) var controlActiveState
 
@@ -100,103 +99,55 @@ struct DiagnosticsSettingsTab: View {
         } else if logStore.filteredEntries.isEmpty {
             emptyPlaceholder
         } else {
-            diagnosticsList
+            diagnosticsTableView
         }
     }
+}
 
-    private var diagnosticsList: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                scrollContent
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .contentMargins(.trailing, 16, for: .scrollContent)
-            .contentMargins(.top, 8, for: .scrollContent)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                resignSearchFocus()
-                selectionManager.deselectAll()
-            }
-            .onPreferenceChange(LogRowBoundsPreference.self) { newFrames in
-                rowFrames = newFrames
-            }
-            .simultaneousGesture(logDragGesture(proxy: proxy))
-            .coordinateSpace(name: "LogViewport")
-            .onGeometryChange(for: CGFloat.self) { geo in
-                geo.size.height
-            } action: { height in
-                dragAutoScroller.viewportHeight = height
-            }
-            .onChange(of: displayEntries.count) { _, _ in
-                guard isAtBottom else { return }
-                proxy.scrollTo("log_bottom", anchor: .bottom)
-            }
-            .onChange(of: displayEntries.map(\.id)) { _, newIDs in
-                selectionManager.pruneInvalidSelection(validIDs: Set(newIDs))
-            }
-            .task {
-                try? await Task.sleep(for: .milliseconds(80))
-                proxy.scrollTo("log_bottom", anchor: .bottom)
-            }
-            .safeAreaInset(edge: .bottom) {
-                bottomBar(proxy: proxy)
-            }
-            .background {
-                keyboardShortcutsLayer
-            }
-        }
-    }
+// MARK: - Row Copy Button
 
-    private var scrollContent: some View {
-        LazyVStack(spacing: 0) {
-            ForEach(Array(displayEntries.enumerated()), id: \.element.id) { index, item in
-                logRow(for: item, at: index)
-            }
+struct LogRowCopyButton: View {
+    let entry: AppLogEntry
+    let dateFormatter: DateFormatter
+    @State private var isCopied: Bool = false
 
-            Color.clear.frame(height: 1).id("log_bottom")
+    var body: some View {
+        Button(action: copyEntry) {
+            copyIcon
         }
-        .background(ScrollBottomTracker { atBottom in
-            MainActor.assumeIsolated { isAtBottom = atBottom }
-        })
-        .coordinateSpace(name: "LogScrollContent")
-        .onGeometryChange(for: CGPoint.self) { geo in
-            geo.frame(in: .named("LogViewport")).origin
-        } action: { origin in
-            dragAutoScroller.contentOrigin = origin
-        }
-        .overlay(alignment: .topLeading) {
-            dragSelectionOverlay
-        }
+        .buttonStyle(.plain)
+        .help("Copy entry")
+        .accessibilityLabel("Copy log entry")
     }
 
     @ViewBuilder
-    private func logRow(for item: GroupedLogEntry, at index: Int) -> some View {
-        LogEntryRow(
-            entry: item.entry,
-            repeatCount: item.count,
-            dateFormatter: dateFormatter,
-            isSelected: selectionManager.isSelected(item.id)
-        )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            resignSearchFocus()
-            selectionManager.handleRowClick(item: item, index: index, entries: displayEntries)
+    private var copyIcon: some View {
+        let iconColor = isCopied ? Color.green : Color.secondary
+
+        if #available(macOS 15.0, *) {
+            Image(systemName: isCopied ? "checkmark.circle.fill" : "document.on.document")
+                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
+                .font(.caption)
+                .foregroundStyle(iconColor)
+        } else {
+            Image(systemName: isCopied ? "checkmark.circle.fill" : "document.on.document")
+                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
+                .font(.caption)
+                .foregroundStyle(iconColor)
         }
-        .contextMenu {
-            rowContextMenu(for: item, index: index)
+    }
+
+    private func copyEntry() {
+        NSPasteboard.general.copyText(entry.formatted(dateFormatter: dateFormatter))
+        withAnimation {
+            isCopied = true
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 1)
-        .background(
-            GeometryReader { rowGeo in
-                Color.clear.preference(
-                    key: LogRowBoundsPreference.self,
-                    value: [item.id: rowGeo.frame(in: .named("LogScrollContent"))]
-                )
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            withAnimation {
+                isCopied = false
             }
-        )
-        .transition(.opacity)
-        Divider().padding(.leading, 20)
+        }
     }
 }
 
