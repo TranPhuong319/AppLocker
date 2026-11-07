@@ -5,7 +5,9 @@
 //  Created by Doe Phương on 7/11/26.
 //
 
+import AppKit
 import CoreServices
+import Darwin
 import Foundation
 import Testing
 
@@ -239,5 +241,128 @@ struct AppScannerServiceTests {
 
         #expect(service.installedApps.count == 1)
         #expect(box.value == true)
+    }
+}
+
+// MARK: - AppIconProvider Performance & Memory Tests
+
+@Suite("AppIconProvider Rasterization, Performance & Memory Tests")
+struct AppIconProviderTests {
+
+    @Test("AppIconProvider load time performance: cold vs cached retrieval")
+    @MainActor
+    func iconLoadTimePerformanceAndCaching() {
+        let provider = AppIconProvider.shared
+        let testPath = "/System/Applications/Calculator.app"
+        provider.invalidateIcon(for: testPath)
+
+        let clock = ContinuousClock()
+
+        // 1. Cold rasterization load time
+        let coldDuration = clock.measure {
+            _ = provider.icon(for: testPath, size: 32)
+        }
+
+        // 2. Cached retrieval duration (must be ultra-fast < 2ms)
+        let cachedDuration = clock.measure {
+            _ = provider.icon(for: testPath, size: 32)
+        }
+
+        #expect(provider.cachedIcon(for: testPath, size: 32) != nil)
+        #expect(cachedDuration < coldDuration)
+        #expect(cachedDuration < .milliseconds(2))
+    }
+
+    @Test("AppIconProvider invalidation and cache eviction releases image references")
+    @MainActor
+    func iconInvalidationAndEviction() {
+        let provider = AppIconProvider.shared
+        let testPath = "/System/Applications/TextEdit.app"
+
+        _ = provider.icon(for: testPath, size: 32)
+        #expect(provider.cachedIcon(for: testPath, size: 32) != nil)
+
+        provider.invalidateIcon(for: testPath)
+        #expect(provider.cachedIcon(for: testPath, size: 32) == nil)
+    }
+
+    @Test("AppIconProvider drawing handler produces exact target dimension and draws cleanly")
+    @MainActor
+    func iconDrawingHandlerCorrectness() {
+        let provider = AppIconProvider.shared
+        let icon = provider.icon(for: "/System/Applications/Utilities/Terminal.app", size: 48)
+
+        #expect(icon.size.width == 48)
+        #expect(icon.size.height == 48)
+
+        // Verify drawing into an offscreen representation succeeds
+        let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: 48,
+            pixelsHigh: 48,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .calibratedRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        )
+        #expect(rep != nil)
+        if let rep {
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+            icon.draw(in: NSRect(x: 0, y: 0, width: 48, height: 48))
+            NSGraphicsContext.restoreGraphicsState()
+        }
+    }
+
+    @Test("AppIconProvider memory footprint remains bounded under repetitive loads")
+    @MainActor
+    func idleMemoryStabilityUnderLoad() async {
+        let provider = AppIconProvider.shared
+        let testApps = [
+            "/System/Applications/Calculator.app",
+            "/System/Applications/TextEdit.app",
+            "/System/Applications/Utilities/Terminal.app",
+            "/Applications/Safari.app"
+        ]
+
+        func residentMemoryBytes() -> UInt64 {
+            var taskInfo = mach_task_basic_info()
+            var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / 4)
+            let result = withUnsafeMutablePointer(to: &taskInfo) { ptr in
+                ptr.withMemoryRebound(to: integer_t.self, capacity: 1) { intPtr in
+                    task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), intPtr, &count)
+                }
+            }
+            return result == KERN_SUCCESS ? taskInfo.resident_size : 0
+        }
+
+        let baselineMemory = residentMemoryBytes()
+
+        // Preload icons across multiple sizes in loop
+        for _ in 0..<10 {
+            for app in testApps {
+                for size in [16, 24, 32, 48, 64] as [CGFloat] {
+                    _ = provider.icon(for: app, size: size)
+                }
+            }
+        }
+
+        // Invalidate all test icons
+        for app in testApps {
+            provider.invalidateIcon(for: app)
+        }
+
+        // Allow runloop and memory cleanup to settle
+        try? await Task.sleep(for: .milliseconds(50))
+
+        let settledMemory = residentMemoryBytes()
+        if baselineMemory > 0 && settledMemory > baselineMemory {
+            let growthMB = Double(settledMemory - baselineMemory) / (1024.0 * 1024.0)
+            // Memory growth must remain bounded under 25 MB
+            #expect(growthMB < 25.0)
+        }
     }
 }

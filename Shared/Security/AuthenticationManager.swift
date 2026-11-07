@@ -15,33 +15,21 @@ final class AuthenticationManager {
     static func authenticate(reason: String) async throws -> Bool {
         let context = LAContext()
         self.currentContext = context
-
-        var canEvaluateError: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &canEvaluateError) else {
+        defer {
             if self.currentContext === context {
                 self.currentContext = nil
             }
+        }
+
+        var canEvaluateError: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &canEvaluateError) else {
             if let canEvaluateError {
                 throw canEvaluateError
             }
             return false
         }
 
-        let contextID = ObjectIdentifier(context)
-        return try await withCheckedThrowingContinuation { continuation in
-            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, evalError in
-                Task { @MainActor in
-                    if let currentContext = self.currentContext, ObjectIdentifier(currentContext) == contextID {
-                        self.currentContext = nil
-                    }
-                    if let evalError {
-                        continuation.resume(throwing: evalError)
-                    } else {
-                        continuation.resume(returning: success)
-                    }
-                }
-            }
-        }
+        return try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
     }
 
     static func cancelCurrentAuthentication() {
