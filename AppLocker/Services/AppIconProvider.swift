@@ -79,59 +79,17 @@ final class AppIconProvider {
 
     func invalidateIcon(for path: String) {
         let appBundlePath = resolveAppBundlePath(from: path)
-        for size in [16, 24, 32, 48, 64] {
+        for size in [16, 24, 32, 36, 48, 64] {
             cache.removeObject(forKey: "\(appBundlePath)_\(size)" as NSString)
         }
     }
 
     private func rasterize(image: NSImage, targetSize: CGFloat) -> NSImage {
-        let pixelSize = min(Int(targetSize * 2.0), 64)
-        let pixelWidth = pixelSize
-        let pixelHeight = pixelSize
-
-        guard let bitmapRep = NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: pixelWidth,
-            pixelsHigh: pixelHeight,
-            bitsPerSample: 8,
-            samplesPerPixel: 4,
-            hasAlpha: true,
-            isPlanar: false,
-            colorSpaceName: .calibratedRGB,
-            bytesPerRow: 0,
-            bitsPerPixel: 0
-        ) else {
-            image.size = NSSize(width: targetSize, height: targetSize)
-            return image
+        let targetSizeObj = NSSize(width: targetSize, height: targetSize)
+        return NSImage(size: targetSizeObj, flipped: false) { destRect in
+            image.draw(in: destRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+            return true
         }
-
-        bitmapRep.size = NSSize(width: targetSize, height: targetSize)
-
-        let imgWidth = max(image.size.width, 1)
-        let imgHeight = max(image.size.height, 1)
-        let scaleFactor = min(targetSize / imgWidth, targetSize / imgHeight)
-        let drawWidth = imgWidth * scaleFactor
-        let drawHeight = imgHeight * scaleFactor
-        let destRect = NSRect(
-            x: (targetSize - drawWidth) / 2.0,
-            y: (targetSize - drawHeight) / 2.0,
-            width: drawWidth,
-            height: drawHeight
-        )
-
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
-        image.draw(
-            in: destRect,
-            from: .zero,
-            operation: .sourceOver,
-            fraction: 1.0
-        )
-        NSGraphicsContext.restoreGraphicsState()
-
-        let resizedImage = NSImage(size: NSSize(width: targetSize, height: targetSize))
-        resizedImage.addRepresentation(bitmapRep)
-        return resizedImage
     }
 
     private func resolveAppBundlePath(from path: String) -> String {

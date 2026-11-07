@@ -82,7 +82,9 @@ struct ActivityRowView: View {
                 Label("Copy Info", systemImage: "doc.on.doc")
             }
 
-            if let path = item.targetAppPath, !path.isEmpty {
+            let effectivePath = item.targetAppPath
+                ?? (item.responsiblePath?.contains(".app") == true ? item.responsiblePath : item.senderPath)
+            if let path = effectivePath, !path.isEmpty {
                 Button {
                     revealInFinder(path: path)
                 } label: {
@@ -96,14 +98,63 @@ struct ActivityRowView: View {
 
     @ViewBuilder
     private var statusIcon: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(item.type.symbolColor.opacity(0.12))
-                .frame(width: 32, height: 32)
+        ZStack(alignment: .bottomTrailing) {
+            mainAppIcon
+                .frame(width: 36, height: 36)
 
-            Image(systemName: item.type.symbol)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(item.type.symbolColor)
+            statusBadge
+                .offset(x: 2, y: 2)
+        }
+        .frame(width: 36, height: 36)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(item.type.rawValue)
+    }
+
+    @ViewBuilder
+    private var mainAppIcon: some View {
+        if let path = item.targetAppPath, !path.isEmpty {
+            AppIconView(path: path, size: 36)
+        } else if item.targetAppName == "Config" {
+            AppIconView(path: Bundle.main.bundlePath, size: 36)
+        } else if let respPath = item.responsiblePath, respPath.contains(".app") {
+            AppIconView(path: respPath, size: 36)
+        } else if let senderPath = item.senderPath, !senderPath.isEmpty {
+            AppIconView(path: senderPath, size: 36)
+        } else {
+            Image(nsImage: AppIconProvider.shared.defaultPlaceholder(size: 36))
+                .resizable()
+                .scaledToFit()
+                .frame(width: 36, height: 36)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+    }
+
+    @ViewBuilder
+    private var statusBadge: some View {
+        ZStack {
+            Circle()
+                .fill(item.type.symbolColor)
+
+            badgeIcon
+                .font(.system(size: 8.5, weight: .bold))
+                .foregroundStyle(.white)
+        }
+        .frame(width: 16, height: 16)
+        .overlay(
+            Circle()
+                .stroke(Color(nsColor: .controlBackgroundColor), lineWidth: 1.5)
+        )
+    }
+
+    @ViewBuilder
+    private var badgeIcon: some View {
+        switch item.type {
+        case .approved:
+            Image(systemName: "checkmark")
+        case .rejected:
+            Image(systemName: "hand.raised.fill")
+        case .tamperBlocked:
+            Image(systemName: "exclamationmark")
         }
     }
 

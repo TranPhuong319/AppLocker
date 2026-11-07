@@ -94,7 +94,10 @@ extension ActivityStore {
 
         let senderRaw = extractField(from: message, prefix: " | Sender: ")
         let (senderName, senderPid) = parseProcessInfo(from: senderRaw)
-        let senderPath = extractField(from: message, prefix: " | SenderPath: ", delimiter: nil)
+        let senderPath = extractField(from: message, prefix: " | SenderPath: ", delimiter: " | ResponsiblePath: ")
+            ?? extractField(from: message, prefix: " | SenderPath: ", delimiter: nil)
+        let rawResponsiblePath = extractField(from: message, prefix: " | ResponsiblePath: ", delimiter: nil)
+        let responsiblePath = (rawResponsiblePath?.isEmpty ?? true) ? nil : rawResponsiblePath
         let tamperAction = extractField(from: message, prefix: " | Action: ")
 
         return SecurityActivityItem(
@@ -105,6 +108,7 @@ extension ActivityStore {
             senderName: senderName,
             senderPid: senderPid,
             senderPath: senderPath,
+            responsiblePath: responsiblePath,
             tamperAction: tamperAction
         )
     }
