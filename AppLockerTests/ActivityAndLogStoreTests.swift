@@ -20,18 +20,12 @@ struct ActivityAndLogStoreTests {
 
         // 1. Approved Event
         let approvedEntry = AppLogEntry(
-            date: now,
-            subsystem: "com.TranPhuong319.AppLocker",
-            category: "Security",
-            level: .notice,
+            date: now, subsystem: "com.TranPhuong319.AppLocker", category: "Security", level: .notice,
             message: "[SecurityEvent:Approved] App: Safari (PID 1001) | Path: /Applications/Safari.app"
         )
         let approvedItem = ActivityStore.parseSecurityEvent(from: approvedEntry)
-        #expect(approvedItem != nil)
-        #expect(approvedItem?.type == .approved)
-        #expect(approvedItem?.targetAppName == "Safari")
-        #expect(approvedItem?.targetPid == 1001)
-        #expect(approvedItem?.targetAppPath == "/Applications/Safari.app")
+        #expect(approvedItem?.type == .approved && approvedItem?.targetAppName == "Safari")
+        #expect(approvedItem?.targetPid == 1001 && approvedItem?.targetAppPath == "/Applications/Safari.app")
         #expect(approvedItem?.denialReason == nil)
 
         // 2. Rejected Event (Timeout)
@@ -65,8 +59,8 @@ struct ActivityAndLogStoreTests {
         #expect(cancelItem?.denialReason == .userCancelled)
     }
 
-    @Test("ActivityStore parses TamperBlocked security events and ignores non-security logs")
-    func activityStoreParsesTamperBlockedEvents() {
+    @Test("ActivityStore parses legacy TamperBlocked security events and ignores normal logs")
+    func activityStoreParsesLegacyTamperBlockedEvents() {
         let now = Date()
 
         // Tamper Blocked Event (Without ResponsiblePath - backward compatibility)
@@ -89,24 +83,6 @@ struct ActivityAndLogStoreTests {
         #expect(tamperItem?.responsiblePath == nil)
         #expect(tamperItem?.tamperAction == "Truncate")
 
-        // Tamper Blocked Event (With ResponsiblePath)
-        let tamperWithRespMsg = "[SecurityEvent:TamperBlocked] Target: Safari (PID 1001) | " +
-            "Sender: Antigravity (PID 9999) | SenderPath: /bin/kill | " +
-            "ResponsiblePath: /Applications/Antigravity.app"
-        let tamperWithRespEntry = AppLogEntry(
-            date: now,
-            subsystem: "com.TranPhuong319.AppLocker.ESExtension",
-            category: "EndpointSecurity",
-            level: .error,
-            message: tamperWithRespMsg
-        )
-        let tamperWithRespItem = ActivityStore.parseSecurityEvent(from: tamperWithRespEntry)
-        #expect(tamperWithRespItem != nil)
-        #expect(tamperWithRespItem?.senderName == "Antigravity")
-        #expect(tamperWithRespItem?.senderPid == 9999)
-        #expect(tamperWithRespItem?.senderPath == "/bin/kill")
-        #expect(tamperWithRespItem?.responsiblePath == "/Applications/Antigravity.app")
-
         // Non-security message returns nil
         let normalEntry = AppLogEntry(
             date: now,
@@ -116,6 +92,46 @@ struct ActivityAndLogStoreTests {
             message: "App started successfully"
         )
         #expect(ActivityStore.parseSecurityEvent(from: normalEntry) == nil)
+    }
+
+    @Test("ActivityStore parses TamperBlocked events and ActivityRowView resolves offender icon without Bundle.main")
+    func activityStoreParsesResponsiblePathAndSignalTamperEvents() {
+        let now = Date()
+        let tamperWithRespMsg = "[SecurityEvent:TamperBlocked] Target: Safari (PID 1001) | " +
+            "Sender: Antigravity (PID 9999) | SenderPath: /bin/kill | " +
+            "ResponsiblePath: /Applications/Antigravity.app"
+        let tamperWithRespItem = ActivityStore.parseSecurityEvent(from: AppLogEntry(
+            date: now, subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+            category: "EndpointSecurity", level: .error, message: tamperWithRespMsg
+        ))
+        #expect(tamperWithRespItem?.senderName == "Antigravity" && tamperWithRespItem?.senderPid == 9999)
+        #expect(tamperWithRespItem?.senderPath == "/bin/kill")
+        #expect(tamperWithRespItem?.responsiblePath == "/Applications/Antigravity.app")
+
+        let tamperAppLockerMsg = "[SecurityEvent:TamperBlocked] Target: AppLocker (PID 3096) | " +
+            "Sender: Terminal (PID 500) | SenderPath: /bin/kill | " +
+            "ResponsiblePath: /System/Applications/Utilities/Terminal.app"
+        let tamperAppLockerItem = ActivityStore.parseSecurityEvent(from: AppLogEntry(
+            date: now, subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+            category: "EndpointSecurity", level: .error, message: tamperAppLockerMsg
+        ))
+        #expect(tamperAppLockerItem?.type == .tamperBlocked && tamperAppLockerItem?.targetAppName == "AppLocker")
+        #expect(tamperAppLockerItem?.targetPid == 3096 && tamperAppLockerItem?.senderName == "Terminal")
+        #expect(tamperAppLockerItem?.responsiblePath == "/System/Applications/Utilities/Terminal.app")
+
+        for target in ["Config", "AppLocker", "ESExtension"] {
+            let emptyItem = SecurityActivityItem(
+                date: now, type: .tamperBlocked, targetAppName: target, targetPid: 3096,
+                senderPath: "", responsiblePath: ""
+            )
+            #expect(emptyItem.resolvedIconPath == nil)
+        }
+        let cliItem = SecurityActivityItem(
+            date: now, type: .tamperBlocked, targetAppName: "AppLocker", targetPid: 3096,
+            senderPath: "/usr/bin/python3", responsiblePath: "/usr/libexec/xpcproxy"
+        )
+        #expect(cliItem.resolvedIconPath == "/usr/bin/python3")
+        #expect(tamperWithRespItem?.resolvedIconPath == "/Applications/Antigravity.app")
     }
 
     // MARK: - ActivityStore Grouping Tests

@@ -5,6 +5,7 @@
 //  Created by Doe Phương on 27/9/25.
 //
 
+import Darwin
 import Foundation
 import OSLog
 
@@ -52,21 +53,23 @@ final class ConfigStore: @unchecked Sendable {
         self.currentUID = uid
         self.customSelfBundleID = selfBundleID
         self.customSelfBundlePath = selfBundlePath
-        ensureDirectoryExists(self.baseDirectoryURL)
-        ensureDirectoryExists(userDirectoryURL)
+        ensureDirectoryExists(self.baseDirectoryURL, permissions: 0o777)
+        ensureDirectoryExists(userDirectoryURL, permissions: 0o777)
     }
 
-    func ensureDirectoryExists(_ url: URL) {
+    func ensureDirectoryExists(_ url: URL, permissions: mode_t = 0o777) {
         #if DEBUG
         guard !PreviewEnvironment.isRunningInPreview else { return }
         #endif
-        let attributes: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
+        let attributes: [FileAttributeKey: Any] = [.posixPermissions: Int(permissions)]
         do {
             try FileManager.default.createDirectory(
                 at: url,
                 withIntermediateDirectories: true,
                 attributes: attributes
             )
+            // Explicitly call chmod to bypass process umask and heal existing directory permissions
+            _ = chmod(url.path, permissions)
         } catch {
             Logfile.policy.error(
                 """
@@ -141,7 +144,7 @@ final class ConfigStore: @unchecked Sendable {
         encoder.outputFormat = .binary
 
         do {
-            ensureDirectoryExists(userDirectoryURL)
+            ensureDirectoryExists(userDirectoryURL, permissions: 0o777)
 
             let userConfig = UserConfig(
                 isDisabled: isDisabled,
@@ -153,7 +156,7 @@ final class ConfigStore: @unchecked Sendable {
             try plistData.write(to: configURL, options: .atomic)
 
             var attributes = [FileAttributeKey: Any]()
-            attributes[.posixPermissions] = 0o666
+            attributes[.posixPermissions] = 0o644
             try FileManager.default.setAttributes(attributes, ofItemAtPath: configURL.path)
 
             Logfile.policy.debug(

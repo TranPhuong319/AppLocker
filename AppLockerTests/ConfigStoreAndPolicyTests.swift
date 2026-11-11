@@ -74,6 +74,16 @@ struct ConfigStoreAndPolicyTests {
 
         let allLoaded = UserConfig.loadAll(baseDirectoryURL: env.tempDir)
         #expect(allLoaded[testUID]?.apps.first?.bundleID == "com.apple.Safari")
+
+        // Verify multi-user POSIX permissions: base=0o777, userDir=0o777, config.plist=0o644
+        let basePerms = try FileManager.default.attributesOfItem(atPath: env.tempDir.path)[.posixPermissions] as? Int
+        let userDirPerms = try FileManager.default
+            .attributesOfItem(atPath: store.userDirectoryURL.path)[.posixPermissions] as? Int
+        let filePerms = try FileManager.default
+            .attributesOfItem(atPath: store.configURL.path)[.posixPermissions] as? Int
+        #expect(basePerms == 0o777)
+        #expect(userDirPerms == 0o777)
+        #expect(filePerms == 0o644)
     }
 
     @Test("Legacy config.plist migration supports all 4 historical formats and deletes legacy file")
@@ -172,7 +182,9 @@ struct ConfigStoreAndPolicyTests {
         #expect(healed.apps[byPath.path] == nil)
         #expect(healed.apps[bySymlink.path] == nil)
     }
+}
 
+extension ConfigStoreAndPolicyTests {
     @Test("ESEventNotifyExec policy blocks by CDHash/bundlePath, normalizes firmlinks, and bypasses incoming calls")
     func notifyExecPolicyEvaluationAndTelephonyBypass() throws {
         let env = try makeIsolatedEnvironment()
@@ -308,5 +320,37 @@ struct ConfigStoreAndPolicyTests {
             uid: uid
         )
         #expect(isBlocked == true)
+    }
+
+    @Test("removeConfig(purgeAll: false) resets only the active UID session and preserves other UIDs")
+    func resetRemovesOnlyCurrentUidSessionAndPurgeAllRemovesAll() throws {
+        let env = try makeIsolatedEnvironment()
+        defer { env.cleanup() }
+
+        let uidA: uid_t = 501
+        let uidB: uid_t = 502
+
+        let storeA = ConfigStore(baseDirectoryURL: env.tempDir, userDefaults: env.userDefaults, uid: uidA)
+        let storeB = ConfigStore(baseDirectoryURL: env.tempDir, userDefaults: env.userDefaults, uid: uidB)
+
+        let appA = LockedAppConfig(
+            bundleID: "com.apple.Safari", path: "/Applications/Safari.app", name: "Safari", cdhash: "aaaa"
+        )
+        let appB = LockedAppConfig(
+            bundleID: "com.apple.Notes", path: "/System/Applications/Notes.app", name: "Notes", cdhash: "bbbb"
+        )
+
+        storeA.save(apps: [appA.path: appA], isDisabled: false)
+        storeB.save(apps: [appB.path: appB], isDisabled: false)
+
+        // 1. User A performs Reset (purgeAll: false) -> Only User A directory is deleted, User B is untouched
+        #expect(storeA.removeConfig(purgeAll: false) == true)
+        #expect(FileManager.default.fileExists(atPath: storeA.userDirectoryURL.path) == false)
+        #expect(FileManager.default.fileExists(atPath: storeB.configURL.path) == true)
+        #expect(storeB.load().apps["/System/Applications/Notes.app"]?.bundleID == "com.apple.Notes")
+
+        // 2. Uninstall (purgeAll: true) -> Entire base directory is purged
+        #expect(storeB.removeConfig(purgeAll: true) == true)
+        #expect(FileManager.default.fileExists(atPath: env.tempDir.path) == false)
     }
 }

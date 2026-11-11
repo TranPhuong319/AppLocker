@@ -205,6 +205,19 @@ final class ESManager: NSObject, @unchecked Sendable {
         }
     }
 
+    func isMainAppTarget(targetPid: pid_t, targetToken: audit_token_t) -> Bool {
+        processIDLock.withLock {
+            guard let authPID = self.authenticatedMainAppPID, targetPid == authPID else {
+                return false
+            }
+            if let expectedVersion = self.authenticatedMainAppPIDVersion {
+                let currentVersion = audit_token_to_pidversion(targetToken)
+                guard expectedVersion == currentVersion else { return false }
+            }
+            return true
+        }
+    }
+
     func cacheMainAppPID(from connection: NSXPCConnection) {
         let processID = pid_t(connection.processIdentifier)
         var auditToken = connection.auditToken
@@ -236,12 +249,8 @@ final class ESManager: NSObject, @unchecked Sendable {
             Logfile.endpointSecurity.error("[ESManager] Mute AppLocker PID (Authorizer): Failed")
         }
 
-        // Mute for Tamper too if needed (though Tamper usually monitors only config writes)
-        if let tamperClient = tamper?.client {
-            if es_mute_process(tamperClient, token) == ES_RETURN_SUCCESS {
-                Logfile.endpointSecurity.debug("[ESManager] Muted AppLocker PID (Tamper): Success")
-            }
-        }
+        // Note: Do NOT mute AppLocker on `tamper` client so `ESTamper` can enforce per-UID directory isolation
+        // inside `/Users/Shared/AppLocker/<UID>` even when directories have 0o777 permissions.
     }
 
     static func selfAuditToken() -> audit_token_t? {
