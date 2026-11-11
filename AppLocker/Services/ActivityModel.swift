@@ -144,4 +144,11 @@ public struct SecurityActivityItem: Identifiable, Sendable, Equatable {
         }
         return lines.joined(separator: "\n")
     }
+
+    public var resolvedIconPath: String? {
+        let sender = (responsiblePath?.contains(".app") == true ? responsiblePath : nil)
+            ?? senderPath.flatMap { $0.isEmpty ? nil : $0 }
+        let target = targetAppPath.flatMap { $0.isEmpty ? nil : $0 }
+        return type == .tamperBlocked ? (sender ?? target) : (target ?? sender)
+    }
 }

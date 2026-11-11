@@ -82,9 +82,7 @@ struct ActivityRowView: View {
                 Label("Copy Info", systemImage: "doc.on.doc")
             }
 
-            let effectivePath = item.targetAppPath
-                ?? (item.responsiblePath?.contains(".app") == true ? item.responsiblePath : item.senderPath)
-            if let path = effectivePath, !path.isEmpty {
+            if let path = item.resolvedIconPath {
                 Button {
                     revealInFinder(path: path)
                 } label: {
@@ -112,21 +110,19 @@ struct ActivityRowView: View {
 
     @ViewBuilder
     private var mainAppIcon: some View {
-        if let path = item.targetAppPath, !path.isEmpty {
+        if let path = item.resolvedIconPath {
             AppIconView(path: path, size: 36)
-        } else if item.targetAppName == "Config" {
-            AppIconView(path: Bundle.main.bundlePath, size: 36)
-        } else if let respPath = item.responsiblePath, respPath.contains(".app") {
-            AppIconView(path: respPath, size: 36)
-        } else if let senderPath = item.senderPath, !senderPath.isEmpty {
-            AppIconView(path: senderPath, size: 36)
         } else {
-            Image(nsImage: AppIconProvider.shared.defaultPlaceholder(size: 36))
-                .resizable()
-                .scaledToFit()
-                .frame(width: 36, height: 36)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            defaultPlaceholderIcon
         }
+    }
+
+    private var defaultPlaceholderIcon: some View {
+        Image(nsImage: AppIconProvider.shared.defaultPlaceholder(size: 36))
+            .resizable()
+            .scaledToFit()
+            .frame(width: 36, height: 36)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
     @ViewBuilder
@@ -204,8 +200,13 @@ struct ActivityRowView: View {
             Text("PID \(pidDisplay) • \(relTime)")
         }
     }
+}
 
-    private func formatSender(name: String?, pid: Int32?) -> String {
+// MARK: - Formatters & Actions
+
+private extension ActivityRowView {
+
+    func formatSender(name: String?, pid: Int32?) -> String {
         if let name = name {
             let pidStr = pid.map { " (PID \($0))" } ?? ""
             return "\(name)\(pidStr)"
@@ -216,7 +217,7 @@ struct ActivityRowView: View {
         }
     }
 
-    private var repeatBadge: some View {
+    var repeatBadge: some View {
         repeatBadgeText
             .font(.system(size: 10, weight: .bold))
             .foregroundStyle(item.type.symbolColor)
@@ -226,7 +227,7 @@ struct ActivityRowView: View {
     }
 
     @ViewBuilder
-    private var repeatBadgeText: some View {
+    var repeatBadgeText: some View {
         switch item.type {
         case .tamperBlocked:
             Text("Attempted to tamper \(item.repeatCount) times")
@@ -238,7 +239,7 @@ struct ActivityRowView: View {
     }
 
     @ViewBuilder
-    private var copyIcon: some View {
+    var copyIcon: some View {
         if #available(macOS 15.0, *) {
             Image(systemName: isCopied ? "checkmark.circle" : "document.on.document")
                 .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
@@ -252,9 +253,7 @@ struct ActivityRowView: View {
         }
     }
 
-    // MARK: - Actions
-
-    private func copyEntry() {
+    func copyEntry() {
         let text = item.clipboardFormattedText(dateFormatter: dateFormatter)
         NSPasteboard.general.copyText(text)
 
@@ -279,7 +278,7 @@ struct ActivityRowView: View {
         }
     }
 
-    private func revealInFinder(path: String) {
+    func revealInFinder(path: String) {
         let url = URL(fileURLWithPath: path).enclosingAppBundleURL
         NSWorkspace.shared.activateFileViewerSelecting([url])
     }

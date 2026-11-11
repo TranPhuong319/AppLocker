@@ -56,45 +56,83 @@ extension ESManager {
     }
 
     func evaluateAuthSignal(context: SignalEventContext, valve: any ESAuthResponding) {
+        if evaluatePendingSignal(context: context, valve: valve) {
+            return
+        }
+
+        if evaluateSelfDefenseSignal(context: context, valve: valve) {
+            return
+        }
+
+        _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+    }
+
+    private func evaluatePendingSignal(context: SignalEventContext, valve: any ESAuthResponding) -> Bool {
+        let targetPid = context.targetPID
+        let pendingEntry = pendingPIDLock.withLock {
+            pendingVerificationProcesses[targetPid]
+        }
+        guard let expectedRecord = pendingEntry, context.sig == SIGCONT else {
+            return false
+        }
+
+        let targetToken = context.targetAuditToken
+        let expectedVersion = audit_token_to_pidversion(expectedRecord.token)
+        let currentVersion = audit_token_to_pidversion(targetToken)
+
+        // Strict Fail-Deny: If PID recycling or version mismatch detected, DENY immediately
+        guard expectedVersion == currentVersion else {
+            _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+            Logfile.endpointSecurity.fault(
+                """
+                [AuthSignal] PID RECYCLING / VERSION MISMATCH for target PID \(targetPid, privacy: .public)! \
+                Expected: \(expectedVersion, privacy: .public), target: \(currentVersion, privacy: .public). \
+                Denied SIGCONT.
+                """
+            )
+            return true
+        }
+
+        guard context.senderPID != getpid() else {
+            return false
+        }
+        handleUnauthorizedSignal(
+            context: context,
+            targetAppName: expectedRecord.notification.name,
+            valve: valve
+        )
+        return true
+    }
+
+    private func evaluateSelfDefenseSignal(context: SignalEventContext, valve: any ESAuthResponding) -> Bool {
         let targetPid = context.targetPID
         let senderPid = context.senderPID
         let sig = context.sig
 
-        let pendingEntry = pendingPIDLock.withLock {
-            pendingVerificationProcesses[targetPid]
+        let isMainApp = isMainAppTarget(targetPid: targetPid, targetToken: context.targetAuditToken)
+        let isExtension = (targetPid == getpid())
+        guard (isMainApp || isExtension) && sig != 0 else {
+            return false
         }
 
-        if let expectedRecord = pendingEntry, sig == SIGCONT {
-            let targetToken = context.targetAuditToken
-            let expectedVersion = audit_token_to_pidversion(expectedRecord.token)
-            let currentVersion = audit_token_to_pidversion(targetToken)
-
-            // Strict Fail-Deny: If PID recycling or version mismatch detected, DENY immediately
-            guard expectedVersion == currentVersion else {
-                _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
-                Logfile.endpointSecurity.fault(
-                    """
-                    [AuthSignal] PID RECYCLING / VERSION MISMATCH for target PID \(targetPid, privacy: .public)! \
-                    Expected: \(expectedVersion, privacy: .public), target: \(currentVersion, privacy: .public). \
-                    Denied SIGCONT.
-                    """
-                )
-                return
-            }
-
-            let isAuthorizedSender = (senderPid == getpid())
-
-            if !isAuthorizedSender {
-                handleUnauthorizedSignal(
-                    context: context,
-                    targetAppName: expectedRecord.notification.name,
-                    valve: valve
-                )
-                return
-            }
+        let isSelfSignaling = (senderPid == targetPid)
+        let isExtensionSender = (senderPid == getpid())
+        let isShutdown = stateLock.withLock { isShutdownAuthorized }
+        // ponytail: only launchd (PID 1) is allowed for autonomous OS lifecycle signals;
+        // block all non-zero signals except benign SIGCHLD/SIGCONT (covers SIGABRT, SIGSEGV, SIGUSR1, SIGTTIN, etc.)
+        guard !isSelfSignaling && !isExtensionSender && !isShutdown && senderPid != 1 else {
+            return false
+        }
+        guard sig != SIGCHLD && sig != SIGCONT else {
+            return false
         }
 
-        _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
+        handleUnauthorizedSignal(
+            context: context,
+            targetAppName: isExtension ? "ESExtension" : "AppLocker",
+            valve: valve
+        )
+        return true
     }
 
     private func handleUnauthorizedSignal(
@@ -110,7 +148,7 @@ extension ESManager {
             ?? "PID \(senderPid)"
 
         let isLaunchMachinery = senderPath.hasSuffix("/launchservicesd") || senderPath.hasSuffix("/launchd")
-        if isLaunchMachinery {
+        if isLaunchMachinery && context.sig == SIGCONT {
             Logfile.endpointSecurity.debug(
                 """
                 [AuthSignal] Denied launch machinery SIGCONT from \(senderPath, privacy: .public) \

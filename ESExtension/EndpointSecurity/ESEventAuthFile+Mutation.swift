@@ -70,7 +70,18 @@ extension ESManager {
             return
         }
         let procID = context.signingID
-        if isAuthorized(processPID: context.processPID, auditToken: context.processAuditToken) {
+        let dstPathForCheck: String? = if context.isRenameToNewPath,
+            let dir = context.renameNewDir, let name = context.renameNewFilename {
+            (dir as NSString).appendingPathComponent(name)
+        } else {
+            context.secondaryPath
+        }
+        if isAuthorized(
+            processPID: context.processPID,
+            auditToken: context.processAuditToken,
+            targetPath: srcPath,
+            secondaryPath: dstPathForCheck
+        ) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             Logfile.endpointSecurity.debug(
                 "[AuthFile] RENAME ALLOW: \(srcPath, privacy: .public) (\(procID, privacy: .public))"
@@ -139,7 +150,12 @@ extension ESManager {
             return
         }
         let procID = context.signingID
-        guard isAuthorized(processPID: context.processPID, auditToken: context.processAuditToken) else {
+        guard isAuthorized(
+            processPID: context.processPID,
+            auditToken: context.processAuditToken,
+            targetPath: context.primaryPath,
+            secondaryPath: context.secondaryPath
+        ) else {
             _ = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
             if isConfig {
                 let action: String = switch operationName {

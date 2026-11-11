@@ -27,14 +27,43 @@ struct FileAuthEventContext: Sendable {
 
 extension ESManager {
 
-    func isAuthorized(processPID: pid_t, auditToken: audit_token_t) -> Bool {
-        if processPID == getpid() || processIDLock.withLock({ processPID == authenticatedMainAppPID }) {
+    func isAuthorized(
+        processPID: pid_t,
+        auditToken: audit_token_t,
+        targetPath: String? = nil,
+        secondaryPath: String? = nil
+    ) -> Bool {
+        if processPID == getpid() {
+            return true
+        }
+        let callerUID = audit_token_to_euid(auditToken)
+        if let path = targetPath, !isPathAllowedForUID(path, callerUID: callerUID) {
+            return false
+        }
+        if let secPath = secondaryPath, !isPathAllowedForUID(secPath, callerUID: callerUID) {
+            return false
+        }
+        if processIDLock.withLock({ processPID == authenticatedMainAppPID }) {
             return true
         }
         return CodeSignatureValidator.validate(
             auditToken: auditToken,
             requirement: CodeSignatureValidator.projectRootRequirement
         )
+    }
+
+    /// Ensures that inside `/Users/Shared/AppLocker/<UID>`, a non-root process can only mutate its own `<UID>` folder.
+    func isPathAllowedForUID(_ rawPath: String, callerUID: uid_t) -> Bool {
+        if callerUID == 0 { return true }
+        let normalized = normalizeFirmlinkPath(rawPath)
+        let prefix = "/Users/Shared/AppLocker/"
+        guard normalized.hasPrefix(prefix) else { return true }
+        let remainder = String(normalized.dropFirst(prefix.count))
+        guard let firstComponent = remainder.split(separator: "/").first,
+              let pathUID = uid_t(firstComponent) else {
+            return true
+        }
+        return pathUID == callerUID
     }
 
     func isAuthorized(_ message: ESMessage) -> Bool {
@@ -139,7 +168,11 @@ extension ESManager {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
         }
-        if isAuthorized(processPID: context.processPID, auditToken: context.processAuditToken) {
+        if isAuthorized(
+            processPID: context.processPID,
+            auditToken: context.processAuditToken,
+            targetPath: context.primaryPath
+        ) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             return
         }
@@ -162,7 +195,11 @@ extension ESManager {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
         }
-        if isAuthorized(processPID: context.processPID, auditToken: context.processAuditToken) {
+        if isAuthorized(
+            processPID: context.processPID,
+            auditToken: context.processAuditToken,
+            targetPath: path
+        ) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
             return
         }
