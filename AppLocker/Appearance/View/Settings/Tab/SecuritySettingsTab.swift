@@ -12,7 +12,7 @@ struct SecuritySettingsTab: View {
     let isMock: Bool
 
     private var installer = ExtensionInstaller.shared
-    @State private var isProtectionEnabled: Bool = !AppState.shared.manager.isProtectionDisabled
+    @State private var isProtectionEnabled: Bool = !LockES.shared.isProtectionDisabled
     @State private var allowIncomingCalls: Bool = true
     @State private var autoLockTimeoutMinutes: Int = 0
     @State private var isAuthenticating: Bool = false
@@ -20,7 +20,11 @@ struct SecuritySettingsTab: View {
 
     init(isUnlocked: Binding<Bool> = .constant(false), isMock: Bool = false) {
         self._isUnlocked = isUnlocked
+        #if DEBUG
+        self.isMock = isMock || PreviewEnvironment.isRunningInPreview
+        #else
         self.isMock = isMock
+        #endif
     }
 
     var body: some View {
@@ -39,6 +43,11 @@ struct SecuritySettingsTab: View {
                 isUnlocked = false
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+            if !isMock {
+                isUnlocked = false
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
             syncProtectionStatus()
         }
@@ -48,31 +57,22 @@ struct SecuritySettingsTab: View {
     }
 
     private var lockedStateView: some View {
-        VStack(spacing: 14) {
-            Spacer()
-            if #available(macOS 15.0, *) {
-                Image(systemName: isUnlocked ? "lock.open.fill" : "lock.fill")
-                    .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                    .font(.system(size: 44, weight: .regular))
-                    .foregroundStyle(.secondary)
-            } else {
+        ContentUnavailableView {
+            Label {
+                Text("Security Settings Locked")
+            } icon: {
                 Image(systemName: isUnlocked ? "lock.open.fill" : "lock.fill")
                     .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                    .font(.system(size: 44, weight: .regular))
-                    .foregroundStyle(.secondary)
             }
-
+        } description: {
             Text("Unlock to view security settings")
-                .font(.body)
-                .foregroundStyle(.secondary)
-
+        } actions: {
             Button(action: unlockSecurityTab) {
                 Text("Unlock")
                     .padding(.horizontal, 8)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.borderedProminent)
             .controlSize(.regular)
-            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.windowBackground)
@@ -179,9 +179,9 @@ struct SecuritySettingsTab: View {
 
     private func syncProtectionStatus() {
         guard !isMock else { return }
-        isProtectionEnabled = !AppState.shared.manager.isProtectionDisabled
-        allowIncomingCalls = AppState.shared.manager.allowIncomingCalls
-        autoLockTimeoutMinutes = AppState.shared.manager.autoLockTimeoutMinutes
+        isProtectionEnabled = !LockES.shared.isProtectionDisabled
+        allowIncomingCalls = LockES.shared.allowIncomingCalls
+        autoLockTimeoutMinutes = LockES.shared.autoLockTimeoutMinutes
     }
 
     private func unlockSecurityTab() {
@@ -213,7 +213,7 @@ struct SecuritySettingsTab: View {
     }
 
     private func handleLockToggle(newValue: Bool) {
-        if !newValue {
+        if !isMock && !newValue {
             let confirmation = AlertShow.show(
                 title: String(localized: "Turn Off Application Lock?"),
                 message: String(localized: """
@@ -239,19 +239,19 @@ struct SecuritySettingsTab: View {
 
         isProtectionEnabled = newValue
         guard !isMock else { return }
-        AppState.shared.manager.setProtectionDisabled(!newValue)
+        LockES.shared.setProtectionDisabled(!newValue)
     }
 
     private func handleAutoLockTimeoutChange(newValue: Int) {
         autoLockTimeoutMinutes = newValue
         guard !isMock else { return }
-        AppState.shared.manager.setAutoLockTimeoutMinutes(newValue)
+        LockES.shared.setAutoLockTimeoutMinutes(newValue)
     }
 
     private func handleIncomingCallsToggle(newValue: Bool) {
         allowIncomingCalls = newValue
         guard !isMock else { return }
-        AppState.shared.manager.setAllowIncomingCalls(newValue)
+        LockES.shared.setAllowIncomingCalls(newValue)
     }
 }
 

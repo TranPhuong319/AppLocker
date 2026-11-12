@@ -11,6 +11,37 @@ import Foundation
 import os
 import Security
 
+struct ExecEventContext: Sendable {
+    let targetPID: pid_t
+    let targetAuditToken: audit_token_t
+    let parentPID: pid_t
+    let uid: uid_t
+    let path: String
+    let signingID: String
+    let cdhashData: Data
+    let cdhashHex: String
+
+    init(
+        targetPID: pid_t,
+        targetAuditToken: audit_token_t,
+        parentPID: pid_t = getpid(),
+        uid: uid_t = getuid(),
+        path: String,
+        signingID: String = "Unsigned/Unknown",
+        cdhashData: Data = Data(repeating: 0, count: 20),
+        cdhashHex: String? = nil
+    ) {
+        self.targetPID = targetPID
+        self.targetAuditToken = targetAuditToken
+        self.parentPID = parentPID
+        self.uid = uid
+        self.path = path
+        self.signingID = signingID
+        self.cdhashData = cdhashData
+        self.cdhashHex = cdhashHex ?? cdhashData.hexEncodedString
+    }
+}
+
 extension ESManager {
     func handleNotifyExec(client: OpaquePointer, message: ESMessage) {
         let messagePtr = message.pointee
@@ -22,22 +53,56 @@ extension ESManager {
 
         let token = messagePtr.event.exec.target.pointee.audit_token
         let signingID = string(from: messagePtr.event.exec.target.pointee.signing_id) ?? "Unsigned/Unknown"
-        if isAppLockerSelfExecution(signingID: signingID, token: token, pid: targetPid) {
-            return
-        }
-
         let parentPid = messagePtr.process.pointee.ppid
         let uid = audit_token_to_euid(token)
         var targetProcess = messagePtr.event.exec.target.pointee
         let cdhashData = Data(bytes: &targetProcess.cdhash, count: 20)
-        let cdhashHex = cdhashData.map { String(format: "%02x", $0) }.joined()
+        let cdhashHex = cdhashData.hexEncodedString
 
-        guard isProcessBlocked(path: path, cdhashData: cdhashData, cdhashHex: cdhashHex, uid: uid) else {
-            return
+        let context = ExecEventContext(
+            targetPID: targetPid,
+            targetAuditToken: token,
+            parentPID: parentPid,
+            uid: uid,
+            path: path,
+            signingID: signingID,
+            cdhashData: cdhashData,
+            cdhashHex: cdhashHex
+        )
+
+        evaluateNotifyExec(context: context, rawMessage: message)
+    }
+
+    @discardableResult
+    func evaluateNotifyExec(context: ExecEventContext, rawMessage: ESMessage? = nil) -> Bool {
+        let targetPid = context.targetPID
+        guard targetPid > 0 else { return false }
+
+        let token = context.targetAuditToken
+        let signingID = context.signingID
+        if isAppLockerSelfExecution(signingID: signingID, token: token, pid: targetPid) {
+            return false
+        }
+
+        let path = context.path
+        let uid = context.uid
+        let cdhashData = context.cdhashData
+        let cdhashHex = context.cdhashHex
+
+        guard isProcessBlocked(
+            path: path,
+            cdhashData: cdhashData,
+            cdhashHex: cdhashHex,
+            signingID: signingID,
+            uid: uid
+        ) else {
+            return false
         }
 
         let name = computeAppName(forExecPath: path)
-        logOriginTrace(name: name, message: message)
+        if let rawMessage {
+            logOriginTrace(name: name, message: rawMessage)
+        }
 
         if isAllowedIncomingCall(signingID: signingID, path: path, uid: uid) {
             Logfile.endpointSecurity.notice(
@@ -46,33 +111,20 @@ extension ESManager {
                 (PID \(targetPid, privacy: .public))
                 """
             )
-            return
+            return false
         }
 
         let notification = BlockedNotification(
             name: name,
             path: path,
             cdhash: cdhashHex,
-            parentPid: parentPid,
+            parentPid: context.parentPID,
             uid: uid,
             signingID: signingID,
             targetPid: targetPid
         )
         suspendAndNotifyBlockedProcess(notification: notification, targetPid: targetPid, token: token)
-    }
-
-    private func isAppLockerSelfExecution(signingID: String, token: audit_token_t, pid: pid_t) -> Bool {
-        guard signingID == "com.TranPhuong319.AppLocker" else { return false }
-        if CodeSignatureValidator.validate(auditToken: token, requirement: CodeSignatureValidator.mainAppRequirement) {
-            Logfile.endpointSecurity.info(
-                """
-                [NotifyExec] AppLocker self-execution allowed, bypassing lock policy \
-                (PID \(pid, privacy: .public))
-                """
-            )
-            return true
-        }
-        return false
+        return true
     }
 
     private func logOriginTrace(name: String, message: ESMessage) {
@@ -124,8 +176,10 @@ extension ESManager {
             return
         }
 
+        guard kill(targetPid, 0) == 0 else { return }
+
         // Mark PID pending FIRST (~10ns) so launchd's SIGCONT is denied on the very first attempt
-        markPendingVerification(pid: targetPid, token: token)
+        markPendingVerification(pid: targetPid, token: token, notification: notification)
         let result = kill(targetPid, SIGSTOP)
         let version = audit_token_to_pidversion(token)
         Logfile.endpointSecurity.debug(
@@ -154,106 +208,20 @@ extension ESManager {
         }
     }
 
-    private func isProcessBlocked(path: String, cdhashData: Data, cdhashHex: String, uid: uid_t) -> Bool {
-        let isZeroCDHash = cdhashData.allSatisfy { $0 == 0 }
-        return stateLock.withLock { () -> Bool in
-            if !isZeroCDHash, let userCDHashes = lockedCDHashes[uid], userCDHashes.contains(cdhashHex) {
-                return true
-            }
-            return isPathInLockedBundle(path: path, uid: uid)
-        }
-    }
-
-    private func isPathInLockedBundle(path: String, uid: uid_t) -> Bool {
-        guard let userBundlePaths = lockedBundlePaths[uid], !userBundlePaths.isEmpty else { return false }
-        let normalizedExecPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
-        var url = URL(fileURLWithPath: normalizedExecPath)
-
-        while url.pathComponents.count > 1 {
-            let currentPath = url.path
-            let stdPath = (currentPath as NSString).standardizingPath
-            let normCurrent = normalizeFirmlinkPath(stdPath)
-            let matchesBundle = userBundlePaths.contains(currentPath)
-                || userBundlePaths.contains(stdPath)
-                || userBundlePaths.contains(normCurrent)
-            if matchesBundle {
-                if let bundle = Bundle(url: url), let mainExec = bundle.executablePath {
-                    let normPath = normalizeFirmlinkPath((path as NSString).standardizingPath)
-                    let normMainExec = normalizeFirmlinkPath((mainExec as NSString).standardizingPath)
-                    return normPath == normMainExec
-                }
-                return false
-            }
-            url.deleteLastPathComponent()
-        }
-        return false
-    }
-
     func sendBlockedNotifications(notification: BlockedNotification) {
-        Task.detached(priority: .high) {
-            TTYNotifier.notify(
-                targetPid: notification.targetPid,
-                parentPid: notification.parentPid,
-                blockedPath: notification.path,
-                cdhash: notification.cdhash,
-                identifier: notification.signingID
-            )
+        if !isTesting {
+            Task.detached(priority: .high) {
+                TTYNotifier.notify(
+                    targetPid: notification.targetPid,
+                    parentPid: notification.parentPid,
+                    blockedPath: notification.path,
+                    cdhash: notification.cdhash,
+                    identifier: notification.signingID
+                )
+            }
         }
         Task.detached(priority: .low) { [weak self] in
             self?.sendBlockedNotificationToApp(notification: notification)
         }
-    }
-
-    private func isAllowedIncomingCall(
-        signingID: String,
-        path: String,
-        uid: uid_t
-    ) -> Bool {
-        let isTelephonyApp = signingID == "com.apple.FaceTime" || signingID == "com.apple.mobilephone"
-            || path.contains("/FaceTime.app/") || path.contains("/Phone.app/")
-        guard isTelephonyApp else { return false }
-
-        let (userAllowsIncoming, isRinging) = stateLock.withLock {
-            (self.allowIncomingCallsByUID[uid] ?? true, self.isIncomingCallActive)
-        }
-        guard userAllowsIncoming else { return false }
-
-        let isCallActive = isRinging || isSharingActivityLevelPhoneCall()
-        guard isCallActive else { return false }
-
-        return isValidAppleTelephonyBinary(path: path)
-    }
-
-    private func isSharingActivityLevelPhoneCall() -> Bool {
-        var token: Int32 = 0
-        guard notify_register_check("com.apple.sharing.activity-level-changed", &token) == NOTIFY_STATUS_OK else {
-            return false
-        }
-        defer { notify_cancel(token) }
-
-        var state: UInt64 = 0
-        guard notify_get_state(token, &state) == NOTIFY_STATUS_OK else {
-            return false
-        }
-
-        Logfile.endpointSecurity.debug(
-            "[NotifyExec] com.apple.sharing.activity-level-changed state: \(state, privacy: .public)"
-        )
-
-        return state == 14
-    }
-
-    private func isValidAppleTelephonyBinary(path: String) -> Bool {
-        let url = URL(fileURLWithPath: path)
-        var staticCode: SecStaticCode?
-        guard SecStaticCodeCreateWithPath(url as CFURL, [], &staticCode) == errSecSuccess,
-              let code = staticCode else { return false }
-
-        let reqString = "anchor apple and (identifier \"com.apple.mobilephone\" or identifier \"com.apple.FaceTime\")"
-        var requirement: SecRequirement?
-        guard SecRequirementCreateWithString(reqString as CFString, [], &requirement) == errSecSuccess,
-              let req = requirement else { return false }
-
-        return SecStaticCodeCheckValidity(code, [], req) == errSecSuccess
     }
 }

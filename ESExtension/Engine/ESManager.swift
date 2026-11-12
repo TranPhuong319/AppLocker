@@ -15,18 +15,24 @@ import os
 final class ESManager: NSObject, @unchecked Sendable {
     var authorizer: ESAuthorizer?
     var tamper: ESTamper?
+    let isTesting: Bool
+    var customBaseConfigDirectoryURL: URL?
+    var customConnectionValidator: (@Sendable (NSXPCConnection) -> Bool)?
+    var telephonySignatureValidator: (@Sendable (String) -> Bool)?
+    var lastKickstartedUID: uid_t?
 
     // MARK: - State
     let stateLock = OSAllocatedUnfairLock()
     var lockedCDHashes: [uid_t: Set<String>] = [:]
     var lockedBundlePaths: [uid_t: Set<String>] = [:]
+    var lockedBundleIDs: [uid_t: Set<String>] = [:]
     var allowIncomingCallsByUID: [uid_t: Bool] = [:]
     var isIncomingCallActive: Bool = false
     var rawCurrentLanguage: String = Locale.preferredLanguages.first ?? "en"
     var configMonitorSources: [String: DispatchSourceFileSystemObject] = [:]
     var configDebounceTimer: DispatchSourceTimer?
 
-    struct BlockedNotification {
+    struct BlockedNotification: Sendable {
         let name: String
         let path: String
         let cdhash: String
@@ -36,9 +42,15 @@ final class ESManager: NSObject, @unchecked Sendable {
         let targetPid: pid_t
     }
 
+    struct PendingProcessRecord: Sendable {
+        let token: audit_token_t
+        let notification: BlockedNotification
+        var registeredAt: ContinuousClock.Instant
+    }
+
     var pendingNotifications: [BlockedNotification] = []
     let pendingPIDLock = OSAllocatedUnfairLock()
-    var pendingVerificationProcesses: [pid_t: (token: audit_token_t, registeredAt: ContinuousClock.Instant)] = [:]
+    var pendingVerificationProcesses: [pid_t: PendingProcessRecord] = [:]
 
     struct XPCConn: @unchecked Sendable, Equatable {
         let connection: NSXPCConnection
@@ -54,6 +66,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     var activeConnections: [XPCConn] = []
     var authenticatedConnections: Set<ObjectIdentifier> = []
     var authenticatedMainAppPID: pid_t?
+    var authenticatedMainAppPIDVersion: Int32?
     var lastKnownMainAppPID: pid_t?
     var activeUserUID: uid_t?
     var isShutdownAuthorized: Bool = false
@@ -74,8 +87,19 @@ final class ESManager: NSObject, @unchecked Sendable {
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.emergency",
         qos: .userInteractive)
 
-    override init() {
+    convenience override init() {
+        self.init(isTesting: false)
+    }
+
+    init(isTesting: Bool, baseConfigDirectoryURL: URL? = nil) {
+        self.isTesting = isTesting
+        self.customBaseConfigDirectoryURL = baseConfigDirectoryURL
         super.init()
+
+        guard !isTesting else {
+            return
+        }
+
         Logfile.endpointSecurity.info("[ESManager] Initializing Endpoint Security manager...")
 
         // 1. Setup Clients
@@ -122,7 +146,23 @@ final class ESManager: NSObject, @unchecked Sendable {
     func isCurrentConnectionAuthenticated() -> Bool {
         guard let connection = NSXPCConnection.current() else { return false }
         let connID = ObjectIdentifier(connection)
-        return xpcConnectionLock.withLock { authenticatedConnections.contains(connID) }
+
+        // 1. Connection must have passed initial cryptographic handshake
+        let isKnown = xpcConnectionLock.withLock { authenticatedConnections.contains(connID) }
+        guard isKnown else { return false }
+
+        // 2. Fast-Path Audit Token & PID/PIDVersion Match (Anti-PID Recycling & Port Hijacking)
+        let token = connection.auditToken
+        let callerPID = audit_token_to_pid(token)
+        let callerPIDVersion = audit_token_to_pidversion(token)
+
+        return processIDLock.withLock {
+            guard let expectedPID = self.authenticatedMainAppPID,
+                  let expectedVersion = self.authenticatedMainAppPIDVersion else {
+                return false
+            }
+            return callerPID == expectedPID && callerPIDVersion == expectedVersion
+        }
     }
 
     func allowConfigAccess(
@@ -142,9 +182,13 @@ final class ESManager: NSObject, @unchecked Sendable {
 
     func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void) {
         guard isCurrentConnectionAuthenticated() else {
+            Logfile.endpointSecurity.fault(
+                "[ESManager] authorizeShutdown REJECTED: Connection not authenticated or PID mismatch"
+            )
             reply(false)
             return
         }
+
         stateLock.withLock {
             self.isShutdownAuthorized = authorized
         }
@@ -161,14 +205,29 @@ final class ESManager: NSObject, @unchecked Sendable {
         }
     }
 
+    func isMainAppTarget(targetPid: pid_t, targetToken: audit_token_t) -> Bool {
+        processIDLock.withLock {
+            guard let authPID = self.authenticatedMainAppPID, targetPid == authPID else {
+                return false
+            }
+            if let expectedVersion = self.authenticatedMainAppPIDVersion {
+                let currentVersion = audit_token_to_pidversion(targetToken)
+                guard expectedVersion == currentVersion else { return false }
+            }
+            return true
+        }
+    }
+
     func cacheMainAppPID(from connection: NSXPCConnection) {
         let processID = pid_t(connection.processIdentifier)
+        var auditToken = connection.auditToken
+        let pidVersion = audit_token_to_pidversion(auditToken)
         processIDLock.withLock {
             self.authenticatedMainAppPID = processID
+            self.authenticatedMainAppPIDVersion = pidVersion
             self.lastKnownMainAppPID = processID
         }
 
-        var auditToken = connection.auditToken
         let userUID = audit_token_to_euid(auditToken)
         stateLock.withLock {
             self.activeUserUID = userUID
@@ -190,12 +249,8 @@ final class ESManager: NSObject, @unchecked Sendable {
             Logfile.endpointSecurity.error("[ESManager] Mute AppLocker PID (Authorizer): Failed")
         }
 
-        // Mute for Tamper too if needed (though Tamper usually monitors only config writes)
-        if let tamperClient = tamper?.client {
-            if es_mute_process(tamperClient, token) == ES_RETURN_SUCCESS {
-                Logfile.endpointSecurity.debug("[ESManager] Muted AppLocker PID (Tamper): Success")
-            }
-        }
+        // Note: Do NOT mute AppLocker on `tamper` client so `ESTamper` can enforce per-UID directory isolation
+        // inside `/Users/Shared/AppLocker/<UID>` even when directories have 0o777 permissions.
     }
 
     static func selfAuditToken() -> audit_token_t? {

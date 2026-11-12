@@ -9,19 +9,36 @@ import AppKit
 import Foundation
 import Observation
 
+extension Notification.Name {
+    static let lockedAppsDidChange = Notification.Name("lockedAppsDidChange")
+    static let protectionStatusDidChange = Notification.Name("protectionStatusDidChange")
+}
+
 @Observable
 @MainActor
 class LockES {
+    static let shared = LockES()
+
     var lockedApps: [String: LockedAppConfig] = [:]  // keyed by path
     var allApps: [InstalledApp] = []
     var isProtectionDisabled: Bool = false
     var allowIncomingCalls: Bool = true
     var autoLockTimeoutMinutes: Int = 0
 
+    @ObservationIgnored
+    var cdhashScanTask: Task<Void, Never>?
+    @ObservationIgnored
+    var cdhashPeriodicTask: Task<Void, Never>?
+
     var onConfigUpdated: (() -> Void)?
 
     init() {
         // Defer loading to bootstrap() to allow ES Handshake first
+    }
+
+    deinit {
+        cdhashScanTask?.cancel()
+        cdhashPeriodicTask?.cancel()
     }
 
     func bootstrap(onUpdate: (() -> Void)? = nil) {
@@ -43,15 +60,17 @@ class LockES {
                 self.isProtectionDisabled = loaded.isDisabled
                 self.allowIncomingCalls = loaded.allowIncomingCalls
                 self.autoLockTimeoutMinutes = loaded.autoLockTimeoutMinutes
+                self.setupPeriodicCDHashScan()
+                self.verifyAndHealLockedCDHashes()
                 // Notify menubar to re-render with the real loaded state
-                // (setupMenuBar runs before bootstrap completes, so icon may be stale)
                 NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
+                NotificationCenter.default.post(name: .lockedAppsDidChange, object: nil)
                 self.onConfigUpdated?()
             }
         }
     }
 
-    // MARK: - Persistence helper
+    // MARK: - Persistence Helper
     func save() {
         ConfigStore.shared.save(
             apps: self.lockedApps,
@@ -59,8 +78,11 @@ class LockES {
             allowIncomingCalls: self.allowIncomingCalls,
             autoLockTimeoutMinutes: self.autoLockTimeoutMinutes
         )
+        NotificationCenter.default.post(name: .lockedAppsDidChange, object: nil)
+        self.onConfigUpdated?()
     }
 
+    // MARK: - Protection & Policy State Toggles
     func setProtectionDisabled(_ disabled: Bool) {
         self.isProtectionDisabled = disabled
         self.save()
@@ -79,92 +101,6 @@ class LockES {
     func setAutoLockTimeoutMinutes(_ minutes: Int) {
         self.autoLockTimeoutMinutes = minutes
         self.save()
-    }
-
-    // MARK: - Toggle lock (ES mode: chỉ ghi config và publish)
-    func toggleLock(for paths: [String]) {
-        var hasConfigChanged = false
-
-        for path in paths {
-            if lockedApps.removeValue(forKey: path) != nil {
-                hasConfigChanged = true
-            } else {
-                guard let bundle = Bundle(url: URL(fileURLWithPath: path)) else {
-                    Logfile.policy.error("[LockES] Cannot create Bundle for \(path, privacy: .public)")
-                    continue
-                }
-
-                // 1. Try standard Bundle resolution
-                var resolvedExecPath = bundle.executablePath
-
-                // 2. Fallback for broken Info.plist (Empty CFBundleExecutable)
-                if resolvedExecPath == nil {
-                    let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-                    let potentialPath = "\(path)/Contents/MacOS/\(appName)"
-                    resolvedExecPath = FileManager.default.fileExists(atPath: potentialPath) ? potentialPath : nil
-                }
-
-                guard let execPath = resolvedExecPath else {
-                    Logfile.policy.error("[LockES] Cannot resolve executable path for \(path, privacy: .public)")
-                    continue
-                }
-
-                // Get filename for config
-                let execName = URL(fileURLWithPath: execPath).lastPathComponent
-
-                let fallbackOriginal = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-                let appName = allApps.first(where: { $0.path == path })?.name
-                    ?? AppState.resolveDisplayName(at: path, fallback: fallbackOriginal)
-                let cdhash = cdHash(for: execPath) ?? cdHash(for: path)
-                let bundleID = bundle.bundleIdentifier ?? ""
-
-                let lockedAppConfig = LockedAppConfig(
-                    bundleID: bundleID,
-                    path: path,
-                    execFile: execName,
-                    name: appName,
-                    cdhash: cdhash
-                )
-                lockedApps[path] = lockedAppConfig
-                hasConfigChanged = true
-            }
-        }
-
-        if hasConfigChanged {
-            save()
-        }
-    }
-
-    func hideApps(for paths: [String]) {
-        var hasConfigChanged = false
-        for path in paths where lockedApps[path] != nil {
-            lockedApps[path]?.isHidden = true
-            hasConfigChanged = true
-        }
-        if hasConfigChanged {
-            save()
-        }
-    }
-
-    func unhideApps(for paths: [String]) {
-        var hasConfigChanged = false
-        for path in paths where lockedApps[path]?.isHidden == true {
-            lockedApps[path]?.isHidden = false
-            hasConfigChanged = true
-        }
-        if hasConfigChanged {
-            save()
-        }
-    }
-
-    func removeApps(for paths: [String]) {
-        var hasConfigChanged = false
-        for path in paths where lockedApps.removeValue(forKey: path) != nil {
-            hasConfigChanged = true
-        }
-        if hasConfigChanged {
-            save()
-        }
     }
 
     func isLocked(at path: String) -> Bool {

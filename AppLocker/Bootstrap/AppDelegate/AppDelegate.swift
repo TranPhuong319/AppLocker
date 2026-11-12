@@ -54,16 +54,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     Logfile.app.debug("[Bootstrap] Parent process exited.")
                 }
                 self?.enforceSingleInstance(ignoringPID: parentProcessID)
-                self?.finishLaunchSetup()
+                await self?.finishLaunchSetup()
             }
         } else {
             enforceSingleInstance()
-            finishLaunchSetup()
+            Task { @MainActor [weak self] in
+                await self?.finishLaunchSetup()
+            }
         }
     }
 
     @MainActor
-    private func finishLaunchSetup() {
+    private func finishLaunchSetup() async {
 
 #if !DEBUG
         checkAndMoveToApplications()
@@ -75,25 +77,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 #if !DEBUG
         if !isLaunchedByLaunchd && !isFirstStart {
-            if !isAgentActive {
-                Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
-                _ = manageAgent(action: .install)
-            }
-
-            guard isAgentActive else { return }
-
-            Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-            process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
-            do {
-                try process.run()
-                NSApp.terminate(nil)
+            if await handoverToLaunchdIfManual() {
                 return
-            } catch {
-                Logfile.app.error(
-                    "[Bootstrap] Failed to kickstart via launchctl: \(error.localizedDescription, privacy: .public)"
-                )
             }
         }
 #endif
@@ -111,6 +96,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+#if !DEBUG
+    @MainActor
+    private func handoverToLaunchdIfManual() async -> Bool {
+        if !isAgentActive {
+            Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
+            _ = manageAgent(action: .install)
+        }
+
+        guard isAgentActive else {
+            let statusDesc = SMAppService.agent(plistName: "\(Self.plistName).plist").status.description
+            Logfile.app.warning(
+                "[Bootstrap] Agent is not active (\(statusDesc, privacy: .public)). Continuing to run directly."
+            )
+            return false
+        }
+
+        Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
+        var kickstartSucceeded = await runLaunchctlKickstart(timeout: .seconds(3))
+
+        // If kickstart failed or timed out (e.g. launchd in penalty box or corrupted agent state):
+        if !kickstartSucceeded {
+            Logfile.app.warning("[Bootstrap] Initial launchctl kickstart failed. Force re-registering agent...")
+            let reRegistered = forceReRegisterAgent()
+            if reRegistered {
+                kickstartSucceeded = await runLaunchctlKickstart(timeout: .seconds(3))
+            }
+        }
+
+        if kickstartSucceeded {
+            Logfile.app.notice("[Bootstrap] Successfully kickstarted launchd instance. Terminating manual launcher.")
+            NSApp.terminate(nil)
+            return true
+        }
+
+        Logfile.app.warning(
+            """
+            [Bootstrap] Could not hand over to launchctl. \
+            Continuing to run current manual instance directly.
+            """
+        )
+        return false
+    }
+#endif
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
             openAppList()
@@ -118,21 +147,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    func applyTheme(_ theme: String) {
-        let appearance: NSAppearance?
+    private(set) var currentThemeAppearance: NSAppearance?
+
+    static func appearance(for theme: String) -> NSAppearance? {
         switch theme {
         case "Light":
-            appearance = NSAppearance(named: .aqua)
+            return NSAppearance(named: .aqua)
         case "Dark":
-            appearance = NSAppearance(named: .darkAqua)
+            return NSAppearance(named: .darkAqua)
         default:
-            appearance = nil
+            return nil
         }
+    }
 
-        NSApp.appearance = appearance
+    func applyTheme(_ theme: String) {
+        let appearance = Self.appearance(for: theme)
+        currentThemeAppearance = appearance
+
+        NSApp.appearance = nil
+        statusItem?.button?.appearance = nil
+        statusImageView?.appearance = nil
+        statusItem?.button?.window?.appearance = nil
+        statusItem?.button?.needsDisplay = true
+        statusImageView?.needsDisplay = true
         statusItem?.menu?.appearance = appearance
 
         for window in NSApp.windows {
+            guard window !== statusItem?.button?.window else { continue }
             window.appearance = appearance
         }
     }

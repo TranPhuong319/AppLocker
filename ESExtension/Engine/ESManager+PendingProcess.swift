@@ -12,9 +12,13 @@ import os
 extension ESManager {
     // MARK: - Pending Verification PID & Path Management
 
-    func markPendingVerification(pid: pid_t, token: audit_token_t) {
+    func markPendingVerification(pid: pid_t, token: audit_token_t, notification: BlockedNotification) {
         pendingPIDLock.withLock {
-            pendingVerificationProcesses[pid] = (token: token, registeredAt: ContinuousClock.now)
+            pendingVerificationProcesses[pid] = PendingProcessRecord(
+                token: token,
+                notification: notification,
+                registeredAt: ContinuousClock.now
+            )
         }
     }
 
@@ -48,77 +52,30 @@ extension ESManager {
         return token
     }
 
-    // MARK: - Watchdog Safety Valve (Fail-Closed)
-
-    func startPendingProcessesWatchdog() {
-        Task.detached(priority: .utility) { [weak self] in
-            while true {
-                try? await Task.sleep(for: .seconds(15))
-                guard let self else { break }
-                self.purgeExpiredPendingProcesses(timeoutSeconds: 75)
-            }
-        }
-    }
-
-    private func purgeExpiredPendingProcesses(timeoutSeconds: Double) {
-        let now = ContinuousClock.now
-
-        let expiredEntries: [(pid: pid_t, token: audit_token_t)] = pendingPIDLock.withLock {
-            var expired: [(pid: pid_t, token: audit_token_t)] = []
-            for (pid, entry) in self.pendingVerificationProcesses
-                where now - entry.registeredAt > .seconds(timeoutSeconds) {
-                expired.append((pid: pid, token: entry.token))
-            }
-            for entry in expired {
-                self.pendingVerificationProcesses.removeValue(forKey: entry.pid)
-            }
-            return expired
-        }
-
-        for (pid, expectedToken) in expiredEntries {
-            guard let currentToken = auditToken(for: pid) else {
-                Logfile.endpointSecurity.warning(
-                    "[Watchdog] Pending PID \(pid, privacy: .public) expired but process is already dead, skipping."
-                )
-                continue
-            }
-
-            let expectedVersion = audit_token_to_pidversion(expectedToken)
-            let currentVersion = audit_token_to_pidversion(currentToken)
-            guard expectedVersion == currentVersion else {
-                Logfile.endpointSecurity.fault(
-                    """
-                    [Watchdog] PID RECYCLING DETECTED for PID \(pid, privacy: .public)! \
-                    Expected version: \(expectedVersion, privacy: .public), \
-                    Current: \(currentVersion, privacy: .public). Aborting SIGKILL.
-                    """
-                )
-                continue
-            }
-
-            Logfile.endpointSecurity.warning(
-                """
-                [Watchdog] Pending PID \(pid, privacy: .public) timed out after \(timeoutSeconds, privacy: .public)s. \
-                Issuing SIGKILL.
-                """
-            )
-            // Fail-Closed: SIGKILL to terminate unauthorized app, then SIGCONT to clean up kernel dispatch loop
-            _ = kill(pid, SIGKILL)
-            _ = kill(pid, SIGCONT)
-        }
+    struct ValidatedPendingApp {
+        let pid: pid_t
+        let name: String
+        let path: String
     }
 
     // MARK: - Batch Execution (SIGCONT / SIGKILL)
 
-    func processPendingBatch(approved: [Int32], rejected: [Int32]) -> Bool {
+    func processPendingBatch(
+        approved: [Int32],
+        rejected: [Int32],
+        rejectionReason: String = AuthDecisionReason.userCancel.rawValue
+    ) -> Bool {
         let approvedCount = processApprovedPIDs(approved)
-        let rejectedCount = processRejectedPIDs(rejected)
+        let rejectedCount = processRejectedPIDs(rejected, reason: rejectionReason)
         let processedCount = approvedCount + rejectedCount
 
         return processedCount > 0 || (approved.isEmpty && rejected.isEmpty)
     }
 
-    private func validateAndConsumePendingPID(_ rawPID: Int32, actionName: String) -> pid_t? {
+    private func validateAndConsumePendingPID(
+        _ rawPID: Int32,
+        actionName: String
+    ) -> ValidatedPendingApp? {
         let pid = pid_t(rawPID)
         guard pid > 0 else { return nil }
 
@@ -126,7 +83,8 @@ extension ESManager {
             pendingVerificationProcesses.removeValue(forKey: pid)
         }
 
-        guard let expectedToken = savedEntry?.token else { return nil }
+        guard let entry = savedEntry else { return nil }
+        let expectedToken = entry.token
 
         // Process liveness & PID recycling defense via Mach audit token
         guard let currentToken = auditToken(for: pid) else {
@@ -149,20 +107,24 @@ extension ESManager {
             return nil
         }
 
-        return pid
+        return ValidatedPendingApp(pid: pid, name: entry.notification.name, path: entry.notification.path)
     }
 
     private func processApprovedPIDs(_ approved: [Int32]) -> Int {
         var processedCount = 0
         for rawPID in approved {
-            guard let pid = validateAndConsumePendingPID(rawPID, actionName: "Approved") else {
+            guard let item = validateAndConsumePendingPID(rawPID, actionName: "Approved") else {
                 continue
             }
+            let pid = item.pid
 
             let result = kill(pid, SIGCONT)
             if result == 0 {
-                Logfile.endpointSecurity.info(
-                    "[PendingProcess] Successfully resumed approved PID \(pid, privacy: .public) (SIGCONT)"
+                Logfile.endpointSecurity.notice(
+                    """
+                    [SecurityEvent:Approved] App: \(item.name, privacy: .public) \
+                    (PID \(pid, privacy: .public)) | Path: \(item.path, privacy: .public)
+                    """
                 )
             } else {
                 Logfile.endpointSecurity.error(
@@ -177,22 +139,24 @@ extension ESManager {
         return processedCount
     }
 
-    private func processRejectedPIDs(_ rejected: [Int32]) -> Int {
+    private func processRejectedPIDs(_ rejected: [Int32], reason: String) -> Int {
         var processedCount = 0
         for rawPID in rejected {
-            guard let pid = validateAndConsumePendingPID(rawPID, actionName: "Rejected") else {
+            guard let item = validateAndConsumePendingPID(rawPID, actionName: "Rejected") else {
                 continue
             }
+            let pid = item.pid
 
             // Send SIGKILL followed by SIGCONT to unfreeze XNU kernel dispatch loop
             // and terminate cleanly without hanging launchd
             let killRes = kill(pid, SIGKILL)
             _ = kill(pid, SIGCONT)
             if killRes == 0 {
-                Logfile.endpointSecurity.info(
+                Logfile.endpointSecurity.notice(
                     """
-                    [PendingProcess] Successfully terminated rejected \
-                    PID \(pid, privacy: .public) (SIGKILL+SIGCONT)
+                    [SecurityEvent:Rejected] App: \(item.name, privacy: .public) \
+                    (PID \(pid, privacy: .public)) | Path: \(item.path, privacy: .public) \
+                    | Reason: \(reason, privacy: .public)
                     """
                 )
             } else {

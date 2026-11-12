@@ -6,17 +6,21 @@
 //
 
 import AppKit
+import Darwin
 
-// Tắt log rác hệ thống (AppIntents / OS Activity) và tự động đăng ký Shortcuts
+#if !DEBUG
+if getenv("DYLD_INSERT_LIBRARIES") != nil {
+    fputs("[SECURITY] Malicious DYLD environment variables detected. Terminating process.\n", stderr)
+    exit(127)
+}
+#endif
+
 setenv("OS_ACTIVITY_MODE", "disable", 1)
 UserDefaults.standard.set(false, forKey: "NSAppIntentsEnabled")
 
-// Tạo instance của app custom để chặn Cmd+Q
 let app = CustomApplication.shared
 
-// Gắn AppDelegate
 let delegate = AppDelegate()
 app.delegate = delegate
 
-// Chạy vòng lặp chính
 _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)

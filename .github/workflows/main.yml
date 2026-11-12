@@ -92,6 +92,15 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
 
+      - name: Run Unit Tests
+        run: |
+          set -o pipefail && xcodebuild test \
+            -scheme AppLocker \
+            -destination 'platform=macOS' \
+            -derivedDataPath build \
+            -only-testing:AppLockerTests \
+            | xcbeautify --renderer github-actions
+
       - name: Release Archive
         run: |
           set -o pipefail && xcodebuild archive \

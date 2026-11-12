@@ -10,7 +10,15 @@ import Foundation
 
 extension AppState {
     func refreshAppLists() {
-        let allApps = manager.allApps
+        let allApps = AppScannerService.shared.installedApps.isEmpty
+            ? manager.allApps
+            : AppScannerService.shared.installedApps
+
+        if manager.migrateRenamedApps(allApps: allApps) {
+            refreshAppLists()
+            return
+        }
+
         let lockedPathSet = Set(manager.lockedApps.keys)
         var missingAppsList: [InstalledApp] = []
         var appsToUnhide: [String] = []
@@ -56,7 +64,7 @@ extension AppState {
         self.filteredLockedApps = lockedAppsList.filter(matching: self.searchTextLockApps)
         self.filteredUnlockableApps = unlockable.filter(matching: self.searchTextUnlockableApps)
 
-        prefetchUnlockableIcons(apps: unlockable)
+        AppIconProvider.shared.preloadIcons(for: lockedAppsList.map(\.path), size: 32)
     }
 
     private func resolveLockedApp(
@@ -70,7 +78,7 @@ extension AppState {
         })
 
         let finalName = existingApp?.name
-            ?? AppState.resolveDisplayName(at: path, fallback: config.name ?? fallbackOriginal)
+            ?? InstalledApp.resolveDisplayName(at: path, fallback: config.name ?? fallbackOriginal)
         let originalName = existingApp?.originalName ?? fallbackOriginal
         let source: AppSource = path.hasPrefix("/System") ? .system : .user
 
@@ -83,13 +91,5 @@ extension AppState {
             source: source,
             originalName: originalName
         )
-    }
-
-    private func prefetchUnlockableIcons(apps: [InstalledApp]) {
-        Task(priority: .low) {
-            for app in apps {
-                _ = AppIconProvider.shared.icon(for: app.path, size: 32)
-            }
-        }
     }
 }

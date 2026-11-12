@@ -17,7 +17,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private init() {
         let hostingController = NSHostingController(rootView: SettingsView(navigator: navigator))
         hostingController.sceneBridgingOptions = [.toolbars, .title]
-        hostingController.sizingOptions = [.minSize, .maxSize]
+        hostingController.sizingOptions = []
         let initialSize = navigator.selectedTab.preferredSize
         hostingController.view.setFrameSize(initialSize)
 
@@ -27,16 +27,19 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         config.minSize = WindowLayout.settingsMinSize
         config.maxSize = nil
         config.autosaveName = "SettingsWindow"
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
+        config.titlebarAppearsTransparent = false
+        config.titlebarSeparatorStyle = .none
+        config.titleVisibility = .visible
 
-        let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        let toolbar = NSToolbar(identifier: "SettingsToolbar")
-        window.toolbar = toolbar
+        let window = WindowManager.createWindow(contentView: hostingController.view, configuration: config)
 
         super.init(window: window)
         window.delegate = self
 
         navigator.onTabChanged = { [weak self] newTab, oldTab in
-            guard newTab == .logs || oldTab == .logs else { return }
+            guard newTab.preferredSize != oldTab.preferredSize else { return }
             self?.resizeWindow(for: newTab)
         }
     }
@@ -49,8 +52,8 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if let tab {
             let oldTab = shared.navigator.selectedTab
             shared.navigator.selectedTab = tab
-            if (tab == .logs || oldTab == .logs) && tab != oldTab {
-                shared.resizeWindow(for: tab, animate: false)
+            if tab.preferredSize != oldTab.preferredSize && tab != oldTab {
+                shared.resizeWindow(for: tab)
             }
         }
         guard let window = shared.window else { return }
@@ -64,7 +67,18 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         NotificationCenter.default.post(name: .settingsWindowWillClose, object: window)
     }
 
-    func resizeWindow(for tab: SettingsTab, animate: Bool = true) {
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        var constrained = frameSize
+        if constrained.width < WindowLayout.settingsMinSize.width {
+            constrained.width = WindowLayout.settingsMinSize.width
+        }
+        if constrained.height < WindowLayout.settingsMinSize.height {
+            constrained.height = WindowLayout.settingsMinSize.height
+        }
+        return constrained
+    }
+
+    func resizeWindow(for tab: SettingsTab) {
         guard let window else { return }
 
         let targetContentSize = tab.preferredSize
@@ -76,9 +90,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let currentFrame = window.frame
         let widthChanged = abs(currentFrame.width - targetFrameSize.width) > 1
         let heightChanged = abs(currentFrame.height - targetFrameSize.height) > 1
-        guard widthChanged || heightChanged else {
-            return
-        }
+        guard widthChanged || heightChanged else { return }
 
         let currentTop = currentFrame.origin.y + currentFrame.size.height
         let newOriginY = currentTop - targetFrameSize.height
@@ -91,12 +103,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         let screenFrame = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame
         let finalFrame = constrained(frame: newFrame, targetSize: targetFrameSize, within: screenFrame)
-
-        if animate && window.isVisible {
-            window.setFrame(finalFrame, display: true, animate: true)
-        } else {
-            window.setFrame(finalFrame, display: true)
-        }
+        window.setFrame(finalFrame, display: true, animate: window.isVisible)
     }
 
     private func extraFrameInsets(for window: NSWindow) -> (width: CGFloat, height: CGFloat) {

@@ -37,6 +37,7 @@ extension ESManager {
         processIDLock.withLock {
             if self.authenticatedMainAppPID == pid {
                 self.authenticatedMainAppPID = nil
+                self.authenticatedMainAppPIDVersion = nil
             }
             if self.lastKnownMainAppPID == pid {
                 self.lastKnownMainAppPID = nil

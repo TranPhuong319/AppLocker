@@ -22,6 +22,7 @@ extension ESManager {
 
         cacheMainAppPID(from: conn)
         flushPendingNotifications(to: conn, uid: uid)
+        reNotifyPendingVerificationProcesses(to: conn, uid: uid)
 
         Logfile.esXPC.debug(
             """
@@ -104,7 +105,10 @@ extension ESManager {
                 )
                 self.pendingNotifications.append(notification)
             }
-            AppLauncherUtils.forceEnableAndRestartAgent(for: notification.uid)
+            stateLock.withLock { self.lastKickstartedUID = notification.uid }
+            if !isTesting {
+                AppLauncherUtils.forceEnableAndRestartAgent(for: notification.uid)
+            }
         }
     }
 

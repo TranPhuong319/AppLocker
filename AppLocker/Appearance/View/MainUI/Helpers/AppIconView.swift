@@ -17,7 +17,11 @@ struct AppIconView: View {
         self.path = path
         self.size = size
         self.isMissing = isMissing
-        _image = State(initialValue: AppIconProvider.shared.cachedIcon(for: path, size: size))
+        if let cached = AppIconProvider.shared.cachedIcon(for: path, size: size) {
+            _image = State(initialValue: cached)
+        } else {
+            _image = State(initialValue: AppIconProvider.shared.icon(for: path, size: size))
+        }
     }
 
     var body: some View {
@@ -27,13 +31,18 @@ struct AppIconView: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                Color.clear
+                Image(nsImage: AppIconProvider.shared.defaultPlaceholder(size: size))
+                    .resizable()
+                    .scaledToFit()
+                    .opacity(0.5)
             }
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .task(id: "\(path)_\(isMissing)") {
-            self.image = AppIconProvider.shared.icon(for: path, size: size)
+            if self.image == nil {
+                self.image = AppIconProvider.shared.icon(for: path, size: size)
+            }
         }
     }
 }

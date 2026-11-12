@@ -40,7 +40,7 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
     private static func createHostingController() -> NSHostingController<ContentView> {
         let hostingController = NSHostingController(rootView: ContentView())
         hostingController.sceneBridgingOptions = [.toolbars, .title]
-        hostingController.sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]
+        hostingController.sizingOptions = []
         hostingController.view.setFrameSize(WindowLayout.mainSize)
         return hostingController
     }
@@ -51,13 +51,13 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
         config.title = String(localized: "Locked application")
         config.styleMask = [.titled, .closable, .fullSizeContentView]
         config.titleVisibility = .visible
-        config.titlebarAppearsTransparent = true
+        config.titlebarAppearsTransparent = false
         config.level = .floating
         config.size = size
         config.minSize = size
         config.maxSize = size
-        config.isOpaque = false
-        config.backgroundColor = .clear
+        config.isOpaque = true
+        config.backgroundColor = .windowBackgroundColor
 
         let window = WindowManager.createWindow(contentViewController: contentVC, configuration: config)
         window.titlebarSeparatorStyle = .none

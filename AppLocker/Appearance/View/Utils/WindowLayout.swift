@@ -23,12 +23,14 @@ enum WindowLayout {
     static let batchAuthSize = NSSize(width: 440, height: 360)
     static let batchAuthMaxListHeight: CGFloat = 220
     static let aboutSize = NSSize(width: 450, height: 340)
-    static let settingsMinSize = NSSize(width: 640, height: 440)
-    static let settingsGeneralSize = NSSize(width: 640, height: 440)
-    static let settingsSecuritySize = NSSize(width: 640, height: 440)
-    static let settingsUpdatesSize = NSSize(width: 640, height: 440)
-    static let settingsAppearanceSize = NSSize(width: 640, height: 440)
-    static let settingsLogsSize = NSSize(width: 1100, height: 580)
+    static let settingsMinSize = NSSize(width: 680, height: 460)
+    static let settingsGeneralSize = NSSize(width: 680, height: 460)
+    static let settingsSecuritySize = NSSize(width: 680, height: 460)
+    static let settingsUpdatesSize = NSSize(width: 680, height: 460)
+    static let settingsAppearanceSize = NSSize(width: 680, height: 460)
+    static let settingsActivitySize = NSSize(width: 800, height: 500)
+    static let settingsDiagnosticsSize = NSSize(width: 1100, height: 580)
+    static let settingsLogsSize = settingsDiagnosticsSize
     static let settingsSize = settingsMinSize
 }
 
@@ -218,47 +220,112 @@ struct EqualWidthKey: PreferenceKey {
 
 // MARK: - Scroll Bottom Tracker
 
-struct ScrollBottomTracker: NSViewRepresentable {
-    var onAtBottomChanged: @Sendable (Bool) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            guard let scrollView = view.enclosingScrollView else { return }
-            context.coordinator.attach(to: scrollView, notify: onAtBottomChanged)
+final class TrackerNSView: NSView {
+    var onMoveToWindow: (() -> Void)?
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil {
+            onMoveToWindow?()
         }
+    }
+}
+
+struct ScrollBottomTracker: NSViewRepresentable {
+    @Binding var isAtBottom: Bool
+    var triggerScrollToBottom: Int = 0
+
+    func makeNSView(context: Context) -> TrackerNSView {
+        let view = TrackerNSView()
+        context.coordinator.setup(view: view, isAtBottom: $isAtBottom)
         return view
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {}
+    func updateNSView(_ nsView: TrackerNSView, context: Context) {
+        if context.coordinator.lastTrigger != triggerScrollToBottom {
+            context.coordinator.lastTrigger = triggerScrollToBottom
+            context.coordinator.scrollToBottom()
+        }
+    }
+
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     @MainActor
     final class Coordinator: NSObject {
-        // Required for Swift 6 nonisolated deinit cleanup of non-Sendable NSObjectProtocol
-        nonisolated(unsafe) private var token: (any NSObjectProtocol)?
+        private var token: (any NSObjectProtocol)?
+        private weak var scrollView: NSScrollView?
+        var lastTrigger: Int = 0
+        private var isAtBottomBinding: Binding<Bool>?
 
-        func attach(to scrollView: NSScrollView, notify: @escaping @Sendable (Bool) -> Void) {
+        func setup(view: TrackerNSView, isAtBottom: Binding<Bool>) {
+            self.isAtBottomBinding = isAtBottom
+            view.onMoveToWindow = { [weak self, weak view] in
+                DispatchQueue.main.async {
+                    guard let self, let view else { return }
+                    if let targetScrollView = ScrollBottomTracker.findScrollView(for: view) {
+                        self.attach(to: targetScrollView)
+                    }
+                }
+            }
+        }
+
+        func attach(to scrollView: NSScrollView) {
+            self.scrollView = scrollView
             scrollView.contentView.postsBoundsChangedNotifications = true
+            if let token { NotificationCenter.default.removeObserver(token) }
             token = NotificationCenter.default.addObserver(
                 forName: NSView.boundsDidChangeNotification,
                 object: scrollView.contentView,
                 queue: .main
-            ) { [weak scrollView] _ in
+            ) { [weak self, weak scrollView] _ in
                 MainActor.assumeIsolated {
-                    guard let scrollView else { return }
-                    let docHeight = scrollView.documentView?.frame.height ?? 0
-                    let visibleMaxY = scrollView.contentView.bounds.maxY
-                    notify(visibleMaxY >= docHeight - 40)
+                    guard let self, let scrollView else { return }
+                    self.updateAtBottom(scrollView: scrollView)
                 }
             }
-            let docHeight = scrollView.documentView?.frame.height ?? 0
-            let visibleMaxY = scrollView.contentView.bounds.maxY
-            notify(visibleMaxY >= docHeight - 40)
+            updateAtBottom(scrollView: scrollView)
         }
 
-        deinit {
+        private func updateAtBottom(scrollView: NSScrollView) {
+            let docHeight = scrollView.documentView?.frame.height ?? 0
+            let visibleMaxY = scrollView.contentView.bounds.maxY
+            let atBottom = visibleMaxY >= docHeight - 35
+            if isAtBottomBinding?.wrappedValue != atBottom {
+                isAtBottomBinding?.wrappedValue = atBottom
+            }
+        }
+
+        func scrollToBottom() {
+            guard let scrollView else { return }
+            if let tableView = scrollView.documentView as? NSTableView, tableView.numberOfRows > 0 {
+                tableView.scrollRowToVisible(tableView.numberOfRows - 1)
+            } else if let docView = scrollView.documentView {
+                let targetY = max(0, docView.frame.height - scrollView.contentView.bounds.height)
+                scrollView.contentView.scroll(to: NSPoint(x: 0, y: targetY))
+                scrollView.reflectScrolledClipView(scrollView.contentView)
+            }
+        }
+
+        isolated deinit {
             if let token { NotificationCenter.default.removeObserver(token) }
         }
+    }
+
+    static func findScrollView(for view: NSView) -> NSScrollView? {
+        if let targetScrollView = view.enclosingScrollView { return targetScrollView }
+        var current: NSView? = view.superview
+        while let candidateView = current {
+            if let targetScrollView = searchSubviews(in: candidateView, excluding: view) { return targetScrollView }
+            current = candidateView.superview
+        }
+        return nil
+    }
+
+    private static func searchSubviews(in parent: NSView, excluding: NSView) -> NSScrollView? {
+        if let targetScrollView = parent as? NSScrollView { return targetScrollView }
+        for subview in parent.subviews where subview !== excluding {
+            if let targetScrollView = subview as? NSScrollView { return targetScrollView }
+            if let found = searchSubviews(in: subview, excluding: excluding) { return found }
+        }
+        return nil
     }
 }

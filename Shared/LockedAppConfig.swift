@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-struct LockedAppConfig: Codable, Hashable {
+struct LockedAppConfig: Codable, Hashable, Sendable {
     let bundleID: String
     let path: String
     var execFile: String?
@@ -82,14 +82,14 @@ struct UserConfig: Codable, Sendable {
 extension UserConfig {
     static let baseDirectoryURL = URL(fileURLWithPath: "/Users/Shared/AppLocker")
 
-    static func configURL(for uid: uid_t) -> URL {
+    static func configURL(for uid: uid_t, baseDirectoryURL: URL = UserConfig.baseDirectoryURL) -> URL {
         baseDirectoryURL
             .appendingPathComponent(String(uid), isDirectory: true)
             .appendingPathComponent("config.plist")
     }
 
-    static func load(for uid: uid_t) -> UserConfig? {
-        let fileURL = configURL(for: uid)
+    static func load(for uid: uid_t, baseDirectoryURL: URL = UserConfig.baseDirectoryURL) -> UserConfig? {
+        let fileURL = configURL(for: uid, baseDirectoryURL: baseDirectoryURL)
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             return nil
         }
@@ -114,7 +114,7 @@ extension UserConfig {
         }
     }
 
-    static func loadAll() -> [uid_t: UserConfig] {
+    static func loadAll(baseDirectoryURL: URL = UserConfig.baseDirectoryURL) -> [uid_t: UserConfig] {
         let items: [String]
         do {
             items = try FileManager.default.contentsOfDirectory(atPath: baseDirectoryURL.path)
@@ -127,7 +127,7 @@ extension UserConfig {
         var result: [uid_t: UserConfig] = [:]
         for item in items {
             guard let uid = uid_t(item),
-                  let config = load(for: uid) else { continue }
+                  let config = load(for: uid, baseDirectoryURL: baseDirectoryURL) else { continue }
             result[uid] = config
         }
         return result

@@ -13,10 +13,28 @@ final class AppIconProvider {
     static let shared = AppIconProvider()
 
     private let cache = NSCache<NSString, NSImage>()
+    private var placeholderCache: [Int: NSImage] = [:]
 
     private init() {
         cache.countLimit = 500
         cache.totalCostLimit = 50 * 1024 * 1024
+    }
+
+    func defaultPlaceholder(size: CGFloat = 32) -> NSImage {
+        let intSize = Int(size)
+        if let cached = placeholderCache[intSize] {
+            return cached
+        }
+        let rawIcon = NSWorkspace.shared.icon(for: .applicationBundle)
+        let rasterized = rasterize(image: rawIcon, targetSize: size)
+        placeholderCache[intSize] = rasterized
+        return rasterized
+    }
+
+    func preloadIcons(for paths: [String], size: CGFloat = 32) {
+        for path in paths {
+            _ = icon(for: path, size: size)
+        }
     }
 
     func cachedIcon(for path: String, size: CGFloat = 32) -> NSImage? {
@@ -37,6 +55,7 @@ final class AppIconProvider {
         let rawIcon: NSImage
         if fileExists {
             rawIcon = NSWorkspace.shared.icon(forFile: appBundlePath)
+            rawIcon.size = NSSize(width: 64, height: 64)
         } else {
             let symbolConfig = NSImage.SymbolConfiguration(pointSize: size, weight: .regular)
                 .applying(.init(hierarchicalColor: .secondaryLabelColor))
@@ -51,7 +70,8 @@ final class AppIconProvider {
         }
 
         if fileExists {
-            let cost = Int(size * size * 4 * 4)
+            let pixelSize = min(Int(size * 2.0), 64)
+            let cost = pixelSize * pixelSize * 4
             cache.setObject(rasterized, forKey: key, cost: cost)
         }
         return rasterized
@@ -59,69 +79,20 @@ final class AppIconProvider {
 
     func invalidateIcon(for path: String) {
         let appBundlePath = resolveAppBundlePath(from: path)
-        for size in [16, 24, 32, 48, 64] {
+        for size in [16, 24, 32, 36, 48, 64] {
             cache.removeObject(forKey: "\(appBundlePath)_\(size)" as NSString)
         }
     }
 
     private func rasterize(image: NSImage, targetSize: CGFloat) -> NSImage {
-        let scale: CGFloat = 2.0
-        let pixelWidth = Int(targetSize * scale)
-        let pixelHeight = Int(targetSize * scale)
-
-        guard let bitmapRep = NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: pixelWidth,
-            pixelsHigh: pixelHeight,
-            bitsPerSample: 8,
-            samplesPerPixel: 4,
-            hasAlpha: true,
-            isPlanar: false,
-            colorSpaceName: .calibratedRGB,
-            bytesPerRow: 0,
-            bitsPerPixel: 0
-        ) else {
-            image.size = NSSize(width: targetSize, height: targetSize)
-            return image
+        let targetSizeObj = NSSize(width: targetSize, height: targetSize)
+        return NSImage(size: targetSizeObj, flipped: false) { destRect in
+            image.draw(in: destRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+            return true
         }
-
-        bitmapRep.size = NSSize(width: targetSize, height: targetSize)
-
-        let imgWidth = max(image.size.width, 1)
-        let imgHeight = max(image.size.height, 1)
-        let scaleFactor = min(targetSize / imgWidth, targetSize / imgHeight)
-        let drawWidth = imgWidth * scaleFactor
-        let drawHeight = imgHeight * scaleFactor
-        let destRect = NSRect(
-            x: (targetSize - drawWidth) / 2.0,
-            y: (targetSize - drawHeight) / 2.0,
-            width: drawWidth,
-            height: drawHeight
-        )
-
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
-        image.draw(
-            in: destRect,
-            from: .zero,
-            operation: .sourceOver,
-            fraction: 1.0
-        )
-        NSGraphicsContext.restoreGraphicsState()
-
-        let resizedImage = NSImage(size: NSSize(width: targetSize, height: targetSize))
-        resizedImage.addRepresentation(bitmapRep)
-        return resizedImage
     }
 
     private func resolveAppBundlePath(from path: String) -> String {
-        var url = URL(fileURLWithPath: path)
-        while url.path != "/" && url.pathComponents.count > 1 {
-            if url.pathExtension.lowercased() == "app" {
-                return url.path
-            }
-            url = url.deletingLastPathComponent()
-        }
-        return path
+        URL(fileURLWithPath: path).enclosingAppBundleURL.path
     }
 }

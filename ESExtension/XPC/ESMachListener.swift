@@ -42,7 +42,9 @@ extension ESManager: NSXPCListenerDelegate {
             """
         )
 
-        guard CodeSignatureValidator.validateXPCConnection(newConnection) else {
+        let isSignatureValid = customConnectionValidator?(newConnection)
+            ?? CodeSignatureValidator.validateXPCConnection(newConnection)
+        guard isSignatureValid else {
             Logfile.esXPC.error(
                 """
                 [ESMachListener] Rejecting connection: Client signature verification failed \
@@ -65,16 +67,22 @@ extension ESManager: NSXPCListenerDelegate {
 
             // Clear main app PID if this was the main app connection
             let processID = conn.processIdentifier
-            self.processIDLock.withLock {
+            let wasMainApp = self.processIDLock.withLock { () -> Bool in
                 if let mainPID = self.authenticatedMainAppPID, pid_t(processID) == mainPID {
                     self.authenticatedMainAppPID = nil
+                    self.authenticatedMainAppPIDVersion = nil
                     Logfile.esXPC.debug(
                         "[ESMachListener] Cleared authenticated main app PID on connection invalidation"
                     )
+                    return true
                 }
+                return false
             }
 
             self.removeIncomingConnection(conn)
+            if wasMainApp {
+                self.handleMainAppDisconnect()
+            }
         }
 
         newConnection.interruptionHandler = {

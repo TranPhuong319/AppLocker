@@ -22,46 +22,17 @@ struct AddAppSheet: View {
         }
     }
 
+    private var isSearching: Bool {
+        !appState.searchTextUnlockableApps.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             topSearchHeader
 
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 8) {
-                    let userApps = appState.userUnlockableApps
-                    if !userApps.isEmpty {
-                        SectionHeader("Applications")
-                        ForEach(userApps, id: \.path) { app in
-                            AddAppRow(
-                                for: app,
-                                isSelected: appState.selectedToLock.contains(app.path),
-                                onToggle: { toggleSelection(for: app.path) },
-                                onUnfocus: unfocus
-                            )
-                        }
-                    }
-
-                    let systemApps = appState.systemUnlockableApps
-                    if !systemApps.isEmpty {
-                        SectionHeader("System Applications")
-                            .padding(.top, 10)
-                        ForEach(systemApps, id: \.path) { app in
-                            AddAppRow(
-                                for: app,
-                                isSelected: appState.selectedToLock.contains(app.path),
-                                onToggle: { toggleSelection(for: app.path) },
-                                onUnfocus: unfocus
-                            )
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 4)
-            }
-            .scrollIndicators(.hidden)
-            .clipped()
-            .frame(maxWidth: .infinity)
-            .frame(maxHeight: WindowLayout.addAppListMaxHeight)
+            contentBody
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: WindowLayout.addAppListMaxHeight)
 
             bottomActionBar
         }
@@ -85,6 +56,54 @@ struct AddAppSheet: View {
             appState.searchTextUnlockableApps = ""
             appState.activeTouchBar = .mainWindow
         }
+    }
+
+    @ViewBuilder
+    private var contentBody: some View {
+        if isSearching && appState.filteredUnlockableApps.isEmpty {
+            ContentUnavailableView.search(text: appState.searchTextUnlockableApps)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            appScrollView
+        }
+    }
+
+    @ViewBuilder
+    private var appScrollView: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 8) {
+                let userApps = appState.userUnlockableApps
+                if !userApps.isEmpty {
+                    SectionHeader("Applications")
+                    ForEach(userApps, id: \.path) { app in
+                        AddAppRow(
+                            for: app,
+                            isSelected: appState.selectedToLock.contains(app.path),
+                            onToggle: { toggleSelection(for: app.path) },
+                            onUnfocus: unfocus
+                        )
+                    }
+                }
+
+                let systemApps = appState.systemUnlockableApps
+                if !systemApps.isEmpty {
+                    SectionHeader("System Applications")
+                        .padding(.top, 10)
+                    ForEach(systemApps, id: \.path) { app in
+                        AddAppRow(
+                            for: app,
+                            isSelected: appState.selectedToLock.contains(app.path),
+                            onToggle: { toggleSelection(for: app.path) },
+                            onUnfocus: unfocus
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 4)
+        }
+        .scrollIndicators(.hidden)
+        .clipped()
     }
 
     @ViewBuilder
@@ -212,6 +231,16 @@ struct AddAppSheet: View {
 #Preview {
     AddAppSheet(
         appState: .preview(locked: []),
+        unfocus: {}
+    )
+}
+
+#Preview("No Search Results") {
+    let state = AppState.preview(locked: [])
+    state.searchTextUnlockableApps = "NonExistentApp"
+    state.filteredUnlockableApps = []
+    return AddAppSheet(
+        appState: state,
         unfocus: {}
     )
 }

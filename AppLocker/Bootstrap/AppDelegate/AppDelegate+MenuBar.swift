@@ -24,6 +24,8 @@ extension AppDelegate: NSMenuDelegate {
             imageView.autoresizingMask = [.width, .height]
             imageView.imageScaling = .scaleProportionallyDown
             imageView.imageAlignment = .alignCenter
+            imageView.appearance = nil
+            button.appearance = nil
             button.addSubview(imageView)
             statusImageView = imageView
         }
@@ -31,7 +33,7 @@ extension AppDelegate: NSMenuDelegate {
         updateMenuBarIcon()
 
         let menu = NSMenu()
-        menu.appearance = NSApp.appearance
+        menu.appearance = currentThemeAppearance
         menu.delegate = self
         statusItem?.menu = menu
 
@@ -60,7 +62,7 @@ extension AppDelegate: NSMenuDelegate {
         let symbolName: String
         if !ExtensionInstaller.shared.isInstalled {
             symbolName = "lock.trianglebadge.exclamationmark.fill"
-        } else if AppState.shared.manager.isProtectionDisabled {
+        } else if LockES.shared.isProtectionDisabled {
             symbolName = "lock.open.fill"
         } else if AppUpdater.shared.hasAvailableUpdate {
             symbolName = "arrowshape.down.circle"
@@ -143,7 +145,7 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        menu.appearance = NSApp.appearance
+        menu.appearance = currentThemeAppearance
         menu.removeAllItems()
 
         addHeaderMenuItems(to: menu)
@@ -159,13 +161,16 @@ extension AppDelegate: NSMenuDelegate {
         )
         menu.addItem(infoItem)
 
-        if AppState.shared.manager.isProtectionDisabled {
+        if LockES.shared.isProtectionDisabled {
+            let resumeShortcut = HotKeyShortcut.currentResumeProtection
             let resumeItem = NSMenuItem(
                 title: String(localized: "Resume Protection"),
                 action: #selector(resumeProtection),
-                keyEquivalent: "l"
+                keyEquivalent: resumeShortcut?.keyEquivalent ?? ""
             )
-            resumeItem.keyEquivalentModifierMask = [.command, .option]
+            if let resumeShortcut {
+                resumeItem.keyEquivalentModifierMask = resumeShortcut.modifierFlags
+            }
             resumeItem.image = NSImage(
                 systemSymbolName: "lock.fill",
                 accessibilityDescription: String(localized: "Resume Protection")
@@ -203,12 +208,15 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func addPrimaryMenuItems(to menu: NSMenu) {
+        let manageShortcut = HotKeyShortcut.currentAppList
         let manageItem = NSMenuItem(
             title: String(localized: "Manage the application list") + "…",
             action: #selector(openAppList),
-            keyEquivalent: "l"
+            keyEquivalent: manageShortcut?.keyEquivalent ?? ""
         )
-        manageItem.keyEquivalentModifierMask = [.command, .shift]
+        if let manageShortcut {
+            manageItem.keyEquivalentModifierMask = manageShortcut.modifierFlags
+        }
         manageItem.image = NSImage(systemSymbolName: "lock.app.dashed", accessibilityDescription: nil)
         menu.addItem(manageItem)
 
@@ -272,8 +280,4 @@ extension AppDelegate: NSMenuDelegate {
         ))
         #endif
     }
-}
-
-extension Notification.Name {
-    static let protectionStatusDidChange = Notification.Name("protectionStatusDidChange")
 }

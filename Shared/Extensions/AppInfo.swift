@@ -6,13 +6,14 @@
 //
 
 import AppKit
+import CoreServices
 
-enum AppSource: String {
+enum AppSource: String, Sendable {
     case user = "Applications"
     case system = "System"
 }
 
-struct InstalledApp: Identifiable, Hashable {
+struct InstalledApp: Identifiable, Hashable, Sendable {
     let id: String
     let name: String
     let originalName: String?
@@ -37,6 +38,17 @@ struct InstalledApp: Identifiable, Hashable {
 }
 
 // MARK: - Mock Data for Previews
+#if DEBUG
+/// Detects Xcode Previews / Playgrounds. Debug-only so Release builds never
+/// branch on environment variables inside security-sensitive code paths.
+enum PreviewEnvironment {
+    static var isRunningInPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" ||
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PLAYGROUNDS"] == "1"
+    }
+}
+#endif
+
 extension InstalledApp {
     static let mockChrome = InstalledApp(
         name: "Google Chrome",
@@ -68,6 +80,60 @@ extension InstalledApp {
     }
 }
 
+// MARK: - App Metadata Resolution
+extension InstalledApp {
+    public nonisolated static func resolveMetadata(
+        at path: String,
+        fallback: String
+    ) -> (name: String, bundleID: String) {
+        let bundleURL = URL(fileURLWithPath: path).enclosingAppBundleURL
+        let resolvedPath = bundleURL.path
+        var name = fallback
+        var bundleID = ""
+
+        if let mdItem = MDItemCreateWithURL(kCFAllocatorDefault, bundleURL as CFURL) {
+            if let rawName = MDItemCopyAttribute(mdItem, kMDItemDisplayName) as? String {
+                let clean = rawName.replacingOccurrences(of: ".app", with: "", options: .caseInsensitive)
+                if !clean.isEmpty && clean != resolvedPath {
+                    name = clean
+                }
+            }
+            if let bid = MDItemCopyAttribute(mdItem, kMDItemCFBundleIdentifier) as? String {
+                bundleID = bid
+            }
+        }
+
+        if bundleID.isEmpty || name == fallback {
+            if let bundle = Bundle(url: bundleURL) {
+                if bundleID.isEmpty {
+                    bundleID = bundle.bundleIdentifier ?? ""
+                }
+                if name == fallback {
+                    name = localizedBundleName(bundle: bundle, fallback: fallback)
+                }
+            }
+        }
+
+        return (name, bundleID)
+    }
+
+    private nonisolated static func localizedBundleName(bundle: Bundle, fallback: String) -> String {
+        if let displayName = bundle.localizedInfoDictionary?["CFBundleDisplayName"] as? String,
+            !displayName.isEmpty {
+            return displayName
+        }
+        if let bundleName = bundle.localizedInfoDictionary?["CFBundleName"] as? String,
+            !bundleName.isEmpty {
+            return bundleName
+        }
+        return fallback
+    }
+
+    public nonisolated static func resolveDisplayName(at path: String, fallback: String) -> String {
+        resolveMetadata(at: path, fallback: fallback).name
+    }
+}
+
 // MARK: - Bundle App Metadata
 extension Bundle {
     var appName: String {
@@ -93,5 +159,13 @@ extension Bundle {
     @MainActor
     var appIcon: NSImage {
         NSApplication.shared.applicationIconImage ?? NSImage(named: NSImage.applicationIconName) ?? NSImage()
+    }
+}
+
+// MARK: - Pasteboard Helper
+extension NSPasteboard {
+    public func copyText(_ text: String) {
+        clearContents()
+        setString(text, forType: .string)
     }
 }

@@ -30,8 +30,8 @@
 ## Performance & Simplicity Rules
 
 - **Swift Concurrency over GCD**:
-  - Prefer modern `async/await` and `Task` over legacy `DispatchQueue.global().async` / `DispatchQueue.main.async`.
-  - Always execute UI updates on `@MainActor` and compute heavy operations (cdhash extraction, file I/O) in background Tasks or `nonisolated static` helpers.
+  - Prefer modern `async/await` and `Task` over legacy GCD queues (`DispatchQueue.global()`). GCD dispatch (`DispatchQueue.main.async`) is reserved for C/Obj-C XPC event boundaries where Swift Tasks cannot be awaited directly.
+  - Always execute UI updates on `@MainActor`. Heavy operations (cdhash extraction, crypto, file I/O) run in background Tasks or pure `nonisolated static` helpers.
 - **Combine & Filter Debouncing**:
   - Use `RunLoop.main` or `DispatchQueue.main` for Combine search filter `.debounce` pipelines to keep publisher streams isolated to the main actor without cross-thread hops.
   - Use standardized `String.normalized` trimming whitespaces/newlines for instant, zero-alloc search matching.

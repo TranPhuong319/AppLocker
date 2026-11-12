@@ -16,19 +16,11 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
 
     let selfBundlePath = Bundle.main.bundleURL.path
     let selfBundleName = Bundle.main.bundleURL.lastPathComponent
-    var metadataQuery: NSMetadataQuery?
-    @ObservationIgnored
-    var spotlightTask: Task<Void, Never>?
-    @ObservationIgnored
-    var appScanTask: Task<Void, Never>?
-    @ObservationIgnored
-    var cachedFileSystemApps: [InstalledApp] = []
-    @ObservationIgnored
-    var cachedSpotlightApps: [InstalledApp] = []
-    var lastInstalledPathSet: Set<String> = []
 
     @ObservationIgnored
     private var searchUnlockableAppsTask: Task<Void, Never>?
+    @ObservationIgnored
+    var pendingMissingCheckTask: Task<Void, Never>?
 
     var manager: LockES
     var showingAddApp = false
@@ -74,23 +66,54 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     }
 
     init(manager: LockES? = nil, isMock: Bool = false) {
-        self.manager = manager ?? LockES()
+        self.manager = manager ?? LockES.shared
         self.isMock = isMock
 
         super.init()
 
         if !isMock {
-            self.manager.bootstrap { [weak self] in
-                self?.refreshAppLists()
-            }
-            refreshInstalledApps()
-            setupSpotlightQuery()
+            setupNotificationObservers()
             refreshAppLists()
         }
     }
 
     deinit {
+        pendingMissingCheckTask?.cancel()
+        searchUnlockableAppsTask?.cancel()
         NotificationCenter.default.removeObserver(self)
+    }
+
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            forName: .installedAppsDidUpdate,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshAppLists()
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: .lockedAppsDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshAppLists()
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                AppScannerService.shared.refreshInstalledApps()
+                self?.refreshAppLists()
+            }
+        }
     }
 
     var userUnlockableApps: [InstalledApp] {

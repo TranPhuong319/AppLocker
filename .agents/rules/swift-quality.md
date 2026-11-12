@@ -3,14 +3,17 @@
 ## Swift Quality & Linting Rules
 
 - **Zero Deprecated API Tolerance**: ALWAYS verify that any Apple platform API, SDK enum case, or Swift standard library feature is NOT deprecated for the current deployment target (macOS 14+). Always use the modern, active replacement (e.g. `TaskPriority.high` instead of `.userInteractive`, `.task` instead of `.onAppear`, `SMAppService` instead of `SMJobBless`).
-- **Mandatory SwiftLint Execution**: ALWAYS execute `swiftlint lint` after any code modification or refactoring to verify 0 errors and 0 warnings before concluding work. Fix any lint issues immediately.
+- **Mandatory Verification Pipeline (`Lint -> Build -> Test`)**: ALWAYS execute the 3-step verification sequence after any code modification or refactoring before concluding work:
+  1. `swiftlint lint --strict` (verify 0 errors and 0 warnings).
+  2. `xcodebuild build -scheme AppLocker -destination 'platform=macOS'` (verify clean compilation).
+  3. `xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests` (verify all unit tests pass).
 - **Type Nesting**: Do NOT nest types (structs/enums/classes) more than 1 level deep (e.g. use `WindowLayout.AddApp` instead of `WindowLayout.Sheet.AddApp`).
 - **Cyclomatic Complexity**: Keep function cyclomatic complexity $\le 10$. Extract helper methods for complex branching or dispatch logic.
 - **Function Body Length & Parameters**: Keep function bodies under 50 lines and parameters $\le 5$. Group parameters into structs (e.g. `BlockedExecContext`) when exceeding 5 parameters.
 - **Line Length**: Limit lines to $\le 120$ characters. Format function calls, declarations, and log messages across multiple lines or use multiline strings.
-- **File Length & Modular Decomposition**: Files should stay under 300 lines. If any file reaches or exceeds 300 lines ($\ge 300$), proactively propose and perform modular file decomposition by extracting standalone components, views, or helper models into dedicated, single-responsibility files.
-- **Identifier Naming**: All variable and function names MUST be $\ge 3$ characters long. Use `// swiftlint:disable:next identifier_name` strictly when overriding AppKit/macOS private selectors (e.g. `_registerWithIntentsFramework()`).
-- **Trailing Closures**: Do NOT use trailing closure syntax when passing multiple closure arguments (e.g. for `Button(action:label:)`, explicitly pass `label: { ... }`).
+- **File Length & Cohesion**: Prefer cohesive, focused files. Decompose only when a component, view, or helper is independently reusable or when separating distinct responsibilities improves readability. Avoid speculative file fragmentation that creates micro-files for single-use subviews.
+- **Identifier Naming**: Use descriptive names ($\ge 3$ characters), except for standard idiomatic variables in loops or math contexts (`id`, `to`, `at`, `dx`, `dy`, `i`). Use `// swiftlint:disable:next identifier_name` strictly when overriding AppKit/macOS private selectors (e.g. `_registerWithIntentsFramework()`).
+- **Trailing Closures**: Follow standard Swift multiple trailing closure syntax (e.g. `Button { ... } label: { ... }`). Ensure label closures remain clear and readable.
 
 ---
 

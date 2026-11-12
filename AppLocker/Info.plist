@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSAppIntentsEnabled</key>
+	<false/>
 	<key>SUEnableDownloaderService</key>
 	<true/>
 	<key>SUEnableInstallerLauncherService</key>
@@ -10,9 +12,5 @@
 	<string>https://github.com/TranPhuong319/AppLocker/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>oFALyoEASIdUJ7KSQ3JMpH8dlC4/p7HBd6bmp+BRUQs=</string>
-	<key>NSPrincipalClass</key>
-	<string>$(PRODUCT_MODULE_NAME).CustomApplication</string>
-	<key>NSAppIntentsEnabled</key>
-	<false/>
 </dict>
 </plist>

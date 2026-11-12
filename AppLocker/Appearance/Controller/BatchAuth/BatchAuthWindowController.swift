@@ -20,12 +20,12 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
 
     private init() {
         let contentView = BatchAuthView(
-            server: XPCServer.shared,
+            coordinator: AuthCoordinator.shared,
             onAuthenticate: {
-                XPCServer.shared.handleAuthenticate()
+                AuthCoordinator.shared.handleAuthenticate()
             },
             onCancel: {
-                XPCServer.shared.handleCancel()
+                AuthCoordinator.shared.handleCancel()
             }
         )
         let hostingController = NSHostingController(rootView: contentView)
@@ -53,6 +53,7 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
         window.toolbar = toolbar
         super.init(window: window)
         window.delegate = self
+        AuthCoordinator.shared.configureUIDependencies()
     }
 
     required init?(coder: NSCoder) {
@@ -77,7 +78,24 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        XPCServer.shared.handleCancel()
+        AuthCoordinator.shared.handleCancel()
         return true
+    }
+}
+
+extension AuthCoordinator {
+    func configureUIDependencies() {
+        self.dependencies.isBatchWindowVisible = {
+            BatchAuthWindowController.shared.isWindowVisible
+        }
+        self.dependencies.showBatchWindow = {
+            BatchAuthWindowController.shared.showWindow()
+        }
+        self.dependencies.hideBatchWindow = {
+            BatchAuthWindowController.shared.hideWindow()
+        }
+        self.dependencies.sendBlockedNotification = { appName in
+            NSApp.appDelegate?.sendBlockedNotification(appName: appName)
+        }
     }
 }

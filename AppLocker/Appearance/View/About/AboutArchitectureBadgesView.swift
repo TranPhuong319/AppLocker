@@ -2,7 +2,7 @@
 //  AboutArchitectureBadgesView.swift
 //  AppLocker
 //
-//  Created by AppLocker
+//  Created by Doe Phương on 4/10/26.
 //
 
 import SwiftUI
@@ -12,7 +12,7 @@ struct AboutArchitectureBadgesView: View {
     @State private var showSystemInfo: Bool = false
 
     init(isExtensionActive: Bool? = nil) {
-        _isExtensionActive = State(initialValue: isExtensionActive ?? !AppState.shared.manager.isProtectionDisabled)
+        _isExtensionActive = State(initialValue: isExtensionActive ?? !LockES.shared.isProtectionDisabled)
     }
 
     var body: some View {
@@ -32,7 +32,7 @@ struct AboutArchitectureBadgesView: View {
             architectureButton
         }
         .onReceive(NotificationCenter.default.publisher(for: .protectionStatusDidChange)) { _ in
-            isExtensionActive = !AppState.shared.manager.isProtectionDisabled
+            isExtensionActive = !LockES.shared.isProtectionDisabled
         }
     }
 
@@ -61,6 +61,7 @@ struct AboutArchitectureBadgesView: View {
             )
         }
         .buttonStyle(.plain)
+        .focusable(false)
         .popover(isPresented: $showSystemInfo, arrowEdge: .trailing) {
             SystemInfoPopoverView()
         }
@@ -68,13 +69,30 @@ struct AboutArchitectureBadgesView: View {
     }
 
     private var architectureName: LocalizedStringKey {
+        switch currentArchitecture {
+        case .appleSilicon:
+            return "Apple Silicon"
+        case .intel:
+            return "Intel (x86_64)"
+        case .universal:
+            return "Universal"
+        }
+    }
+
+    private var currentArchitecture: ArchitectureType {
         #if arch(arm64)
-        return "Apple Silicon"
+        return .appleSilicon
         #elseif arch(x86_64)
-        return "Intel (x86_64)"
+        return .intel
         #else
-        return "Universal"
+        return .universal
         #endif
+    }
+
+    private enum ArchitectureType {
+        case appleSilicon
+        case intel
+        case universal
     }
 
     private func badgePill(icon: String, text: LocalizedStringKey, color: Color) -> some View {

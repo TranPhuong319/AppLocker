@@ -18,6 +18,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             contentView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .navigationTitle("Locked application")
                 .searchable(
                     text: $appState.searchTextLockApps,
@@ -28,6 +29,12 @@ struct ContentView: View {
                     if !appState.confirmedMissingApps.isEmpty {
                         ToolbarItem(placement: .primaryAction) {
                             missingAppsWarningButton
+                        }
+                    }
+
+                    if appState.manager.isProtectionDisabled {
+                        ToolbarItem(placement: .primaryAction) {
+                            resumeProtectionToolbarButton
                         }
                     }
 
@@ -42,10 +49,6 @@ struct ContentView: View {
                     }
                 }
         }
-        .background(
-            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
-                .ignoresSafeArea()
-        )
         .sheet(isPresented: $appState.showingAddApp) {
             AddAppSheet(appState: appState, unfocus: unfocus)
         }
@@ -71,6 +74,10 @@ private extension ContentView {
     var contentView: some View {
         if appState.lockedAppObjects.isEmpty {
             emptyStateView
+                .ignoresSafeArea()
+        } else if appState.filteredLockedApps.isEmpty {
+            ContentUnavailableView.search(text: appState.searchTextLockApps)
+                .ignoresSafeArea()
         } else {
             mainListView
         }
@@ -95,12 +102,40 @@ private extension ContentView {
     }
 
     @ViewBuilder
+    var resumeProtectionToolbarButton: some View {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                appState.manager.setProtectionDisabled(false)
+            }
+        } label: {
+            Label {
+                Text("Resume Protection")
+            } icon: {
+                Image(systemName: "lock.open.trianglebadge.exclamationmark.fill")
+                    .foregroundStyle(.orange)
+                    .symbolEffect(.pulse, value: appState.manager.isProtectionDisabled)
+            }
+        }
+        .labelStyle(.iconOnly)
+        .help(String(localized: "Resume Protection"))
+        .accessibilityLabel(String(localized: "Resume Protection"))
+    }
+
+    @ViewBuilder
     var emptyStateView: some View {
-        Text("There is no locked application.")
-            .foregroundStyle(.secondary)
-            .font(.title3)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .padding(.horizontal, 14)
+        ContentUnavailableView {
+            Label("No Locked Applications", systemImage: "lock.slash")
+        } description: {
+            Text("Applications you add will require authentication to launch.")
+        } actions: {
+            Button {
+                appState.openAddApp()
+            } label: {
+                Label("Add Application", systemImage: "plus")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+        }
     }
 
     @ViewBuilder
@@ -121,7 +156,6 @@ private extension ContentView {
         .scrollIndicators(.hidden)
         .background(Color.clear.contentShape(Rectangle()).onTapGesture { unfocus() })
         .safeAreaPadding(.bottom, appState.deleteQueue.isEmpty ? 10 : 62)
-        .mask(scrollEdgeDissolveMask)
         .overlay(alignment: .bottom) {
             if !appState.deleteQueue.isEmpty {
                 deleteQueueNotificationBar
@@ -147,32 +181,6 @@ private extension ContentView {
                     onUnfocus: unfocus
                 )
             }
-        }
-    }
-
-    var scrollEdgeDissolveMask: some View {
-        VStack(spacing: 0) {
-            LinearGradient(
-                stops: [
-                    .init(color: .black.opacity(0), location: 0),
-                    .init(color: .black, location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 20)
-
-            Rectangle()
-
-            LinearGradient(
-                stops: [
-                    .init(color: .black, location: 0),
-                    .init(color: .black.opacity(0), location: 1)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 16)
         }
     }
 
