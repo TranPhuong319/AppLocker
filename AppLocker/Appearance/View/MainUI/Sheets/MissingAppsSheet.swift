@@ -43,12 +43,6 @@ struct MissingAppsSheet: View {
             minWidth: WindowLayout.missingAppsMinSize.width,
             minHeight: WindowLayout.missingAppsMinSize.height
         )
-        .task {
-            appState.activeTouchBar = .missingAppsPopup
-        }
-        .onDisappear {
-            appState.activeTouchBar = .mainWindow
-        }
     }
 
     @ViewBuilder

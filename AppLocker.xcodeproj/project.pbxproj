@@ -85,7 +85,6 @@
 		1FCF6E7A9A00FC346CE6246C /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
 		E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */; };
-		E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */; };
 		E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */; };
 		E0FD764A2F59E37C00D46B31 /* ESSafetyValve.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76272F59E37C00D46B31 /* ESSafetyValve.swift */; };
 		E0FD764B2F59E37C00D46B31 /* ESManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76292F59E37C00D46B31 /* ESManager.swift */; };
@@ -271,7 +270,6 @@
 		E0FD759F2F59E36600D46B31 /* WelcomeWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeWindowController.swift; sourceTree = "<group>"; };
 		E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarManager.swift; sourceTree = "<group>"; };
 		E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarItems.swift; sourceTree = "<group>"; };
-		E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarBuilders.swift; sourceTree = "<group>"; };
 		E0FD75A52F59E36600D46B31 /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
 		E0FD75A72F59E36600D46B31 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
 		E0FD75AA2F59E36600D46B31 /* MainUIButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUIButtons.swift; sourceTree = "<group>"; };
@@ -562,7 +560,6 @@
 			children = (
 				E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */,
 				E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */,
-				E0FD75A32F59E36600D46B33 /* TouchBarBuilders.swift */,
 			);
 			path = TouchBar;
 			sourceTree = "<group>";
@@ -1271,7 +1268,6 @@
 				E0FDB00F2F59E36600D46B01 /* XPCServer+Batch.swift in Sources */,
 				E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */,
 				E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */,
-				E0FD76202F59E36600D46B33 /* TouchBarBuilders.swift in Sources */,
 				E0FD80012F59E36600D46B31 /* CallServiceObserver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

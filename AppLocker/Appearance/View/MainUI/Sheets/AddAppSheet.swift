@@ -50,11 +50,9 @@ struct AddAppSheet: View {
         .task {
             unfocus()
             NSApp.keyWindow?.makeFirstResponder(nil)
-            appState.activeTouchBar = .addAppPopup
         }
         .onDisappear {
             appState.searchTextUnlockableApps = ""
-            appState.activeTouchBar = .mainWindow
         }
     }
 

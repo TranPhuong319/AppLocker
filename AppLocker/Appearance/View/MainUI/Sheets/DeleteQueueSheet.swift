@@ -55,11 +55,7 @@ struct DeleteQueueSheet: View {
             minWidth: WindowLayout.deleteQueueMinSize.width,
             minHeight: WindowLayout.deleteQueueMinSize.height
         )
-        .task {
-            appState.activeTouchBar = .deleteQueuePopup
-        }
         .onDisappear {
-            appState.activeTouchBar = .mainWindow
             appState.searchTextLockApps = ""
         }
     }

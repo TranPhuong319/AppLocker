@@ -8,7 +8,22 @@
 import AppKit
 import Observation
 
-// MARK: - Self-Updating TouchBar Components
+@MainActor
+func observeOnMainActor<Owner: AnyObject & Sendable>(
+    owner: Owner,
+    apply: @escaping @MainActor (Owner) -> Void
+) {
+    withObservationTracking {
+        apply(owner)
+    } onChange: { [weak owner] in
+        Task { @MainActor in
+            guard let owner else { return }
+            observeOnMainActor(owner: owner, apply: apply)
+        }
+    }
+}
+
+// MARK: - Search Popover TouchBar Item
 
 @MainActor
 final class SearchTouchBarItem: NSPopoverTouchBarItem, NSSearchFieldDelegate {
@@ -51,10 +66,9 @@ final class SearchTouchBarItem: NSPopoverTouchBarItem, NSSearchFieldDelegate {
     }
 
     private func setupItem() {
-        showsCloseButton = true
         collapsedRepresentationImage = NSImage(
             systemSymbolName: "magnifyingglass",
-            accessibilityDescription: "Search"
+            accessibilityDescription: String(localized: "Search")
         )
         searchField.placeholderString = String(localized: "Search apps...")
         searchField.delegate = self
@@ -68,109 +82,17 @@ final class SearchTouchBarItem: NSPopoverTouchBarItem, NSSearchFieldDelegate {
         childTouchBar.defaultItemIdentifiers = [contentId]
         self.popoverTouchBar = childTouchBar
 
-        observeSearchState()
-    }
-
-    private func observeSearchState() {
-        withObservationTracking {
+        observeOnMainActor(owner: self) { item in
             let text = AppState.shared.searchTextLockApps
             let isPresented = AppState.shared.isSearchPresented
-            if !self.isUpdatingFromState && self.searchField.stringValue != text {
-                self.searchField.stringValue = text
+            if !item.isUpdatingFromState && item.searchField.stringValue != text {
+                item.searchField.stringValue = text
             }
-            if isPresented && !self.isPopoverShown {
-                self.showPopover(nil)
-            } else if !isPresented && self.isPopoverShown {
-                self.dismissPopover(nil)
+            if isPresented && !item.isPopoverShown {
+                item.showPopover(nil)
+            } else if !isPresented && item.isPopoverShown {
+                item.dismissPopover(nil)
             }
-        } onChange: {
-            Task { @MainActor [weak self] in self?.observeSearchState() }
-        }
-    }
-}
-
-@MainActor
-final class MissingAppsTouchBarItem: NSButtonTouchBarItem {
-    override init(identifier: NSTouchBarItem.Identifier) {
-        super.init(identifier: identifier)
-        setup()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
-    }
-
-    private func setup() {
-        image = NSImage(
-            systemSymbolName: "exclamationmark.triangle.fill",
-            accessibilityDescription: "Review missing applications"
-        )
-        bezelColor = .systemOrange
-        target = AppState.shared
-        action = #selector(AppState.openMissingApps)
-        setupObservation()
-    }
-
-    private func setupObservation() {
-        withObservationTracking {
-            let count = AppState.shared.confirmedMissingApps.count
-            self.title = "\(count)"
-        } onChange: {
-            Task { @MainActor [weak self] in self?.setupObservation() }
-        }
-    }
-}
-
-@MainActor
-final class DeleteQueueTouchBarButton: NSButton {
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        setupObservation()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupObservation()
-    }
-
-    override var intrinsicContentSize: NSSize {
-        isHidden ? .zero : super.intrinsicContentSize
-    }
-
-    private func setupObservation() {
-        withObservationTracking {
-            let queue = AppState.shared.deleteQueue
-            self.isHidden = queue.isEmpty
-            self.title = String(
-                localized: "Waiting to unlock \(queue.count) application(s)..."
-            )
-        } onChange: {
-            Task { @MainActor [weak self] in self?.setupObservation() }
-        }
-    }
-}
-
-@MainActor
-final class LockTouchBarButton: NSButton {
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        setupObservation()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupObservation()
-    }
-
-    private func setupObservation() {
-        withObservationTracking {
-            let selected = AppState.shared.selectedToLock
-            let isLocking = AppState.shared.isLocking
-            self.title = String(localized: "Lock")
-            self.isEnabled = !selected.isEmpty && !isLocking
-        } onChange: {
-            Task { @MainActor [weak self] in self?.setupObservation() }
         }
     }
 }

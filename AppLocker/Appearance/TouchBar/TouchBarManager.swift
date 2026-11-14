@@ -6,55 +6,57 @@
 //
 
 import AppKit
-import Observation
 
 @MainActor
-class TouchBarManager: NSObject, NSTouchBarDelegate {
+final class TouchBarManager: NSObject, NSTouchBarDelegate {
     static let shared = TouchBarManager()
-    let appState = AppState.shared
-    private var items: [NSTouchBarItem.Identifier: () -> NSView] = [:]
 
-    override init() {
-        super.init()
-        registerDefaultBuilders()
-        observeActiveTouchBar()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleWindowDidBecomeKey(_:)),
-            name: NSWindow.didBecomeKeyNotification,
-            object: nil
-        )
-    }
+    private let appState = AppState.shared
+    private weak var targetWindow: NSWindow?
+    private var isObservingState = false
 
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+    func attach(to window: NSWindow) {
+        if targetWindow !== window {
+            if let oldWindow = targetWindow {
+                NotificationCenter.default.removeObserver(
+                    self,
+                    name: NSWindow.willBeginSheetNotification,
+                    object: oldWindow
+                )
+            }
+            targetWindow = window
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleWillBeginSheet(_:)),
+                name: NSWindow.willBeginSheetNotification,
+                object: window
+            )
+        }
 
-    private func registerDefaultBuilders() {
-        let appState = self.appState
-        registerOrUpdateItem(id: .deleteQueueItem) { TouchBarManager.buildDeleteQueueProminentButton() }
-        registerOrUpdateItem(id: .addAppButtons) { TouchBarManager.buildAddAppTouchBarContent(appState: appState) }
-        registerOrUpdateItem(id: .deleteQueueButtons) { TouchBarManager.buildDeleteQueueButtons(appState: appState) }
-        registerOrUpdateItem(id: .missingAppsButtons) {
-            TouchBarManager.buildMissingAppsTouchBarContent(appState: appState)
+        if !isObservingState {
+            isObservingState = true
+            observeOnMainActor(owner: self) { manager in
+                manager.applyCurrentTouchBar()
+            }
+        } else {
+            applyCurrentTouchBar()
         }
     }
 
-    @objc private func handleWindowDidBecomeKey(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow, window.isVisible else { return }
-        apply(to: window, type: appState.activeTouchBar)
+    @objc private func handleWillBeginSheet(_ notification: Notification) {
+        guard let sheetWindow = notification.userInfo?["NSWindow"] as? NSWindow else { return }
+        sheetWindow.touchBar = makeTouchBar(for: appState.activeTouchBar)
     }
 
-    private func observeActiveTouchBar() {
-        withObservationTracking {
-            let type = appState.activeTouchBar
-            let hasMissing = !appState.confirmedMissingApps.isEmpty
-            _ = hasMissing
-            let targetWindow = NSApp.keyWindow ?? NSApp.mainWindow
-            self.apply(to: targetWindow, type: type)
-        } onChange: {
-            Task { @MainActor [weak self] in self?.observeActiveTouchBar() }
-        }
+    private func applyCurrentTouchBar() {
+        let type = appState.activeTouchBar
+        _ = appState.confirmedMissingApps.isEmpty
+        _ = appState.deleteQueue.isEmpty
+
+        guard let targetWindow, targetWindow.isVisible else { return }
+        let touchBar = makeTouchBar(for: type)
+        targetWindow.touchBar = touchBar
+        targetWindow.attachedSheet?.touchBar = touchBar
     }
 
     // MARK: - NSTouchBarDelegate
@@ -63,49 +65,154 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
         _ touchBar: NSTouchBar,
         makeItemForIdentifier identifier: NSTouchBarItem.Identifier
     ) -> NSTouchBarItem? {
-        if identifier == .searchItem {
+        switch identifier {
+        case .searchItem:
             return SearchTouchBarItem(identifier: identifier)
-        }
-        if identifier == .addAppItem {
+        case .addAppItem:
             return NSButtonTouchBarItem(
                 identifier: identifier,
-                image: NSImage(systemSymbolName: "plus", accessibilityDescription: "Add App")!,
+                image: NSImage(
+                    systemSymbolName: "plus",
+                    accessibilityDescription: String(localized: "Add App")
+                ) ?? NSImage(),
                 target: appState,
                 action: #selector(AppState.openAddApp)
             )
+        case .missingAppsItem:
+            return makeMissingAppsItem(identifier: identifier)
+        case .deleteQueueItem:
+            return makeDeleteQueueItem(identifier: identifier)
+        case .addAppButtons:
+            return makeAddAppGroup(identifier: identifier)
+        case .deleteQueueButtons:
+            return makeDeleteQueueGroup(identifier: identifier)
+        case .missingAppsButtons:
+            return makeMissingAppsGroup(identifier: identifier)
+        default:
+            return nil
         }
-        if identifier == .missingAppsItem {
-            return MissingAppsTouchBarItem(identifier: identifier)
+    }
+
+    private func makeDeleteQueueGroup(identifier: NSTouchBarItem.Identifier) -> NSGroupTouchBarItem {
+        makeGroupItem(identifier: identifier, items: [
+            makeButtonItem(
+                idSuffix: "deleteQueueCancel",
+                title: String(localized: "Cancel"),
+                action: #selector(AppState.clearDeleteQueue),
+                width: 180
+            ),
+            makeButtonItem(
+                idSuffix: "deleteQueueUnlock",
+                title: String(localized: "Unlock"),
+                action: #selector(AppState.unlockQueuedApps),
+                bezelColor: .controlAccentColor,
+                width: 180
+            )
+        ])
+    }
+
+    private func makeMissingAppsGroup(identifier: NSTouchBarItem.Identifier) -> NSGroupTouchBarItem {
+        makeGroupItem(identifier: identifier, splitLeading: true, items: [
+            makeButtonItem(
+                idSuffix: "missingAppsCancel",
+                title: String(localized: "Cancel"),
+                action: #selector(AppState.closeMissingApps)
+            ),
+            makeButtonItem(
+                idSuffix: "missingAppsHide",
+                title: String(localized: "Hide"),
+                action: #selector(AppState.hideAllMissingApps)
+            ),
+            makeButtonItem(
+                idSuffix: "missingAppsRemove",
+                title: String(localized: "Remove"),
+                action: #selector(AppState.removeAllMissingApps),
+                bezelColor: .controlAccentColor
+            )
+        ])
+    }
+
+    private func makeMissingAppsItem(identifier: NSTouchBarItem.Identifier) -> NSButtonTouchBarItem {
+        let item = NSButtonTouchBarItem(
+            identifier: identifier,
+            title: "\(appState.confirmedMissingApps.count)",
+            target: appState,
+            action: #selector(AppState.openMissingApps)
+        )
+        item.image = NSImage(
+            systemSymbolName: "exclamationmark.triangle.fill",
+            accessibilityDescription: String(localized: "Review missing applications")
+        )
+        item.bezelColor = .systemOrange
+        observeOnMainActor(owner: item) { barItem in
+            barItem.title = "\(AppState.shared.confirmedMissingApps.count)"
         }
-        guard let viewBuilder = items[identifier] else { return nil }
-        let item = NSCustomTouchBarItem(identifier: identifier)
-        item.view = viewBuilder()
         return item
     }
 
-    func registerOrUpdateItem(id: NSTouchBarItem.Identifier, builder: @escaping () -> NSView) {
-        items[id] = builder
+    private func makeDeleteQueueItem(identifier: NSTouchBarItem.Identifier) -> NSButtonTouchBarItem {
+        let item = NSButtonTouchBarItem(
+            identifier: identifier,
+            title: "",
+            target: appState,
+            action: #selector(AppState.showDeleteQueueSheet)
+        )
+        item.bezelColor = .systemRed
+        observeOnMainActor(owner: item) { barItem in
+            let count = AppState.shared.deleteQueue.count
+            barItem.title = String(localized: "Waiting to unlock \(count) application(s)...")
+        }
+        return item
     }
 
-    func apply(to window: NSWindow?, type: AppState.TouchBarType) {
-        guard let window else { return }
-        window.touchBar = makeTouchBar(for: type)
+    private func makeAddAppGroup(identifier: NSTouchBarItem.Identifier) -> NSGroupTouchBarItem {
+        let lockItem = makeButtonItem(
+            idSuffix: "addAppLock",
+            title: String(localized: "Lock"),
+            action: #selector(AppState.lockSelectedApps),
+            bezelColor: .controlAccentColor
+        )
+        observeOnMainActor(owner: lockItem) { barItem in
+            barItem.isEnabled = !AppState.shared.selectedToLock.isEmpty && !AppState.shared.isLocking
+        }
+        return makeGroupItem(identifier: identifier, splitLeading: true, items: [
+            makeButtonItem(
+                idSuffix: "addAppOther",
+                title: String(localized: "Others…"),
+                action: #selector(AppState.chooseCustomApp)
+            ),
+            makeButtonItem(
+                idSuffix: "addAppClose",
+                title: String(localized: "Close"),
+                action: #selector(AppState.dismissAddAppSheet)
+            ),
+            lockItem
+        ])
     }
 
-    func makeTouchBar(for type: AppState.TouchBarType) -> NSTouchBar {
+    private func makeTouchBar(for type: AppState.TouchBarType) -> NSTouchBar {
         let touchBar = NSTouchBar()
         touchBar.delegate = self
 
         switch type {
         case .mainWindow:
-            touchBar.principalItemIdentifier = .deleteQueueItem
-            var identifiers: [NSTouchBarItem.Identifier] = [
-                .searchItem, .flexibleSpace, .deleteQueueItem, .flexibleSpace
-            ]
-            if !appState.confirmedMissingApps.isEmpty {
-                identifiers.append(.missingAppsItem)
+            var identifiers: [NSTouchBarItem.Identifier] = [.searchItem, .flexibleSpace]
+            if appState.deleteQueue.isEmpty {
+                touchBar.principalItemIdentifier = .addAppItem
+                identifiers.append(.addAppItem)
+                identifiers.append(.flexibleSpace)
+                if !appState.confirmedMissingApps.isEmpty {
+                    identifiers.append(.missingAppsItem)
+                }
+            } else {
+                touchBar.principalItemIdentifier = .deleteQueueItem
+                identifiers.append(.deleteQueueItem)
+                identifiers.append(.flexibleSpace)
+                identifiers.append(.addAppItem)
+                if !appState.confirmedMissingApps.isEmpty {
+                    identifiers.append(.missingAppsItem)
+                }
             }
-            identifiers.append(.addAppItem)
             identifiers.append(.fixedSpaceLarge)
             touchBar.defaultItemIdentifiers = identifiers
         case .addAppPopup:
@@ -119,5 +226,36 @@ class TouchBarManager: NSObject, NSTouchBarDelegate {
             touchBar.defaultItemIdentifiers = [.flexibleSpace, .missingAppsButtons, .flexibleSpace]
         }
         return touchBar
+    }
+
+    private func makeGroupItem(
+        identifier: NSTouchBarItem.Identifier,
+        splitLeading: Bool = false,
+        items: [NSTouchBarItem]
+    ) -> NSGroupTouchBarItem {
+        let group = NSGroupTouchBarItem(identifier: identifier, items: items)
+        if splitLeading, let first = items.first {
+            group.groupTouchBar.defaultItemIdentifiers = [first.identifier, .fixedSpaceLarge]
+                + items.dropFirst().map(\.identifier)
+        }
+        return group
+    }
+
+    private func makeButtonItem(
+        idSuffix: String,
+        title: String,
+        action: Selector,
+        bezelColor: NSColor? = nil,
+        width: CGFloat = 140
+    ) -> NSButtonTouchBarItem {
+        let item = NSButtonTouchBarItem(
+            identifier: NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.\(idSuffix)"),
+            title: title,
+            target: appState,
+            action: action
+        )
+        item.bezelColor = bezelColor
+        item.view?.widthAnchor.constraint(equalToConstant: width).isActive = true
+        return item
     }
 }

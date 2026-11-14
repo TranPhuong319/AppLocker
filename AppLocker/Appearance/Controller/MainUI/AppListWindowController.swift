@@ -27,9 +27,9 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
         guard let window = shared.window else { return }
 
         AppState.shared.refreshAppLists()
-        TouchBarManager.shared.apply(to: window, type: AppState.shared.activeTouchBar)
         shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
+        TouchBarManager.shared.attach(to: window)
         if let hostingController = window.contentViewController {
             window.makeFirstResponder(hostingController)
         }
