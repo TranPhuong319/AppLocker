@@ -9,7 +9,7 @@ import AppKit
 import SwiftUI
 
 struct WindowConfiguration {
-    var title: String = ""
+    var title: String?
     var size: NSSize?
     var minSize: NSSize?
     var maxSize: NSSize?
@@ -41,8 +41,11 @@ class WindowManager {
             backing: configuration.backingType,
             defer: false
         )
-        window.contentView = contentView
         configure(window: window, configuration: configuration)
+        window.contentView = contentView
+        if configuration.wantsLayer {
+            contentView.wantsLayer = true
+        }
         return window
     }
 
@@ -62,7 +65,9 @@ class WindowManager {
 
         window.styleMask = configuration.styleMask
         window.backingType = configuration.backingType
-        window.title = configuration.title
+        if let title = configuration.title {
+            window.title = title
+        }
         window.isReleasedWhenClosed = configuration.isReleasedWhenClosed
         window.level = configuration.level
         window.titleVisibility = configuration.titleVisibility
@@ -79,7 +84,11 @@ class WindowManager {
             window.contentView?.wantsLayer = true
         }
 
-        if let size = configuration.size {
+        let hasSavedFrame = configuration.autosaveName.map {
+            UserDefaults.standard.object(forKey: "NSWindow Frame \($0)") != nil
+        } ?? false
+
+        if !hasSavedFrame, let size = configuration.size {
             window.setContentSize(size)
         }
         if let minSize = configuration.minSize {
