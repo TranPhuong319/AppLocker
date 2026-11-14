@@ -62,7 +62,7 @@
 		E0FD760D2F59E36600D46B31 /* CustomApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CE2F59E36600D46B31 /* CustomApplication.swift */; };
 		E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E62F59E36600D46B31 /* AppUpdater.swift */; };
 		E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */; };
-		E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */; };
+		E0FD76132F59E36600D46B31 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75C72F59E36600D46B31 /* MenuBarController.swift */; };
 		E0FD76142F59E36600D46B31 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D02F59E36600D46B31 /* main.swift */; };
 		E0FD76152F59E36600D46B31 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */; };
 		E0FD76172F59E36600D46B31 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75BB2F59E36600D46B31 /* WelcomeView.swift */; };
@@ -296,7 +296,7 @@
 		E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Agent.swift"; sourceTree = "<group>"; };
 		E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+CheckDirectory.swift"; sourceTree = "<group>"; };
 		E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Launch.swift"; sourceTree = "<group>"; };
-		E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+MenuBar.swift"; sourceTree = "<group>"; };
+		E0FD75C72F59E36600D46B31 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Notifications.swift"; sourceTree = "<group>"; };
 		E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Restart.swift"; sourceTree = "<group>"; };
 		E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Updater.swift"; sourceTree = "<group>"; };
@@ -679,7 +679,7 @@
 				E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */,
 				E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */,
 				E0FD75C42F59E36600D46B31 /* AppDelegate+Launch.swift */,
-				E0FD75C72F59E36600D46B31 /* AppDelegate+MenuBar.swift */,
+				E0FD75C72F59E36600D46B31 /* MenuBarController.swift */,
 				E0FD75C82F59E36600D46B31 /* AppDelegate+Notifications.swift */,
 				E0FD75C92F59E36600D46B31 /* AppDelegate+Restart.swift */,
 				E0FD75CA2F59E36600D46B31 /* AppDelegate+Updater.swift */,
@@ -1243,7 +1243,7 @@
 				E0FD760D2F59E36600D46B31 /* CustomApplication.swift in Sources */,
 				E0FD760E2F59E36600D46B31 /* AppUpdater.swift in Sources */,
 				E0FD76102F59E36600D46B31 /* AppDelegate+Updater.swift in Sources */,
-				E0FD76132F59E36600D46B31 /* AppDelegate+MenuBar.swift in Sources */,
+				E0FD76132F59E36600D46B31 /* MenuBarController.swift in Sources */,
 				E0FD76142F59E36600D46B31 /* main.swift in Sources */,
 				E0FD79082F59E37C00D46B31 /* BatchAuthView.swift in Sources */,
 				E0FD790A2F59E37C00D46B31 /* BatchAuthWindowController.swift in Sources */,
