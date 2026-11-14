@@ -14,6 +14,7 @@ struct SignalEventContext: Sendable {
     let targetPID: pid_t
     let targetAuditToken: audit_token_t
     let senderPID: pid_t
+    let senderAuditToken: audit_token_t?
     let senderExecutablePath: String?
     let senderResponsibleAuditToken: audit_token_t?
     let sig: Int32
@@ -22,6 +23,7 @@ struct SignalEventContext: Sendable {
         targetPID: pid_t,
         targetAuditToken: audit_token_t,
         senderPID: pid_t,
+        senderAuditToken: audit_token_t? = nil,
         senderExecutablePath: String? = nil,
         senderResponsibleAuditToken: audit_token_t? = nil,
         sig: Int32
@@ -29,6 +31,7 @@ struct SignalEventContext: Sendable {
         self.targetPID = targetPID
         self.targetAuditToken = targetAuditToken
         self.senderPID = senderPID
+        self.senderAuditToken = senderAuditToken
         self.senderExecutablePath = senderExecutablePath
         self.senderResponsibleAuditToken = senderResponsibleAuditToken
         self.sig = sig
@@ -48,6 +51,7 @@ extension ESManager {
             targetPID: targetPid,
             targetAuditToken: targetToken,
             senderPID: senderPid,
+            senderAuditToken: processPtr.audit_token,
             senderExecutablePath: safePath(fromFilePointer: processPtr.executable),
             senderResponsibleAuditToken: processPtr.responsible_audit_token,
             sig: sig
@@ -126,6 +130,23 @@ extension ESManager {
         guard sig != SIGCHLD && sig != SIGCONT else {
             return false
         }
+
+        #if DEBUG
+        if isMainApp,
+           let senderToken = context.senderAuditToken,
+           CodeSignatureValidator.validate(
+               auditToken: senderToken,
+               requirement: CodeSignatureValidator.xcodeAppleRequirement
+           ) {
+            Logfile.endpointSecurity.debug(
+                """
+                [AuthSignal] Allowing signal \(sig, privacy: .public) to AppLocker \
+                from Apple-signed Xcode tool (PID: \(senderPid, privacy: .public))
+                """
+            )
+            return false
+        }
+        #endif
 
         handleUnauthorizedSignal(
             context: context,

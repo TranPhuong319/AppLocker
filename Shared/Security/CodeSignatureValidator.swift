@@ -34,6 +34,20 @@ public enum CodeSignatureValidator: Sendable {
         return req
     }()
 
+    #if DEBUG
+    /// Precompiled requirement for Apple-signed Xcode / debug tools in Debug builds.
+    public nonisolated(unsafe) static let xcodeAppleRequirement: SecRequirement? = {
+        let reqString = """
+        anchor apple and (identifier "com.apple.dt.Xcode" or identifier "com.apple.dt.xcodebuild" \
+        or identifier "com.apple.dt.debugserver" or identifier "com.apple.lldb" \
+        or identifier "com.apple.dt.lldb-rpc-server")
+        """
+        var req: SecRequirement?
+        SecRequirementCreateWithString(reqString as CFString, [], &req)
+        return req
+    }()
+    #endif
+
     /// Validates an audit token against a specific SecRequirement with strict flags.
     public static func validate(auditToken: audit_token_t, requirement: SecRequirement?) -> Bool {
         guard let requirement else {
