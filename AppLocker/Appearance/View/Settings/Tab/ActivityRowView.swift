@@ -175,29 +175,29 @@ struct ActivityRowView: View {
             if item.targetAppName == "Config" {
                 switch item.tamperAction {
                 case "Delete":
-                    Text("Blocked deleting Config • \(relTime)")
+                    Text("Blocked deleting Config | \(relTime)")
                 case "Rename":
-                    Text("Blocked renaming Config • \(relTime)")
+                    Text("Blocked renaming Config | \(relTime)")
                 case "Truncate":
-                    Text("Blocked truncating Config • \(relTime)")
+                    Text("Blocked truncating Config | \(relTime)")
                 case "Write":
-                    Text("Blocked writing to Config • \(relTime)")
+                    Text("Blocked writing to Config | \(relTime)")
                 default:
-                    Text("Blocked modifying Config • \(relTime)")
+                    Text("Blocked modifying Config | \(relTime)")
                 }
             } else {
                 let targetDisplay = "\(item.targetAppName) (PID \(item.targetPid))"
-                Text("Blocked signal to \(targetDisplay) • \(relTime)")
+                Text("Blocked signal to \(targetDisplay) | \(relTime)")
             }
         } else if item.type == .rejected, let reason = item.denialReason {
             switch reason {
             case .timedOut:
-                Text("Timed out • PID \(pidDisplay) • \(relTime)")
+                Text("Timed out | PID \(pidDisplay) | \(relTime)")
             case .userCancelled:
-                Text("Cancelled • PID \(pidDisplay) • \(relTime)")
+                Text("Cancelled | PID \(pidDisplay) | \(relTime)")
             }
         } else {
-            Text("PID \(pidDisplay) • \(relTime)")
+            Text("PID \(pidDisplay) | \(relTime)")
         }
     }
 }
