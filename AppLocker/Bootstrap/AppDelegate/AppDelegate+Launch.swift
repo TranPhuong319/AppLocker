@@ -34,7 +34,7 @@ extension AppDelegate {
     @MainActor
     func setupUIComponents() {
         Logfile.app.debug("[Launch] Starting menu bar and Notification setup")
-        self.setupMenuBar()
+        self.menuBarController.setup(appearance: currentThemeAppearance)
         self.setupUpdateObserver()
         AppUpdater.shared.startTestAutoCheck()
 

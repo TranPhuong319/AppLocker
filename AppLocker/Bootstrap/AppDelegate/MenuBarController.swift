@@ -1,8 +1,8 @@
 //
-//  AppDelegate+MenuBar.swift
+//  MenuBarController.swift
 //  AppLocker
 //
-//  Created by Doe Phương on 28/12/25.
+//  Created by Doe Phương on 14/11/26.
 //
 
 import AppKit
@@ -13,8 +13,20 @@ private final class MenuBarImageView: NSImageView {
 }
 
 @MainActor
-extension AppDelegate: NSMenuDelegate {
-    func setupMenuBar() {
+final class MenuBarController: NSObject, NSMenuDelegate {
+    private var statusItem: NSStatusItem?
+    private var statusImageView: NSImageView?
+    private var currentMenuBarSymbol: String?
+    private var currentThemeAppearance: NSAppearance?
+    private var isSetup = false
+
+    var statusItemWindow: NSWindow? {
+        statusItem?.button?.window
+    }
+
+    func setup(appearance: NSAppearance?) {
+        currentThemeAppearance = appearance
+
         if statusItem == nil {
             statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         }
@@ -30,12 +42,15 @@ extension AppDelegate: NSMenuDelegate {
             statusImageView = imageView
         }
 
-        updateMenuBarIcon()
+        updateIcon()
 
         let menu = NSMenu()
         menu.appearance = currentThemeAppearance
         menu.delegate = self
         statusItem?.menu = menu
+
+        guard !isSetup else { return }
+        isSetup = true
 
         NotificationCenter.default.addObserver(
             forName: .appLockerPendingUpdateDidChange,
@@ -43,7 +58,7 @@ extension AppDelegate: NSMenuDelegate {
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.updateMenuBarIcon()
+                self?.updateIcon()
             }
         }
 
@@ -53,12 +68,23 @@ extension AppDelegate: NSMenuDelegate {
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.updateMenuBarIcon()
+                self?.updateIcon()
             }
         }
     }
 
-    func updateMenuBarIcon() {
+    func applyAppearance(_ appearance: NSAppearance?) {
+        currentThemeAppearance = appearance
+
+        statusItem?.button?.appearance = nil
+        statusImageView?.appearance = nil
+        statusItem?.button?.window?.appearance = nil
+        statusItem?.button?.needsDisplay = true
+        statusImageView?.needsDisplay = true
+        statusItem?.menu?.appearance = appearance
+    }
+
+    func updateIcon() {
         let symbolName: String
         if !ExtensionInstaller.shared.isInstalled {
             symbolName = "lock.trianglebadge.exclamationmark.fill"
@@ -90,58 +116,8 @@ extension AppDelegate: NSMenuDelegate {
         }
     }
 
-    func bounceMenuBarIcon() {
+    func bounceIcon() {
         statusImageView?.addSymbolEffect(BounceSymbolEffect.bounce)
-    }
-
-    func setupEditMenu() {
-        guard NSApp.mainMenu == nil else { return }
-
-        let mainMenu = NSMenu()
-        mainMenu.addItem(createAppMenuItem())
-        mainMenu.addItem(createEditMenuItem())
-        mainMenu.addItem(createWindowMenuItem())
-        NSApp.mainMenu = mainMenu
-    }
-
-    private func createAppMenuItem() -> NSMenuItem {
-        let appMenuItem = NSMenuItem()
-        let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "About AppLocker", action: #selector(showAboutWindow), keyEquivalent: "")
-        appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
-        appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Hide AppLocker", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-        appMenu.addItem(
-            withTitle: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
-        appMenu.addItem(
-            withTitle: "Show All", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
-        appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Quit AppLocker", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        appMenuItem.submenu = appMenu
-        return appMenuItem
-    }
-
-    private func createEditMenuItem() -> NSMenuItem {
-        let editMenuItem = NSMenuItem()
-        let editMenu = NSMenu(title: "Edit")
-        editMenu.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
-        editMenu.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "Z")
-        editMenu.addItem(.separator())
-        editMenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        editMenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        editMenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
-        editMenuItem.submenu = editMenu
-        return editMenuItem
-    }
-
-    private func createWindowMenuItem() -> NSMenuItem {
-        let windowMenuItem = NSMenuItem()
-        let windowMenu = NSMenu(title: "Window")
-        windowMenu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
-        windowMenuItem.submenu = windowMenu
-        return windowMenuItem
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -154,7 +130,7 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     private func addHeaderMenuItems(to menu: NSMenu) {
-        updateMenuBarIcon()
+        updateIcon()
 
         let infoItem = NSMenuItem.sectionHeader(
             title: "AppLocker v\(Bundle.main.fullVersion)"
@@ -165,7 +141,7 @@ extension AppDelegate: NSMenuDelegate {
             let resumeShortcut = HotKeyShortcut.currentResumeProtection
             let resumeItem = NSMenuItem(
                 title: String(localized: "Resume Protection"),
-                action: #selector(resumeProtection),
+                action: #selector(AppDelegate.resumeProtection),
                 keyEquivalent: resumeShortcut?.keyEquivalent ?? ""
             )
             if let resumeShortcut {
@@ -181,7 +157,7 @@ extension AppDelegate: NSMenuDelegate {
         if AppUpdater.shared.hasAvailableUpdate, let ver = AppUpdater.shared.availableUpdateVersion {
             let updateNoticeItem = NSMenuItem(
                 title: String(format: String(localized: "Version %@ available"), ver),
-                action: #selector(checkForUpdates),
+                action: #selector(AppDelegate.checkForUpdates),
                 keyEquivalent: ""
             )
             updateNoticeItem.image = NSImage(
@@ -194,7 +170,7 @@ extension AppDelegate: NSMenuDelegate {
         if !ExtensionInstaller.shared.isInstalled {
             let statusItem = NSMenuItem(
                 title: String(localized: "System Extension Inactive"),
-                action: #selector(openSystemSettingsForExtension),
+                action: #selector(AppDelegate.openSystemSettingsForExtension),
                 keyEquivalent: ""
             )
             statusItem.image = NSImage(
@@ -211,7 +187,7 @@ extension AppDelegate: NSMenuDelegate {
         let manageShortcut = HotKeyShortcut.currentAppList
         let manageItem = NSMenuItem(
             title: String(localized: "Manage the application list") + "…",
-            action: #selector(openAppList),
+            action: #selector(AppDelegate.openAppList),
             keyEquivalent: manageShortcut?.keyEquivalent ?? ""
         )
         if let manageShortcut {
@@ -224,7 +200,7 @@ extension AppDelegate: NSMenuDelegate {
 
         menu.addItem(NSMenuItem(
             title: String(localized: "Settings") + "…",
-            action: #selector(openSettings),
+            action: #selector(AppDelegate.openSettings),
             keyEquivalent: ","
         ))
 
@@ -234,7 +210,7 @@ extension AppDelegate: NSMenuDelegate {
     private func addMaintenanceMenuItems(to menu: NSMenu) {
         let updateItem = NSMenuItem(
             title: String(localized: "Check for Updates…"),
-            action: #selector(checkForUpdates),
+            action: #selector(AppDelegate.checkForUpdates),
             keyEquivalent: ""
         )
         updateItem.image = NSImage(
@@ -245,7 +221,7 @@ extension AppDelegate: NSMenuDelegate {
 
         let aboutItem = NSMenuItem(
             title: String(localized: "About AppLocker"),
-            action: #selector(showAboutWindow),
+            action: #selector(AppDelegate.showAboutWindow),
             keyEquivalent: ""
         )
         aboutItem.image = NSImage(systemSymbolName: "info.circle", accessibilityDescription: nil)
@@ -255,7 +231,7 @@ extension AppDelegate: NSMenuDelegate {
 
         let uninstallItem = NSMenuItem(
             title: String(localized: "Uninstall AppLocker") + "…",
-            action: #selector(uninstall),
+            action: #selector(AppDelegate.uninstall),
             keyEquivalent: ""
         )
         uninstallItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
@@ -263,7 +239,7 @@ extension AppDelegate: NSMenuDelegate {
 
         let resetItem = NSMenuItem(
             title: String(localized: "Reset AppLocker") + "…",
-            action: #selector(resetApp),
+            action: #selector(AppDelegate.resetApp),
             keyEquivalent: ""
         )
         resetItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)
