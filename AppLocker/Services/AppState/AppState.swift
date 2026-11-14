@@ -56,7 +56,12 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     var unlockableApps: [InstalledApp] = []
 
     var isMock: Bool = false
-    var activeTouchBar: TouchBarType = .mainWindow
+    var activeTouchBar: TouchBarType {
+        if showingAddApp { return .addAppPopup }
+        if showingDeleteQueue { return .deleteQueuePopup }
+        if showingMissingAppsSheet { return .missingAppsPopup }
+        return .mainWindow
+    }
 
     enum TouchBarType {
         case mainWindow
