@@ -63,7 +63,6 @@ extension AppDelegate {
         }
     }
 
-    @objc
     @MainActor
     private func handleWorkspaceSleep() {
         AuthCoordinator.shared.resetGracePeriods()

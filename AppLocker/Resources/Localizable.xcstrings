@@ -122,7 +122,14 @@
       }
     },
     "Add App" : {
-
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm ứng dụng"
+          }
+        }
+      }
     },
     "Add Application" : {
       "localizations" : {
@@ -1966,7 +1973,14 @@
       }
     },
     "Search" : {
-
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tìm kiếm"
+          }
+        }
+      }
     },
     "Search activity…" : {
       "localizations" : {
@@ -2235,17 +2249,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bản cập nhật đã được tải xuống. Cài đặt ngay bây giờ?"
-          }
-        }
-      }
-    },
-    "There is no locked application." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không có ứng dụng nào bị khoá."
           }
         }
       }

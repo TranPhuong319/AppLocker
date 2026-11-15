@@ -13,24 +13,32 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
 
     private let appState = AppState.shared
     private weak var targetWindow: NSWindow?
+    private nonisolated(unsafe) var sheetObserver: NSObjectProtocol?
     private var isObservingState = false
+
+    deinit {
+        if let sheetObserver {
+            NotificationCenter.default.removeObserver(sheetObserver)
+        }
+    }
 
     func attach(to window: NSWindow) {
         if targetWindow !== window {
-            if let oldWindow = targetWindow {
-                NotificationCenter.default.removeObserver(
-                    self,
-                    name: NSWindow.willBeginSheetNotification,
-                    object: oldWindow
-                )
+            if let sheetObserver {
+                NotificationCenter.default.removeObserver(sheetObserver)
+                self.sheetObserver = nil
             }
             targetWindow = window
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(handleWillBeginSheet(_:)),
-                name: NSWindow.willBeginSheetNotification,
-                object: window
-            )
+            sheetObserver = NotificationCenter.default.addObserver(
+                forName: NSWindow.willBeginSheetNotification,
+                object: window,
+                queue: .main
+            ) { [weak self] notification in
+                let sheetWindow = notification.userInfo?["NSWindow"] as? NSWindow
+                MainActor.assumeIsolated {
+                    self?.handleWillBeginSheet(sheetWindow)
+                }
+            }
         }
 
         if !isObservingState {
@@ -43,8 +51,8 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
         }
     }
 
-    @objc private func handleWillBeginSheet(_ notification: Notification) {
-        guard let sheetWindow = notification.userInfo?["NSWindow"] as? NSWindow else { return }
+    private func handleWillBeginSheet(_ sheetWindow: NSWindow?) {
+        guard let sheetWindow else { return }
         sheetWindow.touchBar = makeTouchBar(for: appState.activeTouchBar)
     }
 
