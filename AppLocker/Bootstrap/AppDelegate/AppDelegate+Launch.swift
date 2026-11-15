@@ -43,17 +43,29 @@ extension AppDelegate {
         Logfile.app.debug("[Launch] Setting up hotkey manager...")
         self.hotkey = HotKeyManager()
 
-        NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.willSleepNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.handleWorkspaceSleep()
+        registerSleepAndLockObservers()
+    }
+
+    @MainActor
+    private func registerSleepAndLockObservers() {
+        let workspaceEvents: [NSNotification.Name] = [
+            NSWorkspace.willSleepNotification,
+            NSWorkspace.screensDidSleepNotification
+        ]
+        for eventName in workspaceEvents {
+            NSWorkspace.shared.notificationCenter.addObserver(
+                forName: eventName,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.handleWorkspaceSleep()
+                }
             }
         }
-        NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.screensDidSleepNotification,
+
+        DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("com.apple.screenIsLocked"),
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -66,14 +78,15 @@ extension AppDelegate {
     @MainActor
     private func handleWorkspaceSleep() {
         AuthCoordinator.shared.resetGracePeriods()
+        let wasDisabled = LockES.shared.isProtectionDisabled
         let timeoutMinutes = LockES.shared.autoLockTimeoutMinutes
-        if timeoutMinutes != 0 {
-            Logfile.app.info(
-                """
-                [Launch] Workspace sleep event detected (autoLockTimeoutMinutes = \(timeoutMinutes)). \
-                Re-enabling application lock.
-                """
-            )
+        Logfile.app.info(
+            """
+            [Launch] System sleep/lock event detected (autoLockTimeoutMinutes = \(timeoutMinutes), \
+            wasProtectionDisabled = \(wasDisabled)).
+            """
+        )
+        if wasDisabled {
             LockES.shared.setProtectionDisabled(false)
         }
     }
