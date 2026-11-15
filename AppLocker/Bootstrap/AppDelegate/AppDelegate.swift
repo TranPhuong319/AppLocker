@@ -202,8 +202,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func createEditMenuItem() -> NSMenuItem {
         let editMenuItem = NSMenuItem()
         let editMenu = NSMenu(title: "Edit")
-        editMenu.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
-        editMenu.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "Z")
+        editMenu.addItem(withTitle: "Undo", action: #selector(UndoRedoResponder.undo(_:)), keyEquivalent: "z")
+        editMenu.addItem(withTitle: "Redo", action: #selector(UndoRedoResponder.redo(_:)), keyEquivalent: "Z")
         editMenu.addItem(.separator())
         editMenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
         editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
@@ -262,4 +262,9 @@ extension NSApplication {
     var appDelegate: AppDelegate? {
         delegate as? AppDelegate
     }
+}
+
+@objc private protocol UndoRedoResponder {
+    func undo(_ sender: Any?)
+    func redo(_ sender: Any?)
 }

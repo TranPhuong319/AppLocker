@@ -24,6 +24,8 @@ final class AppScannerService: NSObject {
     @ObservationIgnored
     nonisolated(unsafe) var metadataQuery: NSMetadataQuery?
     @ObservationIgnored
+    nonisolated(unsafe) private var spotlightObservers: [NSObjectProtocol] = []
+    @ObservationIgnored
     var spotlightTask: Task<Void, Never>?
     @ObservationIgnored
     var appScanTask: Task<Void, Never>?
@@ -42,6 +44,7 @@ final class AppScannerService: NSObject {
         directoryWatcherDebounceTask?.cancel()
         directoryWatcherSources.forEach { $0.cancel() }
         metadataQuery?.stop()
+        spotlightObservers.forEach { NotificationCenter.default.removeObserver($0) }
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -151,18 +154,25 @@ final class AppScannerService: NSObject {
         query.operationQueue = .main
         self.metadataQuery = query
 
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(queryDidUpdate),
-            name: .NSMetadataQueryDidFinishGathering,
-            object: query
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(queryDidUpdate),
-            name: .NSMetadataQueryDidUpdate,
-            object: query
-        )
+        let finishToken = NotificationCenter.default.addObserver(
+            forName: .NSMetadataQueryDidFinishGathering,
+            object: query,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.queryDidUpdate()
+            }
+        }
+        let updateToken = NotificationCenter.default.addObserver(
+            forName: .NSMetadataQueryDidUpdate,
+            object: query,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.queryDidUpdate()
+            }
+        }
+        spotlightObservers = [finishToken, updateToken]
 
         query.predicate = NSPredicate(
             format: "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
@@ -171,7 +181,7 @@ final class AppScannerService: NSObject {
         query.start()
     }
 
-    @objc func queryDidUpdate(_ notification: Notification) {
+    private func queryDidUpdate() {
         spotlightTask?.cancel()
         spotlightTask = Task { @MainActor [weak self] in
             try? await Task.sleep(for: .milliseconds(300))

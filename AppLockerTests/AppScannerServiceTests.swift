@@ -242,6 +242,26 @@ struct AppScannerServiceTests {
         #expect(service.installedApps.count == 1)
         #expect(box.value == true)
     }
+
+    @Test("setupSpotlightQuery triggers queryDidUpdate via NotificationCenter and deallocates cleanly")
+    @MainActor
+    func spotlightObserverTriggersAndDeallocatesCleanly() {
+        var service: AppScannerService? = AppScannerService()
+        weak let weakService = service
+
+        service?.setupSpotlightQuery()
+        let query = service?.metadataQuery
+        #expect(query != nil)
+
+        NotificationCenter.default.post(name: .NSMetadataQueryDidUpdate, object: query)
+        #expect(service?.spotlightTask != nil)
+
+        service = nil
+        #expect(weakService == nil)
+
+        // Posting after deinit should be a safe no-op with no dangling observer.
+        NotificationCenter.default.post(name: .NSMetadataQueryDidUpdate, object: query)
+    }
 }
 
 // MARK: - AppIconProvider Performance & Memory Tests

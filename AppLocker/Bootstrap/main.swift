@@ -15,7 +15,6 @@ if getenv("DYLD_INSERT_LIBRARIES") != nil {
 }
 #endif
 
-setenv("OS_ACTIVITY_MODE", "disable", 1)
 UserDefaults.standard.set(false, forKey: "NSAppIntentsEnabled")
 
 let app = CustomApplication.shared
