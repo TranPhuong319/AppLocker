@@ -57,6 +57,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             }
         }
         guard let window = shared.window else { return }
+        WindowManager.activateRegularPolicy(for: window)
         shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate()
@@ -64,6 +65,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        if let window = (notification.object as? NSWindow) ?? window {
+            WindowManager.deactivateRegularPolicy(for: window)
+        }
         NotificationCenter.default.post(name: .settingsWindowWillClose, object: window)
     }
 

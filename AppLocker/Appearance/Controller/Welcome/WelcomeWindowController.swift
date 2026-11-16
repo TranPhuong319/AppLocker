@@ -15,7 +15,10 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
 
     static func show() {
         if let controller = shared {
-            controller.window?.makeKeyAndOrderFront(nil)
+            if let window = controller.window {
+                WindowManager.activateRegularPolicy(for: window)
+                window.makeKeyAndOrderFront(nil)
+            }
             NSApp.activate()
             return
         }
@@ -51,6 +54,7 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = controller
         shared = controller
 
+        WindowManager.activateRegularPolicy(for: window)
         NSApp.activate()
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
@@ -58,6 +62,9 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - NSWindowDelegate
     func windowWillClose(_ notification: Notification) {
+        if let window = (notification.object as? NSWindow) ?? window {
+            WindowManager.deactivateRegularPolicy(for: window)
+        }
         WelcomeWindowController.shared = nil
         if !isCompletingOnboarding {
             NSApp.terminate(nil)
