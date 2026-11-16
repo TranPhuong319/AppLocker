@@ -52,18 +52,29 @@ final class MockAuthResponder: ESAuthResponding, @unchecked Sendable {
 }
 
 final class MockESXPCNotificationSink: NSObject, ESXPCProtocol, @unchecked Sendable {
-    private let lock = OSAllocatedUnfairLock()
-    private(set) var blockedExecEvents: [RecordedBlockedExec] = []
-    private(set) var exitedPIDs: [Int32] = []
+    private struct State {
+        var blockedExecEvents: [RecordedBlockedExec] = []
+        var exitedPIDs: [Int32] = []
+    }
+
+    private let state = OSAllocatedUnfairLock(initialState: State())
+
+    var blockedExecEvents: [RecordedBlockedExec] {
+        state.withLock { $0.blockedExecEvents }
+    }
+
+    var exitedPIDs: [Int32] {
+        state.withLock { $0.exitedPIDs }
+    }
 
     func notifyBlockedExec(name: String, path: String, cdhash: String, pid: Int32) {
-        lock.withLock {
-            blockedExecEvents.append(RecordedBlockedExec(name: name, path: path, cdhash: cdhash, pid: pid))
+        state.withLock {
+            $0.blockedExecEvents.append(RecordedBlockedExec(name: name, path: path, cdhash: cdhash, pid: pid))
         }
     }
 
     func notifyProcessExited(pid: Int32) {
-        lock.withLock { exitedPIDs.append(pid) }
+        state.withLock { $0.exitedPIDs.append(pid) }
     }
 }
 
