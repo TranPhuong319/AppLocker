@@ -184,39 +184,59 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func createAppMenuItem() -> NSMenuItem {
         let appMenuItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "About AppLocker", action: #selector(showAboutWindow), keyEquivalent: "")
-        appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
-        appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Hide AppLocker", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(
-            withTitle: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
-        appMenu.addItem(
-            withTitle: "Show All", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
+            withTitle: String(localized: "About AppLocker"), action: #selector(showAboutWindow), keyEquivalent: "")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Quit AppLocker", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(
+            withTitle: String(localized: "Settings") + "…", action: #selector(openSettings), keyEquivalent: ",")
+        appMenu.addItem(.separator())
+        appMenu.addItem(
+            withTitle: String(localized: "Hide AppLocker"),
+            action: #selector(NSApplication.hide(_:)),
+            keyEquivalent: "h")
+        appMenu.addItem(
+            withTitle: String(localized: "Hide Others"),
+            action: #selector(NSApplication.hideOtherApplications(_:)),
+            keyEquivalent: "h")
+        appMenu.addItem(
+            withTitle: String(localized: "Show All"),
+            action: #selector(NSApplication.unhideAllApplications(_:)),
+            keyEquivalent: "")
+        #if DEBUG
+        appMenu.addItem(.separator())
+        appMenu.addItem(
+            withTitle: String(localized: "Quit AppLocker"),
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q")
+        #endif
         appMenuItem.submenu = appMenu
         return appMenuItem
     }
 
     private func createEditMenuItem() -> NSMenuItem {
         let editMenuItem = NSMenuItem()
-        let editMenu = NSMenu(title: "Edit")
-        editMenu.addItem(withTitle: "Undo", action: #selector(UndoRedoResponder.undo(_:)), keyEquivalent: "z")
-        editMenu.addItem(withTitle: "Redo", action: #selector(UndoRedoResponder.redo(_:)), keyEquivalent: "Z")
+        let editMenu = NSMenu(title: String(localized: "Edit"))
+        editMenu.addItem(
+            withTitle: String(localized: "Undo"), action: #selector(UndoRedoResponder.undo(_:)), keyEquivalent: "z")
+        editMenu.addItem(
+            withTitle: String(localized: "Redo"), action: #selector(UndoRedoResponder.redo(_:)), keyEquivalent: "Z")
         editMenu.addItem(.separator())
-        editMenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        editMenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        editMenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editMenu.addItem(withTitle: String(localized: "Cut"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: String(localized: "Copy"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: String(localized: "Paste"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(
+            withTitle: String(localized: "Select All"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editMenuItem.submenu = editMenu
         return editMenuItem
     }
 
     private func createWindowMenuItem() -> NSMenuItem {
         let windowMenuItem = NSMenuItem()
-        let windowMenu = NSMenu(title: "Window")
-        windowMenu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        let windowMenu = NSMenu(title: String(localized: "Window"))
+        windowMenu.addItem(
+            withTitle: String(localized: "Close Window"),
+            action: #selector(NSWindow.performClose(_:)),
+            keyEquivalent: "w")
         windowMenuItem.submenu = windowMenu
         return windowMenuItem
     }

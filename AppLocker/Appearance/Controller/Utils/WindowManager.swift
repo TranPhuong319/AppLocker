@@ -30,6 +30,26 @@ struct WindowConfiguration {
 
 @MainActor
 class WindowManager {
+    private static var regularPolicyWindows: Set<ObjectIdentifier> = []
+
+    /// Registers a window as requiring `.regular` activation policy (Dock icon & menu bar)
+    /// and switches the application policy if needed.
+    static func activateRegularPolicy(for window: NSWindow) {
+        regularPolicyWindows.insert(ObjectIdentifier(window))
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
+    }
+
+    /// Unregisters a closing window from `.regular` activation policy and reverts to
+    /// `.accessory` once no registered regular windows remain open.
+    static func deactivateRegularPolicy(for window: NSWindow) {
+        regularPolicyWindows.remove(ObjectIdentifier(window))
+        if regularPolicyWindows.isEmpty && NSApp.activationPolicy() != .accessory {
+            NSApp.setActivationPolicy(.accessory)
+        }
+    }
+
     static func createWindow(
         contentView: NSView,
         configuration: WindowConfiguration
@@ -75,6 +95,7 @@ class WindowManager {
         window.titlebarSeparatorStyle = configuration.titlebarSeparatorStyle
         window.isOpaque = configuration.isOpaque
         window.isMovableByWindowBackground = false
+        window.collectionBehavior.insert(.fullScreenNone)
 
         if let backgroundColor = configuration.backgroundColor {
             window.backgroundColor = backgroundColor
