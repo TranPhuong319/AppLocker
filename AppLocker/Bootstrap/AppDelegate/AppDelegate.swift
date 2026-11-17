@@ -97,44 +97,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 #if !DEBUG
     @MainActor
     private func handoverToLaunchdIfManual() async -> Bool {
-        if !isAgentActive {
-            Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
-            _ = manageAgent(action: .install)
-        }
+        Logfile.app.info("[Bootstrap] App launched manually. Checking launchctl handover...")
+        let decision = await LaunchBootstrapPolicy.resolveHandover(
+            isAgentActive: { isAgentActive },
+            installAgent: {
+                Logfile.app.info("[Bootstrap] Agent not loaded in launchctl. Registering...")
+                _ = manageAgent(action: .install)
+            },
+            kickstart: { [self] in
+                await runLaunchctlKickstart(timeout: .seconds(3))
+            },
+            forceReRegister: { [self] in
+                Logfile.app.warning("[Bootstrap] Initial launchctl kickstart failed. Force re-registering agent...")
+                return forceReRegisterAgent()
+            }
+        )
 
-        guard isAgentActive else {
+        switch decision {
+        case .terminateManualAndHandover:
+            Logfile.app.notice("[Bootstrap] Handed over to launchd instance. Terminating manual launcher.")
+            NSApp.terminate(nil)
+            return true
+        case .continueManual:
             let statusDesc = SMAppService.agent(plistName: "\(Self.plistName).plist").status.description
             Logfile.app.warning(
-                "[Bootstrap] Agent is not active (\(statusDesc, privacy: .public)). Continuing to run directly."
+                """
+                [Bootstrap] Could not hand over to launchctl (status=\(statusDesc, privacy: .public)). \
+                Continuing to run current manual instance directly.
+                """
             )
             return false
         }
-
-        Logfile.app.info("[Bootstrap] App launched manually. Restarting via launchctl...")
-        var kickstartSucceeded = await runLaunchctlKickstart(timeout: .seconds(3))
-
-        // If kickstart failed or timed out (e.g. launchd in penalty box or corrupted agent state):
-        if !kickstartSucceeded {
-            Logfile.app.warning("[Bootstrap] Initial launchctl kickstart failed. Force re-registering agent...")
-            let reRegistered = forceReRegisterAgent()
-            if reRegistered {
-                kickstartSucceeded = await runLaunchctlKickstart(timeout: .seconds(3))
-            }
-        }
-
-        if kickstartSucceeded {
-            Logfile.app.notice("[Bootstrap] Successfully kickstarted launchd instance. Terminating manual launcher.")
-            NSApp.terminate(nil)
-            return true
-        }
-
-        Logfile.app.warning(
-            """
-            [Bootstrap] Could not hand over to launchctl. \
-            Continuing to run current manual instance directly.
-            """
-        )
-        return false
     }
 #endif
 
@@ -245,22 +238,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
 
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+        let decision = LaunchBootstrapPolicy.resolveSingleInstance(
+            isLaunchedByLaunchd: isLaunchedByLaunchd,
+            currentPID: ProcessInfo.processInfo.processIdentifier,
+            ignoringPID: ignoringPID,
+            runningPIDs: apps.map(\.processIdentifier)
+        )
 
-        // Filter out the current process and the ignored PID
-        let otherApps = apps.filter { app in
-            return app.processIdentifier != ProcessInfo.processInfo.processIdentifier
-                && app.processIdentifier != ignoringPID
-        }
-
-        if !otherApps.isEmpty {
+        switch decision {
+        case .proceed:
+            return
+        case .terminateOtherManualInstances(let otherPIDs):
+            Logfile.app.info(
+                """
+                [Bootstrap] Launchd instance taking over from manual instance(s) \
+                (PIDs: \(otherPIDs, privacy: .public)).
+                """
+            )
+            apps.filter { otherPIDs.contains($0.processIdentifier) }.forEach { $0.terminate() }
+        case .activateAndTerminateSelf(let targetPID):
             Logfile.app.warning(
                 """
                 [Bootstrap] Another instance is running \
-                (PIDs: \(otherApps.map { $0.processIdentifier }, privacy: .public)). \
+                (PIDs: \([targetPID], privacy: .public)). \
                 Activating existing instance and terminating this new instance.
                 """
             )
-            otherApps.first?.activate()
+            apps.first(where: { $0.processIdentifier == targetPID })?.activate()
             NSApp.terminate(nil)
         }
     }
