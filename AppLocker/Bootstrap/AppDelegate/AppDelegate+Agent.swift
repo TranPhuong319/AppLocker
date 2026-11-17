@@ -120,7 +120,7 @@ extension AppDelegate {
     func runLaunchctlKickstart(timeout: Duration = .seconds(3)) async -> Bool {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = ["kickstart", "-k", "gui/\(getuid())/\(Self.plistName)"]
+        process.arguments = ["kickstart", "gui/\(getuid())/\(Self.plistName)"]
         do {
             try process.run()
         } catch {
@@ -162,7 +162,7 @@ extension AppDelegate {
         case .installed, .alreadyInstalled:
             return true
         default:
-            openSystemSettingsForExtension()
+            SMAppService.openSystemSettingsLoginItems()
             AlertShow.showInfo(
                 title: String(localized: "Enable Background Service"),
                 message: String(
