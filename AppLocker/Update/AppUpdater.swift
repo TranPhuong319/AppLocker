@@ -5,18 +5,9 @@
 //  Created by Doe Phương on 26/8/25.
 //
 
+import AppKit
 import Foundation
 import Sparkle
-
-// MARK: - Enums
-
-enum Channel {
-    case stable, beta
-}
-
-enum UpdateDownloadState {
-    case notDownloaded, downloaded
-}
 
 // MARK: - Notification Action
 
@@ -33,7 +24,11 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 
     // Feed URL override
     func feedURLString(for updater: SPUUpdater) -> String? {
-        channel == .beta ? betaFeedURL : nil
+        UpdatePolicy.feedURLString(channel: channel, betaFeedURL: betaFeedURL)
+    }
+
+    func updater(_ updater: SPUUpdater, mayPerform updateCheck: SPUUpdateCheck) throws {
+        try UpdatePolicy.validateUpdateCheck(channel: channel, betaFeedURL: betaFeedURL)
     }
 
     // MARK: Sparkle callbacks
@@ -57,7 +52,7 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 
     func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
         Task { @MainActor [weak self] in
-            guard self != nil else { return }
+            self?.downloadState = .notDownloaded
             AppUpdater.shared.handleNoUpdateFound()
             NotificationCenter.default.post(name: .appLockerPendingUpdateDidChange, object: nil)
         }
@@ -86,30 +81,50 @@ final class AppUpdater: NSObject {
 
     static let shared = AppUpdater()
 
-    private var updateTimer: Timer?
     let delegate: UpdaterDelegate
     let updaterController: SPUStandardUpdaterController
+    private let betaFeedResolver = BetaFeedResolver()
 
     private override init() {
         let delegate = UpdaterDelegate()
         self.delegate = delegate
 
         self.updaterController = SPUStandardUpdaterController(
-            startingUpdater: true,
+            startingUpdater: false,
             updaterDelegate: delegate,
             userDriverDelegate: nil
         )
 
         super.init()
-        syncChannelFromDefaults()
+        #if DEBUG
+        updaterController.updater.updateCheckInterval = 600
+        #endif
+        delegate.channel = UpdatePolicy.channel(
+            from: UserDefaults.standard.string(forKey: "updateChannel")
+        )
         observeUserDefaults()
+
+        if delegate.channel == .beta {
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                _ = await self.fetchLatestBeta()
+                self.updaterController.startUpdater()
+            }
+        } else {
+            updaterController.startUpdater()
+        }
     }
 
     // MARK: - Channel sync (SOURCE OF TRUTH = UserDefaults)
 
     private func syncChannelFromDefaults() {
-        let saved = UserDefaults.standard.string(forKey: "updateChannel") ?? "Stable"
-        delegate.channel = (saved == "Beta") ? .beta : .stable
+        let saved = UserDefaults.standard.string(forKey: "updateChannel")
+        let newChannel = UpdatePolicy.channel(from: saved)
+        guard newChannel != delegate.channel else { return }
+        delegate.channel = newChannel
+        if newChannel == .beta, delegate.betaFeedURL == nil {
+            Task { _ = await fetchLatestBeta() }
+        }
     }
 
     private func observeUserDefaults() {
@@ -124,132 +139,30 @@ final class AppUpdater: NSObject {
         }
     }
 
-    // MARK: - Auto check
-
-    func startAutoCheck(interval: TimeInterval = 6 * 60 * 60) {
-        updateTimer?.invalidate()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.silentCheckForUpdates()
-            }
-        }
-        updateTimer?.tolerance = 10
-    }
-
-    func startTestAutoCheck(interval: TimeInterval? = nil) {
-        #if DEBUG
-            startAutoCheck(interval: interval ?? 60)
-        #else
-            if delegate.channel == .beta {
-                Task { _ = await fetchLatestBeta() }
-            }
-        #endif
-    }
-
     // MARK: - Update checks
 
-    func silentCheckForUpdates() {
-        let updater = updaterController.updater
-        guard updater.automaticallyChecksForUpdates, !updater.sessionInProgress else { return }
-
-        let triggerCheck = { [weak self] in
-            self?.guardedCheck { updater in
-                if updater.automaticallyDownloadsUpdates {
-                    updater.checkForUpdatesInBackground()
-                } else {
-                    updater.checkForUpdateInformation()
-                }
-            }
-        }
-
+    func checkForUpdates() {
         if delegate.channel == .beta {
             Task { @MainActor [weak self] in
-                guard let self, await self.fetchLatestBeta() else { return }
-                triggerCheck()
-            }
-        } else {
-            triggerCheck()
-        }
-    }
-
-    private func guardedCheck(_ block: (SPUUpdater) -> Void) {
-        let updater = updaterController.updater
-        guard !updater.sessionInProgress else { return }
-        block(updater)
-    }
-
-    func checkForUpdates() {
-        guardedCheck { [weak self] _ in
-            guard let self else { return }
-            if self.delegate.channel == .beta {
-                Task { @MainActor [weak self] in
-                    guard let self, await self.fetchLatestBeta() else { return }
-                    self.updaterController.checkForUpdates(nil)
-                }
-            } else {
+                guard let self else { return }
+                _ = await self.fetchLatestBeta()
                 self.updaterController.checkForUpdates(nil)
             }
-        }
-    }
-
-#if DEBUG
-    func debugForceCheckIfPossible() {
-        let updater = updaterController.updater
-        guard !updater.sessionInProgress else { return }
-        if updater.automaticallyDownloadsUpdates {
-            updater.checkForUpdatesInBackground()
         } else {
-            updater.checkForUpdateInformation()
+            updaterController.checkForUpdates(nil)
         }
     }
-#endif
 
     // MARK: - Beta appcast fetch
 
-    private struct CachedBetaFeed {
-        let url: String
-        let fetchedAt: Date
-    }
-    private var cachedBetaFeed: CachedBetaFeed?
-    private let betaFeedTTL: TimeInterval = 15 * 60
-
     private func fetchLatestBeta() async -> Bool {
-        if let cached = cachedBetaFeed, Date().timeIntervalSince(cached.fetchedAt) < betaFeedTTL {
-            self.delegate.betaFeedURL = cached.url
-            return true
-        }
-
-        guard let url = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases") else {
-            return false
-        }
-        do {
-            var request = URLRequest(url: url)
-            request.timeoutInterval = 15
-            let (data, response) = try await URLSession.shared.data(for: request)
-            if let http = response as? HTTPURLResponse, http.statusCode == 403 {
-                Logfile.app.warning("[Updater] GitHub API rate limit hit (HTTP 403).")
-                return delegate.betaFeedURL != nil
-            }
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
-            let releases = try decoder.decode([BetaGitHubRelease].self, from: data)
-            if let beta = releases.first(where: { $0.prerelease }),
-               let appcast = beta.assets.first(where: { $0.name == "appcast.xml" }) {
-                let downloadUrl = appcast.browserDownloadUrl
-                self.delegate.betaFeedURL = downloadUrl
-                self.cachedBetaFeed = CachedBetaFeed(url: downloadUrl, fetchedAt: Date())
-                return true
-            }
-        } catch {
-            Logfile.app.warning("[Updater] Failed to fetch beta releases: \(error.localizedDescription)")
-            return delegate.betaFeedURL != nil
-        }
-        return false
+        let success = await betaFeedResolver.fetchLatestBeta()
+        delegate.betaFeedURL = betaFeedResolver.currentBetaFeedURL
+        return success
     }
 
     // MARK: - Exposed state
 
-    var currentChannel: Channel { delegate.channel }
     var downloadState: UpdateDownloadState { delegate.downloadState }
 
     private(set) var availableUpdateVersion: String?
@@ -274,16 +187,4 @@ final class AppUpdater: NSObject {
         get { updaterController.updater.automaticallyDownloadsUpdates }
         set { updaterController.updater.automaticallyDownloadsUpdates = newValue }
     }
-}
-
-// MARK: - GitHub API Models
-
-struct BetaGitHubRelease: Decodable {
-    let prerelease: Bool
-    let assets: [BetaGitHubAsset]
-}
-
-struct BetaGitHubAsset: Decodable {
-    let name: String
-    let browserDownloadUrl: String
 }

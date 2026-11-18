@@ -12,8 +12,8 @@ struct UpdatesSettingsTab: View {
 
     @State private var hasAvailableUpdate: Bool = false
     @State private var availableUpdateVersion: String = ""
-    @AppStorage("automaticallyChecksForUpdates") private var autoCheck: Bool = true
-    @AppStorage("automaticallyDownloadsUpdates") private var autoDownload: Bool = false
+    @State private var autoCheck: Bool = true
+    @State private var autoDownload: Bool = false
     @AppStorage("updateChannel") private var selectedChannelRaw: String = UpdateChannel.stable.rawValue
 
     init(isMock: Bool = false) {
@@ -105,6 +105,8 @@ struct UpdatesSettingsTab: View {
 
     private func updateSparkleStatus() {
         guard !isMock else { return }
+        autoCheck = AppUpdater.shared.automaticallyChecksForUpdates
+        autoDownload = AppUpdater.shared.automaticallyDownloadsUpdates
         hasAvailableUpdate = AppUpdater.shared.hasAvailableUpdate
         availableUpdateVersion = AppUpdater.shared.availableUpdateVersion ?? ""
     }
