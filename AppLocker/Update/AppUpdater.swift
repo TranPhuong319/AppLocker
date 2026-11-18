@@ -27,10 +27,6 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
         UpdatePolicy.feedURLString(channel: channel, betaFeedURL: betaFeedURL)
     }
 
-    func updater(_ updater: SPUUpdater, mayPerform updateCheck: SPUUpdateCheck) throws {
-        try UpdatePolicy.validateUpdateCheck(channel: channel, betaFeedURL: betaFeedURL)
-    }
-
     // MARK: Sparkle callbacks
 
     func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
@@ -156,14 +152,21 @@ final class AppUpdater: NSObject {
     // MARK: - Beta appcast fetch
 
     private func fetchLatestBeta() async -> Bool {
+        let previousFallback = betaFeedResolver.hasNoActiveBetaRelease
         let success = await betaFeedResolver.fetchLatestBeta()
         delegate.betaFeedURL = betaFeedResolver.currentBetaFeedURL
+        if betaFeedResolver.hasNoActiveBetaRelease != previousFallback {
+            NotificationCenter.default.post(name: .appLockerBetaFallbackDidChange, object: nil)
+        }
         return success
     }
 
     // MARK: - Exposed state
 
     var downloadState: UpdateDownloadState { delegate.downloadState }
+    var isBetaUsingStableFallback: Bool {
+        delegate.channel == .beta && betaFeedResolver.hasNoActiveBetaRelease
+    }
 
     private(set) var availableUpdateVersion: String?
     var hasAvailableUpdate: Bool { availableUpdateVersion != nil }
@@ -187,4 +190,8 @@ final class AppUpdater: NSObject {
         get { updaterController.updater.automaticallyDownloadsUpdates }
         set { updaterController.updater.automaticallyDownloadsUpdates = newValue }
     }
+}
+
+extension Notification.Name {
+    static let appLockerBetaFallbackDidChange = Notification.Name("appLockerBetaFallbackDidChange")
 }

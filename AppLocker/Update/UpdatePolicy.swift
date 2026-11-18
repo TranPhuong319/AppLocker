@@ -27,19 +27,6 @@ struct BetaGitHubAsset: Decodable, Sendable {
     let browserDownloadUrl: String
 }
 
-enum BetaFeedError: LocalizedError {
-    case unavailable
-
-    var errorDescription: String? {
-        String(
-            localized: """
-            Could not fetch the latest beta release from GitHub. \
-            Please check your internet connection or try again later.
-            """
-        )
-    }
-}
-
 enum UpdatePolicy {
     static let betaReleasesEndpoint = URL(string: "https://api.github.com/repos/TranPhuong319/AppLocker/releases")
 
@@ -51,10 +38,8 @@ enum UpdatePolicy {
         channel == .beta ? betaFeedURL : nil
     }
 
-    static func validateUpdateCheck(channel: Channel, betaFeedURL: String?) throws {
-        if channel == .beta, betaFeedURL == nil {
-            throw BetaFeedError.unavailable
-        }
+    static func effectiveNotificationChannel(selectedChannel: Channel, betaFeedURL: String?) -> Channel {
+        selectedChannel == .beta && betaFeedURL != nil ? .beta : .stable
     }
 
     static func extractBetaAppcastURL(from data: Data) throws -> String? {
@@ -80,6 +65,7 @@ final class BetaFeedResolver {
 
     private var cachedBetaFeed: CachedBetaFeed?
     private(set) var currentBetaFeedURL: String?
+    private(set) var hasNoActiveBetaRelease = false
     private let ttl: TimeInterval
     private let now: () -> Date
     private let loadData: DataLoader
@@ -99,6 +85,7 @@ final class BetaFeedResolver {
     func fetchLatestBeta() async -> Bool {
         if let cached = cachedBetaFeed, now().timeIntervalSince(cached.fetchedAt) < ttl {
             currentBetaFeedURL = cached.url
+            hasNoActiveBetaRelease = false
             return true
         }
 
@@ -110,15 +97,24 @@ final class BetaFeedResolver {
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
             let (data, response) = try await loadData(request)
-            if let http = response as? HTTPURLResponse, http.statusCode == 403 {
-                Logfile.app.warning("[Updater] GitHub API rate limit hit (HTTP 403).")
-                return currentBetaFeedURL != nil
+            if let http = response as? HTTPURLResponse {
+                if http.statusCode == 403 {
+                    Logfile.app.warning("[Updater] GitHub API rate limit hit (HTTP 403).")
+                    return currentBetaFeedURL != nil
+                }
+                guard (200..<300).contains(http.statusCode) else {
+                    return currentBetaFeedURL != nil
+                }
             }
             if let downloadURL = try UpdatePolicy.extractBetaAppcastURL(from: data) {
                 currentBetaFeedURL = downloadURL
                 cachedBetaFeed = CachedBetaFeed(url: downloadURL, fetchedAt: now())
+                hasNoActiveBetaRelease = false
                 return true
             }
+            currentBetaFeedURL = nil
+            cachedBetaFeed = nil
+            hasNoActiveBetaRelease = true
         } catch {
             Logfile.app.warning("[Updater] Failed to fetch beta releases: \(error.localizedDescription)")
             return currentBetaFeedURL != nil
