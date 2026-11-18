@@ -14,6 +14,7 @@ struct UpdatesSettingsTab: View {
     @State private var availableUpdateVersion: String = ""
     @State private var autoCheck: Bool = true
     @State private var autoDownload: Bool = false
+    @State private var isBetaUsingStableFallback: Bool = false
     @AppStorage("updateChannel") private var selectedChannelRaw: String = UpdateChannel.stable.rawValue
 
     init(isMock: Bool = false) {
@@ -59,9 +60,17 @@ struct UpdatesSettingsTab: View {
                     }
                 }
 
-                Text(selectedChannel.description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(selectedChannel.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    if selectedChannel == .beta, isBetaUsingStableFallback {
+                        Text("No beta release is currently available. Checking stable updates instead.")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
 
                 Button(action: checkForUpdates, label: {
                     Label("Check for Updates Now", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
@@ -73,6 +82,12 @@ struct UpdatesSettingsTab: View {
             updateSparkleStatus()
         }
         .onReceive(NotificationCenter.default.publisher(for: .appLockerPendingUpdateDidChange)) { _ in
+            updateSparkleStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .appLockerBetaFallbackDidChange)) { _ in
+            updateSparkleStatus()
+        }
+        .onChange(of: selectedChannelRaw) { _, _ in
             updateSparkleStatus()
         }
     }
@@ -109,6 +124,7 @@ struct UpdatesSettingsTab: View {
         autoDownload = AppUpdater.shared.automaticallyDownloadsUpdates
         hasAvailableUpdate = AppUpdater.shared.hasAvailableUpdate
         availableUpdateVersion = AppUpdater.shared.availableUpdateVersion ?? ""
+        isBetaUsingStableFallback = AppUpdater.shared.isBetaUsingStableFallback
     }
 
     private func checkForUpdates() {

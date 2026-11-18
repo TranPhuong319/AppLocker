@@ -27,9 +27,13 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 
     func buildUpdateNotification() -> UNNotificationRequest {
         let updater = AppUpdater.shared.delegate
+        let effectiveChannel = UpdatePolicy.effectiveNotificationChannel(
+            selectedChannel: updater.channel,
+            betaFeedURL: updater.betaFeedURL
+        )
         let content = UNMutableNotificationContent()
 
-        switch (updater.channel, updater.downloadState) {
+        switch (effectiveChannel, updater.downloadState) {
 
         // 1. Stable – chưa tải
         case (.stable, .notDownloaded):

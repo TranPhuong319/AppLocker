@@ -47,13 +47,9 @@ struct AppUpdaterTests {
         #expect(UpdatePolicy.feedURLString(channel: .beta, betaFeedURL: betaURL) == betaURL)
         #expect(UpdatePolicy.feedURLString(channel: .beta, betaFeedURL: nil) == nil)
 
-        #expect(throws: BetaFeedError.self) {
-            try UpdatePolicy.validateUpdateCheck(channel: .beta, betaFeedURL: nil)
-        }
-        #expect(throws: Never.self) {
-            try UpdatePolicy.validateUpdateCheck(channel: .beta, betaFeedURL: betaURL)
-            try UpdatePolicy.validateUpdateCheck(channel: .stable, betaFeedURL: nil)
-        }
+        #expect(UpdatePolicy.effectiveNotificationChannel(selectedChannel: .stable, betaFeedURL: betaURL) == .stable)
+        #expect(UpdatePolicy.effectiveNotificationChannel(selectedChannel: .beta, betaFeedURL: betaURL) == .beta)
+        #expect(UpdatePolicy.effectiveNotificationChannel(selectedChannel: .beta, betaFeedURL: nil) == .stable)
     }
 
     @Test("Extracts appcast.xml URL from first GitHub prerelease only")
@@ -140,6 +136,7 @@ struct AppUpdaterTests {
 
         #expect(await resolver.fetchLatestBeta() == false)
         #expect(resolver.currentBetaFeedURL == nil)
+        #expect(resolver.hasNoActiveBetaRelease == false)
     }
 
     @Test("BetaFeedResolver keeps stale cached URL when refresh fails offline")
@@ -168,6 +165,37 @@ struct AppUpdaterTests {
         nowBox.value = Date(timeIntervalSince1970: 2_000 + 20 * 60)
         #expect(await resolver.fetchLatestBeta() == true)
         #expect(resolver.currentBetaFeedURL == cachedURL)
+    }
+
+    @Test("BetaFeedResolver clears cached URL when prereleases are removed so it falls back to Stable")
+    @MainActor
+    func betaFeedClearsStaleURLWhenPrereleaseRemoved() async {
+        let nowBox = LockedBox(Date(timeIntervalSince1970: 3_000))
+        let callIndex = LockedBox(0)
+
+        let resolver = BetaFeedResolver(
+            ttl: 15 * 60,
+            now: { nowBox.value },
+            loadData: { request in
+                let idx = callIndex.withLock { val in
+                    val += 1
+                    return val
+                }
+                let payload = idx == 1
+                    ? self.makeBetaPayload(appcastURL: "https://example.com/alpha/appcast.xml")
+                    : Data(#"[{"prerelease": false, "assets": []}]"#.utf8)
+                return (payload, try self.makeResponse(for: request, statusCode: 200))
+            }
+        )
+
+        #expect(await resolver.fetchLatestBeta() == true)
+        #expect(resolver.currentBetaFeedURL == "https://example.com/alpha/appcast.xml")
+        #expect(resolver.hasNoActiveBetaRelease == false)
+
+        nowBox.value = Date(timeIntervalSince1970: 3_000 + 20 * 60)
+        #expect(await resolver.fetchLatestBeta() == false)
+        #expect(resolver.currentBetaFeedURL == nil)
+        #expect(resolver.hasNoActiveBetaRelease == true)
     }
 }
 

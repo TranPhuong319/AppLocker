@@ -961,16 +961,6 @@
         }
       }
     },
-    "Could not fetch the latest beta release from GitHub. Please check your internet connection or try again later." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không thể tải bản phát hành Beta mới nhất từ GitHub. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau."
-          }
-        }
-      }
-    },
     "Could not load activity" : {
       "localizations" : {
         "vi" : {
@@ -1667,6 +1657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Di chuyển đến thư mục Ứng dụng"
+          }
+        }
+      }
+    },
+    "No beta release is currently available. Checking stable updates instead." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiện không có bản phát hành Thử nghiệm nào. Đang kiểm tra bản cập nhật Chính thức thay thế."
           }
         }
       }
