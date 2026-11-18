@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E0B1800230A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
+		E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
+		E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800430A0000100E22661 /* AppUpdaterTests.swift */; };
 		E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
 		E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
 		E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */; };
@@ -250,6 +253,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E0B1800130A0000100E22661 /* UpdatePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePolicy.swift; sourceTree = "<group>"; };
+		E0B1800430A0000100E22661 /* AppUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdaterTests.swift; sourceTree = "<group>"; };
 		E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchBootstrapPolicy.swift; sourceTree = "<group>"; };
 		E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchHandoverAndSingleInstanceTests.swift; sourceTree = "<group>"; };
 		DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAndLogStoreTests.swift; sourceTree = "<group>"; };
@@ -762,6 +767,7 @@
 			isa = PBXGroup;
 			children = (
 				E0FD75E62F59E36600D46B31 /* AppUpdater.swift */,
+				E0B1800130A0000100E22661 /* UpdatePolicy.swift */,
 			);
 			path = Update;
 			sourceTree = "<group>";
@@ -921,6 +927,7 @@
 				DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */,
 				7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */,
 				E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */,
+				E0B1800430A0000100E22661 /* AppUpdaterTests.swift */,
 				E0FDB02C2F59E37C00D46B31 /* EndpointSecurityTestDoubles.swift */,
 				E0FD90012F59E37C00D46B31 /* EndpointSecurityProtectionTests.swift */,
 				E0FD900B2F59E37C00D46B31 /* EndpointSecurityProtectionTests+Lifecycle.swift */,
@@ -1236,6 +1243,7 @@
 				E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */,
 				E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */,
 				E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */,
+				E0B1800230A0000100E22661 /* UpdatePolicy.swift in Sources */,
 				E0FD767E2F59E3BE00D46B31 /* ESAppProtocol.swift in Sources */,
 				E0FD767F2F59E3BE00D46B31 /* FuzzySearch.swift in Sources */,
 				E03BB182305AA41B009552C3 /* CodeSignatureValidator.swift in Sources */,
@@ -1294,6 +1302,8 @@
 				25AC289611AFE543A169EE82 /* AppScannerServiceTests.swift in Sources */,
 				E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */,
 				E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */,
+				E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */,
+				E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */,
 				E0FD90112F59E37C00D46B31 /* AppInfo.swift in Sources */,
 				E0FD90122F59E37C00D46B31 /* CDHashHelper.swift in Sources */,
 				E0FD90132F59E37C00D46B31 /* FuzzySearch.swift in Sources */,

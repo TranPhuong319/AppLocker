@@ -36,7 +36,7 @@ extension AppDelegate {
         Logfile.app.debug("[Launch] Starting menu bar and Notification setup")
         self.menuBarController.setup(appearance: currentThemeAppearance)
         self.setupUpdateObserver()
-        AppUpdater.shared.startTestAutoCheck()
+        _ = AppUpdater.shared
 
         self.setupNotifications()
 
