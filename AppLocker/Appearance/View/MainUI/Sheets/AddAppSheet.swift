@@ -47,10 +47,6 @@ struct AddAppSheet: View {
             minWidth: WindowLayout.addAppMinSize.width,
             minHeight: WindowLayout.addAppMinSize.height
         )
-        .task {
-            unfocus()
-            NSApp.keyWindow?.makeFirstResponder(nil)
-        }
         .onDisappear {
             appState.searchTextUnlockableApps = ""
         }
