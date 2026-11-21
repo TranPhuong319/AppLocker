@@ -21,6 +21,8 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     private var searchUnlockableAppsTask: Task<Void, Never>?
     @ObservationIgnored
     var pendingMissingCheckTask: Task<Void, Never>?
+    @ObservationIgnored
+    let installedAppsProvider: () -> [InstalledApp]
 
     var manager: LockES
     var showingAddApp = false
@@ -70,9 +72,14 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
         case missingAppsPopup
     }
 
-    init(manager: LockES? = nil, isMock: Bool = false) {
+    init(
+        manager: LockES? = nil,
+        isMock: Bool = false,
+        installedAppsProvider: @escaping () -> [InstalledApp] = { AppScannerService.shared.installedApps }
+    ) {
         self.manager = manager ?? LockES.shared
         self.isMock = isMock
+        self.installedAppsProvider = installedAppsProvider
 
         super.init()
 

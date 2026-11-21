@@ -30,9 +30,12 @@ class LockES {
     @ObservationIgnored
     var cdhashPeriodicTask: Task<Void, Never>?
 
+    private let configStore: ConfigStore
+
     var onConfigUpdated: (() -> Void)?
 
-    init() {
+    init(configStore: ConfigStore = .shared) {
+        self.configStore = configStore
         // Defer loading to bootstrap() to allow ES Handshake first
     }
 
@@ -45,14 +48,15 @@ class LockES {
         if let onUpdate = onUpdate {
             self.onConfigUpdated = onUpdate
         }
-        ConfigStore.shared.performHandshake { [weak self] success in
+        let store = self.configStore
+        store.performHandshake { [weak self] success in
             guard let self else { return }
             Logfile.policy.info(
                 "[LockES] ES Handshake finished (success=\(success, privacy: .public)). Proceeding to load config."
             )
 
             // Safe to load config now (we are Muted or Launcher mode)
-            let loaded = ConfigStore.shared.load()
+            let loaded = store.load()
 
             Task { @MainActor [weak self] in
                 guard let self else { return }
@@ -72,7 +76,7 @@ class LockES {
 
     // MARK: - Persistence Helper
     func save() {
-        ConfigStore.shared.save(
+        configStore.save(
             apps: self.lockedApps,
             isDisabled: self.isProtectionDisabled,
             allowIncomingCalls: self.allowIncomingCalls,

@@ -10,9 +10,8 @@ import Foundation
 
 extension AppState {
     func refreshAppLists() {
-        let allApps = AppScannerService.shared.installedApps.isEmpty
-            ? manager.allApps
-            : AppScannerService.shared.installedApps
+        let scannedApps = installedAppsProvider()
+        let allApps = scannedApps.isEmpty ? manager.allApps : scannedApps
 
         if manager.migrateRenamedApps(allApps: allApps) {
             refreshAppLists()

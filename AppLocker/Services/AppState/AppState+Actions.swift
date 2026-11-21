@@ -54,7 +54,7 @@ extension AppState {
     @objc func dismissAddAppSheet() {
         showingAddApp = false
         selectedToLock.removeAll()
-        searchTextLockApps = ""
+        searchTextUnlockableApps = ""
     }
 
     @objc func chooseCustomApp() {

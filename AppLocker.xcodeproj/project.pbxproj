@@ -10,6 +10,13 @@
 		E0B1800230A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
 		E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
 		E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800430A0000100E22661 /* AppUpdaterTests.swift */; };
+		E0C1900230B0000100E22661 /* PresentationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C1900130B0000100E22661 /* PresentationStateTests.swift */; };
+		E0C1900330B0000100E22661 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DD2F59E36600D46B31 /* AppState.swift */; };
+		E0C1900430B0000100E22661 /* AppState+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD770B2F59E36600D46B31 /* AppState+Actions.swift */; };
+		E0C1900530B0000100E22661 /* AppState+ListRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77092F59E36600D46B31 /* AppState+ListRefresh.swift */; };
+		E0C1900630B0000100E22661 /* AppState+MissingApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */; };
+		E0C1900730B0000100E22661 /* AppState+AppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */; };
+		E0C1900830B0000100E22661 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A9143E309B725900E22661 /* LogSelectionManager.swift */; };
 		E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
 		E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
 		E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */; };
@@ -255,6 +262,7 @@
 /* Begin PBXFileReference section */
 		E0B1800130A0000100E22661 /* UpdatePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePolicy.swift; sourceTree = "<group>"; };
 		E0B1800430A0000100E22661 /* AppUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdaterTests.swift; sourceTree = "<group>"; };
+		E0C1900130B0000100E22661 /* PresentationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationStateTests.swift; sourceTree = "<group>"; };
 		E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchBootstrapPolicy.swift; sourceTree = "<group>"; };
 		E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchHandoverAndSingleInstanceTests.swift; sourceTree = "<group>"; };
 		DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAndLogStoreTests.swift; sourceTree = "<group>"; };
@@ -928,6 +936,7 @@
 				7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */,
 				E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */,
 				E0B1800430A0000100E22661 /* AppUpdaterTests.swift */,
+				E0C1900130B0000100E22661 /* PresentationStateTests.swift */,
 				E0FDB02C2F59E37C00D46B31 /* EndpointSecurityTestDoubles.swift */,
 				E0FD90012F59E37C00D46B31 /* EndpointSecurityProtectionTests.swift */,
 				E0FD900B2F59E37C00D46B31 /* EndpointSecurityProtectionTests+Lifecycle.swift */,
@@ -1304,6 +1313,13 @@
 				E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */,
 				E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */,
 				E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */,
+				E0C1900230B0000100E22661 /* PresentationStateTests.swift in Sources */,
+				E0C1900330B0000100E22661 /* AppState.swift in Sources */,
+				E0C1900430B0000100E22661 /* AppState+Actions.swift in Sources */,
+				E0C1900530B0000100E22661 /* AppState+ListRefresh.swift in Sources */,
+				E0C1900630B0000100E22661 /* AppState+MissingApps.swift in Sources */,
+				E0C1900730B0000100E22661 /* AppState+AppPicker.swift in Sources */,
+				E0C1900830B0000100E22661 /* LogSelectionManager.swift in Sources */,
 				E0FD90112F59E37C00D46B31 /* AppInfo.swift in Sources */,
 				E0FD90122F59E37C00D46B31 /* CDHashHelper.swift in Sources */,
 				E0FD90132F59E37C00D46B31 /* FuzzySearch.swift in Sources */,
