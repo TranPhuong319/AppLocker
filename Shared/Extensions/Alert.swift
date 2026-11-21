@@ -95,7 +95,9 @@ enum AlertShow {
             return modalResponse
         } else {
             alert.window.appearance = NSApp.appDelegate?.currentThemeAppearance
-            return alert.runModal()
+            let response = alert.runModal()
+            alert.window.orderOut(nil)
+            return response
         }
     }
 

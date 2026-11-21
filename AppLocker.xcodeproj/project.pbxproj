@@ -20,6 +20,9 @@
 		E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
 		E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
 		E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */; };
+		E0D1900230C0000100E22661 /* AppDirectoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */; };
+		E0D1900330C0000100E22661 /* AppDirectoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */; };
+		E0D1900530C0000100E22661 /* AppDirectoryPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */; };
 		A96ACBCD8BF1D084C84A6D35 /* ActivityAndLogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */; };
 		25AC289611AFE543A169EE82 /* AppScannerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */; };
 		E01814A62F137F500093583F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E01814A52F137F500093583F /* Sparkle */; };
@@ -265,6 +268,8 @@
 		E0C1900130B0000100E22661 /* PresentationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationStateTests.swift; sourceTree = "<group>"; };
 		E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchBootstrapPolicy.swift; sourceTree = "<group>"; };
 		E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchHandoverAndSingleInstanceTests.swift; sourceTree = "<group>"; };
+		E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicy.swift; sourceTree = "<group>"; };
+		E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicyTests.swift; sourceTree = "<group>"; };
 		DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAndLogStoreTests.swift; sourceTree = "<group>"; };
 		7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppScannerServiceTests.swift; sourceTree = "<group>"; };
 		E0361ACF2E879EC300A37772 /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
@@ -694,6 +699,7 @@
 			children = (
 				E0FD75C02F59E36600D46B31 /* AppDelegate.swift */,
 				E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */,
+				E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */,
 				E0FD75C12F59E36600D46B31 /* AppDelegate+Actions.swift */,
 				E0FD75C22F59E36600D46B31 /* AppDelegate+Agent.swift */,
 				E0FD75C32F59E36600D46B31 /* AppDelegate+CheckDirectory.swift */,
@@ -935,6 +941,7 @@
 				DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */,
 				7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */,
 				E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */,
+				E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */,
 				E0B1800430A0000100E22661 /* AppUpdaterTests.swift */,
 				E0C1900130B0000100E22661 /* PresentationStateTests.swift */,
 				E0FDB02C2F59E37C00D46B31 /* EndpointSecurityTestDoubles.swift */,
@@ -1249,6 +1256,7 @@
 				E0FD76042F59E36600D46B31 /* MainUIButtons.swift in Sources */,
 				E0A9143F309B725900E22661 /* LogSelectionManager.swift in Sources */,
 				E0FD76052F59E36600D46B31 /* AppDelegate+CheckDirectory.swift in Sources */,
+				E0D1900230C0000100E22661 /* AppDirectoryPolicy.swift in Sources */,
 				E0FD76072F59E36600D46B31 /* LockingPopupSheet.swift in Sources */,
 				E0FD76082F59E36600D46B31 /* AppDelegate.swift in Sources */,
 				E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */,
@@ -1311,6 +1319,8 @@
 				25AC289611AFE543A169EE82 /* AppScannerServiceTests.swift in Sources */,
 				E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */,
 				E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */,
+				E0D1900330C0000100E22661 /* AppDirectoryPolicy.swift in Sources */,
+				E0D1900530C0000100E22661 /* AppDirectoryPolicyTests.swift in Sources */,
 				E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */,
 				E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */,
 				E0C1900230B0000100E22661 /* PresentationStateTests.swift in Sources */,

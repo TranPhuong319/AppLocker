@@ -9,29 +9,13 @@ import Foundation
 import AppKit
 
 extension AppDelegate {
-    func checkAndMoveToApplications() {
+    /// Returns `true` when relocation or termination was triggered and launch setup must abort.
+    @discardableResult
+    func checkAndMoveToApplications() -> Bool {
         let bundleURL = Bundle.main.bundleURL
+        guard !AppDirectoryPolicy.isAllowedLocation(for: bundleURL) else { return false }
 
-        let allowedPaths = [
-            "/Applications"
-        ]
-
-        let currentPath = bundleURL.deletingLastPathComponent().path
-
-        let isAllowed = allowedPaths.contains { path in
-            currentPath == path || currentPath.hasPrefix(path)
-        }
-
-        guard !isAllowed else { return }
-
-        // Hiển thị đầu, cuối bỏ phần giữa
-        var displayPath = (currentPath as NSString).abbreviatingWithTildeInPath
-        let components = displayPath.components(separatedBy: "/")
-        if displayPath.count > 50, components.count > 4 {
-            let firstPart = components.prefix(2).joined(separator: "/")
-            let lastPart = components.suffix(2).joined(separator: "/")
-            displayPath = "\(firstPart)/.../\(lastPart)"
-        }
+        let displayPath = AppDirectoryPolicy.abbreviatedDisplayPath(for: bundleURL)
 
         let response = AlertShow.show(
             title: String(localized: "Requires running in the Applications folder"),
@@ -53,59 +37,47 @@ extension AppDelegate {
         } else {
             NSApp.terminate(nil)
         }
+        return true
     }
 
     private func moveToApplicationsAndRelaunch() {
         let bundleURL = Bundle.main.bundleURL
-        let destinationURL = URL(fileURLWithPath: "/Applications").appendingPathComponent(bundleURL.lastPathComponent)
+        let result = AppDirectoryPolicy.relocate(
+            from: bundleURL,
+            runPrivilegedScript: executePrivilegedMoveScript
+        )
 
-        do {
-            if FileManager.default.fileExists(atPath: destinationURL.path) {
-                try FileManager.default.removeItem(at: destinationURL)
-            }
-            try FileManager.default.copyItem(at: bundleURL, to: destinationURL)
-
-            do {
-                try FileManager.default.trashItem(at: bundleURL, resultingItemURL: nil)
-            } catch {
+        switch result {
+        case let .relocatedViaFileManager(destination, trashError):
+            if let trashError {
                 Logfile.app.warning(
-                    "[DirectoryCheck] Failed to trash bundle: \(error.localizedDescription, privacy: .public)"
+                    "[DirectoryCheck] Failed to trash bundle: \(trashError, privacy: .public)"
                 )
             }
             Logfile.app.info("[DirectoryCheck] Moved application to /Applications via FileManager. Restarting…")
-            restartApp(at: destinationURL)
-            return
+            restartApp(at: destination)
 
-        } catch {
+        case let .relocatedViaPrivilegedScript(destination, fileManagerError):
             Logfile.app.warning(
                 """
-                [DirectoryCheck] FileManager move failed: \(error.localizedDescription), \
+                [DirectoryCheck] FileManager move failed: \(fileManagerError, privacy: .public), \
                 falling back to privileged AppleScript
                 """
             )
-        }
+            Logfile.app.info(
+                "[DirectoryCheck] Moved application to /Applications via AppleScript. Restarting…"
+            )
+            restartApp(at: destination)
 
-        moveViaPrivilegedAppleScript(bundleURL: bundleURL, destinationURL: destinationURL)
-    }
-
-    private func moveViaPrivilegedAppleScript(bundleURL: URL, destinationURL: URL) {
-        let sourcePath = bundleURL.path
-        let destPath = "/Applications"
-        let appName = bundleURL.lastPathComponent
-
-        let scriptSource = """
-        do shell script "rm -rf \\"\(destPath)/\(appName)\\" && \
-        cp -R \\"\(sourcePath)\\" \\"\(destPath)/\\" && \
-        rm -rf \\"\(sourcePath)\\"" with administrator privileges
-        """
-
-        var errorDict: NSDictionary?
-        guard let scriptObject = NSAppleScript(source: scriptSource) else { return }
-        _ = scriptObject.executeAndReturnError(&errorDict)
-
-        if errorDict != nil {
+        case let .failed(fileManagerError, scriptError):
+            Logfile.app.warning(
+                """
+                [DirectoryCheck] FileManager move failed: \(fileManagerError, privacy: .public), \
+                falling back to privileged AppleScript
+                """
+            )
             Logfile.app.error(
-                "[DirectoryCheck] AppleScript privileged move failed: \(String(describing: errorDict))"
+                "[DirectoryCheck] AppleScript privileged move failed: \(scriptError ?? "Unknown", privacy: .public)"
             )
             let msg = """
             Could not move the application to /Applications automatically. Please move it manually to continue.
@@ -116,11 +88,15 @@ extension AppDelegate {
                 style: .critical
             )
             NSApp.terminate(nil)
-        } else {
-            Logfile.app.info(
-                "[DirectoryCheck] Moved application to /Applications via AppleScript. Restarting…"
-            )
-            restartApp(at: destinationURL)
         }
+    }
+
+    private func executePrivilegedMoveScript(_ scriptSource: String) -> String? {
+        guard let scriptObject = NSAppleScript(source: scriptSource) else {
+            return "Failed to initialize NSAppleScript"
+        }
+        var errorDict: NSDictionary?
+        _ = scriptObject.executeAndReturnError(&errorDict)
+        return errorDict.map { String(describing: $0) }
     }
 }

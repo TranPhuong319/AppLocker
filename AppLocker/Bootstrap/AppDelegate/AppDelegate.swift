@@ -66,7 +66,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func finishLaunchSetup() async {
 
 #if !DEBUG
-        checkAndMoveToApplications()
+        if checkAndMoveToApplications() {
+            return
+        }
 #endif
 
         Logfile.app.info("[Bootstrap] AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
@@ -195,13 +197,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             withTitle: String(localized: "Show All"),
             action: #selector(NSApplication.unhideAllApplications(_:)),
             keyEquivalent: "")
-        #if DEBUG
         appMenu.addItem(.separator())
         appMenu.addItem(
             withTitle: String(localized: "Quit AppLocker"),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q")
-        #endif
         appMenuItem.submenu = appMenu
         return appMenuItem
     }
@@ -267,6 +267,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             apps.first(where: { $0.processIdentifier == targetPID })?.activate()
             NSApp.terminate(nil)
         }
+    }
+}
+
+extension AppDelegate: NSMenuItemValidation {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(openSettings) {
+            return WelcomeWindowController.shared == nil
+        }
+        return true
     }
 }
 
