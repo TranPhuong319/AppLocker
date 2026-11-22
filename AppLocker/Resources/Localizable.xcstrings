@@ -1101,12 +1101,12 @@
         }
       }
     },
-    "Do you agree to the terms of service and license above?" : {
+    "Do you acknowledge the software license and disclaimer above?" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn có đồng ý với điều khoản dịch vụ và giấy phép trên không?"
+            "value" : "Bạn có xác nhận giấy phép phần mềm và miễn trừ trách nhiệm trên không?"
           }
         }
       }
@@ -1811,12 +1811,12 @@
         }
       }
     },
-    "Please read and agree to the terms of service and license below:" : {
+    "Please review the software license below:" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vui lòng đọc và đồng ý với điều khoản dịch vụ và giấy phép bên dưới:"
+            "value" : "Vui lòng xem giấy phép phần mềm bên dưới:"
           }
         }
       }

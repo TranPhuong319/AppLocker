@@ -5,5 +5,4 @@
   Created by Doe Phương on 17/8/25.
   
 */
-NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. All rights reserved.";
-    
+NSHumanReadableCopyright = "Copyright © 2025 TranPhuong319. Licensed under the Apache License, Version 2.0. AppLocker name and logo are trademarks of the author.";

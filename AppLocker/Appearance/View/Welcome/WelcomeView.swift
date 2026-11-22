@@ -40,7 +40,7 @@ struct WelcomeView: View {
                     .font(.title2)
                     .fontWeight(.bold)
 
-                Text("Please read and agree to the terms of service and license below:")
+                Text("Please review the software license below:")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -81,7 +81,9 @@ struct WelcomeView: View {
                         action: {
                             let response = AlertShow.show(
                                 title: String(localized: "Confirm"),
-                                message: String(localized: "Do you agree to the terms of service and license above?"),
+                                message: String(
+                                    localized: "Do you acknowledge the software license and disclaimer above?"
+                                ),
                                 style: .informational,
                                 buttons: [
                                     String(localized: "Agree"),
@@ -128,6 +130,8 @@ struct WelcomeView: View {
                 Text(bundle.copyright)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 14)
                     .padding(.bottom, 14)
             }
         }
