@@ -56,7 +56,7 @@ jobs:
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))) || github.event_name == 'workflow_dispatch'
         run: |
           git fetch --prune --tags
-          CUR_TAG="$(git tag -l | grep -i 'alpha' | tail -1)"
+          CUR_TAG="$(git tag -l --sort=v:refname | grep -iE -- '-(alpha|beta)$' | tail -1)"
           MARKETING_VERSION=$(grep "MARKETING_VERSION" AppLocker.xcodeproj/project.pbxproj \
             | grep -v '\$' \
             | head -n 1 \
@@ -142,9 +142,9 @@ jobs:
         if: (github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'release/'))) || github.event_name == 'workflow_dispatch'
         run: |
           if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            echo "REL_TAG=v${VER}-alpha" >> $GITHUB_ENV
+            echo "REL_TAG=v${VER}-beta" >> $GITHUB_ENV
             echo "IS_PRE=true" >> $GITHUB_ENV
-            printf "### Disclaimer:\n***This alpha version is for testing only.***\nIt is not ready for daily use and we do not guarantee its usability.\n" > ReleaseNotes.md
+            printf "### Disclaimer:\n***This beta version is for testing only.***\nIt is not ready for daily use and we do not guarantee its usability.\n" > ReleaseNotes.md
           else
             echo "REL_TAG=v${VER}" >> $GITHUB_ENV
             echo "IS_PRE=false" >> $GITHUB_ENV

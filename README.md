@@ -8,7 +8,7 @@
 
   [![CI](https://github.com/TranPhuong319/AppLocker/actions/workflows/main.yml/badge.svg)](https://github.com/TranPhuong319/AppLocker/actions/workflows/main.yml)
   ![Version](https://img.shields.io/github/v/release/TranPhuong319/AppLocker)
-  [![Download from Releases](https://img.shields.io/github/v/release/TranPhuong319/AppLocker?include_prereleases&label=alpha)](https://github.com/TranPhuong319/AppLocker/releases)
+  [![Download from Releases](https://img.shields.io/github/v/release/TranPhuong319/AppLocker?include_prereleases&label=beta)](https://github.com/TranPhuong319/AppLocker/releases)
   ![Downloads](https://img.shields.io/github/downloads/TranPhuong319/AppLocker/total)
   ![GitHub issues](https://img.shields.io/github/issues/TranPhuong319/AppLocker)
   ![GitHub pull requests](https://img.shields.io/github/issues-pr/TranPhuong319/AppLocker)
