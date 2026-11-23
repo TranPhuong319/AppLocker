@@ -1,0 +1,34 @@
+{
+  "branch-guard": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "./hooks/branch-guard.sh",
+        "timeout": 5
+      }
+    ]
+  },
+  "git-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/git-guard.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "swiftlint-gate": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "./hooks/swiftlint-gate.sh",
+        "timeout": 20
+      }
+    ]
+  }
+}
