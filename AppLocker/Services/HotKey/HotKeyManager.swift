@@ -86,39 +86,28 @@ extension HotKeyShortcut {
     private static let resumeProtectionKey = "customHotkeyResumeProtection"
 
     static var currentAppList: HotKeyShortcut? {
-        get {
-            guard let data = UserDefaults.standard.data(forKey: appListKey) else {
-                return defaultAppList
-            }
-            guard let storage = try? JSONDecoder().decode(Storage.self, from: data) else {
-                return defaultAppList
-            }
-            return storage.shortcut
-        }
-        set {
-            if let data = try? JSONEncoder().encode(Storage(shortcut: newValue)) {
-                UserDefaults.standard.set(data, forKey: appListKey)
-            }
-            NotificationCenter.default.post(name: .hotKeySettingsDidChange, object: nil)
-        }
+        get { loadShortcut(forKey: appListKey, default: defaultAppList) }
+        set { saveShortcut(newValue, forKey: appListKey) }
     }
 
     static var currentResumeProtection: HotKeyShortcut? {
-        get {
-            guard let data = UserDefaults.standard.data(forKey: resumeProtectionKey) else {
-                return defaultResumeProtection
-            }
-            guard let storage = try? JSONDecoder().decode(Storage.self, from: data) else {
-                return defaultResumeProtection
-            }
-            return storage.shortcut
+        get { loadShortcut(forKey: resumeProtectionKey, default: defaultResumeProtection) }
+        set { saveShortcut(newValue, forKey: resumeProtectionKey) }
+    }
+
+    private static func loadShortcut(forKey key: String, default fallback: HotKeyShortcut) -> HotKeyShortcut? {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let storage = try? JSONDecoder().decode(Storage.self, from: data) else {
+            return fallback
         }
-        set {
-            if let data = try? JSONEncoder().encode(Storage(shortcut: newValue)) {
-                UserDefaults.standard.set(data, forKey: resumeProtectionKey)
-            }
-            NotificationCenter.default.post(name: .hotKeySettingsDidChange, object: nil)
+        return storage.shortcut
+    }
+
+    private static func saveShortcut(_ shortcut: HotKeyShortcut?, forKey key: String) {
+        if let data = try? JSONEncoder().encode(Storage(shortcut: shortcut)) {
+            UserDefaults.standard.set(data, forKey: key)
         }
+        NotificationCenter.default.post(name: .hotKeySettingsDidChange, object: nil)
     }
 
     static var isCustomized: Bool {

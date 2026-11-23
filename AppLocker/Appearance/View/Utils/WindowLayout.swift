@@ -18,20 +18,12 @@ enum WindowLayout {
     static let addAppListMaxHeight: CGFloat = 420
     static let deleteQueueMinSize = NSSize(width: 350, height: 370)
     static let missingAppsMinSize = NSSize(width: 380, height: 380)
-    static let missingAppsListMaxHeight: CGFloat = 300
     static let lockingPopupMinSize = NSSize(width: 200, height: 100)
     static let batchAuthSize = NSSize(width: 440, height: 360)
-    static let batchAuthMaxListHeight: CGFloat = 220
     static let aboutSize = NSSize(width: 450, height: 340)
     static let settingsMinSize = NSSize(width: 680, height: 460)
-    static let settingsGeneralSize = NSSize(width: 680, height: 460)
-    static let settingsSecuritySize = NSSize(width: 680, height: 460)
-    static let settingsUpdatesSize = NSSize(width: 680, height: 460)
-    static let settingsAppearanceSize = NSSize(width: 680, height: 460)
     static let settingsActivitySize = NSSize(width: 800, height: 500)
     static let settingsDiagnosticsSize = NSSize(width: 1100, height: 580)
-    static let settingsLogsSize = settingsDiagnosticsSize
-    static let settingsSize = settingsMinSize
 }
 
 // MARK: - Liquid Glass Visual Effects & Modifiers
@@ -50,22 +42,6 @@ struct VisualEffectView: NSViewRepresentable {
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
         nsView.material = material
         nsView.blendingMode = blendingMode
-    }
-}
-
-struct LiquidGlassBackgroundModifier: ViewModifier {
-    var material: NSVisualEffectView.Material
-
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Rectangle())
-        } else {
-            content
-                .background(
-                    VisualEffectView(material: material, blendingMode: .behindWindow)
-                )
-        }
     }
 }
 
@@ -108,81 +84,58 @@ struct LiquidGlassCardModifier: ViewModifier {
     }
 }
 
-struct LiquidGlassCircleModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Circle())
-        } else {
-            content
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(
-                    Circle()
-                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5)
-                )
-        }
-    }
-}
-
-struct LiquidGlassBarModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: Rectangle())
-        } else {
-            content
-                .background(.bar)
-        }
-    }
-}
-
-struct LiquidGlassContainer<Content: View>: View {
-    @ViewBuilder let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
+struct RefreshToolbarIcon: View {
+    let trigger: Int
 
     var body: some View {
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer {
-                content
-            }
+        if #available(macOS 15.0, *) {
+            Image(systemName: "arrow.clockwise")
+                .symbolEffect(.rotate.byLayer, value: trigger)
         } else {
-            content
+            Image(systemName: "arrow.clockwise")
+                .symbolEffect(.bounce.byLayer, value: trigger)
         }
     }
 }
 
 extension View {
-    func liquidGlassBackground(
-        material: NSVisualEffectView.Material = .hudWindow
-    ) -> some View {
-        modifier(LiquidGlassBackgroundModifier(material: material))
-    }
-
     func liquidGlassCapsule(isInteractive: Bool = true) -> some View {
         modifier(LiquidGlassCapsuleModifier(isInteractive: isInteractive))
-    }
-
-    func liquidGlassCircle() -> some View {
-        modifier(LiquidGlassCircleModifier())
     }
 
     func liquidGlassCard(isSelected: Bool = true) -> some View {
         modifier(LiquidGlassCardModifier(isSelected: isSelected))
     }
 
-    func liquidGlassBar() -> some View {
-        modifier(LiquidGlassBarModifier())
+    @ViewBuilder
+    func magicSymbolReplace(options: SymbolEffectOptions = .default) -> some View {
+        if #available(macOS 15.0, *) {
+            contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: options))
+        } else {
+            contentTransition(.symbolEffect(.replace.downUp.byLayer, options: options))
+        }
     }
 
-    @ViewBuilder
-    func softScrollEdge() -> some View {
-        if #available(macOS 26.0, *) {
-            self.scrollEdgeEffectStyle(.soft, for: .top)
-        } else {
-            self
+    func equalWidthButtonLabel(
+        minWidth: CGFloat?,
+        horizontalPadding: CGFloat = 10
+    ) -> some View {
+        self
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.horizontal, horizontalPadding)
+            .background(
+                GeometryReader { geo in
+                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
+                }
+            )
+            .frame(minWidth: minWidth)
+    }
+
+    func syncEqualWidth(into width: Binding<CGFloat?>, keepMax: Bool = true) -> some View {
+        onPreferenceChange(EqualWidthKey.self) { measured in
+            guard measured > 0 else { return }
+            width.wrappedValue = keepMax ? max(width.wrappedValue ?? 0, measured) : measured
         }
     }
 }

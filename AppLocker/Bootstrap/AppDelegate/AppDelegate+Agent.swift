@@ -75,11 +75,6 @@ extension AppDelegate {
                 try agent.unregister()
                 Logfile.app.info("[Agent] Agent unregistered successfully")
                 return .uninstalled
-
-            case .check:
-                let active = isAgentActive
-                Logfile.app.debug("[Agent] Agent status: \(active ? "enabled" : "disabled", privacy: .public)")
-                return active ? .alreadyInstalled : .alreadyUninstalled
             }
 
         } catch {
@@ -148,11 +143,6 @@ extension AppDelegate {
         }
 
         return process.terminationStatus == 0
-    }
-
-    @discardableResult
-    func checkAgentStatus() -> Bool {
-        isAgentActive
     }
 
     @discardableResult

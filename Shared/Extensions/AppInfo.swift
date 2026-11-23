@@ -47,7 +47,6 @@ enum PreviewEnvironment {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PLAYGROUNDS"] == "1"
     }
 }
-#endif
 
 extension InstalledApp {
     static let mockChrome = InstalledApp(
@@ -79,6 +78,7 @@ extension InstalledApp {
         [mockChrome, mockSafari, mockVSCode, mockFinder]
     }
 }
+#endif
 
 // MARK: - App Metadata Resolution
 extension InstalledApp {

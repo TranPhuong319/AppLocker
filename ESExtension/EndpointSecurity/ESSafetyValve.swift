@@ -30,7 +30,7 @@ final class ESSafetyValve: ESAuthResponding, @unchecked Sendable {
     private let customResponder: (@Sendable (ESResponseMethod, Bool) -> es_respond_result_t)?
     private var isResponded = false
 
-    init(message: ESMessage, manager: ESManager) {
+    init(message: ESMessage) {
         self.message = message
         self.eventType = message.pointee.event_type
         self.actionType = message.pointee.action_type
@@ -96,8 +96,6 @@ final class ESSafetyValve: ESAuthResponding, @unchecked Sendable {
         let type = message.pointee.event_type
         let messagePtr = message.pointee
         switch type {
-        case ES_EVENT_TYPE_AUTH_EXEC:
-            return safePath(fromFilePointer: messagePtr.event.exec.target.pointee.executable) ?? "unknown_exec"
         case ES_EVENT_TYPE_AUTH_OPEN:
             return safePath(fromFilePointer: messagePtr.event.open.file) ?? "unknown_open"
         case ES_EVENT_TYPE_AUTH_UNLINK:

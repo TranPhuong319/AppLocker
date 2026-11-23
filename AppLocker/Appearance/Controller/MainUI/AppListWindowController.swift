@@ -59,9 +59,7 @@ final class AppListWindowController: NSWindowController, NSWindowDelegate {
         config.isOpaque = true
         config.backgroundColor = .windowBackgroundColor
 
-        let window = WindowManager.createWindow(contentViewController: contentVC, configuration: config)
-        window.titlebarSeparatorStyle = .none
-        return window
+        return WindowManager.createWindow(contentViewController: contentVC, configuration: config)
     }
 
     // MARK: - NSWindowDelegate

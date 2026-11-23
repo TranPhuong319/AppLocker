@@ -12,7 +12,6 @@ import ServiceManagement
 enum AgentAction {
     case install
     case uninstall
-    case check
 }
 
 @MainActor
@@ -23,11 +22,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var hotkey: HotKeyManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" ||
-           ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PLAYGROUNDS"] == "1" {
+        #if DEBUG
+        if PreviewEnvironment.isRunningInPreview {
             Logfile.app.info("[Bootstrap] Running in Xcode Previews. Skipping system bootstrap.")
             return
         }
+        #endif
 
         // Build-in Relaunch Wait: Check for -waitForPID argument
         let args = CommandLine.arguments

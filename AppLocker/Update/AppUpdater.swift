@@ -9,12 +9,6 @@ import AppKit
 import Foundation
 import Sparkle
 
-// MARK: - Notification Action
-
-enum UpdateNotificationAction {
-    static let more = "UPDATE_MORE"
-}
-
 // MARK: - UpdaterDelegate (SINGLE INSTANCE, NO SINGLETON)
 final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 

@@ -120,21 +120,11 @@ struct LogRowCopyButton: View {
         .accessibilityLabel("Copy log entry")
     }
 
-    @ViewBuilder
     private var copyIcon: some View {
-        let iconColor = isCopied ? Color.green : Color.secondary
-
-        if #available(macOS 15.0, *) {
-            Image(systemName: isCopied ? "checkmark.circle.fill" : "document.on.document")
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                .font(.caption)
-                .foregroundStyle(iconColor)
-        } else {
-            Image(systemName: isCopied ? "checkmark.circle.fill" : "document.on.document")
-                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                .font(.caption)
-                .foregroundStyle(iconColor)
-        }
+        Image(systemName: isCopied ? "checkmark.circle.fill" : "document.on.document")
+            .magicSymbolReplace()
+            .font(.caption)
+            .foregroundStyle(isCopied ? Color.green : Color.secondary)
     }
 
     private func copyEntry() {

@@ -45,8 +45,6 @@
 		E0AC000A2F59E36600D46B05 /* ActivityStore+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */; };
 		E0AC000C2F59E36600D46B06 /* LockES+LockOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC000B2F59E36600D46B06 /* LockES+LockOperations.swift */; };
 		E0AC000E2F59E36600D46B07 /* LockES+SelfHealing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC000D2F59E36600D46B07 /* LockES+SelfHealing.swift */; };
-		E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E04FC7982E5DBE570016518D /* Sparkle */; };
-		E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E0DC1DD82E5DBADF002B454C /* Sparkle */; };
 		E0DA1B44301AF5D300ABE155 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
 		E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D62F59E36600D46B31 /* AppIcon.icon */; };
 		E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D72F59E36600D46B31 /* Assets.xcassets */; };
@@ -239,16 +237,6 @@
 			name = "Embed System Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E058BA142E5A03FC0002D0D2 /* Launch Daemons */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = Contents/Library/LaunchDaemons;
-			dstSubfolderSpec = 1;
-			files = (
-			);
-			name = "Launch Daemons";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		E0749BE62E96D8BE003CD67D /* Launch Agents */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -417,8 +405,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E01814A62F137F500093583F /* Sparkle in Frameworks */,
-				E0B278AB2E7F7805004BC47F /* Sparkle in Frameworks */,
-				E0CC0D852E7C82D000A7569B /* Sparkle in Frameworks */,
 				E0361AD12E879EC400A37773 /* libbsm.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -990,7 +976,6 @@
 			buildPhases = (
 				E0EF51A62E31558900161CAB /* Sources */,
 				E0EF51A82E31558900161CAB /* Resources */,
-				E058BA142E5A03FC0002D0D2 /* Launch Daemons */,
 				E04B8EA72E5D852900BE7903 /* Frameworks */,
 				E03BB17B305AA31B009552C6 /* Prepare Embedded Extensions */,
 				E050B44B2E86FB35003AEA49 /* Embed System Extensions */,
@@ -1004,8 +989,6 @@
 			);
 			name = AppLocker;
 			packageProductDependencies = (
-				E0DC1DD82E5DBADF002B454C /* Sparkle */,
-				E04FC7982E5DBE570016518D /* Sparkle */,
 				E01814A52F137F500093583F /* Sparkle */,
 			);
 			productName = AppLocker;
@@ -1894,14 +1877,6 @@
 		E01814A52F137F500093583F /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E01814A42F137F500093583F /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-		E04FC7982E5DBE570016518D /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Sparkle;
-		};
-		E0DC1DD82E5DBADF002B454C /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
 			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */

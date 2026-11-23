@@ -26,25 +26,6 @@ final class SettingsNavigator {
     }
 }
 
-// MARK: - Native Window Configurator
-
-@MainActor
-private struct WindowConfigurator: NSViewRepresentable {
-    let configure: @MainActor (NSWindow) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        Task { @MainActor in
-            if let window = view.window {
-                configure(window)
-            }
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
-}
-
 // MARK: - Main Settings View
 
 struct SettingsView: View {
@@ -60,14 +41,6 @@ struct SettingsView: View {
         isMock: Bool = false
     ) {
         self.navigator = navigator
-        self.isMock = isMock
-    }
-
-    init(
-        selectedTab: SettingsTab,
-        isMock: Bool = false
-    ) {
-        self.navigator = SettingsNavigator(selectedTab: selectedTab)
         self.isMock = isMock
     }
 
@@ -131,11 +104,6 @@ struct SettingsView: View {
                 }
         }
         .navigationSplitViewStyle(.balanced)
-        .background(
-            WindowConfigurator { window in
-                window.titlebarSeparatorStyle = .none
-            }
-        )
         .onChange(of: navigator.selectedTab) { _, newTab in
             handleTabChange(to: newTab)
         }
@@ -196,19 +164,11 @@ struct SettingsView: View {
         navigator.selectedTab = navigationHistory[historyIndex]
     }
 
-    @ViewBuilder
     private var securityLockIcon: some View {
-        if #available(macOS 15.0, *) {
-            Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
-        } else {
-            Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
-                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
-        }
+        Image(systemName: isSecurityUnlocked ? "lock.open.fill" : "lock.fill")
+            .magicSymbolReplace()
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
     }
 
     @ViewBuilder

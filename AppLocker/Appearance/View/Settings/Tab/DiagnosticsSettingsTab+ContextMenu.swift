@@ -71,15 +71,9 @@ extension DiagnosticsSettingsTab {
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
 
-    @ViewBuilder
     var copyStatusIcon: some View {
-        let isCopied = selectionManager.isCopiedFeedback
-        let image = Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
-        if #available(macOS 15.0, *) {
-            image.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-        } else {
-            image.contentTransition(.symbolEffect(.replace.downUp.byLayer))
-        }
+        Image(systemName: selectionManager.isCopiedFeedback ? "checkmark" : "doc.on.doc")
+            .magicSymbolReplace()
     }
 
     @ViewBuilder

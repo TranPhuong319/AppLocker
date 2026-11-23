@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import Testing
 
 @Suite("AppUpdater Channel, Beta Feed Cache & Manual Check Policy Tests")
@@ -90,14 +91,14 @@ struct AppUpdaterTests {
     @Test("BetaFeedResolver caches feed within 15-minute TTL and refreshes after expiration")
     @MainActor
     func betaFeedCachingAndTTLExpiration() async {
-        let nowBox = LockedBox(Date(timeIntervalSince1970: 1_000))
-        let fetchCount = LockedBox(0)
+        let nowBox = OSAllocatedUnfairLock(initialState: Date(timeIntervalSince1970: 1_000))
+        let fetchCount = OSAllocatedUnfairLock(initialState: 0)
         let firstURL = "https://example.com/beta-1/appcast.xml"
         let secondURL = "https://example.com/beta-2/appcast.xml"
 
         let resolver = BetaFeedResolver(
             ttl: 15 * 60,
-            now: { nowBox.value },
+            now: { nowBox.withLock { $0 } },
             loadData: { request in
                 let count = fetchCount.withLock { value in
                     value += 1
@@ -110,17 +111,17 @@ struct AppUpdaterTests {
 
         #expect(await resolver.fetchLatestBeta() == true)
         #expect(resolver.currentBetaFeedURL == firstURL)
-        #expect(fetchCount.value == 1)
+        #expect(fetchCount.withLock { $0 } == 1)
 
-        nowBox.value = Date(timeIntervalSince1970: 1_000 + 10 * 60)
+        nowBox.withLock { $0 = Date(timeIntervalSince1970: 1_000 + 10 * 60) }
         #expect(await resolver.fetchLatestBeta() == true)
         #expect(resolver.currentBetaFeedURL == firstURL)
-        #expect(fetchCount.value == 1)
+        #expect(fetchCount.withLock { $0 } == 1)
 
-        nowBox.value = Date(timeIntervalSince1970: 1_000 + 16 * 60)
+        nowBox.withLock { $0 = Date(timeIntervalSince1970: 1_000 + 16 * 60) }
         #expect(await resolver.fetchLatestBeta() == true)
         #expect(resolver.currentBetaFeedURL == secondURL)
-        #expect(fetchCount.value == 2)
+        #expect(fetchCount.withLock { $0 } == 2)
     }
 
     @Test("BetaFeedResolver returns false on HTTP 403 when no cache exists")
@@ -142,13 +143,13 @@ struct AppUpdaterTests {
     @Test("BetaFeedResolver keeps stale cached URL when refresh fails offline")
     @MainActor
     func betaFeedStaleCacheFallbackOnNetworkError() async {
-        let nowBox = LockedBox(Date(timeIntervalSince1970: 2_000))
-        let callIndex = LockedBox(0)
+        let nowBox = OSAllocatedUnfairLock(initialState: Date(timeIntervalSince1970: 2_000))
+        let callIndex = OSAllocatedUnfairLock(initialState: 0)
         let cachedURL = "https://example.com/cached.xml"
 
         let resolver = BetaFeedResolver(
             ttl: 15 * 60,
-            now: { nowBox.value },
+            now: { nowBox.withLock { $0 } },
             loadData: { request in
                 let idx = callIndex.withLock { val in
                     val += 1
@@ -162,7 +163,7 @@ struct AppUpdaterTests {
         )
 
         #expect(await resolver.fetchLatestBeta() == true)
-        nowBox.value = Date(timeIntervalSince1970: 2_000 + 20 * 60)
+        nowBox.withLock { $0 = Date(timeIntervalSince1970: 2_000 + 20 * 60) }
         #expect(await resolver.fetchLatestBeta() == true)
         #expect(resolver.currentBetaFeedURL == cachedURL)
     }
@@ -170,12 +171,12 @@ struct AppUpdaterTests {
     @Test("BetaFeedResolver clears cached URL when prereleases are removed so it falls back to Stable")
     @MainActor
     func betaFeedClearsStaleURLWhenPrereleaseRemoved() async {
-        let nowBox = LockedBox(Date(timeIntervalSince1970: 3_000))
-        let callIndex = LockedBox(0)
+        let nowBox = OSAllocatedUnfairLock(initialState: Date(timeIntervalSince1970: 3_000))
+        let callIndex = OSAllocatedUnfairLock(initialState: 0)
 
         let resolver = BetaFeedResolver(
             ttl: 15 * 60,
-            now: { nowBox.value },
+            now: { nowBox.withLock { $0 } },
             loadData: { request in
                 let idx = callIndex.withLock { val in
                     val += 1
@@ -192,27 +193,9 @@ struct AppUpdaterTests {
         #expect(resolver.currentBetaFeedURL == "https://example.com/alpha/appcast.xml")
         #expect(resolver.hasNoActiveBetaRelease == false)
 
-        nowBox.value = Date(timeIntervalSince1970: 3_000 + 20 * 60)
+        nowBox.withLock { $0 = Date(timeIntervalSince1970: 3_000 + 20 * 60) }
         #expect(await resolver.fetchLatestBeta() == false)
         #expect(resolver.currentBetaFeedURL == nil)
         #expect(resolver.hasNoActiveBetaRelease == true)
-    }
-}
-
-private final class LockedBox<Value>: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storage: Value
-
-    init(_ value: Value) {
-        self.storage = value
-    }
-
-    var value: Value {
-        get { lock.withLock { storage } }
-        set { lock.withLock { storage = newValue } }
-    }
-
-    func withLock<T>(_ body: (inout Value) -> T) -> T {
-        lock.withLock { body(&storage) }
     }
 }

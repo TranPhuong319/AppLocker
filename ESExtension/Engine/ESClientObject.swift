@@ -12,14 +12,10 @@ import os
 class ESClientObject: @unchecked Sendable {
     var client: OpaquePointer?
     let name: String
-    let queue: DispatchQueue
     weak var manager: ESManager?
 
     init(name: String) {
         self.name = name
-        // Santa Pattern: Use concurrent queues for high performance
-        self.queue = DispatchQueue(
-            label: "com.AppLocker.ES.\(name)", qos: .userInitiated, attributes: .concurrent)
     }
 
     deinit {
@@ -46,7 +42,7 @@ class ESClientObject: @unchecked Sendable {
             guard esMessage.pointee.action_type == ES_ACTION_TYPE_AUTH else {
                 guard let manager = self.manager else { return }
                 let handler = self.makeAuthHandler(for: message)
-                let valve = ESSafetyValve(message: message, manager: manager)
+                let valve = ESSafetyValve(message: message)
                 if esMessage.pointee.event_type == ES_EVENT_TYPE_NOTIFY_EXEC {
                     handler(message.client, message, valve)
                 } else {
@@ -181,7 +177,7 @@ class ESClientObject: @unchecked Sendable {
         manager: ESManager,
         handler: @escaping @Sendable (OpaquePointer, ESMessage, ESSafetyValve) -> Void
     ) {
-        let valve = ESSafetyValve(message: message, manager: manager)
+        let valve = ESSafetyValve(message: message)
         let deadline = message.pointee.deadline
         let now = mach_absolute_time()
         let timeRemaining = (deadline > now) ? (deadline - now) : 0

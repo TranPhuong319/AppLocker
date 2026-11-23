@@ -55,7 +55,6 @@ final class AuthCoordinator {
     static let shared = AuthCoordinator()
     var lastAuthTimestampsByPath: [String: Date] = [:]
 
-    var authError: String?
     var pendingApps: [PendingAppItem] = []
     var activeBatchApps: [PendingAppItem] = []
     var remainingSeconds: Int = 60

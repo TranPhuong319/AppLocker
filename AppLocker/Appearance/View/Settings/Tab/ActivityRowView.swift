@@ -238,19 +238,11 @@ private extension ActivityRowView {
         }
     }
 
-    @ViewBuilder
     var copyIcon: some View {
-        if #available(macOS 15.0, *) {
-            Image(systemName: isCopied ? "checkmark.circle" : "document.on.document")
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                .font(.caption)
-                .foregroundStyle(isCopied ? .green : .secondary)
-        } else {
-            Image(systemName: isCopied ? "checkmark.circle" : "document.on.document")
-                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                .font(.caption)
-                .foregroundStyle(isCopied ? .green : .secondary)
-        }
+        Image(systemName: isCopied ? "checkmark.circle" : "document.on.document")
+            .magicSymbolReplace()
+            .font(.caption)
+            .foregroundStyle(isCopied ? .green : .secondary)
     }
 
     func copyEntry() {

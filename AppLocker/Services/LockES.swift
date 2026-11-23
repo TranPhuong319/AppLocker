@@ -32,8 +32,6 @@ class LockES {
 
     private let configStore: ConfigStore
 
-    var onConfigUpdated: (() -> Void)?
-
     init(configStore: ConfigStore = .shared) {
         self.configStore = configStore
         // Defer loading to bootstrap() to allow ES Handshake first
@@ -44,10 +42,7 @@ class LockES {
         cdhashPeriodicTask?.cancel()
     }
 
-    func bootstrap(onUpdate: (() -> Void)? = nil) {
-        if let onUpdate = onUpdate {
-            self.onConfigUpdated = onUpdate
-        }
+    func bootstrap() {
         let store = self.configStore
         store.performHandshake { [weak self] success in
             guard let self else { return }
@@ -69,7 +64,6 @@ class LockES {
                 // Notify menubar to re-render with the real loaded state
                 NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
                 NotificationCenter.default.post(name: .lockedAppsDidChange, object: nil)
-                self.onConfigUpdated?()
             }
         }
     }
@@ -83,7 +77,6 @@ class LockES {
             autoLockTimeoutMinutes: self.autoLockTimeoutMinutes
         )
         NotificationCenter.default.post(name: .lockedAppsDidChange, object: nil)
-        self.onConfigUpdated?()
     }
 
     // MARK: - Protection & Policy State Toggles

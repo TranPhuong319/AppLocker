@@ -44,19 +44,6 @@ final class CallServiceObserver {
         handleNotificationFired()
     }
 
-    func stopMonitoring() {
-        guard notifyToken != -1 else { return }
-
-        notify_cancel(notifyToken)
-        notifyToken = -1
-
-        if isCurrentlyRinging {
-            isCurrentlyRinging = false
-            ESXPCClient.shared.updateIncomingCallRingingState(false)
-        }
-        Logfile.policy.info("[CallObserver] Stopped Call Services monitoring.")
-    }
-
     private func handleNotificationFired() {
         guard notifyToken != -1 else { return }
 

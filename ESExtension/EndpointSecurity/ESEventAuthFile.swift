@@ -66,11 +66,6 @@ extension ESManager {
         return pathUID == callerUID
     }
 
-    func isAuthorized(_ message: ESMessage) -> Bool {
-        let auditToken = message.pointee.process.pointee.audit_token
-        return isAuthorized(processPID: audit_token_to_pid(auditToken), auditToken: auditToken)
-    }
-
     static func signingID(for message: ESMessage) -> String {
         string(from: message.pointee.process.pointee.signing_id) ?? "Unsigned/Unknown"
     }

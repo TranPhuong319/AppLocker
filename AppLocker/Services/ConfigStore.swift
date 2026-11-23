@@ -14,13 +14,6 @@ struct ConfigLoadResult {
     let isDisabled: Bool
     let allowIncomingCalls: Bool
     let autoLockTimeoutMinutes: Int
-
-    static let empty = ConfigLoadResult(
-        apps: [:],
-        isDisabled: false,
-        allowIncomingCalls: true,
-        autoLockTimeoutMinutes: UserDefaults.standard.integer(forKey: "autoLockTimeoutMinutes")
-    )
 }
 
 final class ConfigStore: @unchecked Sendable {

@@ -67,22 +67,12 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
     var preferredSize: NSSize {
         switch self {
-        case .general:
-            return WindowLayout.settingsGeneralSize
-        case .security:
-            return WindowLayout.settingsSecuritySize
+        case .general, .security, .appearance, .updates:
+            return WindowLayout.settingsMinSize
         case .activity:
             return WindowLayout.settingsActivitySize
-        case .appearance:
-            return WindowLayout.settingsAppearanceSize
-        case .updates:
-            return WindowLayout.settingsUpdatesSize
         case .diagnostics:
             return WindowLayout.settingsDiagnosticsSize
         }
-    }
-
-    var minSize: NSSize {
-        WindowLayout.settingsMinSize
     }
 }

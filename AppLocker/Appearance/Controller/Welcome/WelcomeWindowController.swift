@@ -45,7 +45,6 @@ final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
         config.center = true
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        window.titlebarSeparatorStyle = .none
         let toolbar = NSToolbar(identifier: "WelcomeToolbar")
         window.toolbar = toolbar
         window.isMovableByWindowBackground = false

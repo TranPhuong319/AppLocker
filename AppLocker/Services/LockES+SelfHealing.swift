@@ -12,10 +12,7 @@ extension LockES {
     /// Handler invoked by AppScannerService when discovered apps on disk have changed.
     func handleInstalledAppsChanged(_ newAllApps: [InstalledApp]) {
         self.allApps = newAllApps
-        let migrated = migrateRenamedApps(allApps: newAllApps)
-        if migrated {
-            onConfigUpdated?()
-        }
+        _ = migrateRenamedApps(allApps: newAllApps)
         verifyAndHealLockedCDHashes()
     }
 

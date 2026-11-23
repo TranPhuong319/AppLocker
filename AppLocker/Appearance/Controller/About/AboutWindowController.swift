@@ -28,7 +28,6 @@ final class AboutWindowController: NSWindowController {
         config.center = true
 
         let window = WindowManager.createWindow(contentViewController: hostingController, configuration: config)
-        window.titlebarSeparatorStyle = .none
         super.init(window: window)
     }
 

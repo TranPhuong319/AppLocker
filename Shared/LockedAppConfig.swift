@@ -17,10 +17,6 @@ struct LockedAppConfig: Codable, Hashable, Sendable {
 
     var isHidden: Bool?
 
-    enum CodingKeys: String, CodingKey {
-        case bundleID, path, execFile, name, cdhash, isHidden
-    }
-
     init(
         bundleID: String,
         path: String,
@@ -37,16 +33,7 @@ struct LockedAppConfig: Codable, Hashable, Sendable {
         self.isHidden = isHidden
     }
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.bundleID = try container.decode(String.self, forKey: .bundleID)
-        self.path = try container.decode(String.self, forKey: .path)
-        self.execFile = try container.decodeIfPresent(String.self, forKey: .execFile)
-        self.name = try container.decodeIfPresent(String.self, forKey: .name)
-        self.cdhash = try container.decodeIfPresent(String.self, forKey: .cdhash)
-        self.isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
-    }
-
+    #if DEBUG
     /// Convenience initializer for mock data in Previews
     static func mock(for app: InstalledApp) -> LockedAppConfig {
         LockedAppConfig(
@@ -58,6 +45,7 @@ struct LockedAppConfig: Codable, Hashable, Sendable {
             isHidden: false
         )
     }
+    #endif
 }
 
 struct UserConfig: Codable, Sendable {

@@ -652,6 +652,7 @@
       }
     },
     "Cancelled by User" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
@@ -2394,6 +2395,7 @@
       }
     },
     "Timed Out" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringUnit" : {

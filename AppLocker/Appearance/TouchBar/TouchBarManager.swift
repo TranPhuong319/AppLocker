@@ -181,7 +181,7 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
             bezelColor: .controlAccentColor
         )
         observeOnMainActor(owner: lockItem) { barItem in
-            barItem.isEnabled = !AppState.shared.selectedToLock.isEmpty && !AppState.shared.isLocking
+            barItem.isEnabled = !AppState.shared.selectedToLock.isEmpty
         }
         return makeGroupItem(identifier: identifier, splitLeading: true, items: [
             makeButtonItem(

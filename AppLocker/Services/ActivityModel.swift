@@ -17,17 +17,6 @@ public enum SecurityEventType: String, Sendable, CaseIterable, Identifiable {
 
     public var id: String { rawValue }
 
-    public var symbol: String {
-        switch self {
-        case .approved:
-            return "checkmark.circle.fill"
-        case .rejected:
-            return "hand.raised.fill"
-        case .tamperBlocked:
-            return "exclamationmark.shield.fill"
-        }
-    }
-
     public var symbolColor: Color {
         switch self {
         case .approved:
@@ -38,17 +27,6 @@ public enum SecurityEventType: String, Sendable, CaseIterable, Identifiable {
             return .red
         }
     }
-
-    public var titleKey: LocalizedStringKey {
-        switch self {
-        case .approved:
-            return "Allowed Launch: %@"
-        case .rejected:
-            return "Access Denied: %@"
-        case .tamperBlocked:
-            return "Anti-Tamper Shield: %@"
-        }
-    }
 }
 
 // MARK: - Denial Reason
@@ -56,15 +34,6 @@ public enum SecurityEventType: String, Sendable, CaseIterable, Identifiable {
 public enum DenialReason: String, Sendable, CaseIterable {
     case userCancelled = "UserCancel"
     case timedOut = "Timeout"
-
-    public var localizedDescription: String {
-        switch self {
-        case .userCancelled:
-            return String(localized: "Cancelled by User")
-        case .timedOut:
-            return String(localized: "Timed Out")
-        }
-    }
 }
 
 // MARK: - Security Activity Item

@@ -51,19 +51,11 @@ struct AddAppRow: View {
         .buttonStyle(AppRowButtonStyle())
     }
 
-    @ViewBuilder
     private var selectionIndicator: some View {
-        if #available(macOS 15.0, *) {
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                .font(.title3)
-                .foregroundStyle(isSelected ? Color.accentColor : Color.secondary.opacity(0.35))
-        } else {
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                .font(.title3)
-                .foregroundStyle(isSelected ? Color.accentColor : Color.secondary.opacity(0.35))
-        }
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+            .magicSymbolReplace()
+            .font(.title3)
+            .foregroundStyle(isSelected ? Color.accentColor : Color.secondary.opacity(0.35))
     }
 }
 

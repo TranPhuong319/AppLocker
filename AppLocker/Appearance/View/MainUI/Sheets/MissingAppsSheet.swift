@@ -78,15 +78,7 @@ struct MissingAppsSheet: View {
                 label: {
                     Text(String(localized: "Cancel"))
                         .font(.system(size: 13, weight: .medium))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 8)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
                 }
             )
             .buttonStyle(.bordered)
@@ -101,15 +93,7 @@ struct MissingAppsSheet: View {
                 label: {
                     Text(String(localized: "Hide"))
                         .font(.system(size: 13, weight: .medium))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 8)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
                 }
             )
             .buttonStyle(.bordered)
@@ -122,26 +106,14 @@ struct MissingAppsSheet: View {
                 label: {
                     Text(String(localized: "Remove"))
                         .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 8)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
                 }
             )
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
             .controlSize(.large)
         }
-        .onPreferenceChange(EqualWidthKey.self) { width in
-            if width > 0 {
-                self.maxButtonWidth = max(self.maxButtonWidth ?? 0, width)
-            }
-        }
+        .syncEqualWidth(into: $maxButtonWidth)
         .padding(.horizontal)
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)

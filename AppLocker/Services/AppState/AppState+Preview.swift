@@ -5,6 +5,7 @@
 //  Created by Doe Phương on 16/8/26.
 //
 
+#if DEBUG
 import Foundation
 import Observation
 import SwiftUI
@@ -37,3 +38,4 @@ extension AppState {
         return state
     }
 }
+#endif

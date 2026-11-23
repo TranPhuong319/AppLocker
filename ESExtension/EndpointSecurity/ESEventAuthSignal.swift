@@ -122,7 +122,7 @@ extension ESManager {
         let isSelfSignaling = (senderPid == targetPid)
         let isExtensionSender = (senderPid == getpid())
         let isShutdown = stateLock.withLock { isShutdownAuthorized }
-        // ponytail: only launchd (PID 1) is allowed for autonomous OS lifecycle signals;
+        // Self-defense policy: only launchd (PID 1) is allowed for autonomous OS lifecycle signals;
         // block all non-zero signals except benign SIGCHLD/SIGCONT (covers SIGABRT, SIGSEGV, SIGUSR1, SIGTTIN, etc.)
         guard !isSelfSignaling && !isExtensionSender && !isShutdown && senderPid != 1 else {
             return false

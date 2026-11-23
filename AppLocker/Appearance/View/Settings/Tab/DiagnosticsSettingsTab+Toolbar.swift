@@ -55,13 +55,8 @@ extension DiagnosticsSettingsTab {
             Label {
                 Text("Group Repeating Logs")
             } icon: {
-                let iconName = collapseRepeatingLogs ? "square.stack.3d.up.fill" : "square.stack.3d.up"
-                let image = Image(systemName: iconName)
-                if #available(macOS 15.0, *) {
-                    image.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                } else {
-                    image.contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                }
+                Image(systemName: collapseRepeatingLogs ? "square.stack.3d.up.fill" : "square.stack.3d.up")
+                    .magicSymbolReplace()
             }
         }
         .toggleStyle(.button)
@@ -89,32 +84,10 @@ extension DiagnosticsSettingsTab {
             Label {
                 Text("Refresh")
             } icon: {
-                refreshIcon
+                RefreshToolbarIcon(trigger: refreshTrigger)
             }
         })
         .help("Refresh logs")
-    }
-
-    @ViewBuilder
-    private var refreshIcon: some View {
-        if #available(macOS 15.0, *) {
-            modernRefreshIcon
-        } else {
-            legacyRefreshIcon
-        }
-    }
-
-    @available(macOS 15.0, *)
-    @ViewBuilder
-    private var modernRefreshIcon: some View {
-        Image(systemName: "arrow.clockwise")
-            .symbolEffect(.rotate.byLayer, value: refreshTrigger)
-    }
-
-    @ViewBuilder
-    private var legacyRefreshIcon: some View {
-        Image(systemName: "arrow.clockwise")
-            .symbolEffect(.bounce.byLayer, value: refreshTrigger)
     }
 
     @ViewBuilder
@@ -143,20 +116,9 @@ extension DiagnosticsSettingsTab {
         )
     }
 
-    @ViewBuilder
     private var exportIcon: some View {
-        let iconName = isExportSuccess ? "checkmark.circle" : "square.and.arrow.up"
-        let image = Image(systemName: iconName)
-
-        if #available(macOS 15.0, *) {
-            image.contentTransition(
-                .symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating.speed(1.3))
-            )
-        } else {
-            image.contentTransition(
-                .symbolEffect(.replace.downUp.byLayer, options: .nonRepeating.speed(1.3))
-            )
-        }
+        Image(systemName: isExportSuccess ? "checkmark.circle" : "square.and.arrow.up")
+            .magicSymbolReplace(options: .nonRepeating.speed(1.3))
     }
 
     // MARK: - Export Helpers

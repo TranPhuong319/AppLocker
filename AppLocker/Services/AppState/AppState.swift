@@ -31,7 +31,6 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     var selectedToLock: Set<String> = []
     var deleteQueue: Set<String> = []
     var confirmedMissingApps: [InstalledApp] = []
-    var isLocking = false
     var showingLockingPopup = false
     var lockingMessage = ""
 

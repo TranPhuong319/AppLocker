@@ -85,15 +85,7 @@ struct DeleteQueueSheet: View {
                 label: {
                     Text(String(localized: "Cancel"))
                         .font(.system(size: 13, weight: .medium))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 10)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth)
                 }
             )
             .buttonStyle(.bordered)
@@ -106,32 +98,21 @@ struct DeleteQueueSheet: View {
                 label: {
                     Text(String(localized: "Unlock"))
                         .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 10)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth)
                 }
             )
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
             .controlSize(.large)
         }
-        .onPreferenceChange(EqualWidthKey.self) { width in
-            if width > 0 {
-                self.maxButtonWidth = width
-            }
-        }
+        .syncEqualWidth(into: $maxButtonWidth, keepMax: false)
         .padding(.horizontal)
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
     }
 }
 
+#if DEBUG
 #Preview {
     DeleteQueueSheet(
         appState: .preview(
@@ -140,3 +121,4 @@ struct DeleteQueueSheet: View {
         )
     )
 }
+#endif

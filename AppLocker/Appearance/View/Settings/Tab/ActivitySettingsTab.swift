@@ -169,32 +169,10 @@ struct ActivitySettingsTab: View {
             Label {
                 Text("Refresh")
             } icon: {
-                refreshIcon
+                RefreshToolbarIcon(trigger: refreshTrigger)
             }
         })
         .help("Refresh activity")
-    }
-
-    @ViewBuilder
-    private var refreshIcon: some View {
-        if #available(macOS 15.0, *) {
-            modernRefreshIcon
-        } else {
-            legacyRefreshIcon
-        }
-    }
-
-    @available(macOS 15.0, *)
-    @ViewBuilder
-    private var modernRefreshIcon: some View {
-        Image(systemName: "arrow.clockwise")
-            .symbolEffect(.rotate.byLayer, value: refreshTrigger)
-    }
-
-    @ViewBuilder
-    private var legacyRefreshIcon: some View {
-        Image(systemName: "arrow.clockwise")
-            .symbolEffect(.bounce.byLayer, value: refreshTrigger)
     }
 }
 

@@ -114,17 +114,11 @@ struct AboutView: View {
         .accessibilityLabel("Version \(bundle.fullVersion)")
     }
 
-    @ViewBuilder
     private var copyVersionIcon: some View {
-        let image = Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
-        let styled = image
+        Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
             .font(.system(size: 9, weight: .semibold))
             .foregroundStyle(isCopied ? Color.green : Color.secondary)
-        if #available(macOS 15.0, *) {
-            styled.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-        } else {
-            styled.contentTransition(.symbolEffect(.replace.downUp.byLayer))
-        }
+            .magicSymbolReplace()
     }
 
     // MARK: - Tagline Section
@@ -187,9 +181,7 @@ struct AboutView: View {
     }
 
     private func copyVersion() {
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString("AppLocker v\(bundle.fullVersion)", forType: .string)
+        NSPasteboard.general.copyText("AppLocker v\(bundle.fullVersion)")
         copyResetTask?.cancel()
         withAnimation(.snappy(duration: 0.2)) {
             isCopied = true

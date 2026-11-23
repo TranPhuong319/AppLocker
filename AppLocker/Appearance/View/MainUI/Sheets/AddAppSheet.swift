@@ -139,15 +139,7 @@ struct AddAppSheet: View {
                 },
                 label: {
                     Text(String(localized: "Others…"))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 10)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth)
                 }
             )
             .buttonStyle(.bordered)
@@ -162,15 +154,7 @@ struct AddAppSheet: View {
                     },
                     label: {
                         Text(String(localized: "Close"))
-                            .lineLimit(1)
-                            .fixedSize(horizontal: true, vertical: false)
-                            .padding(.horizontal, 10)
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                                }
-                            )
-                            .frame(minWidth: maxButtonWidth)
+                            .equalWidthButtonLabel(minWidth: maxButtonWidth)
                     }
                 )
                 .buttonStyle(.bordered)
@@ -185,29 +169,17 @@ struct AddAppSheet: View {
                         Text(lockButtonTitle)
                             .monospacedDigit()
                             .contentTransition(.numericText(value: Double(appState.selectedToLock.count)))
-                            .lineLimit(1)
-                            .fixedSize(horizontal: true, vertical: false)
-                            .padding(.horizontal, 10)
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                                }
-                            )
-                            .frame(minWidth: maxButtonWidth)
+                            .equalWidthButtonLabel(minWidth: maxButtonWidth)
                     }
                 )
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
                 .controlSize(.large)
-                .disabled(appState.selectedToLock.isEmpty || appState.isLocking)
+                .disabled(appState.selectedToLock.isEmpty)
                 .animation(.snappy(duration: 0.25), value: appState.selectedToLock.count)
             }
         }
-        .onPreferenceChange(EqualWidthKey.self) { width in
-            if width > 0 {
-                self.maxButtonWidth = max(self.maxButtonWidth ?? 0, width)
-            }
-        }
+        .syncEqualWidth(into: $maxButtonWidth)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
@@ -222,6 +194,7 @@ struct AddAppSheet: View {
     }
 }
 
+#if DEBUG
 #Preview {
     AddAppSheet(
         appState: .preview(locked: []),
@@ -238,3 +211,4 @@ struct AddAppSheet: View {
         unfocus: {}
     )
 }
+#endif

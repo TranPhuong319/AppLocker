@@ -119,17 +119,6 @@ enum LogLevelFilter: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    var osLogLevel: OSLogEntryLog.Level? {
-        switch self {
-        case .all: return nil
-        case .info: return .info
-        case .debug: return .debug
-        case .notice: return .notice
-        case .error: return .error
-        case .fault: return .fault
-        }
-    }
-
     var color: Color {
         switch self {
         case .fault: return Color(red: 0.85, green: 0.1, blue: 0.25)
@@ -160,8 +149,6 @@ struct AppLogEntry: Identifiable, Sendable {
         self.category = category; self.level = level; self.message = message
         self.resolvedLevel = Self.resolveLevel(level: level)
     }
-
-    var levelFilter: LogLevelFilter { resolvedLevel }
 
     var subsystemShort: String { subsystem.hasSuffix("ESExtension") ? "ESExt" : "App" }
 

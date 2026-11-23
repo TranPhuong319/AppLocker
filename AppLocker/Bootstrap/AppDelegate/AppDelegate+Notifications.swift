@@ -138,8 +138,7 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
             return
         }
 
-        if response.actionIdentifier == UpdateNotificationAction.more ||
-           response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+        if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
             checkForUpdates()
         }
 

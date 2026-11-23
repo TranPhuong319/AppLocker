@@ -5,11 +5,9 @@
 //  Created by Doe Phương on 29/12/25.
 //
 
-import Combine
 import Darwin
 import EndpointSecurity
 import Foundation
-import SystemConfiguration
 import os
 
 final class ESManager: NSObject, @unchecked Sendable {

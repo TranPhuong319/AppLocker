@@ -107,15 +107,7 @@ struct BatchAuthView: View {
                 label: {
                     Text(String(localized: "Cancel"))
                         .font(.system(size: 13, weight: .medium))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, 10)
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                            }
-                        )
-                        .frame(minWidth: maxButtonWidth)
+                        .equalWidthButtonLabel(minWidth: maxButtonWidth)
                 }
             )
             .buttonStyle(.bordered)
@@ -134,15 +126,7 @@ struct BatchAuthView: View {
                             .contentTransition(.numericText(value: Double(selectedCount)))
                     }
                     .font(.system(size: 13, weight: .semibold))
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .padding(.horizontal, 10)
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear.preference(key: EqualWidthKey.self, value: geo.size.width)
-                        }
-                    )
-                    .frame(minWidth: maxButtonWidth)
+                    .equalWidthButtonLabel(minWidth: maxButtonWidth)
                 }
             )
             .buttonStyle(.borderedProminent)
@@ -151,11 +135,7 @@ struct BatchAuthView: View {
             .animation(.snappy(duration: 0.25), value: selectedCount)
             .keyboardShortcut(.defaultAction)
         }
-        .onPreferenceChange(EqualWidthKey.self) { width in
-            if width > 0 {
-                self.maxButtonWidth = max(self.maxButtonWidth ?? 0, width)
-            }
-        }
+        .syncEqualWidth(into: $maxButtonWidth)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
@@ -210,23 +190,12 @@ struct BatchAppRowView: View {
         }
     }
 
-    @ViewBuilder
     private var checkmarkIndicator: some View {
-        let name = app.isSelected ? "checkmark.circle.fill" : "circle"
-        let style = app.isSelected ? Color.accentColor : Color.secondary.opacity(0.35)
-        if #available(macOS 15.0, *) {
-            Image(systemName: name)
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))
-                .font(.title3)
-                .foregroundStyle(style)
-                .accessibilityLabel(app.isSelected ? "Selected" : "Unselected")
-        } else {
-            Image(systemName: name)
-                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                .font(.title3)
-                .foregroundStyle(style)
-                .accessibilityLabel(app.isSelected ? "Selected" : "Unselected")
-        }
+        Image(systemName: app.isSelected ? "checkmark.circle.fill" : "circle")
+            .magicSymbolReplace()
+            .font(.title3)
+            .foregroundStyle(app.isSelected ? Color.accentColor : Color.secondary.opacity(0.35))
+            .accessibilityLabel(app.isSelected ? "Selected" : "Unselected")
     }
 }
 

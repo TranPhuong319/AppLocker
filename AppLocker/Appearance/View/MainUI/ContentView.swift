@@ -229,6 +229,7 @@ private extension ContentView {
     }
 }
 
+#if DEBUG
 #Preview("Empty State") {
     ContentView(appState: .preview(locked: []))
         .frame(width: WindowLayout.mainSize.width,
@@ -252,3 +253,4 @@ private extension ContentView {
         .frame(width: WindowLayout.mainSize.width,
                height: WindowLayout.mainSize.height)
 }
+#endif
