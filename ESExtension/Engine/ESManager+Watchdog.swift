@@ -56,17 +56,14 @@ extension ESManager {
 
     private func terminateExpiredProcess(_ app: ExpiredPendingApp, timeoutSeconds: Double) {
         let pid = app.pid
-        guard let currentToken = auditToken(for: pid) else {
+        switch verifyProcessIdentity(pid: pid, expectedToken: app.token) {
+        case .dead:
             Logfile.endpointSecurity.warning(
                 "[Watchdog] Pending PID \(pid, privacy: .public) expired but process is already dead, skipping."
             )
             notifyAppAboutExpiredProcess(pid: pid)
             return
-        }
-
-        let expectedVersion = audit_token_to_pidversion(app.token)
-        let currentVersion = audit_token_to_pidversion(currentToken)
-        guard expectedVersion == currentVersion else {
+        case .recycled(let expectedVersion, let currentVersion):
             Logfile.endpointSecurity.fault(
                 """
                 [Watchdog] PID RECYCLING DETECTED for PID \(pid, privacy: .public)! \
@@ -76,6 +73,8 @@ extension ESManager {
             )
             notifyAppAboutExpiredProcess(pid: pid)
             return
+        case .valid:
+            break
         }
 
         Logfile.endpointSecurity.warning(
@@ -84,9 +83,7 @@ extension ESManager {
             Issuing SIGKILL.
             """
         )
-        // Fail-Closed: SIGKILL to terminate unauthorized app, then SIGCONT to clean up kernel dispatch loop
-        _ = kill(pid, SIGKILL)
-        _ = kill(pid, SIGCONT)
+        _ = terminateFrozenProcess(pid: pid)
 
         Logfile.endpointSecurity.notice(
             """

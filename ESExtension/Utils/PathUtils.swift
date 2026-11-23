@@ -72,6 +72,22 @@ extension ESManager {
         return fileURL.deletingPathExtension().lastPathComponent
     }
 
+    func resolveSenderInfo(
+        senderPath: String,
+        responsibleAuditToken: audit_token_t?
+    ) -> (displayName: String, responsiblePath: String) {
+        let responsiblePid = responsibleAuditToken.map { audit_token_to_pid($0) } ?? 0
+        let responsiblePath = processPath(for: responsiblePid)
+        let displayName: String = if let respPath = responsiblePath, respPath.contains(".app") {
+            computeAppName(forExecPath: respPath)
+        } else if senderPath.starts(with: "/") {
+            computeAppName(forExecPath: senderPath)
+        } else {
+            senderPath
+        }
+        return (displayName, responsiblePath ?? "")
+    }
+
     // MARK: - Protected Paths & Verification
 
     /// Checks if path IS or IS INSIDE /Users/Shared/AppLocker

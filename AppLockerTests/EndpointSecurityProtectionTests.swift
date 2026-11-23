@@ -26,59 +26,37 @@ struct EndpointSecurityProtectionTests {
         return token
     }
 
-    func realAuditToken(for pid: pid_t) -> audit_token_t? {
-        var taskName: mach_port_name_t = 0
-        guard task_name_for_pid(mach_task_self_, pid, &taskName) == KERN_SUCCESS else { return nil }
-        defer { mach_port_deallocate(mach_task_self_, taskName) }
-
-        var token = audit_token_t()
-        var count = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
-        let kernRes = withUnsafeMutablePointer(to: &token) { tokenPtr in
-            tokenPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { intPtr in
-                task_info(taskName, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &count)
-            }
-        }
-        return kernRes == KERN_SUCCESS ? token : nil
-    }
-
-    func spawnTemporarySleepProcess() throws -> (Process, URL) {
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("AppLockerESTest-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        let sleepBin = tempDir.appendingPathComponent("sleep_test_bin")
-        try FileManager.default.copyItem(at: URL(fileURLWithPath: "/bin/sleep"), to: sleepBin)
-
-        let proc = Process()
-        proc.executableURL = sleepBin
-        proc.arguments = ["15"]
-        try proc.run()
-        return (proc, tempDir)
-    }
-
     // MARK: - Pillar 1: Dual-Block Race & Emergency Deadline Budget (Google Santa style)
 
-    @Test("Emergency Deadline Budget clamps headroom to [1s, 5s] at 80% budget")
+    @Test("Emergency Deadline Budget clamps headroom to [1s, 5s] at 80% budget across all boundaries")
     func deadlineBudgetClampingAndCalculation() {
+        let zeroBudget = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 0)
+        #expect(zeroBudget.headroom == 1_000_000_000 && zeroBudget.processingBudget == 0)
+
+        let subSecondBudget = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 500_000_000)
+        #expect(subSecondBudget.headroom == 1_000_000_000 && subSecondBudget.processingBudget == 0)
+
         let shortBudget = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 2_000_000_000)
-        #expect(shortBudget.headroom == 1_000_000_000)
-        #expect(shortBudget.processingBudget == 1_000_000_000)
+        #expect(shortBudget.headroom == 1_000_000_000 && shortBudget.processingBudget == 1_000_000_000)
+
+        let lowerClamp = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 5_000_000_000)
+        #expect(lowerClamp.headroom == 1_000_000_000 && lowerClamp.processingBudget == 4_000_000_000)
 
         let medBudget = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 10_000_000_000)
-        #expect(medBudget.headroom == 2_000_000_000)
-        #expect(medBudget.processingBudget == 8_000_000_000)
+        #expect(medBudget.headroom == 2_000_000_000 && medBudget.processingBudget == 8_000_000_000)
+
+        let upperClamp = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 25_000_000_000)
+        #expect(upperClamp.headroom == 5_000_000_000 && upperClamp.processingBudget == 20_000_000_000)
 
         let longBudget = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 60_000_000_000)
-        #expect(longBudget.headroom == 5_000_000_000)
-        #expect(longBudget.processingBudget == 55_000_000_000)
-        #expect(ESManager.machTimeToNanos(1_000_000) > 0)
+        #expect(longBudget.headroom == 5_000_000_000 && longBudget.processingBudget == 55_000_000_000)
+        #expect(ESManager.machTimeToNanos(0) == 0 && ESManager.machTimeToNanos(1_000_000) > 0)
     }
 
     @Test("ESSafetyValve Dual-Block Race ensures exactly 1 winner across 200 concurrent threads")
     func safetyValveConcurrencyRaceGuaranteesSingleWinner() async {
-        let responder = MockAuthResponder()
-        let valve = ESSafetyValve(
-            eventType: ES_EVENT_TYPE_AUTH_UNLINK,
-            responder: { method, cache in responder.recordMethod(method, cache: cache) }
+        let (valve, responder) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_UNLINK
         )
 
         let winCount = await withTaskGroup(of: Bool.self) { group in
@@ -98,25 +76,22 @@ struct EndpointSecurityProtectionTests {
 
     @Test("ESSafetyValve branches AUTH_OPEN to flagsResult and other AUTH events to authResult")
     func safetyValveBranchesAuthOpenFlagsVersusAuthResult() {
-        let openAllowRec = MockAuthResponder()
-        let openAllowValve = ESSafetyValve(
-            eventType: ES_EVENT_TYPE_AUTH_OPEN, responder: { openAllowRec.recordMethod($0, cache: $1) }
+        let (openAllowValve, openAllowRec) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_OPEN
         )
         #expect(openAllowValve.respond(ES_AUTH_RESULT_ALLOW, cache: true) == true)
         #expect(openAllowRec.lastMethod == .flagsResult(0xFFFFFFFF))
         #expect(openAllowRec.lastCache == true)
 
-        let openDenyRec = MockAuthResponder()
-        let openDenyValve = ESSafetyValve(
-            eventType: ES_EVENT_TYPE_AUTH_OPEN, responder: { openDenyRec.recordMethod($0, cache: $1) }
+        let (openDenyValve, openDenyRec) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_OPEN
         )
         #expect(openDenyValve.respond(ES_AUTH_RESULT_DENY, cache: false) == true)
         #expect(openDenyRec.lastMethod == .flagsResult(0))
         #expect(openDenyRec.lastCache == false)
 
-        let renameRec = MockAuthResponder()
-        let renameValve = ESSafetyValve(
-            eventType: ES_EVENT_TYPE_AUTH_RENAME, responder: { renameRec.recordMethod($0, cache: $1) }
+        let (renameValve, renameRec) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_RENAME
         )
         #expect(renameValve.respond(ES_AUTH_RESULT_DENY, cache: false) == true)
         #expect(renameRec.lastMethod == .authResult(ES_AUTH_RESULT_DENY))
@@ -124,7 +99,7 @@ struct EndpointSecurityProtectionTests {
 
     @Test("ESSafetyValve suppresses duplicate responses on same message preventing kernel extension termination")
     func safetyValveSuppressesDuplicateResponsesPreventingKernelKill() {
-        let responder = MockAuthResponder()
+        let responder = AuthResponseRecorder()
         var valve: ESSafetyValve? = ESSafetyValve(
             eventType: ES_EVENT_TYPE_AUTH_EXEC,
             actionType: ES_ACTION_TYPE_AUTH,
@@ -156,8 +131,13 @@ struct EndpointSecurityProtectionTests {
 
     // MARK: - Pillar 2: Inverted Path Muting & 7-Event File Tamper Resistance (Google Santa style)
 
-    @Test("ESTamper subscribes to 7 file events and protects allowlist prefixes")
+    @Test("ESAuthorizer and ESTamper subscribe to expected events and protect allowlist prefixes")
     func tamperAllowlistAndSubscribedEventsConfiguration() {
+        #expect(ESAuthorizer.subscribedEvents.count == 3)
+        #expect(ESAuthorizer.subscribedEvents.contains(ES_EVENT_TYPE_NOTIFY_EXEC))
+        #expect(ESAuthorizer.subscribedEvents.contains(ES_EVENT_TYPE_AUTH_SIGNAL))
+        #expect(ESAuthorizer.subscribedEvents.contains(ES_EVENT_TYPE_NOTIFY_EXIT))
+
         #expect(ESTamper.subscribedEvents.count == 7)
         #expect(ESTamper.subscribedEvents.contains(ES_EVENT_TYPE_AUTH_OPEN))
         #expect(ESTamper.subscribedEvents.contains(ES_EVENT_TYPE_AUTH_UNLINK))
@@ -186,21 +166,25 @@ struct EndpointSecurityProtectionTests {
         ]
 
         for path in protectedPaths {
-            let readResp = MockAuthResponder()
+            let (readValve, readResp) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_OPEN
+            )
             let readCtx = FileAuthEventContext(
                 eventType: ES_EVENT_TYPE_AUTH_OPEN, processPID: untrustedPID,
                 processAuditToken: untrustedToken, primaryPath: path, openFlags: 0x00000001
             )
-            manager.evaluateFileAuth(context: readCtx, valve: readResp)
+            manager.evaluateFileAuth(context: readCtx, valve: readValve)
             #expect(readResp.lastResult == ES_AUTH_RESULT_ALLOW)
             #expect(readResp.lastCache == true)
 
-            let writeResp = MockAuthResponder()
+            let (writeValve, writeResp) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_OPEN
+            )
             let writeCtx = FileAuthEventContext(
                 eventType: ES_EVENT_TYPE_AUTH_OPEN, processPID: untrustedPID,
                 processAuditToken: untrustedToken, primaryPath: path, openFlags: 0x00000002 | Int32(O_TRUNC)
             )
-            manager.evaluateFileAuth(context: writeCtx, valve: writeResp)
+            manager.evaluateFileAuth(context: writeCtx, valve: writeValve)
             #expect(writeResp.lastResult == ES_AUTH_RESULT_DENY)
             #expect(writeResp.lastCache == false)
         }
@@ -251,8 +235,8 @@ struct EndpointSecurityProtectionTests {
         let trustedToken = makeAuditToken(pid: trustedPID)
 
         for var ctx in makeSevenMutationContexts(pid: untrustedPID, token: untrustedToken) {
-            let denyResponder = MockAuthResponder()
-            manager.evaluateFileAuth(context: ctx, valve: denyResponder)
+            let (denyValve, denyResponder) = EndpointSecurityTestSupport.makeTestValve(eventType: ctx.eventType)
+            manager.evaluateFileAuth(context: ctx, valve: denyValve)
             #expect(denyResponder.lastResult == ES_AUTH_RESULT_DENY)
             #expect(denyResponder.lastCache == false)
             if ctx.eventType == ES_EVENT_TYPE_AUTH_RENAME {
@@ -261,8 +245,8 @@ struct EndpointSecurityProtectionTests {
 
             ctx.processPID = trustedPID
             ctx.processAuditToken = trustedToken
-            let allowResponder = MockAuthResponder()
-            manager.evaluateFileAuth(context: ctx, valve: allowResponder)
+            let (allowValve, allowResponder) = EndpointSecurityTestSupport.makeTestValve(eventType: ctx.eventType)
+            manager.evaluateFileAuth(context: ctx, valve: allowValve)
             #expect(allowResponder.lastResult == ES_AUTH_RESULT_ALLOW)
             #expect(allowResponder.lastCache == false)
         }
@@ -279,22 +263,131 @@ struct EndpointSecurityProtectionTests {
         ]
 
         for file in allowedMetadataFiles {
-            let openResp = MockAuthResponder()
+            let (openValve, openResp) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_OPEN
+            )
             let openCtx = FileAuthEventContext(
                 eventType: ES_EVENT_TYPE_AUTH_OPEN, processPID: untrustedPID,
                 primaryPath: file, openFlags: 0x00000002 | Int32(O_CREAT)
             )
-            manager.evaluateFileAuth(context: openCtx, valve: openResp)
+            manager.evaluateFileAuth(context: openCtx, valve: openValve)
             #expect(openResp.lastResult == ES_AUTH_RESULT_ALLOW)
             #expect(openResp.lastCache == true)
 
-            let unlinkResp = MockAuthResponder()
+            let (unlinkValve, unlinkResp) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_UNLINK
+            )
             let unlinkCtx = FileAuthEventContext(
                 eventType: ES_EVENT_TYPE_AUTH_UNLINK, processPID: untrustedPID, primaryPath: file
             )
-            manager.evaluateFileAuth(context: unlinkCtx, valve: unlinkResp)
+            manager.evaluateFileAuth(context: unlinkCtx, valve: unlinkValve)
             #expect(unlinkResp.lastResult == ES_AUTH_RESULT_ALLOW)
             #expect(unlinkResp.lastCache == true)
         }
+    }
+}
+
+extension EndpointSecurityProtectionTests {
+    @Test("ESSafetyValve deinit triggers ALLOW fallback for unresponded AUTH events and stays silent for NOTIFY")
+    func safetyValveDeinitFallbackAndNotifySilence() {
+        func assertDeinit(_ eventType: es_event_type_t, _ actionType: es_action_type_t, _ expected: ESResponseMethod?) {
+            let rec = AuthResponseRecorder()
+            do {
+                let valve = ESSafetyValve(
+                    eventType: eventType, actionType: actionType,
+                    responder: { rec.recordMethod($0, cache: $1) }
+                )
+                _ = valve
+            }
+            #expect(rec.callCount == (expected == nil ? 0 : 1))
+            #expect(rec.lastMethod == expected)
+            #expect(rec.lastCache == (expected == nil ? nil : false))
+        }
+        assertDeinit(ES_EVENT_TYPE_AUTH_UNLINK, ES_ACTION_TYPE_AUTH, .authResult(ES_AUTH_RESULT_ALLOW))
+        assertDeinit(ES_EVENT_TYPE_AUTH_OPEN, ES_ACTION_TYPE_AUTH, .flagsResult(0xFFFFFFFF))
+        assertDeinit(ES_EVENT_TYPE_NOTIFY_EXEC, ES_ACTION_TYPE_NOTIFY, nil)
+    }
+
+    @Test("Extreme Dual-Block Race Storm: 500 valves racing emergency DENY vs stalled & burst workers")
+    func safetyValveExtremeDualBlockRaceStorm() async {
+        let manager = ESManager(isTesting: true)
+        let events: [es_event_type_t] = [
+            ES_EVENT_TYPE_AUTH_OPEN, ES_EVENT_TYPE_AUTH_UNLINK,
+            ES_EVENT_TYPE_AUTH_SIGNAL, ES_EVENT_TYPE_AUTH_RENAME
+        ]
+
+        await withTaskGroup(of: Void.self) { group in
+            for idx in 0..<500 {
+                let eventType = events[idx % events.count]
+                group.addTask {
+                    if idx.isMultiple(of: 2) {
+                        await Self.runStalledWorkerDeadlineRace(manager: manager, eventType: eventType)
+                    } else {
+                        await Self.runBurstContentionRace(manager: manager, eventType: eventType)
+                    }
+                }
+            }
+        }
+    }
+
+    private static func runStalledWorkerDeadlineRace(manager: ESManager, eventType: es_event_type_t) async {
+        let (valve, rec) = EndpointSecurityTestSupport.makeTestValve(eventType: eventType)
+        let wins = OSAllocatedUnfairLock(initialState: (emergency: false, worker: false))
+        let emergencyDone = DispatchSemaphore(value: 0)
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let doneGroup = DispatchGroup()
+            doneGroup.enter()
+            manager.emergencyTimerQueue.asyncAfter(deadline: .now() + .milliseconds(2)) {
+                let won = valve.respond(ES_AUTH_RESULT_DENY, cache: false)
+                wins.withLock { $0.emergency = won }
+                emergencyDone.signal()
+                doneGroup.leave()
+            }
+            doneGroup.enter()
+            manager.authorizationProcessingQueue.async {
+                _ = emergencyDone.wait(timeout: .now() + .seconds(2))
+                let won = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
+                wins.withLock { $0.worker = won }
+                doneGroup.leave()
+            }
+            doneGroup.notify(queue: manager.backgroundProcessingQueue) { continuation.resume() }
+        }
+
+        let outcome = wins.withLock { $0 }
+        #expect(outcome.emergency == true && outcome.worker == false)
+        #expect(rec.callCount == 1 && rec.lastResult == ES_AUTH_RESULT_DENY && rec.lastCache == false)
+        if eventType == ES_EVENT_TYPE_AUTH_OPEN {
+            #expect(rec.lastMethod == .flagsResult(0))
+        }
+    }
+
+    private static func runBurstContentionRace(manager: ESManager, eventType: es_event_type_t) async {
+        let recorder = AuthResponseRecorder()
+        let winCount = OSAllocatedUnfairLock(initialState: 0)
+        do {
+            let valve = ESSafetyValve(
+                eventType: eventType,
+                responder: { recorder.recordMethod($0, cache: $1) }
+            )
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                let doneGroup = DispatchGroup()
+                doneGroup.enter()
+                manager.emergencyTimerQueue.async {
+                    if valve.respond(ES_AUTH_RESULT_DENY, cache: false) { winCount.withLock { $0 += 1 } }
+                    doneGroup.leave()
+                }
+                for racer in 0..<6 {
+                    doneGroup.enter()
+                    manager.authorizationProcessingQueue.async {
+                        let res = racer.isMultiple(of: 2) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
+                        if valve.respond(res, cache: racer.isMultiple(of: 2)) { winCount.withLock { $0 += 1 } }
+                        doneGroup.leave()
+                    }
+                }
+                doneGroup.notify(queue: manager.backgroundProcessingQueue) { continuation.resume() }
+            }
+        }
+        #expect(winCount.withLock { $0 } == 1 && recorder.callCount == 1)
     }
 }

@@ -92,7 +92,7 @@ extension ESManager {
         )
     }
 
-    func evaluateFileAuth(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateFileAuth(context: FileAuthEventContext, valve: ESSafetyValve) {
         switch context.eventType {
         case ES_EVENT_TYPE_AUTH_OPEN: evaluateAuthOpen(context: context, valve: valve)
         case ES_EVENT_TYPE_AUTH_UNLINK: evaluateAuthUnlink(context: context, valve: valve)
@@ -116,7 +116,7 @@ extension ESManager {
         evaluateAuthOpen(context: context, valve: valve)
     }
 
-    func evaluateAuthOpen(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthOpen(context: FileAuthEventContext, valve: ESSafetyValve) {
         let path = context.primaryPath
         if isAppBundlePath(path) {
             handleAppBundleAuthOpen(context: context, valve: valve)
@@ -135,7 +135,7 @@ extension ESManager {
         return (fflag & fWrite) != 0 || (fflag & modifyBits) != 0
     }
 
-    private func handleAppBundleAuthOpen(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    private func handleAppBundleAuthOpen(context: FileAuthEventContext, valve: ESSafetyValve) {
         let path = context.primaryPath
         let sigID = context.signingID
         if !isWriteIntent(context.openFlags) {
@@ -158,7 +158,7 @@ extension ESManager {
         )
     }
 
-    private func handleConfigFileAuthOpen(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    private func handleConfigFileAuthOpen(context: FileAuthEventContext, valve: ESSafetyValve) {
         if !isWriteIntent(context.openFlags) {
             _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: true)
             return
@@ -179,7 +179,7 @@ extension ESManager {
         )
     }
 
-    private func handleProtectedFolderAuthOpen(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    private func handleProtectedFolderAuthOpen(context: FileAuthEventContext, valve: ESSafetyValve) {
         let path = context.primaryPath
         let filename = (path as NSString).lastPathComponent
         if filename == ".DS_Store" || filename == ".localized" || filename.hasPrefix(".com.apple.") {

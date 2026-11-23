@@ -63,23 +63,6 @@ extension ESXPCClient {
         }
     }
 
-    func authorizeShutdown(_ authorized: Bool, completion: @escaping @Sendable (Bool) -> Void) {
-        xpcQueue.async { [weak self] in
-            guard let self = self, let conn = self.connection else {
-                completion(false)
-                return
-            }
-
-            guard let proxy = self.proxy(conn: conn, actionName: "authorizeShutdown", onError: { completion(false) })
-            else { return }
-
-            proxy.authorizeShutdown(authorized) { success in
-                Logfile.appXPC.debug("[ESXPCClient] authorizeShutdown reply: \(success, privacy: .public)")
-                completion(success)
-            }
-        }
-    }
-
     func processPendingApps(
         approvedPIDs: [Int32],
         rejectedPIDs: [Int32],

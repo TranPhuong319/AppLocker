@@ -45,13 +45,9 @@ extension ESManager {
         }
         Logfile.endpointSecurity.info("[Guardian] Main App (PID: \(pid, privacy: .public)) exited.")
 
-        let isAuthorized = stateLock.withLock { isShutdownAuthorized }
-        if isAuthorized || exitStat == 0 {
+        if exitStat == 0 {
             Logfile.endpointSecurity.info(
-                """
-                [Guardian] Shutdown was clean/authorized (stat: \(exitStat, privacy: .public), \
-                auth: \(isAuthorized, privacy: .public)). Watchdog standing down.
-                """
+                "[Guardian] Shutdown was clean (stat: \(exitStat, privacy: .public)). Watchdog standing down."
             )
             return
         }

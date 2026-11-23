@@ -59,7 +59,7 @@ extension ESManager {
         evaluateAuthSignal(context: context, valve: valve)
     }
 
-    func evaluateAuthSignal(context: SignalEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthSignal(context: SignalEventContext, valve: ESSafetyValve) {
         if evaluatePendingSignal(context: context, valve: valve) {
             return
         }
@@ -71,7 +71,7 @@ extension ESManager {
         _ = valve.respond(ES_AUTH_RESULT_ALLOW, cache: false)
     }
 
-    private func evaluatePendingSignal(context: SignalEventContext, valve: any ESAuthResponding) -> Bool {
+    private func evaluatePendingSignal(context: SignalEventContext, valve: ESSafetyValve) -> Bool {
         let targetPid = context.targetPID
         let pendingEntry = pendingPIDLock.withLock {
             pendingVerificationProcesses[targetPid]
@@ -108,7 +108,7 @@ extension ESManager {
         return true
     }
 
-    private func evaluateSelfDefenseSignal(context: SignalEventContext, valve: any ESAuthResponding) -> Bool {
+    private func evaluateSelfDefenseSignal(context: SignalEventContext, valve: ESSafetyValve) -> Bool {
         let targetPid = context.targetPID
         let senderPid = context.senderPID
         let sig = context.sig
@@ -121,10 +121,9 @@ extension ESManager {
 
         let isSelfSignaling = (senderPid == targetPid)
         let isExtensionSender = (senderPid == getpid())
-        let isShutdown = stateLock.withLock { isShutdownAuthorized }
         // Self-defense policy: only launchd (PID 1) is allowed for autonomous OS lifecycle signals;
         // block all non-zero signals except benign SIGCHLD/SIGCONT (covers SIGABRT, SIGSEGV, SIGUSR1, SIGTTIN, etc.)
-        guard !isSelfSignaling && !isExtensionSender && !isShutdown && senderPid != 1 else {
+        guard !isSelfSignaling && !isExtensionSender && senderPid != 1 else {
             return false
         }
         guard sig != SIGCHLD && sig != SIGCONT else {
@@ -159,7 +158,7 @@ extension ESManager {
     private func handleUnauthorizedSignal(
         context: SignalEventContext,
         targetAppName: String,
-        valve: any ESAuthResponding
+        valve: ESSafetyValve
     ) {
         let targetPid = context.targetPID
         let senderPid = context.senderPID
@@ -179,19 +178,10 @@ extension ESManager {
             return
         }
 
-        let responsiblePid = context.senderResponsibleAuditToken.map { audit_token_to_pid($0) } ?? 0
-        let responsiblePath = processPath(for: responsiblePid)
-        let senderDisplayName: String = {
-            if let respPath = responsiblePath, respPath.contains(".app") {
-                return self.computeAppName(forExecPath: respPath)
-            }
-            if senderPath.starts(with: "/") {
-                return self.computeAppName(forExecPath: senderPath)
-            }
-            return senderPath
-        }()
-
-        let responsiblePathArg = responsiblePath ?? ""
+        let (senderDisplayName, responsiblePathArg) = resolveSenderInfo(
+            senderPath: senderPath,
+            responsibleAuditToken: context.senderResponsibleAuditToken
+        )
         Logfile.endpointSecurity.warning(
             """
             [SecurityEvent:TamperBlocked] Target: \(targetAppName, privacy: .public) \

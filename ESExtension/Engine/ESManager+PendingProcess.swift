@@ -35,23 +35,6 @@ extension ESManager {
         }
     }
 
-    func auditToken(for pid: pid_t) -> audit_token_t? {
-        var token = audit_token_t()
-        var size = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
-        var task: mach_port_name_t = 0
-        let kernReturn = task_name_for_pid(mach_task_self_, pid, &task)
-        guard kernReturn == KERN_SUCCESS else { return nil }
-        defer { mach_port_deallocate(mach_task_self_, task) }
-
-        let infoRes = withUnsafeMutablePointer(to: &token) { ptr in
-            ptr.withMemoryRebound(to: integer_t.self, capacity: Int(size)) { intPtr in
-                task_info(task, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &size)
-            }
-        }
-        guard infoRes == KERN_SUCCESS else { return nil }
-        return token
-    }
-
     struct ValidatedPendingApp {
         let pid: pid_t
         let name: String
@@ -72,6 +55,34 @@ extension ESManager {
         return processedCount > 0 || (approved.isEmpty && rejected.isEmpty)
     }
 
+    enum ProcessIdentityValidation {
+        case valid
+        case dead
+        case recycled(expected: Int32, current: Int32)
+    }
+
+    func verifyProcessIdentity(pid: pid_t, expectedToken: audit_token_t) -> ProcessIdentityValidation {
+        guard pid > 0, kill(pid, 0) == 0, let currentToken = Self.auditToken(for: pid) else {
+            return .dead
+        }
+        let expectedVersion = audit_token_to_pidversion(expectedToken)
+        let currentVersion = audit_token_to_pidversion(currentToken)
+        guard expectedVersion == currentVersion else {
+            return .recycled(expected: expectedVersion, current: currentVersion)
+        }
+        return .valid
+    }
+
+    @discardableResult
+    func terminateFrozenProcess(pid: pid_t) -> Int32 {
+        guard pid > 0 else { return -1 }
+        // Send SIGKILL followed by SIGCONT to unfreeze XNU kernel dispatch loop
+        // and terminate cleanly without hanging launchd
+        let killRes = kill(pid, SIGKILL)
+        _ = kill(pid, SIGCONT)
+        return killRes
+    }
+
     private func validateAndConsumePendingPID(
         _ rawPID: Int32,
         actionName: String
@@ -84,19 +95,14 @@ extension ESManager {
         }
 
         guard let entry = savedEntry else { return nil }
-        let expectedToken = entry.token
 
-        // Process liveness & PID recycling defense via Mach audit token
-        guard let currentToken = auditToken(for: pid) else {
+        switch verifyProcessIdentity(pid: pid, expectedToken: entry.token) {
+        case .dead:
             Logfile.endpointSecurity.warning(
                 "[PendingProcess] \(actionName, privacy: .public) PID \(pid, privacy: .public) is dead, skipping."
             )
             return nil
-        }
-
-        let expectedVersion = audit_token_to_pidversion(expectedToken)
-        let currentVersion = audit_token_to_pidversion(currentToken)
-        guard expectedVersion == currentVersion else {
+        case .recycled(let expectedVersion, let currentVersion):
             Logfile.endpointSecurity.fault(
                 """
                 [PendingProcess] PID RECYCLING DETECTED for PID \(pid, privacy: .public)! \
@@ -105,9 +111,9 @@ extension ESManager {
                 """
             )
             return nil
+        case .valid:
+            return ValidatedPendingApp(pid: pid, name: entry.notification.name, path: entry.notification.path)
         }
-
-        return ValidatedPendingApp(pid: pid, name: entry.notification.name, path: entry.notification.path)
     }
 
     private func processApprovedPIDs(_ approved: [Int32]) -> Int {
@@ -146,11 +152,7 @@ extension ESManager {
                 continue
             }
             let pid = item.pid
-
-            // Send SIGKILL followed by SIGCONT to unfreeze XNU kernel dispatch loop
-            // and terminate cleanly without hanging launchd
-            let killRes = kill(pid, SIGKILL)
-            _ = kill(pid, SIGCONT)
+            let killRes = terminateFrozenProcess(pid: pid)
             if killRes == 0 {
                 Logfile.endpointSecurity.notice(
                     """

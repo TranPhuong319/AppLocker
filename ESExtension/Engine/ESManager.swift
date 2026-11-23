@@ -67,7 +67,6 @@ final class ESManager: NSObject, @unchecked Sendable {
     var authenticatedMainAppPIDVersion: Int32?
     var lastKnownMainAppPID: pid_t?
     var activeUserUID: uid_t?
-    var isShutdownAuthorized: Bool = false
     let processIDLock = OSAllocatedUnfairLock()
     let backgroundProcessingQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg",
@@ -178,24 +177,6 @@ final class ESManager: NSObject, @unchecked Sendable {
         reply(true)
     }
 
-    func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void) {
-        guard isCurrentConnectionAuthenticated() else {
-            Logfile.endpointSecurity.fault(
-                "[ESManager] authorizeShutdown REJECTED: Connection not authenticated or PID mismatch"
-            )
-            reply(false)
-            return
-        }
-
-        stateLock.withLock {
-            self.isShutdownAuthorized = authorized
-        }
-        Logfile.endpointSecurity.info(
-            "[ESManager] Authorized shutdown status updated to: \(authorized, privacy: .public)"
-        )
-        reply(true)
-    }
-
     func isMainAppProcess(_ process: UnsafePointer<es_process_t>) -> Bool {
         let processPid = audit_token_to_pid(process.pointee.audit_token)
         return processIDLock.withLock {
@@ -251,20 +232,30 @@ final class ESManager: NSObject, @unchecked Sendable {
         // inside `/Users/Shared/AppLocker/<UID>` even when directories have 0o777 permissions.
     }
 
-    static func selfAuditToken() -> audit_token_t? {
+    static func auditToken(forTask task: mach_port_name_t) -> audit_token_t? {
         var token = audit_token_t()
         var size = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
 
         let kernResult = withUnsafeMutablePointer(to: &token) { tokenPtr in
             tokenPtr.withMemoryRebound(to: integer_t.self, capacity: Int(size)) { intPtr in
-                task_info(mach_task_self_, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &size)
+                task_info(task, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &size)
             }
         }
 
-        if kernResult == KERN_SUCCESS {
-            return token
-        }
-        return nil
+        return kernResult == KERN_SUCCESS ? token : nil
+    }
+
+    static func selfAuditToken() -> audit_token_t? {
+        auditToken(forTask: mach_task_self_)
+    }
+
+    static func auditToken(for pid: pid_t) -> audit_token_t? {
+        guard pid > 0 else { return nil }
+        var task: mach_port_name_t = 0
+        let kernReturn = task_name_for_pid(mach_task_self_, pid, &task)
+        guard kernReturn == KERN_SUCCESS else { return nil }
+        defer { mach_port_deallocate(mach_task_self_, task) }
+        return auditToken(forTask: task)
     }
 
     // MARK: - Time Utilities

@@ -25,8 +25,6 @@ public enum AuthDecisionReason: String, Sendable {
         withReply reply: @escaping (Bool) -> Void
     )
 
-    func authorizeShutdown(_ authorized: Bool, withReply reply: @escaping (Bool) -> Void)
-
     func updateIncomingCallRingingState(_ isRinging: Bool)
     func refreshPendingWatchdog(pids: [Int32])
 }

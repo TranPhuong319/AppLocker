@@ -18,36 +18,34 @@ struct RecordedBlockedExec: Sendable, Equatable {
     let pid: Int32
 }
 
-final class MockAuthResponder: ESAuthResponding, @unchecked Sendable {
-    private let lock = OSAllocatedUnfairLock()
-    private(set) var callCount: Int = 0
-    private(set) var lastResult: es_auth_result_t?
-    private(set) var lastCache: Bool?
-    private(set) var lastMethod: ESResponseMethod?
-
-    @discardableResult
-    func respond(_ result: es_auth_result_t, cache: Bool) -> Bool {
-        lock.withLock {
-            callCount += 1
-            lastResult = result
-            lastCache = cache
-            return true
-        }
+final class AuthResponseRecorder: @unchecked Sendable {
+    private struct State {
+        var callCount: Int = 0
+        var lastResult: es_auth_result_t?
+        var lastCache: Bool?
+        var lastMethod: ESResponseMethod?
     }
 
+    private let state = OSAllocatedUnfairLock(initialState: State())
+
+    var callCount: Int { state.withLock { $0.callCount } }
+    var lastResult: es_auth_result_t? { state.withLock { $0.lastResult } }
+    var lastCache: Bool? { state.withLock { $0.lastCache } }
+    var lastMethod: ESResponseMethod? { state.withLock { $0.lastMethod } }
+
     func recordMethod(_ method: ESResponseMethod, cache: Bool) -> es_respond_result_t {
-        lock.withLock {
-            callCount += 1
-            lastCache = cache
-            lastMethod = method
+        state.withLock {
+            $0.callCount += 1
+            $0.lastCache = cache
+            $0.lastMethod = method
             switch method {
             case .authResult(let auth):
-                lastResult = auth
+                $0.lastResult = auth
             case .flagsResult(let flags):
-                lastResult = (flags == 0xFFFFFFFF) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
+                $0.lastResult = (flags == 0xFFFFFFFF) ? ES_AUTH_RESULT_ALLOW : ES_AUTH_RESULT_DENY
             }
-            return ES_RESPOND_RESULT_SUCCESS
         }
+        return ES_RESPOND_RESULT_SUCCESS
     }
 }
 
@@ -93,19 +91,17 @@ final class MockXPCNotificationDelegate: NSObject, NSXPCListenerDelegate {
 // MARK: - Shared Test Support & XPC Disconnect / PID Recycling Verification
 
 enum EndpointSecurityTestSupport {
-    static func realAuditToken(for pid: pid_t) -> audit_token_t? {
-        var taskName: mach_port_name_t = 0
-        guard task_name_for_pid(mach_task_self_, pid, &taskName) == KERN_SUCCESS else { return nil }
-        defer { mach_port_deallocate(mach_task_self_, taskName) }
-
-        var token = audit_token_t()
-        var count = mach_msg_type_number_t(MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size)
-        let kernRes = withUnsafeMutablePointer(to: &token) { tokenPtr in
-            tokenPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { intPtr in
-                task_info(taskName, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &count)
-            }
-        }
-        return kernRes == KERN_SUCCESS ? token : nil
+    static func makeTestValve(
+        eventType: es_event_type_t,
+        actionType: es_action_type_t = ES_ACTION_TYPE_AUTH
+    ) -> (valve: ESSafetyValve, recorder: AuthResponseRecorder) {
+        let recorder = AuthResponseRecorder()
+        let valve = ESSafetyValve(
+            eventType: eventType,
+            actionType: actionType,
+            responder: { method, cache in recorder.recordMethod(method, cache: cache) }
+        )
+        return (valve, recorder)
     }
 
     static func spawnTemporarySleepProcess() throws -> (Process, URL) {
@@ -182,8 +178,8 @@ extension AdversarialSecurityMatrixTests {
             try? FileManager.default.removeItem(at: tempDirB)
         }
 
-        let tokenA = try #require(EndpointSecurityTestSupport.realAuditToken(for: pidA))
-        var recycledTokenB = try #require(EndpointSecurityTestSupport.realAuditToken(for: pidB))
+        let tokenA = try #require(ESManager.auditToken(for: pidA))
+        var recycledTokenB = try #require(ESManager.auditToken(for: pidB))
         recycledTokenB.val.7 &+= 50 // Simulate PID recycling (pidversion mismatch)
         let staleTokenB = recycledTokenB
         kill(pidA, SIGSTOP)
@@ -218,9 +214,9 @@ extension AdversarialSecurityMatrixTests {
             unauthReply = $0
         }
         #expect(unauthReply == false)
-        var unauthShutdown = true
-        manager.authorizeShutdown(true) { unauthShutdown = $0 }
-        #expect(unauthShutdown == false)
+        var unauthConfig = true
+        manager.allowConfigAccess(getpid()) { unauthConfig = $0 }
+        #expect(unauthConfig == false)
     }
 
     private func verifyDisconnectAndReconnectBatchProcessing(

@@ -17,7 +17,7 @@ extension EndpointSecurityProtectionTests {
 
     @Test("Pre-SIGSTOP pending registration blocks SIGCONT from unauthorized senders and recycled PIDs")
     func preSigstopPendingRegistrationAndAntiPidRecycling() throws {
-        let (childProc, tempDir) = try spawnTemporarySleepProcess()
+        let (childProc, tempDir) = try EndpointSecurityTestSupport.spawnTemporarySleepProcess()
         let childPID = childProc.processIdentifier
         defer {
             kill(childPID, SIGKILL)
@@ -27,7 +27,7 @@ extension EndpointSecurityProtectionTests {
         }
 
         let execPath = tempDir.appendingPathComponent("sleep_test_bin").path
-        let realToken = try #require(realAuditToken(for: childPID))
+        let realToken = try #require(ESManager.auditToken(for: childPID))
         let uid = audit_token_to_euid(realToken)
         let customCDHashData = Data(repeating: 0xAA, count: 20)
         let customCDHashHex = customCDHashData.hexEncodedString
@@ -45,11 +45,13 @@ extension EndpointSecurityProtectionTests {
             (1, ES_AUTH_RESULT_DENY), (4242, ES_AUTH_RESULT_DENY), (getpid(), ES_AUTH_RESULT_ALLOW)
         ]
         for (senderPID, expected) in cases {
-            let sigResponder = MockAuthResponder()
+            let (sigValve, sigResponder) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+            )
             let sigCtx = SignalEventContext(
                 targetPID: childPID, targetAuditToken: realToken, senderPID: senderPID, sig: SIGCONT
             )
-            manager.evaluateAuthSignal(context: sigCtx, valve: sigResponder)
+            manager.evaluateAuthSignal(context: sigCtx, valve: sigValve)
             #expect(sigResponder.callCount == 1)
             #expect(sigResponder.lastResult == expected)
             #expect(sigResponder.lastCache == false)
@@ -57,11 +59,13 @@ extension EndpointSecurityProtectionTests {
 
         var recycledToken = realToken
         recycledToken.val.7 &+= 1
-        let recycleResponder = MockAuthResponder()
+        let (recycleValve, recycleResponder) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+        )
         let recycleCtx = SignalEventContext(
             targetPID: childPID, targetAuditToken: recycledToken, senderPID: 4242, sig: SIGCONT
         )
-        manager.evaluateAuthSignal(context: recycleCtx, valve: recycleResponder)
+        manager.evaluateAuthSignal(context: recycleCtx, valve: recycleValve)
         #expect(recycleResponder.callCount == 1)
         #expect(recycleResponder.lastResult == ES_AUTH_RESULT_DENY)
         #expect(recycleResponder.lastCache == false)
@@ -69,7 +73,7 @@ extension EndpointSecurityProtectionTests {
 
     @Test("Watchdog kills expired frozen process (SIGKILL+SIGCONT) and aborts if pidversion mismatches")
     func watchdogPurgeKillsMatchingProcessAndAbortsOnPidVersionMismatch() throws {
-        let (childA, tempDirA) = try spawnTemporarySleepProcess()
+        let (childA, tempDirA) = try EndpointSecurityTestSupport.spawnTemporarySleepProcess()
         let pidA = childA.processIdentifier
         defer {
             kill(pidA, SIGKILL)
@@ -77,7 +81,7 @@ extension EndpointSecurityProtectionTests {
             try? FileManager.default.removeItem(at: tempDirA)
         }
 
-        let tokenA = try #require(realAuditToken(for: pidA))
+        let tokenA = try #require(ESManager.auditToken(for: pidA))
         kill(pidA, SIGSTOP)
 
         let manager = ESManager(isTesting: true)
@@ -96,7 +100,7 @@ extension EndpointSecurityProtectionTests {
         childA.waitUntilExit()
         #expect(childA.isRunning == false)
 
-        let (childB, tempDirB) = try spawnTemporarySleepProcess()
+        let (childB, tempDirB) = try EndpointSecurityTestSupport.spawnTemporarySleepProcess()
         let pidB = childB.processIdentifier
         defer {
             kill(pidB, SIGKILL)
@@ -105,7 +109,7 @@ extension EndpointSecurityProtectionTests {
             try? FileManager.default.removeItem(at: tempDirB)
         }
 
-        var mutatedTokenB = try #require(realAuditToken(for: pidB))
+        var mutatedTokenB = try #require(ESManager.auditToken(for: pidB))
         mutatedTokenB.val.7 &+= 99
         let staleTokenB = mutatedTokenB
         let notifB = ESManager.BlockedNotification(
@@ -188,7 +192,9 @@ extension EndpointSecurityProtectionTests {
         }
 
         for hostileSig in [SIGKILL, SIGSTOP, SIGTERM, SIGQUIT, SIGHUP, SIGINT] {
-            let responder = MockAuthResponder()
+            let (valve, responder) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+            )
             let ctx = SignalEventContext(
                 targetPID: mainAppPID,
                 targetAuditToken: token,
@@ -196,7 +202,7 @@ extension EndpointSecurityProtectionTests {
                 senderExecutablePath: "/bin/kill",
                 sig: hostileSig
             )
-            manager.evaluateAuthSignal(context: ctx, valve: responder)
+            manager.evaluateAuthSignal(context: ctx, valve: valve)
             #expect(responder.callCount == 1)
             #expect(responder.lastResult == ES_AUTH_RESULT_DENY)
             #expect(responder.lastCache == false)
@@ -213,13 +219,15 @@ extension EndpointSecurityProtectionTests {
             manager.authenticatedMainAppPIDVersion = 100
         }
 
-        let responder = MockAuthResponder()
+        let (valve, responder) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+        )
         let actMonPath = "/System/Applications/Utilities/Activity Monitor.app/Contents/MacOS/Activity Monitor"
         let ctx = SignalEventContext(
             targetPID: mainAppPID, targetAuditToken: token,
             senderPID: 5555, senderExecutablePath: actMonPath, sig: SIGKILL
         )
-        manager.evaluateAuthSignal(context: ctx, valve: responder)
+        manager.evaluateAuthSignal(context: ctx, valve: valve)
         #expect(responder.callCount == 1 && responder.lastResult == ES_AUTH_RESULT_DENY)
         #expect(responder.lastCache == false)
     }
@@ -229,12 +237,14 @@ extension EndpointSecurityProtectionTests {
         let manager = ESManager(isTesting: true)
         let extPID = getpid()
         let token = makeAuditToken(pid: extPID, pidversion: 100)
-        let responder = MockAuthResponder()
+        let (valve, responder) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+        )
         let ctx = SignalEventContext(
             targetPID: extPID, targetAuditToken: token,
             senderPID: 8888, senderExecutablePath: "/bin/kill", sig: SIGKILL
         )
-        manager.evaluateAuthSignal(context: ctx, valve: responder)
+        manager.evaluateAuthSignal(context: ctx, valve: valve)
         #expect(responder.callCount == 1 && responder.lastResult == ES_AUTH_RESULT_DENY)
         #expect(responder.lastCache == false)
     }
@@ -249,17 +259,19 @@ extension EndpointSecurityProtectionTests {
             manager.authenticatedMainAppPIDVersion = 100
         }
 
-        let responder = MockAuthResponder()
+        let (valve, responder) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+        )
         let ctx = SignalEventContext(
             targetPID: mainAppPID, targetAuditToken: token,
             senderPID: 1, senderExecutablePath: "/sbin/launchd", sig: SIGTERM
         )
-        manager.evaluateAuthSignal(context: ctx, valve: responder)
+        manager.evaluateAuthSignal(context: ctx, valve: valve)
         #expect(responder.callCount == 1 && responder.lastResult == ES_AUTH_RESULT_ALLOW)
     }
 
-    @Test("evaluateAuthSignal allows self-signaling, SIGCHLD, sig 0, and authorized shutdown")
-    func evaluateAuthSignalAllowsSelfSignalingAndAuthorizedShutdown() {
+    @Test("evaluateAuthSignal allows self-signaling, SIGCHLD, and sig 0")
+    func evaluateAuthSignalAllowsSelfSignalingAndBenignSignals() {
         let manager = ESManager(isTesting: true)
         let mainAppPID: pid_t = 3096
         let token = makeAuditToken(pid: mainAppPID, pidversion: 100)
@@ -269,21 +281,15 @@ extension EndpointSecurityProtectionTests {
         }
 
         for (sender, sig) in [(mainAppPID, SIGTERM), (9999, 0), (9999, SIGCHLD)] {
-            let resp = MockAuthResponder()
+            let (valve, resp) = EndpointSecurityTestSupport.makeTestValve(
+                eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+            )
             let ctx = SignalEventContext(
                 targetPID: mainAppPID, targetAuditToken: token, senderPID: sender, sig: sig
             )
-            manager.evaluateAuthSignal(context: ctx, valve: resp)
+            manager.evaluateAuthSignal(context: ctx, valve: valve)
             #expect(resp.callCount == 1 && resp.lastResult == ES_AUTH_RESULT_ALLOW)
         }
-
-        manager.stateLock.withLock { manager.isShutdownAuthorized = true }
-        let shutdownResponder = MockAuthResponder()
-        let shutdownCtx = SignalEventContext(
-            targetPID: mainAppPID, targetAuditToken: token, senderPID: 9999, sig: SIGKILL
-        )
-        manager.evaluateAuthSignal(context: shutdownCtx, valve: shutdownResponder)
-        #expect(shutdownResponder.callCount == 1 && shutdownResponder.lastResult == ES_AUTH_RESULT_ALLOW)
     }
 
     @Test("ESSafetyValve filters duplicate AUTH_SIGNAL evaluations and enforces 80/20 deadline race")
@@ -303,10 +309,8 @@ extension EndpointSecurityProtectionTests {
         let budget = ESClientObject.computeDeadlineBudget(nanosUntilDeadline: 15_000_000_000)
         #expect(budget.processingBudget == 12_000_000_000 && budget.headroom == 3_000_000_000)
 
-        let recorder = MockAuthResponder()
-        let valve = ESSafetyValve(
-            eventType: ES_EVENT_TYPE_AUTH_SIGNAL,
-            responder: { method, cache in recorder.recordMethod(method, cache: cache) }
+        let (valve, recorder) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_SIGNAL
         )
         let ctx = SignalEventContext(
             targetPID: mainAppPID, targetAuditToken: token,
@@ -340,29 +344,42 @@ extension EndpointSecurityProtectionTests {
         let signals = [SIGABRT, SIGSEGV, SIGBUS, SIGALRM, SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGTRAP, SIGSYS]
         for vector in vectors {
             for sig in signals {
-                let resp = MockAuthResponder()
+                let (valve, resp) = EndpointSecurityTestSupport.makeTestValve(
+                    eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+                )
                 let ctx = SignalEventContext(
                     targetPID: mainPID, targetAuditToken: mainToken,
                     senderPID: 6000, senderExecutablePath: vector, sig: sig
                 )
-                manager.evaluateAuthSignal(context: ctx, valve: resp)
+                manager.evaluateAuthSignal(context: ctx, valve: valve)
                 #expect(resp.callCount == 1 && resp.lastResult == ES_AUTH_RESULT_DENY)
             }
         }
 
         manager.processIDLock.withLock { manager.authenticatedMainAppPID = nil }
-        let recycledResp = MockAuthResponder()
+        let (recycledValve, recycledResp) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+        )
         let recycledCtx = SignalEventContext(
             targetPID: mainPID, targetAuditToken: mainToken, senderPID: 6000, sig: SIGKILL
         )
-        manager.evaluateAuthSignal(context: recycledCtx, valve: recycledResp)
+        manager.evaluateAuthSignal(context: recycledCtx, valve: recycledValve)
         #expect(recycledResp.callCount == 1 && recycledResp.lastResult == ES_AUTH_RESULT_ALLOW)
 
+        await verifyConcurrencyStorm(manager: manager, pendingPID: pendingPID, pendingToken: pendingToken)
+    }
+
+    private func verifyConcurrencyStorm(
+        manager: ESManager,
+        pendingPID: pid_t,
+        pendingToken: audit_token_t
+    ) async {
         await withTaskGroup(of: Int.self) { group in
             for idx in 0..<300 {
                 group.addTask {
-                    let rec = MockAuthResponder()
-                    let valve = ESSafetyValve(eventType: ES_EVENT_TYPE_AUTH_SIGNAL) { rec.recordMethod($0, cache: $1) }
+                    let (valve, rec) = EndpointSecurityTestSupport.makeTestValve(
+                        eventType: ES_EVENT_TYPE_AUTH_SIGNAL
+                    )
                     manager.evaluateAuthSignal(context: .init(
                         targetPID: pendingPID, targetAuditToken: pendingToken,
                         senderPID: (idx % 2 == 0) ? getpid() : 8888, sig: SIGCONT

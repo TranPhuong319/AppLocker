@@ -24,6 +24,8 @@ class ESClientObject: @unchecked Sendable {
         }
     }
 
+    func start() -> Bool { createClient() }
+
     func createClient() -> Bool {
         // 1. Create New Client
         let result = es_new_client(&(self.client)) { [weak self] (esClient, esMessage) in

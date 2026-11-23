@@ -14,15 +14,10 @@ enum ESResponseMethod: Sendable, Equatable {
     case flagsResult(UInt32)
 }
 
-protocol ESAuthResponding: Sendable {
-    @discardableResult
-    func respond(_ result: es_auth_result_t, cache: Bool) -> Bool
-}
-
 /// ESSafetyValve implements the "Dual-Block Race" pattern (Santa-style).
 /// It uses a lock to ensure that either the main logic worker
 /// OR the emergency timer responds to the ES message, but never both.
-final class ESSafetyValve: ESAuthResponding, @unchecked Sendable {
+final class ESSafetyValve: @unchecked Sendable {
     private let lock = OSAllocatedUnfairLock()
     private let message: ESMessage?
     private let eventType: es_event_type_t

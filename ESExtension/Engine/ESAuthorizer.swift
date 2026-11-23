@@ -9,14 +9,15 @@ import EndpointSecurity
 import Foundation
 
 final class ESAuthorizer: ESClientObject, @unchecked Sendable {
+    static let subscribedEvents: [es_event_type_t] = [
+        ES_EVENT_TYPE_NOTIFY_EXEC,
+        ES_EVENT_TYPE_AUTH_SIGNAL,
+        ES_EVENT_TYPE_NOTIFY_EXIT
+    ]
+
     init() { super.init(name: "Authorizer") }
-    func start() -> Bool { createClient() }
 
     func enable() {
-        _ = self.subscribe([
-            ES_EVENT_TYPE_NOTIFY_EXEC,
-            ES_EVENT_TYPE_AUTH_SIGNAL,
-            ES_EVENT_TYPE_NOTIFY_EXIT
-        ])
+        _ = self.subscribe(Self.subscribedEvents)
     }
 }

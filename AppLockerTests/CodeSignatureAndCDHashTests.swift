@@ -61,27 +61,12 @@ struct CodeSignatureAndCDHashTests {
         proc.executableURL = binaryURL
         try proc.run()
 
-        let pid = proc.processIdentifier
-        var taskName: mach_port_name_t = 0
-        let krTask = task_name_for_pid(mach_task_self_, pid, &taskName)
-        #expect(krTask == KERN_SUCCESS)
-        defer {
-            if taskName != 0 {
-                mach_port_deallocate(mach_task_self_, taskName)
-            }
+        let token = ESManager.auditToken(for: proc.processIdentifier)
+        if token == nil {
+            kill(proc.processIdentifier, SIGKILL)
+            proc.waitUntilExit()
         }
-
-        var token = audit_token_t()
-        var count = mach_msg_type_number_t(
-            MemoryLayout<audit_token_t>.size / MemoryLayout<natural_t>.size
-        )
-        let krInfo = withUnsafeMutablePointer(to: &token) { tokenPtr in
-            tokenPtr.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { intPtr in
-                task_info(taskName, task_flavor_t(TASK_AUDIT_TOKEN), intPtr, &count)
-            }
-        }
-        #expect(krInfo == KERN_SUCCESS)
-        return (proc, token)
+        return (proc, try #require(token))
     }
 
     @Test("Binary signed with DE0CAD38... + com.TranPhuong319.AppLocker passes both requirements")
@@ -229,8 +214,8 @@ struct AdversarialSecurityMatrixTests {
         ]
 
         for vector in attackVectors {
-            let responder = MockAuthResponder()
-            manager.evaluateFileAuth(context: vector, valve: responder)
+            let (valve, responder) = EndpointSecurityTestSupport.makeTestValve(eventType: vector.eventType)
+            manager.evaluateFileAuth(context: vector, valve: valve)
             #expect(responder.callCount == 1)
             #expect(responder.lastResult == ES_AUTH_RESULT_DENY)
             #expect(responder.lastCache == false)
@@ -248,7 +233,7 @@ struct AdversarialSecurityMatrixTests {
             try? FileManager.default.removeItem(at: tempDir)
         }
 
-        let realToken = try #require(EndpointSecurityTestSupport.realAuditToken(for: childPID))
+        let realToken = try #require(ESManager.auditToken(for: childPID))
         let uid = audit_token_to_euid(realToken)
         let manager = ESManager(isTesting: true)
 
@@ -353,16 +338,20 @@ struct AdversarialSecurityMatrixTests {
             eventType: ES_EVENT_TYPE_AUTH_OPEN, processPID: authPID, processAuditToken: tokenUIDA,
             primaryPath: "/Users/Shared/AppLocker/\(uidA)/config.plist", openFlags: 0x00000002
         )
-        let ownWriteResp = MockAuthResponder()
-        manager.evaluateFileAuth(context: ownWriteCtx, valve: ownWriteResp)
+        let (ownWriteValve, ownWriteResp) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_OPEN
+        )
+        manager.evaluateFileAuth(context: ownWriteCtx, valve: ownWriteValve)
         #expect(ownWriteResp.lastResult == ES_AUTH_RESULT_ALLOW)
 
         let crossUidUnlinkCtx = FileAuthEventContext(
             eventType: ES_EVENT_TYPE_AUTH_UNLINK, processPID: authPID, processAuditToken: tokenUIDA,
             primaryPath: "/Users/Shared/AppLocker/\(uidB)/config.plist"
         )
-        let crossUidUnlinkResp = MockAuthResponder()
-        manager.evaluateFileAuth(context: crossUidUnlinkCtx, valve: crossUidUnlinkResp)
+        let (crossUidValve, crossUidUnlinkResp) = EndpointSecurityTestSupport.makeTestValve(
+            eventType: ES_EVENT_TYPE_AUTH_UNLINK
+        )
+        manager.evaluateFileAuth(context: crossUidUnlinkCtx, valve: crossUidValve)
         #expect(crossUidUnlinkResp.lastResult == ES_AUTH_RESULT_DENY)
     }
 }

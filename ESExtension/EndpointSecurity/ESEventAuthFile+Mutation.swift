@@ -20,7 +20,7 @@ extension ESManager {
         evaluateAuthUnlink(context: ctx, valve: valve)
     }
 
-    func evaluateAuthUnlink(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthUnlink(context: FileAuthEventContext, valve: ESSafetyValve) {
         let targetPath = context.primaryPath
         if !targetPath.isEmpty {
             let filename = (targetPath as NSString).lastPathComponent
@@ -59,7 +59,7 @@ extension ESManager {
         evaluateAuthRename(context: context, valve: valve)
     }
 
-    func evaluateAuthRename(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthRename(context: FileAuthEventContext, valve: ESSafetyValve) {
         let srcPath = context.primaryPath
         let isConfig = isProtectedConfigPath(srcPath)
         let srcIsProtected = isConfig || isInsideProtectedFolder(srcPath) || isAppBundlePath(srcPath)
@@ -123,7 +123,7 @@ extension ESManager {
         evaluateAuthTruncate(context: ctx, valve: valve)
     }
 
-    func evaluateAuthTruncate(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthTruncate(context: FileAuthEventContext, valve: ESSafetyValve) {
         let targetPath = context.primaryPath
         let isConfig = isProtectedConfigPath(targetPath)
         let isProtected = isConfig || isInsideProtectedFolder(targetPath) || isAppBundlePath(targetPath)
@@ -140,7 +140,7 @@ extension ESManager {
 
     func handleProtectedMutationAuth(
         context: FileAuthEventContext,
-        valve: any ESAuthResponding,
+        valve: ESSafetyValve,
         isTargetProtected: Bool,
         isConfig: Bool = false,
         operationName: String
@@ -180,16 +180,10 @@ extension ESManager {
     func logConfigTamperBlocked(context: FileAuthEventContext, action: String) {
         let senderPid = context.processPID
         let senderPath = context.executablePath ?? processPath(for: senderPid) ?? "PID \(senderPid)"
-        let responsiblePid = context.responsibleAuditToken.map { audit_token_to_pid($0) } ?? 0
-        let responsiblePath = processPath(for: responsiblePid)
-        let senderDisplayName: String = if let respPath = responsiblePath, respPath.contains(".app") {
-            self.computeAppName(forExecPath: respPath)
-        } else if senderPath.starts(with: "/") {
-            self.computeAppName(forExecPath: senderPath)
-        } else {
-            senderPath
-        }
-        let responsiblePathArg = responsiblePath ?? ""
+        let (senderDisplayName, responsiblePathArg) = resolveSenderInfo(
+            senderPath: senderPath,
+            responsibleAuditToken: context.responsibleAuditToken
+        )
         Logfile.endpointSecurity.warning(
             """
             [SecurityEvent:TamperBlocked] Target: Config (PID 0) | Sender: \(senderDisplayName, privacy: .public) \
@@ -209,7 +203,7 @@ extension ESManager {
         evaluateAuthExchangedata(context: ctx, valve: valve)
     }
 
-    func evaluateAuthExchangedata(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthExchangedata(context: FileAuthEventContext, valve: ESSafetyValve) {
         let file1 = context.primaryPath
         let file2 = context.secondaryPath ?? ""
         let isProtected = isInsideProtectedFolder(file1) || isInsideProtectedFolder(file2) ||
@@ -228,7 +222,7 @@ extension ESManager {
         evaluateAuthClone(context: ctx, valve: valve)
     }
 
-    func evaluateAuthClone(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthClone(context: FileAuthEventContext, valve: ESSafetyValve) {
         let isProtected = isInsideProtectedFolder(context.primaryPath) || isAppBundlePath(context.secondaryPath ?? "")
         handleProtectedMutationAuth(
             context: context, valve: valve, isTargetProtected: isProtected, operationName: "CLONE"
@@ -245,7 +239,7 @@ extension ESManager {
         evaluateAuthLink(context: ctx, valve: valve)
     }
 
-    func evaluateAuthLink(context: FileAuthEventContext, valve: any ESAuthResponding) {
+    func evaluateAuthLink(context: FileAuthEventContext, valve: ESSafetyValve) {
         let isProtected = isInsideProtectedFolder(context.primaryPath) || isAppBundlePath(context.secondaryPath ?? "")
         handleProtectedMutationAuth(
             context: context, valve: valve, isTargetProtected: isProtected, operationName: "LINK"

@@ -28,7 +28,6 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
     ]
 
     init() { super.init(name: "TamperResistance") }
-    func start() -> Bool { createClient() }
 
     func enable() {
         #if DEBUG
