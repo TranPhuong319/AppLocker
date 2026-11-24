@@ -320,7 +320,11 @@ struct MainAppHangAndStressVerificationTests {
 
         let missingPath = "/tmp/NonExistent-\(UUID().uuidString).app"
         let missing = await provider.loadIcon(for: missingPath, size: 32)
-        #expect(missing.isTemplate == true)
+        #expect(missing == provider.defaultPlaceholder(size: 32))
         #expect(provider.cachedIcon(for: missingPath, size: 32) == nil)
+
+        let revisionBefore = provider.revision
+        provider.invalidateIcon(for: missingPath)
+        #expect(provider.revision == revisionBefore &+ 1)
     }
 }

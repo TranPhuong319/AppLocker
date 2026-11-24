@@ -112,7 +112,7 @@ struct LockedAppRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AppIconView(path: app.path, size: 32, isMissing: isMissing)
+            AppIconView(path: app.path, size: 32)
                 .opacity(isMissing ? 0.5 : 1.0)
                 .grayscale(isMissing ? 0.6 : 0.0)
 
@@ -161,18 +161,16 @@ struct MissingAppRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AppIconView(path: app.path, size: 32, isMissing: true)
-                .opacity(0.5)
-                .grayscale(0.6)
+            AppIconView(path: app.path, size: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(app.name)
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
 
                 Text(app.path)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
@@ -182,6 +180,5 @@ struct MissingAppRow: View {
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
-        .opacity(0.7)
     }
 }

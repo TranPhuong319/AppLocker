@@ -7,13 +7,16 @@
 
 import AppKit
 import Foundation
+import Observation
 
+@Observable
 @MainActor
 final class AppIconProvider {
     static let shared = AppIconProvider()
 
-    private let cache = NSCache<NSString, NSImage>()
-    private var placeholderCache: [Int: NSImage] = [:]
+    private(set) var revision: Int = 0
+    @ObservationIgnored private let cache = NSCache<NSString, NSImage>()
+    @ObservationIgnored private var placeholderCache: [Int: NSImage] = [:]
 
     private init() {
         cache.countLimit = 500
@@ -65,17 +68,14 @@ final class AppIconProvider {
             return rechecked
         }
 
-        guard decoded.exists else {
-            return missingIcon(size: size)
+        guard decoded.exists, let cgImage = decoded.cgImage else {
+            return defaultPlaceholder(size: size)
         }
 
-        if let cgImage = decoded.cgImage {
-            let image = NSImage(cgImage: cgImage, size: NSSize(width: size, height: size))
-            let pixelSize = min(Int(size * 2.0), 64)
-            cache.setObject(image, forKey: key, cost: pixelSize * pixelSize * 4)
-            return image
-        }
-        return defaultPlaceholder(size: size)
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: size, height: size))
+        let pixelSize = min(Int(size * 2.0), 64)
+        cache.setObject(image, forKey: key, cost: pixelSize * pixelSize * 4)
+        return image
     }
 
     func icon(for path: String, size: CGFloat = 32) -> NSImage {
@@ -87,7 +87,7 @@ final class AppIconProvider {
         }
 
         guard FileManager.default.fileExists(atPath: appBundlePath) else {
-            return missingIcon(size: size)
+            return defaultPlaceholder(size: size)
         }
 
         let rawIcon = NSWorkspace.shared.icon(forFile: appBundlePath)
@@ -105,22 +105,12 @@ final class AppIconProvider {
         return rasterized
     }
 
-    private func missingIcon(size: CGFloat) -> NSImage {
-        let symbolConfig = NSImage.SymbolConfiguration(pointSize: size, weight: .regular)
-            .applying(.init(hierarchicalColor: .secondaryLabelColor))
-        let rawIcon = NSImage(systemSymbolName: "xmark.app.fill", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
-            ?? NSWorkspace.shared.icon(for: .applicationBundle)
-        let rasterized = rasterize(image: rawIcon, targetSize: size)
-        rasterized.isTemplate = true
-        return rasterized
-    }
-
     func invalidateIcon(for path: String) {
         let appBundlePath = Self.resolveAppBundlePath(from: path)
         for size in [16, 24, 32, 36, 48, 64] {
             cache.removeObject(forKey: "\(appBundlePath)_\(size)" as NSString)
         }
+        revision &+= 1
     }
 
     private func rasterize(image: NSImage, targetSize: CGFloat) -> NSImage {

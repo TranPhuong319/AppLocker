@@ -10,7 +10,6 @@ import SwiftUI
 struct AppIconView: View {
     let path: String
     let size: CGFloat
-    var isMissing: Bool = false
 
     @State private var loadedImage: NSImage?
 
@@ -24,11 +23,7 @@ struct AppIconView: View {
             .scaledToFit()
             .frame(width: size, height: size)
             .clipShape(RoundedRectangle(cornerRadius: 6))
-            .task(id: "\(path)_\(Int(size))") {
-                if let cached = AppIconProvider.shared.cachedIcon(for: path, size: size) {
-                    loadedImage = cached
-                    return
-                }
+            .task(id: "\(path)_\(Int(size))_\(AppIconProvider.shared.revision)") {
                 loadedImage = await AppIconProvider.shared.loadIcon(for: path, size: size)
             }
     }
