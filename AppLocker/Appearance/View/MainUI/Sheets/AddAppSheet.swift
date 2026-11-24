@@ -37,10 +37,6 @@ struct AddAppSheet: View {
             bottomActionBar
         }
         .padding(.top, 8)
-        .background(
-            VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
-                .ignoresSafeArea()
-        )
         .contentShape(Rectangle())
         .onTapGesture { unfocus() }
         .frame(

@@ -48,14 +48,7 @@ struct SettingsView: View {
         NavigationSplitView {
             List(SettingsTab.allCases, id: \.self, selection: $navigator.selectedTab) { tab in
                 HStack(spacing: 10) {
-                    Label {
-                        Text(tab.displayName)
-                            .font(.system(size: 13, weight: tab == navigator.selectedTab ? .medium : .regular))
-                    } icon: {
-                        Image(systemName: tab.iconName)
-                            .foregroundStyle(tab == navigator.selectedTab ? Color.accentColor : .secondary)
-                            .frame(width: 20)
-                    }
+                    Label(tab.displayName, systemImage: tab.iconName)
 
                     if tab == .security {
                         Spacer()

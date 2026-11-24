@@ -34,10 +34,6 @@ struct MissingAppsSheet: View {
 
                 bottomActionBar
             }
-            .background(
-                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
-                    .ignoresSafeArea()
-            )
         }
         .frame(
             minWidth: WindowLayout.missingAppsMinSize.width,

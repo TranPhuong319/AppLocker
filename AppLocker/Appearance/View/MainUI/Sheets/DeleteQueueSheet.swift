@@ -46,10 +46,6 @@ struct DeleteQueueSheet: View {
 
                 bottomActionBar
             }
-            .background(
-                VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
-                    .ignoresSafeArea()
-            )
         }
         .frame(
             minWidth: WindowLayout.deleteQueueMinSize.width,
