@@ -5,6 +5,7 @@
 //  Created by Doe Phương on 17/11/26.
 //
 
+import AppKit
 import Foundation
 import Testing
 
@@ -326,5 +327,38 @@ struct MainAppHangAndStressVerificationTests {
         let revisionBefore = provider.revision
         provider.invalidateIcon(for: missingPath)
         #expect(provider.revision == revisionBefore &+ 1)
+    }
+
+    @Test("AppIconProvider invalidates all cached icons on Tier 2 icon appearance notification")
+    @MainActor
+    func iconAppearanceNotificationInvalidatesCache() {
+        let provider = AppIconProvider.shared
+        let testPath = "/System/Applications/Calculator.app"
+        _ = provider.icon(for: testPath, size: 32)
+        #expect(provider.cachedIcon(for: testPath, size: 32) != nil)
+
+        let revisionBefore = provider.revision
+        NSWorkspace.shared.notificationCenter.post(
+            name: NSNotification.Name("NSWorkspaceIconAppearanceConfigurationDidChangeNotification"),
+            object: nil
+        )
+
+        #expect(provider.cachedIcon(for: testPath, size: 32) == nil)
+        #expect(provider.revision == revisionBefore &+ 1)
+    }
+
+    @Test("AppIconProvider Tier 1 activation fallback skips invalidation when appearance is unchanged")
+    @MainActor
+    func activationFallbackIsNoOpWhenAppearanceUnchanged() {
+        let provider = AppIconProvider.shared
+        let testPath = "/System/Applications/TextEdit.app"
+        _ = provider.icon(for: testPath, size: 32)
+        #expect(provider.cachedIcon(for: testPath, size: 32) != nil)
+
+        let revisionBefore = provider.revision
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        #expect(provider.cachedIcon(for: testPath, size: 32) != nil)
+        #expect(provider.revision == revisionBefore)
     }
 }

@@ -14,16 +14,42 @@ import Observation
 final class AppIconProvider {
     static let shared = AppIconProvider()
 
+    private static let iconAppearanceDidChangeNotification = NSNotification.Name(
+        "NSWorkspaceIconAppearanceConfigurationDidChangeNotification"
+    )
+    private static let interfaceThemeDidChangeNotification = NSNotification.Name(
+        "AppleInterfaceThemeChangedNotification"
+    )
+
     private(set) var revision: Int = 0
     @ObservationIgnored private let cache = NSCache<NSString, NSImage>()
     @ObservationIgnored private var placeholderCache: [Int: NSImage] = [:]
+    @ObservationIgnored private var lastAppearanceSignature: [String: String] = [:]
+    @ObservationIgnored private nonisolated(unsafe) var iconAppearanceObserver: NSObjectProtocol?
+    @ObservationIgnored private nonisolated(unsafe) var interfaceThemeObserver: NSObjectProtocol?
+    @ObservationIgnored private nonisolated(unsafe) var appDidBecomeActiveObserver: NSObjectProtocol?
 
     private init() {
         cache.countLimit = 500
         cache.totalCostLimit = 50 * 1024 * 1024
+        lastAppearanceSignature = Self.currentAppearanceSignature()
+        registerAppearanceObservers()
+    }
+
+    deinit {
+        if let iconAppearanceObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(iconAppearanceObserver)
+        }
+        if let interfaceThemeObserver {
+            DistributedNotificationCenter.default().removeObserver(interfaceThemeObserver)
+        }
+        if let appDidBecomeActiveObserver {
+            NotificationCenter.default.removeObserver(appDidBecomeActiveObserver)
+        }
     }
 
     func defaultPlaceholder(size: CGFloat = 32) -> NSImage {
+        _ = revision
         let intSize = Int(size)
         if let cached = placeholderCache[intSize] {
             return cached
@@ -111,6 +137,67 @@ final class AppIconProvider {
             cache.removeObject(forKey: "\(appBundlePath)_\(size)" as NSString)
         }
         revision &+= 1
+    }
+
+    func invalidateAllIcons() {
+        cache.removeAllObjects()
+        placeholderCache.removeAll()
+        lastAppearanceSignature = Self.currentAppearanceSignature()
+        revision &+= 1
+        Logfile.app.debug(
+            "[AppIconProvider] Invalidated all cached icons (revision=\(self.revision, privacy: .public))"
+        )
+    }
+
+    private func invalidateIconsIfAppearanceChanged() {
+        let signature = Self.currentAppearanceSignature()
+        guard signature != lastAppearanceSignature else { return }
+        invalidateAllIcons()
+    }
+
+    private func registerAppearanceObservers() {
+        // Tier 2: AppKit undocumented workspace notification for live macOS 26 icon style updates
+        iconAppearanceObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: Self.iconAppearanceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.invalidateAllIcons()
+            }
+        }
+
+        // Tier 1: System Light/Dark transitions & foreground activation fallback when Tier 2 is unavailable
+        interfaceThemeObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Self.interfaceThemeDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.invalidateIconsIfAppearanceChanged()
+            }
+        }
+
+        appDidBecomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.invalidateIconsIfAppearanceChanged()
+            }
+        }
+    }
+
+    private nonisolated static func currentAppearanceSignature() -> [String: String] {
+        let domain = UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain) ?? [:]
+        var signature: [String: String] = [:]
+        for (key, value) in domain where key.hasPrefix("AppleIcon")
+            || key == "AppleInterfaceStyle"
+            || key == "AppleAccentColor" {
+            signature[key] = String(describing: value)
+        }
+        return signature
     }
 
     private func rasterize(image: NSImage, targetSize: CGFloat) -> NSImage {
