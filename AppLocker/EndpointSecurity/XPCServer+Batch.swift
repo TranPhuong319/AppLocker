@@ -55,15 +55,20 @@ extension AuthCoordinator {
         pendingApps.removeAll()
 
         dependencies.refreshWatchdog(approvedPIDs + rejectedPIDs)
+        startBatchAuthWatchdog(approvedPIDs: approvedPIDs, rejectedPIDs: rejectedPIDs)
 
         let reason = String(format: String(localized: "open %d application(s)"), approvedPIDs.count)
         Task { @MainActor [weak self] in
             guard let self else { return }
             let success: Bool
+            var failureReason = AuthDecisionReason.userCancel.rawValue
             do {
                 success = try await self.dependencies.authenticate(reason)
             } catch {
-                if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel {
+                if let laError = error as? LAError, laError.code == .appCancel {
+                    failureReason = AuthDecisionReason.timeout.rawValue
+                    Logfile.appXPC.notice("[Auth] Batch auth cancelled by app watchdog.")
+                } else if let laError = error as? LAError, laError.code == .userCancel {
                     Logfile.appXPC.notice("[Auth] Batch auth cancelled by user.")
                 } else {
                     Logfile.appXPC.error("[Auth] Batch auth error: \(error.localizedDescription, privacy: .public)")
@@ -73,7 +78,35 @@ extension AuthCoordinator {
             self.handleBatchAuthResult(
                 success: success,
                 approvedPIDs: approvedPIDs,
-                rejectedPIDs: rejectedPIDs
+                rejectedPIDs: rejectedPIDs,
+                failureReason: failureReason
+            )
+        }
+    }
+
+    @MainActor
+    private func startBatchAuthWatchdog(approvedPIDs: [pid_t], rejectedPIDs: [pid_t]) {
+        singleAppWatchdogTask?.cancel()
+        let configuredSeconds = dependencies.userDefaults.integer(forKey: "batchAuthCountdownSeconds")
+        let timeoutSeconds: Double = configuredSeconds > 0 ? Double(configuredSeconds) : 30.0
+
+        singleAppWatchdogTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            try? await self.dependencies.sleep(.seconds(timeoutSeconds))
+            guard !Task.isCancelled, self.isAuthenticatingBatch else { return }
+            Logfile.appXPC.warning(
+                "[Auth] Batch auth watchdog timeout (\(timeoutSeconds)s) reached. Cancelling LAContext."
+            )
+            self.dependencies.cancelAuth()
+
+            try? await self.dependencies.sleep(.seconds(2))
+            guard !Task.isCancelled, self.isAuthenticatingBatch else { return }
+            Logfile.appXPC.error("[Auth] Batch LAContext did not resume in time. Force rejecting batch PIDs.")
+            self.handleBatchAuthResult(
+                success: false,
+                approvedPIDs: approvedPIDs,
+                rejectedPIDs: rejectedPIDs,
+                failureReason: AuthDecisionReason.timeout.rawValue
             )
         }
     }
@@ -82,8 +115,13 @@ extension AuthCoordinator {
     private func handleBatchAuthResult(
         success: Bool,
         approvedPIDs: [pid_t],
-        rejectedPIDs: [pid_t]
+        rejectedPIDs: [pid_t],
+        failureReason: String = AuthDecisionReason.userCancel.rawValue
     ) {
+        guard self.isAuthenticatingBatch else { return }
+        singleAppWatchdogTask?.cancel()
+        singleAppWatchdogTask = nil
+
         if !success && isRestartingBatchWithNewApps {
             handleBatchAutoReAuthenticateWithNewApps()
             return
@@ -106,7 +144,7 @@ extension AuthCoordinator {
                 rejectedPIDs: survivingRejected
             )
         } else {
-            handleBatchFailure(batchApps: batchApps)
+            handleBatchFailure(batchApps: batchApps, reason: failureReason)
         }
 
         if !pendingApps.isEmpty {

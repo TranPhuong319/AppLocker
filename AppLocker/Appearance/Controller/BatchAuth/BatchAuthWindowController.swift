@@ -66,9 +66,7 @@ final class BatchAuthWindowController: NSWindowController, NSWindowDelegate {
             window.center()
         }
 
-        NSRunningApplication.current.activate()
         NSApp.activate()
-        window.orderFrontRegardless()
         window.makeKeyAndOrderFront(nil)
     }
 

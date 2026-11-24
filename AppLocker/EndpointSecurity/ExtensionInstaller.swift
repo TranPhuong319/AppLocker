@@ -104,12 +104,14 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     private func handleFinish(result: OSSystemExtensionRequest.Result) {
-        guard result == .completed else { return }
+        guard result == .completed || result == .willCompleteAfterReboot else { return }
 
         switch currentAction {
         case .install(let completion):
-            isInstalled = true
-            ESXPCClient.shared.connect()
+            isInstalled = result == .completed
+            if result == .completed {
+                ESXPCClient.shared.connect()
+            }
             completion?(.success(()))
         case .uninstall(let completion):
             isInstalled = false
@@ -146,6 +148,10 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         ESXPCClient.shared.disconnect()
         Task { @MainActor in
             self.isInstalled = false
+            if case .uninstall(let completion) = self.currentAction {
+                self.currentAction = nil
+                completion?(.failure(OSSystemExtensionError(.authorizationRequired)))
+            }
             Logfile.app.warning("[Installer] Extension requires user approval in System Settings")
         }
     }

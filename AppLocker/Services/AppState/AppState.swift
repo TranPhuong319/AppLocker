@@ -22,6 +22,8 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     @ObservationIgnored
     var pendingMissingCheckTask: Task<Void, Never>?
     @ObservationIgnored
+    nonisolated(unsafe) private var notificationTokens: [any NSObjectProtocol] = []
+    @ObservationIgnored
     let installedAppsProvider: () -> [InstalledApp]
 
     var manager: LockES
@@ -91,11 +93,12 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
     deinit {
         pendingMissingCheckTask?.cancel()
         searchUnlockableAppsTask?.cancel()
+        notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
         NotificationCenter.default.removeObserver(self)
     }
 
     private func setupNotificationObservers() {
-        NotificationCenter.default.addObserver(
+        let installedToken = NotificationCenter.default.addObserver(
             forName: .installedAppsDidUpdate,
             object: nil,
             queue: .main
@@ -105,7 +108,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             }
         }
 
-        NotificationCenter.default.addObserver(
+        let lockedToken = NotificationCenter.default.addObserver(
             forName: .lockedAppsDidChange,
             object: nil,
             queue: .main
@@ -115,7 +118,7 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
             }
         }
 
-        NotificationCenter.default.addObserver(
+        let activeToken = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil,
             queue: .main
@@ -125,6 +128,8 @@ class AppState: NSObject, NSOpenSavePanelDelegate {
                 self?.refreshAppLists()
             }
         }
+
+        notificationTokens = [installedToken, lockedToken, activeToken]
     }
 
     var userUnlockableApps: [InstalledApp] {

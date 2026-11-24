@@ -16,8 +16,11 @@ import UniformTypeIdentifiers
 @Observable
 @MainActor
 final class LogStore {
+    private static let maxEntries = 2_000
+
     var entries: [AppLogEntry] = []
     var filteredEntries: [AppLogEntry] = []
+    var groupedFilteredEntries: [GroupedLogEntry] = []
     var isLoading: Bool = true
     var errorMessage: String?
 
@@ -100,6 +103,7 @@ final class LogStore {
         clearedBeforeDate = Date()
         entries.removeAll()
         filteredEntries.removeAll()
+        groupedFilteredEntries.removeAll()
     }
 
     func scheduleRefilter(debounceMs: UInt64 = 0) {
@@ -135,13 +139,20 @@ final class LogStore {
     }
 
     func groupedEntries(within windowSeconds: TimeInterval = 1.0) -> [GroupedLogEntry] {
-        guard !filteredEntries.isEmpty else { return [] }
+        Self.groupEntries(filteredEntries, within: windowSeconds)
+    }
+
+    nonisolated static func groupEntries(
+        _ source: [AppLogEntry],
+        within windowSeconds: TimeInterval = 1.0
+    ) -> [GroupedLogEntry] {
+        guard !source.isEmpty else { return [] }
         var result: [GroupedLogEntry] = []
-        var current = filteredEntries[0]
+        var current = source[0]
         var count = 1
         var lastDate = current.date
 
-        for entry in filteredEntries.dropFirst() {
+        for entry in source.dropFirst() {
             let isSame = entry.subsystem == current.subsystem
                 && entry.category == current.category
                 && entry.level == current.level
@@ -170,6 +181,9 @@ final class LogStore {
             let newEntries = try await LogReader.shared.query(since: since, strictlyAfter: true)
             guard !Task.isCancelled, !newEntries.isEmpty else { return }
             self.entries.append(contentsOf: newEntries)
+            if self.entries.count > Self.maxEntries {
+                self.entries.removeFirst(self.entries.count - Self.maxEntries)
+            }
             await self.applyFilters()
         } catch {
             Logfile.app.error("[LogStore] Polling failed: \(error.localizedDescription, privacy: .public)")
@@ -208,8 +222,8 @@ final class LogStore {
         let levelFilter = selectedLevel
         let timeCutoff = selectedTimeRange.since
 
-        let results = await Task.detached(priority: .userInitiated) { () -> [AppLogEntry] in
-            snapshot.filter { entry in
+        let (filtered, grouped) = await Task.detached(priority: .userInitiated) {
+            let matches = snapshot.filter { entry in
                 if Task.isCancelled { return false }
 
                 let matchesTime = entry.date >= timeCutoff
@@ -225,10 +239,13 @@ final class LogStore {
                 let matchesLevel = levelFilter == .all || entry.resolvedLevel == levelFilter
                 return matchesTime && matchesSearch && matchesSubsystem && matchesLevel
             }
+            let grouped = Self.groupEntries(matches)
+            return (matches, grouped)
         }.value
 
         guard !Task.isCancelled else { return }
-        self.filteredEntries = results
+        self.filteredEntries = filtered
+        self.groupedFilteredEntries = grouped
     }
 }
 
@@ -236,6 +253,7 @@ final class LogStore {
 
 actor LogReader {
     static let shared = LogReader()
+    private static let maxReturnedEntries = 2_000
 
     func query(since: Date, strictlyAfter: Bool) throws -> [AppLogEntry] {
         let store = try OSLogStore(scope: .system)
@@ -245,15 +263,26 @@ actor LogReader {
         let items: [AppLogEntry] = rawEntries.compactMap { entry -> AppLogEntry? in
             guard let logEntry = entry as? OSLogEntryLog else { return nil }
             if strictlyAfter ? (logEntry.date <= since) : (logEntry.date < since) { return nil }
+            // Break Obj-C __NSCFString bridging so Swift string comparisons stay native UTF-8
+            var message = String(logEntry.composedMessage)
+            message.makeContiguousUTF8()
+            var subsystem = String(logEntry.subsystem)
+            subsystem.makeContiguousUTF8()
+            var category = String(logEntry.category)
+            category.makeContiguousUTF8()
             return AppLogEntry(
                 date: logEntry.date,
-                subsystem: logEntry.subsystem,
-                category: logEntry.category,
+                subsystem: subsystem,
+                category: category,
                 level: logEntry.level,
-                message: logEntry.composedMessage
+                message: message
             )
         }
-        return items.sorted { $0.date < $1.date }
+        let sorted = items.sorted { $0.date < $1.date }
+        if sorted.count > Self.maxReturnedEntries {
+            return Array(sorted.suffix(Self.maxReturnedEntries))
+        }
+        return sorted
     }
 }
 

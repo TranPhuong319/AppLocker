@@ -1502,6 +1502,26 @@
         }
       }
     },
+    "Load 500 earlier log entries" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải thêm 500 mục nhật ký cũ hơn"
+          }
+        }
+      }
+    },
+    "Load older" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải cũ hơn"
+          }
+        }
+      }
+    },
     "Loading activity…" : {
       "localizations" : {
         "vi" : {

@@ -111,7 +111,9 @@ final class ActivityStore {
 
     private func queryActivities(since: Date, strictlyAfter: Bool) async throws -> [SecurityActivityItem] {
         let logEntries = try await LogReader.shared.query(since: since, strictlyAfter: strictlyAfter)
-        return logEntries.compactMap { Self.parseSecurityEvent(from: $0) }
+        return await Task.detached(priority: .userInitiated) {
+            logEntries.compactMap { Self.parseSecurityEvent(from: $0) }
+        }.value
     }
 
     private func fetchActivities() async {

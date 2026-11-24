@@ -16,17 +16,20 @@ struct ActivitySettingsTab: View {
     @State private var activityStore = ActivityStore()
     @State private var refreshTrigger: Int = 0
 
-    let dateFormatter: DateFormatter = {
+    private static let sharedDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter
     }()
 
-    let relativeFormatter: RelativeDateTimeFormatter = {
+    private static let sharedRelativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
         return formatter
     }()
+
+    var dateFormatter: DateFormatter { Self.sharedDateFormatter }
+    var relativeFormatter: RelativeDateTimeFormatter { Self.sharedRelativeFormatter }
 
     init(isMock: Bool = false) {
         self.isMock = isMock

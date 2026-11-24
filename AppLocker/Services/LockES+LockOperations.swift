@@ -10,51 +10,28 @@ import Foundation
 
 // MARK: - App Lock Operations & List Management
 extension LockES {
-    /// Toggle lock state for a set of application paths.
-    func toggleLock(for paths: [String]) {
+    /// Toggle lock state for a set of application paths asynchronously without blocking `@MainActor`.
+    func toggleLockAsync(for paths: [String]) async {
         var hasConfigChanged = false
+        var pathsToResolve: [(path: String, knownName: String?)] = []
 
         for path in paths {
             if lockedApps.removeValue(forKey: path) != nil {
                 hasConfigChanged = true
             } else {
-                guard let bundle = Bundle(url: URL(fileURLWithPath: path)) else {
-                    Logfile.policy.error("[LockES] Cannot create Bundle for \(path, privacy: .public)")
-                    continue
+                let knownName = allApps.first(where: { $0.path == path })?.name
+                pathsToResolve.append((path: path, knownName: knownName))
+            }
+        }
+
+        if !pathsToResolve.isEmpty {
+            let resolved = await Task.detached(priority: .userInitiated) {
+                pathsToResolve.compactMap { entry in
+                    Self.resolveLockedAppConfig(for: entry.path, knownName: entry.knownName)
                 }
-
-                // 1. Try standard Bundle resolution
-                var resolvedExecPath = bundle.executablePath
-
-                // 2. Fallback for broken Info.plist (Empty CFBundleExecutable)
-                if resolvedExecPath == nil {
-                    let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-                    let potentialPath = "\(path)/Contents/MacOS/\(appName)"
-                    resolvedExecPath = FileManager.default.fileExists(atPath: potentialPath) ? potentialPath : nil
-                }
-
-                guard let execPath = resolvedExecPath else {
-                    Logfile.policy.error("[LockES] Cannot resolve executable path for \(path, privacy: .public)")
-                    continue
-                }
-
-                // Get filename for config
-                let execName = URL(fileURLWithPath: execPath).lastPathComponent
-
-                let fallbackOriginal = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
-                let appName = allApps.first(where: { $0.path == path })?.name
-                    ?? InstalledApp.resolveDisplayName(at: path, fallback: fallbackOriginal)
-                let cdhash = cdHash(for: execPath) ?? cdHash(for: path)
-                let bundleID = bundle.bundleIdentifier ?? ""
-
-                let lockedAppConfig = LockedAppConfig(
-                    bundleID: bundleID,
-                    path: path,
-                    execFile: execName,
-                    name: appName,
-                    cdhash: cdhash
-                )
-                lockedApps[path] = lockedAppConfig
+            }.value
+            for config in resolved {
+                lockedApps[config.path] = config
                 hasConfigChanged = true
             }
         }
@@ -62,6 +39,63 @@ extension LockES {
         if hasConfigChanged {
             save()
         }
+    }
+
+    /// Synchronous toggle lock state (used by synchronous unit tests).
+    func toggleLock(for paths: [String]) {
+        var hasConfigChanged = false
+
+        for path in paths {
+            if lockedApps.removeValue(forKey: path) != nil {
+                hasConfigChanged = true
+            } else {
+                let knownName = allApps.first(where: { $0.path == path })?.name
+                if let config = Self.resolveLockedAppConfig(for: path, knownName: knownName) {
+                    lockedApps[path] = config
+                    hasConfigChanged = true
+                }
+            }
+        }
+
+        if hasConfigChanged {
+            save()
+        }
+    }
+
+    private nonisolated static func resolveLockedAppConfig(
+        for path: String,
+        knownName: String?
+    ) -> LockedAppConfig? {
+        guard let bundle = Bundle(url: URL(fileURLWithPath: path)) else {
+            Logfile.policy.error("[LockES] Cannot create Bundle for \(path, privacy: .public)")
+            return nil
+        }
+
+        var resolvedExecPath = bundle.executablePath
+        if resolvedExecPath == nil {
+            let appName = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+            let potentialPath = "\(path)/Contents/MacOS/\(appName)"
+            resolvedExecPath = FileManager.default.fileExists(atPath: potentialPath) ? potentialPath : nil
+        }
+
+        guard let execPath = resolvedExecPath else {
+            Logfile.policy.error("[LockES] Cannot resolve executable path for \(path, privacy: .public)")
+            return nil
+        }
+
+        let execName = URL(fileURLWithPath: execPath).lastPathComponent
+        let fallbackOriginal = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+        let appName = knownName ?? InstalledApp.resolveDisplayName(at: path, fallback: fallbackOriginal)
+        let cdhash = cdHash(for: execPath) ?? cdHash(for: path)
+        let bundleID = bundle.bundleIdentifier ?? ""
+
+        return LockedAppConfig(
+            bundleID: bundleID,
+            path: path,
+            execFile: execName,
+            name: appName,
+            cdhash: cdhash
+        )
     }
 
     /// Mark locked apps as hidden in the locked list.

@@ -75,10 +75,12 @@ extension DiagnosticsSettingsTab {
                 logStore.stopPolling()
                 logStore.entries = []
                 logStore.filteredEntries = []
+                logStore.groupedFilteredEntries = []
                 logStore.errorMessage = "The operation couldn’t be completed. (OSLogStore error 1 - Access Denied)"
                 return
             }
             #endif
+            displayLimit = 500
             logStore.reload()
         }, label: {
             Label {
@@ -101,7 +103,10 @@ extension DiagnosticsSettingsTab {
 
     @ViewBuilder
     private var exportLogsButton: some View {
-        Button(action: { isExporting = true }, label: {
+        Button(action: {
+            exportDocument = LogTextDocument(text: logStore.exportText(dateFormatter: dateFormatter))
+            isExporting = true
+        }, label: {
             Label {
                 Text("Export")
             } icon: {

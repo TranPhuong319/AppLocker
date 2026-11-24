@@ -40,7 +40,7 @@ public enum CodeSignatureValidator: Sendable {
         let reqString = """
         anchor apple and (identifier "com.apple.dt.Xcode" or identifier "com.apple.dt.xcodebuild" \
         or identifier "com.apple.dt.debugserver" or identifier "com.apple.lldb" \
-        or identifier "com.apple.dt.lldb-rpc-server")
+        or identifier "com.apple.dt.lldb-rpc-server" or identifier "com.apple.dt.Instruments")
         """
         var req: SecRequirement?
         SecRequirementCreateWithString(reqString as CFString, [], &req)

@@ -30,7 +30,7 @@ enum AuthPhase: Equatable {
 struct AuthDependencies {
     var userDefaults: UserDefaults = .standard
     var authenticate: (String) async throws -> Bool = {
-        try await AuthenticationManager.authenticate(reason: $0)
+        try await AuthenticationManager.authenticate(reason: $0, isEndpointSecurity: true)
     }
     var cancelAuth: () -> Void = {
         AuthenticationManager.cancelCurrentAuthentication()

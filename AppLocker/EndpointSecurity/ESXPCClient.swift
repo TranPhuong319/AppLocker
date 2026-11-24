@@ -61,15 +61,16 @@ final class ESXPCClient: @unchecked Sendable {
             conn.resume()
             self.pendingConnection = conn
 
+            let targetID = ObjectIdentifier(conn)
             guard let proxy = self.proxy(conn: conn, actionName: "Connect", onError: { [weak self] in
-                self?.handleAuthResult(success: false)
+                self?.handleAuthResult(success: false, isTransportError: true, for: targetID)
             }) else {
-                self.handleAuthResult(success: false)
+                self.handleAuthResult(success: false, isTransportError: true, for: targetID)
                 return
             }
 
             proxy.allowConfigAccess(getpid()) { [weak self] success in
-                self?.handleAuthResult(success: success)
+                self?.handleAuthResult(success: success, isTransportError: false, for: targetID)
             }
         }
     }
@@ -86,23 +87,36 @@ final class ESXPCClient: @unchecked Sendable {
         Task { @MainActor in ExtensionInstaller.shared.updateInstalledState(installed) }
     }
 
+    private func isActiveOrPending(_ targetID: ObjectIdentifier) -> Bool {
+        connection.map(ObjectIdentifier.init) == targetID
+            || pendingConnection.map(ObjectIdentifier.init) == targetID
+    }
+
     private func setupConnectionHandlers(conn: NSXPCConnection) {
+        let targetID = ObjectIdentifier(conn)
         conn.invalidationHandler = { [weak self] in
-            self?.updateExtensionInstalledState(false)
-            self?.scheduleReconnect(immediate: true)
+            self?.xpcQueue.async { [weak self] in
+                guard let self, self.isActiveOrPending(targetID) else { return }
+                self.updateExtensionInstalledState(false)
+                self.scheduleReconnect(immediate: true)
+            }
         }
 
         conn.interruptionHandler = { [weak self] in
-            self?.updateExtensionInstalledState(false)
-            self?.scheduleReconnect(immediate: false)
+            self?.xpcQueue.async { [weak self] in
+                guard let self, self.isActiveOrPending(targetID) else { return }
+                self.updateExtensionInstalledState(false)
+                self.scheduleReconnect(immediate: false)
+            }
         }
     }
 
-    private func handleAuthResult(success: Bool) {
+    private func handleAuthResult(success: Bool, isTransportError: Bool, for targetID: ObjectIdentifier) {
         xpcQueue.async { [weak self] in
-            guard let self else { return }
+            guard let self,
+                  let pendingConn = self.pendingConnection,
+                  ObjectIdentifier(pendingConn) == targetID else { return }
             self.isConnecting = false
-            guard let pendingConn = self.pendingConnection else { return }
             self.pendingConnection = nil
 
             if success {
@@ -115,12 +129,17 @@ final class ESXPCClient: @unchecked Sendable {
                     self.updateLanguage(primary)
                 }
             } else {
-                Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
-                self.shouldReconnect = false
-                self.updateExtensionInstalledState(false)
                 pendingConn.invalidationHandler = nil
                 pendingConn.interruptionHandler = nil
                 pendingConn.invalidate()
+                self.updateExtensionInstalledState(false)
+                if isTransportError {
+                    Logfile.appXPC.warning("[ESXPCClient] Handshake transport error. Scheduling reconnect.")
+                    self.scheduleReconnect(immediate: false)
+                } else {
+                    Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
+                    self.shouldReconnect = false
+                }
             }
         }
     }

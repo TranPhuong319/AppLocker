@@ -40,7 +40,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         navigator.onTabChanged = { [weak self] newTab, oldTab in
             guard newTab.preferredSize != oldTab.preferredSize else { return }
-            self?.resizeWindow(for: newTab)
+            DispatchQueue.main.async {
+                self?.resizeWindow(for: newTab)
+            }
         }
     }
 
@@ -52,7 +54,8 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         if let tab {
             let oldTab = shared.navigator.selectedTab
             shared.navigator.selectedTab = tab
-            if tab.preferredSize != oldTab.preferredSize && tab != oldTab {
+            if tab.preferredSize != oldTab.preferredSize && tab != oldTab,
+               !(shared.window?.isVisible ?? false) {
                 shared.resizeWindow(for: tab)
             }
         }
@@ -107,7 +110,15 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         let screenFrame = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame
         let finalFrame = constrained(frame: newFrame, targetSize: targetFrameSize, within: screenFrame)
-        window.setFrame(finalFrame, display: true, animate: window.isVisible)
+        if window.isVisible {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.22
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                window.animator().setFrame(finalFrame, display: true)
+            }
+        } else {
+            window.setFrame(finalFrame, display: true, animate: false)
+        }
     }
 
     private func extraFrameInsets(for window: NSWindow) -> (width: CGFloat, height: CGFloat) {

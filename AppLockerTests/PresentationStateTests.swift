@@ -214,7 +214,7 @@ struct PresentationStateTests {
         #expect(state.showingLockingPopup == true)
         #expect(!state.lockingMessage.isEmpty)
 
-        try await Task.sleep(for: .milliseconds(250))
+        for _ in 0..<200 where state.showingLockingPopup { try await Task.sleep(for: .milliseconds(10)) }
 
         #expect(state.showingLockingPopup == false)
         #expect(state.selectedToLock.isEmpty)
@@ -228,7 +228,7 @@ struct PresentationStateTests {
         #expect(state.showingDeleteQueue == false)
         #expect(state.showingLockingPopup == true)
 
-        try await Task.sleep(for: .milliseconds(250))
+        for _ in 0..<200 where state.showingLockingPopup { try await Task.sleep(for: .milliseconds(10)) }
 
         #expect(state.showingLockingPopup == false)
         #expect(state.deleteQueue.isEmpty)

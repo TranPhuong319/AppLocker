@@ -61,8 +61,8 @@ class WindowManager {
             backing: configuration.backingType,
             defer: false
         )
-        configure(window: window, configuration: configuration)
         window.contentView = contentView
+        configure(window: window, configuration: configuration)
         if configuration.wantsLayer {
             contentView.wantsLayer = true
         }
@@ -124,7 +124,10 @@ class WindowManager {
 
     private static func applyFramePositioning(window: NSWindow, configuration: WindowConfiguration) {
         if let autosaveName = configuration.autosaveName {
-            if !window.setFrameAutosaveName(autosaveName) && configuration.center {
+            // Prioritize restoring an existing frame from UserDefaults; fall back to center when missing
+            let didRestoreFrame = window.setFrameUsingName(autosaveName)
+            _ = window.setFrameAutosaveName(autosaveName)
+            if !didRestoreFrame && configuration.center {
                 window.center()
             }
         } else if configuration.center {

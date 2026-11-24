@@ -286,3 +286,59 @@ struct ActivityAndLogStoreTests {
         #expect(exported.contains("[App/Sync] NOTICE: Heartbeat check"))
     }
 }
+
+extension ActivityAndLogStoreTests {
+    @Test("Stress: LogStore exportText/groupedEntries and ActivityStore parsing under 10,000 log entries")
+    @MainActor
+    func logStoreAndActivityStoreMainThreadStressBenchmark() {
+        let store = LogStore()
+        let baseDate = Date()
+        var entries: [AppLogEntry] = []
+        entries.reserveCapacity(10_000)
+
+        for idx in 0..<10_000 {
+            let msg = idx.isMultiple(of: 4)
+                ? "[SecurityEvent:TamperBlocked] Target: Config (PID 0) | Sender: rm (PID \(1000 + idx)) "
+                    + "| Action: Delete | SenderPath: /bin/rm | ResponsiblePath: /Applications/Terminal.app"
+                : "[AuthFile] SELF_PROT [UNLINK] DENY (Unauthorized): (Process: com.apple.rm)"
+            entries.append(AppLogEntry(
+                date: baseDate.addingTimeInterval(Double(idx) * 0.005),
+                subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+                category: "EndpointSecurity",
+                level: .error,
+                message: msg
+            ))
+        }
+        store.filteredEntries = entries
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
+        let startTime = ContinuousClock.now
+        let grouped = store.groupedEntries(within: 1.0)
+        let afterGroup = ContinuousClock.now
+        let exported = store.exportText(dateFormatter: formatter)
+        let afterExport = ContinuousClock.now
+        let parsedActivities = entries.compactMap { ActivityStore.parseSecurityEvent(from: $0) }
+        let afterParse = ContinuousClock.now
+
+        let groupDur = afterGroup - startTime
+        let exportDur = afterExport - afterGroup
+        let parseDur = afterParse - afterExport
+        let groupMs = groupDur.components.seconds * 1000 + groupDur.components.attoseconds / 1_000_000_000_000_000
+        let exportMs = exportDur.components.seconds * 1000 + exportDur.components.attoseconds / 1_000_000_000_000_000
+        let parseMs = parseDur.components.seconds * 1000 + parseDur.components.attoseconds / 1_000_000_000_000_000
+        Logfile.app.notice(
+            """
+            [StressBenchmark:LogStore] 10k entries on MainActor -> \
+            groupedEntries: \(groupMs, privacy: .public)ms, \
+            exportText: \(exportMs, privacy: .public)ms (\(exported.utf8.count, privacy: .public) bytes), \
+            parseSecurityEvent: \(parseMs, privacy: .public)ms (\(parsedActivities.count, privacy: .public) events)
+            """
+        )
+
+        #expect(!grouped.isEmpty)
+        #expect(parsedActivities.count == 2_500)
+        #expect(exported.count > 100_000)
+    }
+}

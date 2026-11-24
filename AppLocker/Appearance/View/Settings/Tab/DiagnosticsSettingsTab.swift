@@ -21,24 +21,33 @@ struct DiagnosticsSettingsTab: View {
     @State var logStore = LogStore()
     @State var selectionManager = LogSelectionManager()
     @State var isExporting: Bool = false
+    @State var exportDocument = LogTextDocument(text: "")
     @State var isExportSuccess: Bool = false
     @State var resetExportTask: Task<Void, Never>?
     @State var refreshTrigger: Int = 0
+    @State var displayLimit: Int = 500
     @State var isAtBottom: Bool = true
     @State var scrollToBottomTrigger: Int = 0
     @FocusState var isSearchFocused: Bool
     @Environment(\.controlActiveState) var controlActiveState
 
-    let dateFormatter: DateFormatter = {
+    static let sharedDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter
     }()
 
+    var dateFormatter: DateFormatter { Self.sharedDateFormatter }
+
     var displayEntries: [GroupedLogEntry] {
-        collapseRepeatingLogs
-            ? logStore.groupedEntries()
-            : logStore.filteredEntries.map { GroupedLogEntry(entry: $0, count: 1) }
+        if collapseRepeatingLogs {
+            return Array(logStore.groupedFilteredEntries.suffix(displayLimit))
+        }
+        return logStore.filteredEntries.suffix(displayLimit).map { GroupedLogEntry(entry: $0, count: 1) }
+    }
+
+    var totalMatchedRowCount: Int {
+        collapseRepeatingLogs ? logStore.groupedFilteredEntries.count : logStore.filteredEntries.count
     }
 
     init(isMock: Bool = false) {
@@ -61,12 +70,15 @@ struct DiagnosticsSettingsTab: View {
             }
             .onChange(of: logStore.selectedTimeRange) { _, newValue in
                 storedTimeRange = newValue
+                displayLimit = 500
             }
             .onChange(of: logStore.selectedSubsystem) { _, newValue in
                 storedSubsystem = newValue
+                displayLimit = 500
             }
             .onChange(of: logStore.selectedLevel) { _, newValue in
                 storedLevel = newValue
+                displayLimit = 500
             }
             .onDisappear { logStore.stopPolling() }
             .onReceive(NotificationCenter.default.publisher(for: .settingsWindowWillClose)) { _ in
@@ -78,7 +90,7 @@ struct DiagnosticsSettingsTab: View {
             }
             .fileExporter(
                 isPresented: $isExporting,
-                document: LogTextDocument(text: logStore.exportText(dateFormatter: dateFormatter)),
+                document: exportDocument,
                 contentType: LogTextDocument.logContentType,
                 defaultFilename: exportFilename
             ) { result in

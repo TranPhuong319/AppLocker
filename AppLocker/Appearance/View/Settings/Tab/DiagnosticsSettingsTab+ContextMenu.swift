@@ -12,6 +12,15 @@ extension DiagnosticsSettingsTab {
     var bottomBar: some View {
         HStack(spacing: 8) {
             statusText
+            if totalMatchedRowCount > displayLimit {
+                Button("Load older") {
+                    displayLimit += 500
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(Color.accentColor)
+                .help("Load 500 earlier log entries")
+            }
             if selectionManager.hasSelection {
                 Divider().frame(height: 12)
                 selectionStatus
@@ -206,10 +215,6 @@ extension DiagnosticsSettingsTab {
             triggerScrollToBottom: scrollToBottomTrigger
         ))
         .onChange(of: displayEntries.count) { _, _ in
-            guard isAtBottom, !selectionManager.hasSelection else { return }
-            scrollToBottomTrigger += 1
-        }
-        .onChange(of: logStore.filteredEntries.count) { _, _ in
             guard isAtBottom, !selectionManager.hasSelection else { return }
             scrollToBottomTrigger += 1
         }

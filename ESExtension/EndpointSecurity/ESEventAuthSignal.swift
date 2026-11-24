@@ -109,6 +109,12 @@ extension ESManager {
     }
 
     private func evaluateSelfDefenseSignal(context: SignalEventContext, valve: ESSafetyValve) -> Bool {
+        #if DEBUG
+        if !isTesting {
+            return false
+        }
+        #endif
+
         let targetPid = context.targetPID
         let senderPid = context.senderPID
         let sig = context.sig

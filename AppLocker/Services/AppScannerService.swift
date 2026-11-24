@@ -178,17 +178,21 @@ final class AppScannerService: NSObject {
             format: "(kMDItemContentType == 'com.apple.application-bundle') || (kMDItemFSName ENDSWITH '.app')"
         )
         query.searchScopes = ["/Applications", "/System/Applications"]
+        query.valueListAttributes = ["kMDItemPath", "kMDItemDisplayName", "kMDItemBundleIdentifier"]
+        query.notificationBatchingInterval = 1.0
         query.start()
     }
 
     private func queryDidUpdate() {
         spotlightTask?.cancel()
         spotlightTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
-            guard let self, !Task.isCancelled else { return }
+            try? await Task.sleep(for: .milliseconds(500))
+            guard let self, !Task.isCancelled, let query = self.metadataQuery else { return }
 
-            let results = self.metadataQuery?.results as? [NSMetadataItem] ?? []
+            query.disableUpdates()
+            let results = query.results as? [NSMetadataItem] ?? []
             let parsed = self.parseSpotlightResults(results)
+            query.enableUpdates()
             self.refineWithSpotlightMetadata(parsed)
         }
     }

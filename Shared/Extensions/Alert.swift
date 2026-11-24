@@ -102,7 +102,12 @@ enum AlertShow {
     }
 
     private static func isValidSheetWindow(_ window: NSWindow) -> Bool {
-        guard window.isVisible, !window.isMiniaturized else { return false }
+        guard window.isVisible,
+              !window.isMiniaturized,
+              window.attachedSheet == nil,
+              window.sheetParent == nil else {
+            return false
+        }
         if window.className.contains("StatusBar") || window.className.contains("Menu") { return false }
         if window.level == .statusBar || window.level == .popUpMenu || window.level == .mainMenu { return false }
         return window.styleMask.contains(.titled)

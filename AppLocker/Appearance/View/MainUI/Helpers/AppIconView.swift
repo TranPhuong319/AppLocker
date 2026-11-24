@@ -12,11 +12,24 @@ struct AppIconView: View {
     let size: CGFloat
     var isMissing: Bool = false
 
+    @State private var loadedImage: NSImage?
+
     var body: some View {
-        Image(nsImage: AppIconProvider.shared.icon(for: path, size: size))
+        let displayImage = loadedImage
+            ?? AppIconProvider.shared.cachedIcon(for: path, size: size)
+            ?? AppIconProvider.shared.defaultPlaceholder(size: size)
+
+        Image(nsImage: displayImage)
             .resizable()
             .scaledToFit()
             .frame(width: size, height: size)
             .clipShape(RoundedRectangle(cornerRadius: 6))
+            .task(id: "\(path)_\(Int(size))") {
+                if let cached = AppIconProvider.shared.cachedIcon(for: path, size: size) {
+                    loadedImage = cached
+                    return
+                }
+                loadedImage = await AppIconProvider.shared.loadIcon(for: path, size: size)
+            }
     }
 }

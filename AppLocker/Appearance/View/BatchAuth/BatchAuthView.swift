@@ -43,7 +43,7 @@ struct BatchAuthView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach($coordinator.pendingApps) { $app in
-                            BatchAppRowView(app: $app, icon: appIcon(for: app.path))
+                            BatchAppRowView(app: $app)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -140,31 +140,17 @@ struct BatchAuthView: View {
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
     }
-
-    private func appIcon(for path: String) -> NSImage? {
-        return AppIconProvider.shared.icon(for: path, size: 40)
-    }
 }
 
 struct BatchAppRowView: View {
     @Binding var app: PendingAppItem
-    let icon: NSImage?
 
     var body: some View {
         HStack(spacing: 12) {
             checkmarkIndicator
 
-            if let icon = icon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .frame(width: 32, height: 32)
-                    .opacity(app.isSelected ? 1.0 : 0.5)
-            } else {
-                Image(systemName: "app.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(app.isSelected ? .blue : .secondary)
-                    .opacity(app.isSelected ? 1.0 : 0.5)
-            }
+            AppIconView(path: app.path, size: 32)
+                .opacity(app.isSelected ? 1.0 : 0.5)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(app.name)

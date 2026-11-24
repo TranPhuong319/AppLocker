@@ -29,7 +29,7 @@ extension AppState {
             try? await Task.sleep(for: .milliseconds(150))
             guard let self else { return }
 
-            self.manager.toggleLock(for: appsArray)
+            await self.manager.toggleLockAsync(for: appsArray)
 
             if locking {
                 self.selectedToLock.removeAll()
@@ -37,7 +37,9 @@ extension AppState {
                 self.deleteQueue.removeAll()
             }
 
-            self.refreshAppLists()
+            if self.isMock {
+                self.refreshAppLists()
+            }
 
             self.showingLockingPopup = false
         }

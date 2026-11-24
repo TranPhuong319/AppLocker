@@ -79,21 +79,24 @@ extension AuthCoordinator {
 
     @MainActor
     private func handleSingleAppAuthResult(app: PendingAppItem, success: Bool, error: Error? = nil) {
-        self.singleAppWatchdogTask?.cancel()
-        self.singleAppWatchdogTask = nil
-
-        let wasUpgrading = self.isUpgradingToBatch
-        self.phase = .idle
-
-        if wasUpgrading {
+        if self.isUpgradingToBatch {
+            self.singleAppWatchdogTask?.cancel()
+            self.singleAppWatchdogTask = nil
+            self.phase = .idle
             handleBatchUpgradeAuthResult(app: app, success: success)
             return
         }
 
-        // Guard against duplicate / late completion if process was already cancelled or exited
-        guard self.pendingApps.contains(where: { $0.id == app.id }) else {
+        // Guard before touching phase/watchdog so a late completion from an expired session
+        // cannot clobber a newer active authentication session
+        guard self.pendingApps.contains(where: { $0.id == app.id }),
+              !self.isAuthenticatingSingleApp || self.currentSingleAppPID == app.pid else {
             return
         }
+
+        self.singleAppWatchdogTask?.cancel()
+        self.singleAppWatchdogTask = nil
+        self.phase = .idle
 
         self.pendingApps.removeAll { $0.id == app.id }
 

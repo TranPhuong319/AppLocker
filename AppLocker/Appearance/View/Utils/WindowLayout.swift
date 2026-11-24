@@ -208,6 +208,7 @@ struct ScrollBottomTracker: NSViewRepresentable {
         private weak var scrollView: NSScrollView?
         var lastTrigger: Int = 0
         private var isAtBottomBinding: Binding<Bool>?
+        private var lastAtBottom: Bool?
 
         func setup(view: TrackerNSView, isAtBottom: Binding<Bool>) {
             self.isAtBottomBinding = isAtBottom
@@ -223,6 +224,11 @@ struct ScrollBottomTracker: NSViewRepresentable {
 
         func attach(to scrollView: NSScrollView) {
             self.scrollView = scrollView
+            if let tableView = scrollView.documentView as? NSTableView {
+                // Prevent AppKit from materializing & KVO-observing off-screen rows for fixed 1-line log entries
+                tableView.usesAutomaticRowHeights = false
+                tableView.rowHeight = 22
+            }
             scrollView.contentView.postsBoundsChangedNotifications = true
             if let token { NotificationCenter.default.removeObserver(token) }
             token = NotificationCenter.default.addObserver(
@@ -242,8 +248,11 @@ struct ScrollBottomTracker: NSViewRepresentable {
             let docHeight = scrollView.documentView?.frame.height ?? 0
             let visibleMaxY = scrollView.contentView.bounds.maxY
             let atBottom = visibleMaxY >= docHeight - 35
-            if isAtBottomBinding?.wrappedValue != atBottom {
-                isAtBottomBinding?.wrappedValue = atBottom
+            guard lastAtBottom != atBottom else { return }
+            lastAtBottom = atBottom
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.isAtBottomBinding?.wrappedValue != atBottom else { return }
+                self.isAtBottomBinding?.wrappedValue = atBottom
             }
         }
 

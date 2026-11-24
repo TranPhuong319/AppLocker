@@ -14,7 +14,11 @@ extension AppState {
         let allApps = scannedApps.isEmpty ? manager.allApps : scannedApps
 
         if manager.migrateRenamedApps(allApps: allApps) {
-            refreshAppLists()
+            // In production, migrateApp() -> save() posts .lockedAppsDidChange which triggers refreshAppLists().
+            // Mock instances do not register NotificationCenter observers, so refresh directly here.
+            if isMock {
+                refreshAppLists()
+            }
             return
         }
 
@@ -62,8 +66,6 @@ extension AppState {
         self.unlockableApps = unlockable
         self.filteredLockedApps = lockedAppsList.filter(matching: self.searchTextLockApps)
         self.filteredUnlockableApps = unlockable.filter(matching: self.searchTextUnlockableApps)
-
-        AppIconProvider.shared.preloadIcons(for: lockedAppsList.map(\.path), size: 32)
     }
 
     private func resolveLockedApp(
@@ -76,8 +78,8 @@ extension AppState {
             $0.path == path || (!config.bundleID.isEmpty && $0.bundleID == config.bundleID)
         })
 
-        let finalName = existingApp?.name
-            ?? InstalledApp.resolveDisplayName(at: path, fallback: config.name ?? fallbackOriginal)
+        let cachedName = existingApp?.name ?? (config.name?.isEmpty == false ? config.name : nil)
+        let finalName = cachedName ?? InstalledApp.resolveDisplayName(at: path, fallback: fallbackOriginal)
         let originalName = existingApp?.originalName ?? fallbackOriginal
         let source: AppSource = path.hasPrefix("/System") ? .system : .user
 
