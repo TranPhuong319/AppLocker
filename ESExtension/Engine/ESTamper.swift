@@ -62,4 +62,20 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
             }
         }
     }
+
+    func addAllowlistPath(_ path: String) {
+        #if !DEBUG
+        guard let client = self.client else { return }
+        let normalized = normalizeFirmlinkPath(path)
+        for candidate in [normalized, "/System/Volumes/Data\(normalized)"] {
+            let res = es_mute_path(client, candidate, ES_MUTE_PATH_TYPE_TARGET_PREFIX)
+            Logfile.endpointSecurity.debug(
+                """
+                [ESClient] [\(self.name, privacy: .public)] Dynamic allowlist [\(candidate, privacy: .public)] \
+                result: \(res.rawValue, privacy: .public)
+                """
+            )
+        }
+        #endif
+    }
 }

@@ -112,12 +112,22 @@ extension ESManager {
     }
 
     func startConfigMonitoring() {
+        if DispatchQueue.getSpecific(key: ESManager.backgroundQueueKey) == nil {
+            backgroundProcessingQueue.sync {
+                self.startConfigMonitoringOnQueue()
+            }
+        } else {
+            startConfigMonitoringOnQueue()
+        }
+    }
+
+    private func startConfigMonitoringOnQueue() {
         for (_, source) in configMonitorSources {
             source.cancel()
         }
         configMonitorSources.removeAll()
 
-        let baseDir = ESManager.baseConfigDirectory
+        let baseDir = activeBaseConfigDirectoryURL.path
         guard FileManager.default.fileExists(atPath: baseDir) else {
             Logfile.endpointSecurity.error(
                 "[ESConfig] Base config directory does not exist: \(baseDir, privacy: .public)"

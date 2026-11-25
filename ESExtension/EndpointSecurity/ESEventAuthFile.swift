@@ -36,14 +36,17 @@ extension ESManager {
         if processPID == getpid() {
             return true
         }
+        let isTrustedMainApp = isMainAppTarget(targetPid: processPID, targetToken: auditToken)
         let callerUID = audit_token_to_euid(auditToken)
-        if let path = targetPath, !isPathAllowedForUID(path, callerUID: callerUID) {
+        if let path = targetPath,
+           !isPathAllowedForUID(path, callerUID: callerUID, isMainApp: isTrustedMainApp) {
             return false
         }
-        if let secPath = secondaryPath, !isPathAllowedForUID(secPath, callerUID: callerUID) {
+        if let secPath = secondaryPath,
+           !isPathAllowedForUID(secPath, callerUID: callerUID, isMainApp: isTrustedMainApp) {
             return false
         }
-        if processIDLock.withLock({ processPID == authenticatedMainAppPID }) {
+        if isTrustedMainApp {
             return true
         }
         return CodeSignatureValidator.validate(
@@ -53,15 +56,21 @@ extension ESManager {
     }
 
     /// Ensures that inside `/Users/Shared/AppLocker/<UID>`, a non-root process can only mutate its own `<UID>` folder.
-    func isPathAllowedForUID(_ rawPath: String, callerUID: uid_t) -> Bool {
+    func isPathAllowedForUID(_ rawPath: String, callerUID: uid_t, isMainApp: Bool = false) -> Bool {
         if callerUID == 0 { return true }
-        let normalized = normalizeFirmlinkPath(rawPath)
+        let normalized = normalizeFirmlinkPath((rawPath as NSString).standardizingPath)
+        if normalized == "/Users/Shared/AppLocker" {
+            return false
+        }
         let prefix = "/Users/Shared/AppLocker/"
         guard normalized.hasPrefix(prefix) else { return true }
         let remainder = String(normalized.dropFirst(prefix.count))
+        if remainder == "config.plist" {
+            return isMainApp
+        }
         guard let firstComponent = remainder.split(separator: "/").first,
               let pathUID = uid_t(firstComponent) else {
-            return true
+            return false
         }
         return pathUID == callerUID
     }

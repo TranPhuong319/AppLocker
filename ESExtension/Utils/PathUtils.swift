@@ -8,6 +8,7 @@
 import Darwin
 import EndpointSecurity
 import Foundation
+import os
 
 // Safely extract string from es_string_token_t structure (not guaranteed to be null-terminated).
 func string(from token: es_string_token_t) -> String? {
@@ -103,7 +104,13 @@ extension ESManager {
     }
 
     func isAppBundlePath(_ rawPath: String) -> Bool {
-        let path = normalizeFirmlinkPath(rawPath)
-        return path == "/Applications/AppLocker.app" || path.hasPrefix("/Applications/AppLocker.app/")
+        let path = normalizeFirmlinkPath((rawPath as NSString).standardizingPath)
+        if path == "/Applications/AppLocker.app" || path.hasPrefix("/Applications/AppLocker.app/") {
+            return true
+        }
+        let dynamicPaths = stateLock.withLock { protectedDynamicAppBundlePaths }
+        return dynamicPaths.contains { bundlePath in
+            path == bundlePath || path.hasPrefix(bundlePath + "/")
+        }
     }
 }

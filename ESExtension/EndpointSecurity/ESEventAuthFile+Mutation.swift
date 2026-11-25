@@ -113,7 +113,10 @@ extension ESManager {
             return isProtectedConfigPath(dstPath) || isInsideProtectedFolder(dstPath) || isAppBundlePath(dstPath)
         }
         guard let nameStr = context.renameNewFilename, let dirStr = context.renameNewDir else { return false }
-        if isInsideProtectedFolder(dirStr) { return true }
+        if isInsideProtectedFolder(dirStr) || isAppBundlePath(dirStr) { return true }
+        let combined = (dirStr as NSString).appendingPathComponent(nameStr)
+        let destPath = normalizeFirmlinkPath((combined as NSString).standardizingPath)
+        if isAppBundlePath(destPath) { return true }
         return nameStr == "AppLocker.app" && normalizeFirmlinkPath(dirStr) == "/Applications"
     }
 
@@ -223,7 +226,9 @@ extension ESManager {
     }
 
     func evaluateAuthClone(context: FileAuthEventContext, valve: ESSafetyValve) {
-        let isProtected = isInsideProtectedFolder(context.primaryPath) || isAppBundlePath(context.secondaryPath ?? "")
+        let isProtected = isInsideProtectedFolder(context.primaryPath)
+            || isAppBundlePath(context.primaryPath)
+            || isAppBundlePath(context.secondaryPath ?? "")
         handleProtectedMutationAuth(
             context: context, valve: valve, isTargetProtected: isProtected, operationName: "CLONE"
         )
@@ -240,7 +245,9 @@ extension ESManager {
     }
 
     func evaluateAuthLink(context: FileAuthEventContext, valve: ESSafetyValve) {
-        let isProtected = isInsideProtectedFolder(context.primaryPath) || isAppBundlePath(context.secondaryPath ?? "")
+        let isProtected = isInsideProtectedFolder(context.primaryPath)
+            || isAppBundlePath(context.primaryPath)
+            || isAppBundlePath(context.secondaryPath ?? "")
         handleProtectedMutationAuth(
             context: context, valve: valve, isTargetProtected: isProtected, operationName: "LINK"
         )

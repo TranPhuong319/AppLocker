@@ -24,6 +24,7 @@ final class ESManager: NSObject, @unchecked Sendable {
     var lockedCDHashes: [uid_t: Set<String>] = [:]
     var lockedBundlePaths: [uid_t: Set<String>] = [:]
     var lockedBundleIDs: [uid_t: Set<String>] = [:]
+    var protectedDynamicAppBundlePaths: Set<String> = []
     var allowIncomingCallsByUID: [uid_t: Bool] = [:]
     var isIncomingCallActive: Bool = false
     var rawCurrentLanguage: String = Locale.preferredLanguages.first ?? "en"
@@ -68,10 +69,15 @@ final class ESManager: NSObject, @unchecked Sendable {
     var lastKnownMainAppPID: pid_t?
     var activeUserUID: uid_t?
     let processIDLock = OSAllocatedUnfairLock()
-    let backgroundProcessingQueue = DispatchQueue(
-        label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg",
-        qos: .userInitiated
-    )
+    static let backgroundQueueKey = DispatchSpecificKey<UInt8>()
+    let backgroundProcessingQueue: DispatchQueue = {
+        let queue = DispatchQueue(
+            label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.bg",
+            qos: .userInitiated
+        )
+        queue.setSpecific(key: ESManager.backgroundQueueKey, value: 1)
+        return queue
+    }()
 
     /// Queue chuyên dụng cho xử lý AUTH events (CONCURRENT cho burst throughput)
     let authorizationProcessingQueue = DispatchQueue(
@@ -136,6 +142,10 @@ final class ESManager: NSObject, @unchecked Sendable {
     }
 
     deinit {
+        for (_, source) in configMonitorSources {
+            source.cancel()
+        }
+        configDebounceTimer?.cancel()
         authorizer = nil
         tamper = nil
     }
@@ -212,8 +222,28 @@ final class ESManager: NSObject, @unchecked Sendable {
             self.activeUserUID = userUID
         }
 
+        registerDynamicAppBundlePathIfNeeded(for: processID)
+
         // Critical: Mute AppLocker immediately to prevent deadlock on Config IO
         muteAppLockerProcess(&auditToken)
+    }
+
+    func registerDynamicAppBundlePathIfNeeded(for processID: pid_t) {
+        let execPath = CodeSignatureValidator.executablePath(for: processID)
+        guard execPath.hasPrefix("/") else { return }
+        let rawBundle = URL(fileURLWithPath: execPath).enclosingAppBundleURL.path
+        let bundlePath = normalizeFirmlinkPath((rawBundle as NSString).standardizingPath)
+        guard bundlePath.hasPrefix("/Applications/"),
+              bundlePath.hasSuffix(".app"),
+              bundlePath != "/Applications/AppLocker.app" else {
+            return
+        }
+        let inserted = stateLock.withLock {
+            protectedDynamicAppBundlePaths.insert(bundlePath).inserted
+        }
+        if inserted {
+            tamper?.addAllowlistPath(bundlePath)
+        }
     }
 
     // MARK: - Muting Logic
