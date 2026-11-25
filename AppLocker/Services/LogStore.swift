@@ -11,6 +11,91 @@ import Observation
 import SwiftUI
 import UniformTypeIdentifiers
 
+// MARK: - Shared Log Polling & Debounce Coordinator
+
+@MainActor
+final class LogPollingCoordinator {
+    private let logTag: String
+    private var pollingTask: Task<Void, Never>?
+    private var fetchTask: Task<Void, Never>?
+    private var filterTask: Task<Void, Never>?
+
+    init(logTag: String) {
+        self.logTag = logTag
+    }
+
+    func startPolling(
+        onInitialLoad: @escaping @MainActor () async -> Void,
+        onPollTick: @escaping @MainActor () async -> Void
+    ) {
+        pollingTask?.cancel()
+        reload(operation: onInitialLoad)
+        pollingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(for: .seconds(3))
+                } catch is CancellationError {
+                    break
+                } catch {
+                    let tag = self?.logTag ?? "Polling"
+                    Logfile.app.warning(
+                        """
+                        [\(tag, privacy: .public)] Polling sleep interrupted: \
+                        \(error.localizedDescription, privacy: .public)
+                        """
+                    )
+                    break
+                }
+                guard !Task.isCancelled, self != nil else { break }
+                await onPollTick()
+            }
+        }
+    }
+
+    func stopPolling() {
+        pollingTask?.cancel()
+        pollingTask = nil
+        fetchTask?.cancel()
+        fetchTask = nil
+        filterTask?.cancel()
+        filterTask = nil
+    }
+
+    func reload(operation: @escaping @MainActor () async -> Void) {
+        fetchTask?.cancel()
+        fetchTask = Task {
+            await operation()
+        }
+    }
+
+    func scheduleRefilter(
+        debounceMs: UInt64 = 0,
+        operation: @escaping @MainActor () async -> Void
+    ) {
+        filterTask?.cancel()
+        filterTask = Task { [weak self] in
+            if debounceMs > 0 {
+                do {
+                    try await Task.sleep(for: .milliseconds(debounceMs))
+                } catch is CancellationError {
+                    return
+                } catch {
+                    let tag = self?.logTag ?? "Polling"
+                    Logfile.app.warning(
+                        """
+                        [\(tag, privacy: .public)] Debounce sleep interrupted: \
+                        \(error.localizedDescription, privacy: .public)
+                        """
+                    )
+                    return
+                }
+            }
+            guard !Task.isCancelled else { return }
+            await operation()
+        }
+    }
+}
+
 // MARK: - Log Store
 
 @Observable
@@ -57,44 +142,27 @@ final class LogStore {
     }
 
     private var clearedBeforeDate: Date?
-    private var fetchTask: Task<Void, Never>?
-    private var filterTask: Task<Void, Never>?
-    private var pollingTask: Task<Void, Never>?
+    private let polling = LogPollingCoordinator(logTag: "LogStore")
 
     func startPolling() {
-        pollingTask?.cancel()
-        reload()
-        pollingTask = Task { [weak self] in
-            while !Task.isCancelled {
-                do {
-                    try await Task.sleep(for: .seconds(3))
-                } catch is CancellationError {
-                    break
-                } catch {
-                    Logfile.app.warning(
-                        "[LogStore] Polling sleep interrupted: \(error.localizedDescription, privacy: .public)"
-                    )
-                    break
-                }
-                guard !Task.isCancelled, let self else { break }
-                await self.fetchLatest()
+        clearedBeforeDate = nil
+        polling.startPolling(
+            onInitialLoad: { [weak self] in
+                await self?.fetchLogs()
+            },
+            onPollTick: { [weak self] in
+                await self?.fetchLatest()
             }
-        }
+        )
     }
 
     func stopPolling() {
-        pollingTask?.cancel()
-        pollingTask = nil
-        fetchTask?.cancel()
-        fetchTask = nil
-        filterTask?.cancel()
-        filterTask = nil
+        polling.stopPolling()
     }
 
     func reload() {
         clearedBeforeDate = nil
-        fetchTask?.cancel()
-        fetchTask = Task { [weak self] in
+        polling.reload { [weak self] in
             await self?.fetchLogs()
         }
     }
@@ -107,22 +175,8 @@ final class LogStore {
     }
 
     func scheduleRefilter(debounceMs: UInt64 = 0) {
-        filterTask?.cancel()
-        filterTask = Task { [weak self] in
-            if debounceMs > 0 {
-                do {
-                    try await Task.sleep(for: .milliseconds(debounceMs))
-                } catch is CancellationError {
-                    return
-                } catch {
-                    Logfile.app.warning(
-                        "[LogStore] Debounce sleep interrupted: \(error.localizedDescription, privacy: .public)"
-                    )
-                    return
-                }
-            }
-            guard !Task.isCancelled, let self else { return }
-            await self.applyFilters()
+        polling.scheduleRefilter(debounceMs: debounceMs) { [weak self] in
+            await self?.applyFilters()
         }
     }
 

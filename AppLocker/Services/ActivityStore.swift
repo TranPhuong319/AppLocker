@@ -15,6 +15,8 @@ import SwiftUI
 @Observable
 @MainActor
 final class ActivityStore {
+    private static let maxItems = 2_000
+
     var rawItems: [SecurityActivityItem] = []
     var items: [SecurityActivityItem] = []
     var isLoading: Bool = true
@@ -35,48 +37,31 @@ final class ActivityStore {
     }
 
     private var clearedBeforeDate: Date?
-    private var fetchTask: Task<Void, Never>?
-    private var filterTask: Task<Void, Never>?
-    private var pollingTask: Task<Void, Never>?
+    private let polling = LogPollingCoordinator(logTag: "ActivityStore")
 
     init(timeRange: LogTimeRange = .currentSession) {
         self.selectedTimeRange = timeRange
     }
 
     func startPolling() {
-        pollingTask?.cancel()
-        reload()
-        pollingTask = Task { [weak self] in
-            while !Task.isCancelled {
-                do {
-                    try await Task.sleep(for: .seconds(3))
-                } catch is CancellationError {
-                    break
-                } catch {
-                    Logfile.app.warning(
-                        "[ActivityStore] Polling sleep interrupted: \(error.localizedDescription, privacy: .public)"
-                    )
-                    break
-                }
-                guard !Task.isCancelled, let self else { break }
-                await self.fetchLatest()
+        clearedBeforeDate = nil
+        polling.startPolling(
+            onInitialLoad: { [weak self] in
+                await self?.fetchActivities()
+            },
+            onPollTick: { [weak self] in
+                await self?.fetchLatest()
             }
-        }
+        )
     }
 
     func stopPolling() {
-        pollingTask?.cancel()
-        pollingTask = nil
-        fetchTask?.cancel()
-        fetchTask = nil
-        filterTask?.cancel()
-        filterTask = nil
+        polling.stopPolling()
     }
 
     func reload() {
         clearedBeforeDate = nil
-        fetchTask?.cancel()
-        fetchTask = Task { [weak self] in
+        polling.reload { [weak self] in
             await self?.fetchActivities()
         }
     }
@@ -88,22 +73,8 @@ final class ActivityStore {
     }
 
     func scheduleRefilter(debounceMs: UInt64 = 0) {
-        filterTask?.cancel()
-        filterTask = Task { [weak self] in
-            if debounceMs > 0 {
-                do {
-                    try await Task.sleep(for: .milliseconds(debounceMs))
-                } catch is CancellationError {
-                    return
-                } catch {
-                    Logfile.app.warning(
-                        "[ActivityStore] Debounce sleep interrupted: \(error.localizedDescription, privacy: .public)"
-                    )
-                    return
-                }
-            }
-            guard !Task.isCancelled, let self else { return }
-            await self.applyFilters()
+        polling.scheduleRefilter(debounceMs: debounceMs) { [weak self] in
+            await self?.applyFilters()
         }
     }
 
@@ -153,6 +124,9 @@ final class ActivityStore {
             guard !Task.isCancelled, !newActivities.isEmpty else { return }
 
             self.rawItems.append(contentsOf: newActivities)
+            if self.rawItems.count > Self.maxItems {
+                self.rawItems.removeFirst(self.rawItems.count - Self.maxItems)
+            }
             await self.applyFilters()
         } catch {
             Logfile.app.error("[ActivityStore] Polling failed: \(error.localizedDescription, privacy: .public)")
