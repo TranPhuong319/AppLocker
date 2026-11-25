@@ -7,6 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1275A424E28C955221D478F5 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */; };
+		1FCF6E7A9A00FC346CE6246C /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */; };
+		25AC289611AFE543A169EE82 /* AppScannerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */; };
+		A96ACBCD8BF1D084C84A6D35 /* ActivityAndLogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */; };
+		E01814A62F137F500093583F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E01814A52F137F500093583F /* Sparkle */; };
+		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
+		E0361AD12E879EC400A37773 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
+		E03BB181305AA41B009552C2 /* CodeSignatureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */; };
+		E03BB182305AA41B009552C3 /* CodeSignatureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */; };
+		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
+		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
+		E06543EA30B7492A00C8F40E /* ESXPCClientReconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06543E930B7492A00C8F40E /* ESXPCClientReconnectTests.swift */; };
+		E06543EC30B7492B00C8F40E /* EndpointSecurityTamperHardeningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06543EB30B7492B00C8F40E /* EndpointSecurityTamperHardeningTests.swift */; };
+		E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF9782FA5993F00827F2C /* AboutWindowController.swift */; };
+		E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97B2FA5994C00827F2C /* AboutView.swift */; };
+		E07DF98D2FA5994C00827F2C /* AboutView+SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */; };
+		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
+		E0A9143F309B725900E22661 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A9143E309B725900E22661 /* LogSelectionManager.swift */; };
+		E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
+		E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
+		E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */; };
+		E0AC00022F59E36600D46B01 /* ActivityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00012F59E36600D46B01 /* ActivityModel.swift */; };
+		E0AC00042F59E36600D46B02 /* ActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00032F59E36600D46B02 /* ActivityStore.swift */; };
+		E0AC00062F59E36600D46B03 /* ActivityRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00052F59E36600D46B03 /* ActivityRowView.swift */; };
+		E0AC00082F59E36600D46B04 /* ActivitySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */; };
+		E0AC000A2F59E36600D46B05 /* ActivityStore+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */; };
+		E0AC000C2F59E36600D46B06 /* LockES+LockOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC000B2F59E36600D46B06 /* LockES+LockOperations.swift */; };
+		E0AC000E2F59E36600D46B07 /* LockES+SelfHealing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC000D2F59E36600D46B07 /* LockES+SelfHealing.swift */; };
 		E0B1800230A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
 		E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
 		E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800430A0000100E22661 /* AppUpdaterTests.swift */; };
@@ -17,34 +46,9 @@
 		E0C1900630B0000100E22661 /* AppState+MissingApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77072F59E36600D46B31 /* AppState+MissingApps.swift */; };
 		E0C1900730B0000100E22661 /* AppState+AppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD77032F59E36600D46B31 /* AppState+AppPicker.swift */; };
 		E0C1900830B0000100E22661 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A9143E309B725900E22661 /* LogSelectionManager.swift */; };
-		E0A91441309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
-		E0A91442309B725900E22661 /* LaunchBootstrapPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */; };
-		E0A91444309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */; };
 		E0D1900230C0000100E22661 /* AppDirectoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */; };
 		E0D1900330C0000100E22661 /* AppDirectoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */; };
 		E0D1900530C0000100E22661 /* AppDirectoryPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */; };
-		A96ACBCD8BF1D084C84A6D35 /* ActivityAndLogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */; };
-		25AC289611AFE543A169EE82 /* AppScannerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */; };
-		E01814A62F137F500093583F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E01814A52F137F500093583F /* Sparkle */; };
-		E0361AD02E879EC400A37772 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
-		E0361AD12E879EC400A37773 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
-		E03BB181305AA41B009552C2 /* CodeSignatureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */; };
-		E03BB182305AA41B009552C3 /* CodeSignatureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */; };
-		E050B4422E86FB34003AEA49 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */; };
-		E050B44A2E86FB35003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		E0572FA52F5B16E900A90708 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
-		E07DF97A2FA5993F00827F2C /* AboutWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF9782FA5993F00827F2C /* AboutWindowController.swift */; };
-		E07DF97D2FA5994C00827F2C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF97B2FA5994C00827F2C /* AboutView.swift */; };
-		E07DF98D2FA5994C00827F2C /* AboutView+SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */; };
-		E09478E92F5F30410090B9D9 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD76602F59E3BE00D46B31 /* AppInfo.swift */; };
-		E0A9143F309B725900E22661 /* LogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A9143E309B725900E22661 /* LogSelectionManager.swift */; };
-		E0AC00022F59E36600D46B01 /* ActivityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00012F59E36600D46B01 /* ActivityModel.swift */; };
-		E0AC00042F59E36600D46B02 /* ActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00032F59E36600D46B02 /* ActivityStore.swift */; };
-		E0AC00062F59E36600D46B03 /* ActivityRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00052F59E36600D46B03 /* ActivityRowView.swift */; };
-		E0AC00082F59E36600D46B04 /* ActivitySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00072F59E36600D46B04 /* ActivitySettingsTab.swift */; };
-		E0AC000A2F59E36600D46B05 /* ActivityStore+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */; };
-		E0AC000C2F59E36600D46B06 /* LockES+LockOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC000B2F59E36600D46B06 /* LockES+LockOperations.swift */; };
-		E0AC000E2F59E36600D46B07 /* LockES+SelfHealing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AC000D2F59E36600D46B07 /* LockES+SelfHealing.swift */; };
 		E0DA1B44301AF5D300ABE155 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0FDA0032F59E37C00D46B31 /* License.txt */; };
 		E0FD75ED2F59E36600D46B31 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D62F59E36600D46B31 /* AppIcon.icon */; };
 		E0FD75EF2F59E36600D46B31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0FD75D72F59E36600D46B31 /* Assets.xcassets */; };
@@ -96,7 +100,6 @@
 		E0FD761C2F59E36600D46B9B /* DiagnosticsSettingsTab+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75B62F59E36600D46B9B /* DiagnosticsSettingsTab+Toolbar.swift */; };
 		E0FD761E2F59E36600D46B31 /* LockedAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75E12F59E36600D46B31 /* LockedAppConfig.swift */; };
 		E0FD761F2F59E36600D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
-		1FCF6E7A9A00FC346CE6246C /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */; };
 		E0FD76202F59E36600D46B31 /* TouchBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B31 /* TouchBarManager.swift */; };
 		E0FD76202F59E36600D46B32 /* TouchBarItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75A32F59E36600D46B32 /* TouchBarItems.swift */; };
 		E0FD76482F59E37C00D46B31 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E0FD76382F59E37C00D46B31 /* Localizable.xcstrings */; };
@@ -188,7 +191,6 @@
 		E0FD903F2F59E37C00D46B31 /* ESXPCClient+Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0072F59E36600D46B01 /* ESXPCClient+Requests.swift */; };
 		E0FD90402F59E37C00D46B31 /* ExtensionInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */; };
 		E0FD90412F59E37C00D46B31 /* XPCServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75D42F59E36600D46B31 /* XPCServer.swift */; };
-		1275A424E28C955221D478F5 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */; };
 		E0FD90422F59E37C00D46B31 /* XPCServer+Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0102F59E36600D46B01 /* XPCServer+Batch.swift */; };
 		E0FD90432F59E37C00D46B31 /* XPCServer+SingleAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FDB0122F59E36600D46B01 /* XPCServer+SingleAuth.swift */; };
 		E0FD90502F59E37C00D46B31 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = E0361ACF2E879EC300A37772 /* libbsm.tbd */; };
@@ -251,23 +253,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E0B1800130A0000100E22661 /* UpdatePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePolicy.swift; sourceTree = "<group>"; };
-		E0B1800430A0000100E22661 /* AppUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdaterTests.swift; sourceTree = "<group>"; };
-		E0C1900130B0000100E22661 /* PresentationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationStateTests.swift; sourceTree = "<group>"; };
-		E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchBootstrapPolicy.swift; sourceTree = "<group>"; };
-		E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchHandoverAndSingleInstanceTests.swift; sourceTree = "<group>"; };
-		E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicy.swift; sourceTree = "<group>"; };
-		E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicyTests.swift; sourceTree = "<group>"; };
-		DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAndLogStoreTests.swift; sourceTree = "<group>"; };
+		7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
 		7D86B07DA38D06E1C07C007A /* AppScannerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppScannerServiceTests.swift; sourceTree = "<group>"; };
+		DCDC411CE81864BA7597D691 /* ActivityAndLogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAndLogStoreTests.swift; sourceTree = "<group>"; };
 		E0361ACF2E879EC300A37772 /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
 		E03BB180305AA41B009552C1 /* CodeSignatureValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSignatureValidator.swift; sourceTree = "<group>"; };
 		E050B4402E86FB33003AEA49 /* com.TranPhuong319.AppLocker.ESExtension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.TranPhuong319.AppLocker.ESExtension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		E050B4412E86FB34003AEA49 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
+		E06543E930B7492A00C8F40E /* ESXPCClientReconnectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCClientReconnectTests.swift; sourceTree = "<group>"; };
+		E06543EB30B7492B00C8F40E /* EndpointSecurityTamperHardeningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointSecurityTamperHardeningTests.swift; sourceTree = "<group>"; };
 		E07DF9782FA5993F00827F2C /* AboutWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutWindowController.swift; sourceTree = "<group>"; };
 		E07DF97B2FA5994C00827F2C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		E07DF98B2FA5994C00827F2C /* AboutView+SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AboutView+SystemInfo.swift"; sourceTree = "<group>"; };
 		E0A9143E309B725900E22661 /* LogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSelectionManager.swift; sourceTree = "<group>"; };
+		E0A91440309B725900E22661 /* LaunchBootstrapPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchBootstrapPolicy.swift; sourceTree = "<group>"; };
+		E0A91443309B725900E22661 /* LaunchHandoverAndSingleInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchHandoverAndSingleInstanceTests.swift; sourceTree = "<group>"; };
 		E0AC00012F59E36600D46B01 /* ActivityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityModel.swift; sourceTree = "<group>"; };
 		E0AC00032F59E36600D46B02 /* ActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityStore.swift; sourceTree = "<group>"; };
 		E0AC00052F59E36600D46B03 /* ActivityRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRowView.swift; sourceTree = "<group>"; };
@@ -275,6 +275,11 @@
 		E0AC00092F59E36600D46B05 /* ActivityStore+Parsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActivityStore+Parsing.swift"; sourceTree = "<group>"; };
 		E0AC000B2F59E36600D46B06 /* LockES+LockOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LockES+LockOperations.swift"; sourceTree = "<group>"; };
 		E0AC000D2F59E36600D46B07 /* LockES+SelfHealing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LockES+SelfHealing.swift"; sourceTree = "<group>"; };
+		E0B1800130A0000100E22661 /* UpdatePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePolicy.swift; sourceTree = "<group>"; };
+		E0B1800430A0000100E22661 /* AppUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdaterTests.swift; sourceTree = "<group>"; };
+		E0C1900130B0000100E22661 /* PresentationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationStateTests.swift; sourceTree = "<group>"; };
+		E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicy.swift; sourceTree = "<group>"; };
+		E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicyTests.swift; sourceTree = "<group>"; };
 		E0EF51AA2E31558900161CAB /* AppLocker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppLocker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0FD759B2F59E36600D46B31 /* AppListWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListWindowController.swift; sourceTree = "<group>"; };
 		E0FD759D2F59E36600D46B31 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
@@ -316,7 +321,6 @@
 		E0FD75D22F59E36600D46B31 /* ESXPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESXPCClient.swift; sourceTree = "<group>"; };
 		E0FD75D32F59E36600D46B31 /* ExtensionInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionInstaller.swift; sourceTree = "<group>"; };
 		E0FD75D42F59E36600D46B31 /* XPCServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPCServer.swift; sourceTree = "<group>"; };
-		7843C760A3A23ED9A3B39E15 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
 		E0FD75D62F59E36600D46B31 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E0FD75D72F59E36600D46B31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E0FD75D82F59E36600D46B31 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -936,6 +940,8 @@
 				E0FD90022F59E37C00D46B31 /* CodeSignatureAndCDHashTests.swift */,
 				E0FD90032F59E37C00D46B31 /* ConfigStoreAndPolicyTests.swift */,
 				E0FD90042F59E37C00D46B31 /* XPCAuthenticationAndBatchTests.swift */,
+				E06543E930B7492A00C8F40E /* ESXPCClientReconnectTests.swift */,
+				E06543EB30B7492B00C8F40E /* EndpointSecurityTamperHardeningTests.swift */,
 			);
 			path = AppLockerTests;
 			sourceTree = "<group>";
@@ -1308,6 +1314,7 @@
 				E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */,
 				E0C1900230B0000100E22661 /* PresentationStateTests.swift in Sources */,
 				E0C1900330B0000100E22661 /* AppState.swift in Sources */,
+				E06543EA30B7492A00C8F40E /* ESXPCClientReconnectTests.swift in Sources */,
 				E0C1900430B0000100E22661 /* AppState+Actions.swift in Sources */,
 				E0C1900530B0000100E22661 /* AppState+ListRefresh.swift in Sources */,
 				E0C1900630B0000100E22661 /* AppState+MissingApps.swift in Sources */,
@@ -1346,6 +1353,7 @@
 				E0FD90322F59E37C00D46B31 /* ConfigStore.swift in Sources */,
 				E0FDB02B2F59E36600D46B01 /* ConfigStore+Migration.swift in Sources */,
 				E0FD90332F59E37C00D46B31 /* LockES.swift in Sources */,
+				E06543EC30B7492B00C8F40E /* EndpointSecurityTamperHardeningTests.swift in Sources */,
 				E0FD90342F59E37C00D46B31 /* LockES+LockOperations.swift in Sources */,
 				E0FD90352F59E37C00D46B31 /* LockES+SelfHealing.swift in Sources */,
 				E0FD90362F59E37C00D46B31 /* AppIconProvider.swift in Sources */,
