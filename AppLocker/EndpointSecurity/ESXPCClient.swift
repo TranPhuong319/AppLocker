@@ -8,24 +8,60 @@
 import Foundation
 import os
 
+struct ESXPCClientConfiguration: Sendable {
+    var maxRetries: Int = 10
+    var connectionFactory: @Sendable () -> NSXPCConnection
+    var isExtensionInstalled: @Sendable () -> Bool
+    var onConnectionEstablished: @Sendable () -> Void
+    var onMaxRetriesReached: @Sendable () -> Void
+    var reconnectDelay: @Sendable (_ attempt: Int, _ immediate: Bool) -> TimeInterval
+
+    static let live = ESXPCClientConfiguration(
+        maxRetries: 10,
+        connectionFactory: {
+            let serviceName = "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc"
+            let conn = NSXPCConnection(machServiceName: serviceName)
+            conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
+            conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
+            conn.exportedObject = XPCServer.shared
+            return conn
+        },
+        isExtensionInstalled: { ExtensionInstaller.isExtensionInstalled },
+        onConnectionEstablished: {
+            Task { @MainActor in ExtensionInstaller.shared.updateInstalledState(true) }
+        },
+        onMaxRetriesReached: {
+            Task { @MainActor in ExtensionInstaller.shared.refreshStatus(reconnectIfEnabled: false) }
+        },
+        reconnectDelay: { attempt, immediate in
+            immediate ? 0.05 : min(0.5 * Double(attempt), 1.0)
+        }
+    )
+}
+
 final class ESXPCClient: @unchecked Sendable {
     static let shared = ESXPCClient()
     var connection: NSXPCConnection?
     private var pendingConnection: NSXPCConnection?
-    private let serviceName = "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc"
-    private let maxRetries = 10
+    let configuration: ESXPCClientConfiguration
     private var retryCount = 0
     private var isConnecting = false  // Prevent parallel connection attempts
-    var shouldReconnect = true
+    private var pendingReconnectWorkItem: DispatchWorkItem?
+    private let shouldReconnectLock = OSAllocatedUnfairLock(initialState: true)
+    var shouldReconnect: Bool {
+        get { shouldReconnectLock.withLock { $0 } }
+        set { shouldReconnectLock.withLock { $0 = newValue } }
+    }
 
     let xpcQueue = DispatchQueue(
         label: "endpoint-security.com.TranPhuong319.AppLocker.ESExtension.xpc.qos",
         qos: .userInitiated
     )
 
-    private init() {
-        if ExtensionInstaller.isExtensionInstalled {
-            xpcQueue.async { [weak self] in self?.connect() }
+    init(configuration: ESXPCClientConfiguration = .live, connectOnInit: Bool = true) {
+        self.configuration = configuration
+        if connectOnInit && configuration.isExtensionInstalled() {
+            xpcQueue.async { [weak self] in self?.attemptConnect() }
         }
     }
 
@@ -47,44 +83,40 @@ final class ESXPCClient: @unchecked Sendable {
 
     func connect() {
         xpcQueue.async { [weak self] in
-            guard let self = self, self.connection == nil, !self.isConnecting else { return }
-            guard ExtensionInstaller.isExtensionInstalled else {
-                Logfile.appXPC.debug("[ESXPCClient] Extension is not installed, skipping connect")
-                return
-            }
+            guard let self else { return }
+            self.pendingReconnectWorkItem?.cancel()
+            self.pendingReconnectWorkItem = nil
             self.shouldReconnect = true
-            self.isConnecting = true
-
-            Logfile.appXPC.debug("[ESXPCClient] Connecting to MachService")
-            let conn = self.createConnection()
-            self.setupConnectionHandlers(conn: conn)
-            conn.resume()
-            self.pendingConnection = conn
-
-            let targetID = ObjectIdentifier(conn)
-            guard let proxy = self.proxy(conn: conn, actionName: "Connect", onError: { [weak self] in
-                self?.handleAuthResult(success: false, isTransportError: true, for: targetID)
-            }) else {
-                self.handleAuthResult(success: false, isTransportError: true, for: targetID)
-                return
-            }
-
-            proxy.allowConfigAccess(getpid()) { [weak self] success in
-                self?.handleAuthResult(success: success, isTransportError: false, for: targetID)
-            }
+            self.retryCount = 0
+            self.attemptConnect()
         }
     }
 
-    private func createConnection() -> NSXPCConnection {
-        let conn = NSXPCConnection(machServiceName: serviceName)
-        conn.remoteObjectInterface = NSXPCInterface(with: ESAppProtocol.self)
-        conn.exportedInterface = NSXPCInterface(with: ESXPCProtocol.self)
-        conn.exportedObject = XPCServer.shared
-        return conn
-    }
+    private func attemptConnect() {
+        guard connection == nil, !isConnecting, shouldReconnect else { return }
+        guard configuration.isExtensionInstalled() else {
+            Logfile.appXPC.debug("[ESXPCClient] Extension is not installed, skipping connect")
+            return
+        }
+        isConnecting = true
 
-    private func updateExtensionInstalledState(_ installed: Bool) {
-        Task { @MainActor in ExtensionInstaller.shared.updateInstalledState(installed) }
+        Logfile.appXPC.debug("[ESXPCClient] Connecting to MachService")
+        let conn = configuration.connectionFactory()
+        setupConnectionHandlers(conn: conn)
+        conn.resume()
+        pendingConnection = conn
+
+        let targetID = ObjectIdentifier(conn)
+        guard let proxy = proxy(conn: conn, actionName: "Connect", onError: { [weak self] in
+            self?.handleAuthResult(success: false, isTransportError: true, for: targetID)
+        }) else {
+            handleAuthResult(success: false, isTransportError: true, for: targetID)
+            return
+        }
+
+        proxy.allowConfigAccess(getpid()) { [weak self] success in
+            self?.handleAuthResult(success: success, isTransportError: false, for: targetID)
+        }
     }
 
     private func isActiveOrPending(_ targetID: ObjectIdentifier) -> Bool {
@@ -97,16 +129,15 @@ final class ESXPCClient: @unchecked Sendable {
         conn.invalidationHandler = { [weak self] in
             self?.xpcQueue.async { [weak self] in
                 guard let self, self.isActiveOrPending(targetID) else { return }
-                self.updateExtensionInstalledState(false)
-                self.scheduleReconnect(immediate: true)
+                let wasEstablished = self.connection.map(ObjectIdentifier.init) == targetID
+                self.scheduleReconnectOnQueue(immediate: wasEstablished)
             }
         }
 
         conn.interruptionHandler = { [weak self] in
             self?.xpcQueue.async { [weak self] in
                 guard let self, self.isActiveOrPending(targetID) else { return }
-                self.updateExtensionInstalledState(false)
-                self.scheduleReconnect(immediate: false)
+                self.scheduleReconnectOnQueue(immediate: false)
             }
         }
     }
@@ -121,9 +152,11 @@ final class ESXPCClient: @unchecked Sendable {
 
             if success {
                 Logfile.appXPC.info("[ESXPCClient] Authentication successful. Connection ready.")
+                self.pendingReconnectWorkItem?.cancel()
+                self.pendingReconnectWorkItem = nil
                 self.connection = pendingConn
                 self.retryCount = 0
-                self.updateExtensionInstalledState(true)
+                self.configuration.onConnectionEstablished()
                 if let langs = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
                    let primary = langs.first {
                     self.updateLanguage(primary)
@@ -132,10 +165,9 @@ final class ESXPCClient: @unchecked Sendable {
                 pendingConn.invalidationHandler = nil
                 pendingConn.interruptionHandler = nil
                 pendingConn.invalidate()
-                self.updateExtensionInstalledState(false)
                 if isTransportError {
                     Logfile.appXPC.warning("[ESXPCClient] Handshake transport error. Scheduling reconnect.")
-                    self.scheduleReconnect(immediate: false)
+                    self.scheduleReconnectOnQueue(immediate: false)
                 } else {
                     Logfile.appXPC.error("[ESXPCClient] Authentication failed. Invalidating connection.")
                     self.shouldReconnect = false
@@ -147,52 +179,59 @@ final class ESXPCClient: @unchecked Sendable {
     func disconnect() {
         xpcQueue.async { [weak self] in
             guard let self else { return }
+            self.pendingReconnectWorkItem?.cancel()
+            self.pendingReconnectWorkItem = nil
             self.shouldReconnect = false
             self.retryCount = 0
             self.isConnecting = false
-
-            for conn in [self.pendingConnection, self.connection].compactMap({ $0 }) {
-                conn.invalidationHandler = nil
-                conn.interruptionHandler = nil
-                conn.invalidate()
-            }
-            self.pendingConnection = nil
-            self.connection = nil
-            self.updateExtensionInstalledState(false)
+            self.invalidateConnectionsOnQueue()
         }
     }
 
-    private func scheduleReconnect(immediate: Bool) {
-        xpcQueue.async { [weak self] in
-            guard let self = self, self.shouldReconnect, ExtensionInstaller.isExtensionInstalled else { return }
-
-            if let oldConn = self.connection {
-                oldConn.invalidationHandler = nil
-                oldConn.interruptionHandler = nil
-                oldConn.invalidate()
-            }
-            self.connection = nil
-            self.isConnecting = false
-
-            self.updateExtensionInstalledState(false)
-
-            guard self.retryCount < self.maxRetries else {
-                Logfile.appXPC.error("[ESXPCClient] Max retries reached (\(self.maxRetries, privacy: .public))")
-                return
-            }
-            self.retryCount += 1
-
-            let delay = immediate ? 0.05 : min(0.5 * Double(self.retryCount), 1.0)
-            Logfile.appXPC.debug(
-                """
-                [ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s \
-                (attempt \(self.retryCount, privacy: .public))
-                """
-            )
-            self.xpcQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard let self = self, self.shouldReconnect, ExtensionInstaller.isExtensionInstalled else { return }
-                self.connect()
-            }
+    private func invalidateConnectionsOnQueue() {
+        dispatchPrecondition(condition: .onQueue(xpcQueue))
+        for conn in [pendingConnection, connection].compactMap({ $0 }) {
+            conn.invalidationHandler = nil
+            conn.interruptionHandler = nil
+            conn.invalidate()
         }
+        pendingConnection = nil
+        connection = nil
+    }
+
+    private func scheduleReconnectOnQueue(immediate: Bool) {
+        dispatchPrecondition(condition: .onQueue(xpcQueue))
+        pendingReconnectWorkItem?.cancel()
+        pendingReconnectWorkItem = nil
+
+        invalidateConnectionsOnQueue()
+        isConnecting = false
+
+        guard shouldReconnect, configuration.isExtensionInstalled() else { return }
+
+        guard retryCount < configuration.maxRetries else {
+            Logfile.appXPC.error(
+                "[ESXPCClient] Max retries reached (\(self.configuration.maxRetries, privacy: .public))"
+            )
+            shouldReconnect = false
+            configuration.onMaxRetriesReached()
+            return
+        }
+        retryCount += 1
+
+        let delay = configuration.reconnectDelay(retryCount, immediate)
+        Logfile.appXPC.debug(
+            """
+            [ESXPCClient] Retrying in \(delay, format: .fixed(precision: 2))s \
+            (attempt \(self.retryCount, privacy: .public))
+            """
+        )
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self, self.shouldReconnect else { return }
+            self.pendingReconnectWorkItem = nil
+            self.attemptConnect()
+        }
+        pendingReconnectWorkItem = workItem
+        xpcQueue.asyncAfter(deadline: .now() + delay, execute: workItem)
     }
 }

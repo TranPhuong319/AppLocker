@@ -37,7 +37,7 @@ extension ESXPCClient {
             }
 
             guard let conn = self.connection else {
-                guard ExtensionInstaller.isExtensionInstalled, self.shouldReconnect else {
+                guard self.configuration.isExtensionInstalled(), self.shouldReconnect else {
                     completion(false)
                     return
                 }
@@ -89,7 +89,7 @@ extension ESXPCClient {
             }
 
             guard let conn = self.connection else {
-                guard ExtensionInstaller.isExtensionInstalled, self.shouldReconnect else {
+                guard self.configuration.isExtensionInstalled(), self.shouldReconnect else {
                     completion(false)
                     return
                 }

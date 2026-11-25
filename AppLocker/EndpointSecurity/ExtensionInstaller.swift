@@ -30,11 +30,14 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         refreshStatus()
     }
 
-    func refreshStatus() {
+    func refreshStatus(reconnectIfEnabled: Bool = true) {
         let req = OSSystemExtensionRequest.propertiesRequest(
             forExtensionWithIdentifier: Self.extensionIdentifier,
             queue: .main
         )
+        if !reconnectIfEnabled {
+            skipReconnectRequestIDs.insert(ObjectIdentifier(req))
+        }
         req.delegate = self
         OSSystemExtensionManager.shared.submitRequest(req)
     }
@@ -59,6 +62,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     private var currentAction: Action?
+    private var skipReconnectRequestIDs: Set<ObjectIdentifier> = []
 
     var identifier: String { Self.extensionIdentifier }
 
@@ -90,15 +94,19 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     nonisolated func request(_ request: OSSystemExtensionRequest,
                              didFinishWithResult result: OSSystemExtensionRequest.Result) {
+        let requestID = ObjectIdentifier(request)
         Task { @MainActor in
+            self.skipReconnectRequestIDs.remove(requestID)
             self.handleFinish(result: result)
         }
     }
 
     nonisolated func request(_ request: OSSystemExtensionRequest,
                              didFinishEarlyWithResult result: OSSystemExtensionRequest.Result) {
+        let requestID = ObjectIdentifier(request)
         Logfile.app.debug("[Installer] Finished early: \(result.rawValue, privacy: .public)")
         Task { @MainActor in
+            self.skipReconnectRequestIDs.remove(requestID)
             self.handleFinish(result: result)
         }
     }
@@ -125,8 +133,10 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     nonisolated func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
+        let requestID = ObjectIdentifier(request)
         ESXPCClient.shared.disconnect()
         Task { @MainActor in
+            self.skipReconnectRequestIDs.remove(requestID)
             self.isInstalled = false
             let action = self.currentAction
             self.currentAction = nil
@@ -145,8 +155,10 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     nonisolated func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
+        let requestID = ObjectIdentifier(request)
         ESXPCClient.shared.disconnect()
         Task { @MainActor in
+            self.skipReconnectRequestIDs.remove(requestID)
             self.isInstalled = false
             if case .uninstall(let completion) = self.currentAction {
                 self.currentAction = nil
@@ -167,15 +179,19 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         _ request: OSSystemExtensionRequest,
         foundProperties properties: [OSSystemExtensionProperties]
     ) {
+        let requestID = ObjectIdentifier(request)
         let isEnabled = properties.first?.isEnabled ?? false
         Task { @MainActor in
+            let shouldReconnect = self.skipReconnectRequestIDs.remove(requestID) == nil
             self.isInstalled = isEnabled
             // Always notify: menubar icon may be stale because setupMenuBar runs
             // before this async callback returns (even when value is unchanged).
             NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
             Logfile.app.info("[Installer] Extension properties checked: isEnabled=\(isEnabled, privacy: .public)")
             if isEnabled {
-                ESXPCClient.shared.connect()
+                if shouldReconnect {
+                    ESXPCClient.shared.connect()
+                }
             } else {
                 ESXPCClient.shared.disconnect()
             }
