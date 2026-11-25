@@ -79,12 +79,14 @@ extension AppDelegate {
             Logfile.app.error(
                 "[DirectoryCheck] AppleScript privileged move failed: \(scriptError ?? "Unknown", privacy: .public)"
             )
-            let msg = """
-            Could not move the application to /Applications automatically. Please move it manually to continue.
-            """
             AlertShow.showInfo(
                 title: String(localized: "Failed to Move Application"),
-                message: String(localized: String.LocalizationValue(msg)),
+                message: String(
+                    localized: """
+                    Could not move the application to /Applications automatically. \
+                    Please move it manually to continue.
+                    """
+                ),
                 style: .critical
             )
             NSApp.terminate(nil)

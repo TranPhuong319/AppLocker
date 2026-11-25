@@ -982,6 +982,9 @@
         }
       }
     },
+    "Could not move the application to /Applications automatically. Please move it manually to continue." : {
+
+    },
     "Current Session" : {
       "localizations" : {
         "vi" : {
