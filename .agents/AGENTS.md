@@ -6,10 +6,13 @@
 - **On-Demand Rule Loading**: Load ONLY the matching domain file from [`.agents/rules/`](rules/). Do NOT load all rule files at once.
 - **Verification Pipeline (`Lint -> Build -> Test`)**: After Swift code changes, run in order (`swiftlint` is gated at `Stop` via `swiftlint-gate`):
   1. `swiftlint lint --strict` (0 warnings, 0 errors).
-  2. `xcodebuild build -scheme AppLocker -destination 'platform=macOS'`
-  3. `xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests`
+  2. Prefer Xcode MCP (`BuildProject`, `RunSomeTests`, `RunAllTests`, `XcodeRefreshCodeIssuesInFile`) for Debug incremental builds, unit tests, and diagnostics when an Xcode window is open (`XcodeListWindows`).
+  3. Fall back to `xcodebuild` CLI when specific flags are needed:
+     - Tests / TSan: `xcodebuild test -scheme AppLocker -destination 'platform=macOS' [-enableThreadSanitizer YES] -only-testing:AppLockerTests`
+     - Release build: `xcodebuild build -scheme AppLocker -configuration Release -destination 'platform=macOS'` (in-project build scripts handle code signing; never override `CODE_SIGN_IDENTITY` or `CODE_SIGNING_REQUIRED`).
 - **No Unsolicited Commits/Pushes**: Never run `git commit`, `git push`, or mutate git state unless explicitly asked (gated by `git-guard`).
 - **Xcode Project File Operations**: When Xcode MCP (`xcode-tools`) is enabled, prefer `XcodeWrite`/`XcodeMV`/`XcodeRM` to add, move, or remove `.swift` files so `AppLocker.xcodeproj` target memberships stay in sync.
+- **Copy-Paste Terminal Snippets**: Omit `#` comment lines in shell commands meant to be pasted into macOS interactive `zsh` (default `INTERACTIVE_COMMENTS` is off).
 
 ---
 

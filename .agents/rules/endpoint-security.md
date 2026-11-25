@@ -26,3 +26,10 @@
   - If the Main App disconnects or exits unexpectedly (`exit.stat != 0`) while processes are pending, `ESExtension` **preserves** the Fail-Closed queue (never unfreezes blocked apps), refreshes `registeredAt` timestamps, and kickstarts `com.TranPhuong319.AppLocker.agent` via `AppLauncherUtils` (immediately on disconnect with pending apps, or after a 10s Guardian delay on crash). Upon reconnect, `reNotifyPendingVerificationProcesses` resends the pending list.
 - **AUTH Event Deadline Safety Valve (`ESSafetyValve`)**:
   - `AUTH_*` events (`ESAuthorizer` `AUTH_SIGNAL`, `ESTamper` `AUTH_OPEN`/`UNLINK`/`RENAME`/etc. — `ESTamper` is active in Release only) race `authorizationProcessingQueue` against `emergencyTimerQueue` using `ESSafetyValve` and respond `ES_AUTH_RESULT_DENY` if the kernel deadline budget is reached.
+
+---
+
+## 4. Self-Defense, Bundle Paths & Daemon Verification
+- **Audit Token Verification in File Auth**: `ESEventAuthFile.isAuthorized` must verify `isMainAppTarget` (`pidversion` + `CodeSignatureValidator`), never raw PID equality alone.
+- **Per-UID Folder & Bundle Mutation Coverage**: `isPathAllowedForUID` blocks non-root writes/deletes on `/Users/Shared/AppLocker` root and unrecognized subpaths (restricting legacy `config.plist` cleanup to main app). Cover `AUTH_RENAME` destination dir/path as well as both source and target of `AUTH_CLONE` / `AUTH_LINK`, and dynamically allowlist valid `/Applications/.../AppLocker.app` install paths via `ESTamper.addAllowlistPath`.
+- **Restarting `ESExtension` in Real Tests**: `AUTH_SIGNAL` blocks `kill` even under `sudo`; restart the daemon via `sudo launchctl kickstart -k system/endpoint-security.com.TranPhuong319.AppLocker.ESExtension`.

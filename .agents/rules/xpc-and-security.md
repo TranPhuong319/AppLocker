@@ -12,6 +12,9 @@
 - **Connection Invalidation & Auto-Reconnect**:
   - Never retain or reuse an `NSXPCConnection` once invalidated. Reset internal connection variables to `nil` in `invalidationHandler` so the next call lazily reinstantiates a healthy connection.
   - Clear `interruptionHandler` and `invalidationHandler` before calling `.invalidate()` to avoid recursive or dangling invalidation events.
+  - Do NOT treat transient XPC invalidation/interruption as extension uninstallation (`isInstalled = false`); on `maxRetries` exhaustion, re-query `ExtensionInstaller.refreshStatus(reconnectIfEnabled: false)` rather than flipping installed state directly.
+  - Keep `scheduleReconnectOnQueue` synchronous on `xpcQueue` (never re-dispatch `xpcQueue.async` inside it) and clear active/pending connections immediately on the same queue turn so simultaneous `invalidationHandler` and `remoteObjectProxyWithErrorHandler` failures never double-increment `retryCount`.
+  - Track and cancel superseded reconnect timers (`DispatchWorkItem`) on `connect()`, `disconnect()`, and auth success; pass `immediate: true` only when an established connection dropped (`wasEstablished`), keeping backoff during handshake failures.
 - **Safe Proxy Invocations**:
   - Always invoke remote proxies via `remoteObjectProxyWithErrorHandler:` or `synchronousRemoteObjectProxyWithErrorHandler:` to catch communication failures and timeouts proactively instead of failing silently.
 
