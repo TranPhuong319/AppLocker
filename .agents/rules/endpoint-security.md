@@ -1,8 +1,8 @@
 # Endpoint Security & POSIX Signal Gotchas (CRITICAL)
 
-## 1. Kernel PID Assignment Timing
-- In `AUTH_EXEC` events, macOS Kernel has not completed process instantiation. `audit_token_to_pid` returns **PID = 0**.
-- **DO NOT** invoke `kill(0, signal)`. In POSIX/macOS C, `kill(0, signal)` sends the signal to **the entire process group of the caller (`ESExtension`)**, which disrupts XPC connection (`NSCocoaErrorDomain Code=4097`).
+## 1. Execution Interception & Kernel PID Guard
+- `ESAuthorizer` subscribes to `ES_EVENT_TYPE_NOTIFY_EXEC`, `ES_EVENT_TYPE_AUTH_SIGNAL`, and `ES_EVENT_TYPE_NOTIFY_EXIT` (not `AUTH_EXEC`, where `audit_token_to_pid` returns **PID = 0** before process instantiation completes).
+- **DO NOT** invoke `kill(0, signal)`. In POSIX/macOS C, `kill(0, signal)` sends the signal to **the entire process group of the caller (`ESExtension`)**, which disrupts XPC connections (`NSCocoaErrorDomain Code=4097`).
 
 ## 2. Pre-Exec vs Post-Exec Audit Token (`NOTIFY_EXEC`)
 - In `NOTIFY_EXEC` events (`es_event_exec_t`):
@@ -12,14 +12,17 @@
   - **MANDATORY**: Always extract PID and `audit_token_t` from **`message.event.exec.target.pointee.audit_token`** when registering pending processes. Using `message.process` will cause `pidversion` mismatch (`expected != current`) and falsely trigger PID recycling aborts.
 
 ## 3. POSIX Liveness & PID Recycling Guard
-- **Liveness Check**: Always enforce `guard pid > 0, kill(pid, 0) == 0 else { continue }` before issuing any signal to safely skip dead or terminated processes.
-- **PID Recycling Defense**: Compare `audit_token_to_pidversion` of the currently running process (via `task_info(TASK_AUDIT_TOKEN)`) with the stored `audit_token_t` from `NOTIFY_EXEC` before invoking `kill(pid, SIGCONT)` or `kill(pid, SIGKILL)` to prevent sending signals to a recycled process ID.
+- **Liveness Check**: Always enforce `guard pid > 0, kill(pid, 0) == 0` before issuing any signal to safely skip dead or terminated processes.
+- **PID Recycling Defense**: Compare `audit_token_to_pidversion` of the currently running process (via `task_info(TASK_AUDIT_TOKEN)` in `verifyProcessIdentity`) with the stored `audit_token_t` from `NOTIFY_EXEC` before invoking `kill(pid, SIGCONT)` or `kill(pid, SIGKILL)`.
+- **Terminating Suspended Processes**: When rejecting or timing out a `SIGSTOP`-frozen process (`terminateFrozenProcess`), send `SIGKILL` followed by `SIGCONT` so XNU unfreezes the dispatch loop and terminates cleanly without hanging `launchd`.
 
 ---
 
-## Fail-Safe & Process Recovery Rules
+## Fail-Safe & Recovery Rules (Fail-Closed)
 
-- **Watchdog / Extension Safety Valve**:
-  - ESExtension must maintain an internal timeout/watchdog for pending blocked processes. If the Main App crashes or does not respond within the safety window (e.g. 30–60s), unfreeze or safely handle pending processes to prevent permanent system freeze.
-- **Graceful Termination & Pending Queue Flush**:
-  - When Main App terminates (`applicationWillTerminate` or receiving termination signal), notify the Extension to flush pending queues and resume paused processes if appropriate.
+- **75s Pending Process Watchdog (`ESManager+Watchdog.swift`)**:
+  - `ESExtension` polls `pendingVerificationProcesses` every 15s and terminates (`SIGKILL` + `SIGCONT`) any process waiting longer than 75s without authentication, notifying the Main App via `notifyProcessExited(pid:)`.
+- **Main App Disconnect & Guardian Watchdog (`ESEventNotifyExit.swift`)**:
+  - If the Main App disconnects or exits unexpectedly (`exit.stat != 0`) while processes are pending, `ESExtension` **preserves** the Fail-Closed queue (never unfreezes blocked apps), refreshes `registeredAt` timestamps, and kickstarts `com.TranPhuong319.AppLocker.agent` via `AppLauncherUtils` (immediately on disconnect with pending apps, or after a 10s Guardian delay on crash). Upon reconnect, `reNotifyPendingVerificationProcesses` resends the pending list.
+- **AUTH Event Deadline Safety Valve (`ESSafetyValve`)**:
+  - `AUTH_*` events (`ESAuthorizer` `AUTH_SIGNAL`, `ESTamper` `AUTH_OPEN`/`UNLINK`/`RENAME`/etc. — `ESTamper` is active in Release only) race `authorizationProcessingQueue` against `emergencyTimerQueue` using `ESSafetyValve` and respond `ES_AUTH_RESULT_DENY` if the kernel deadline budget is reached.

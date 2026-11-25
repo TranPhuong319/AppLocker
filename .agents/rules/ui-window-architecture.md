@@ -4,7 +4,7 @@
 
 - **macOS Native App Architecture (Anti-iPadification)**:
   - AppLocker is a first-class macOS citizen, NOT a blown-up iPad app.
-  - Must provide comprehensive Menu Bar commands (`CommandMenu`, standard shortcuts like `⌘,` for Settings, `⌘W` for Close, `⌘R` for Refresh), right-click Context Menus (`.contextMenu`), and full keyboard tab-navigation.
+  - Must provide AppKit Menu Bar commands (`AppDelegate.setupEditMenu()` with `⌘,` Settings, `⌘W` Close, `⌘H` Hide, `⌘Q` Quit gated to Welcome in Release, Edit shortcuts), global Carbon hotkeys (`HotKeyManager`), right-click Context Menus (`.contextMenu`), and full keyboard tab-navigation.
 
 - **Strict AppKit Boundary & Window Surface Rules**:
   - AppKit is strictly forbidden from doing anything except providing a clean, chrome-bridging window skeleton (`NSWindow`, `NSWindowController`).
@@ -19,19 +19,17 @@
     - `titleVisibility = .visible` for windows utilizing `.navigationTitle(...)` in the toolbar (avoid `.hidden` which forcibly suppresses the title).
     - `titlebarSeparatorStyle = .none` (MANDATORY: permanently eliminates AppKit's automatic 1px divider line when scrolling, preserving seamless optical continuity between titlebar and content).
     - `isMovableByWindowBackground = false` (dragging strictly isolated to SwiftUI `WindowDragArea`).
-    - On `NSHostingController`, ALWAYS enable `sceneBridgingOptions = [.toolbars, .title]`. For two-column resizable windows (`NavigationSplitView`), leave `sizingOptions = []` and enforce limits strictly via `window.minSize` and `windowWillResize(_:to:)` to prevent `NSHostingController` from overriding `window.minSize`.
-    - For non-interactive windows without SwiftUI toolbars (`BatchAuthWindowController`, `WelcomeWindowController`, `AboutWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` at AppKit level remains valid to force squircle corners without pill items.
+    - On `NSHostingController`, enable `sceneBridgingOptions = [.toolbars, .title]` for windows bridging SwiftUI toolbars/titles (`SettingsWindowController`, `AppListWindowController`, `BatchAuthWindowController`, `WelcomeWindowController`). Pure custom-chrome windows with no toolbar/titlebar bridging (`AboutWindowController`) use `sceneBridgingOptions = []` and `sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]`. For two-column resizable windows (`NavigationSplitView`), leave `sizingOptions = []` and enforce limits strictly via `window.minSize` and `windowWillResize(_:to:)` to prevent `NSHostingController` from overriding `window.minSize`.
+    - For windows without toolbar items (`BatchAuthWindowController`, `WelcomeWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` alongside an empty SwiftUI `.toolbar { }` preserves squircle corners without bordered pill items.
     - All windows MUST be created via `WindowManager.createWindow`.
 
 - **Unified Toolbar & NavigationSplitView Architecture**:
   - *Native Sidebar Toggle & Fluid Detail Layout*:
-    - NEVER lock or disable sidebar collapsing with `SidebarCollapsePreventer`, canCollapse = false, or `columnVisibility: .constant(.all)`. Always allow `NavigationSplitView` to natively manage the sidebar toggle button (`[ | ]`), which automatically anchors next to the Traffic Lights in the sidebar column.
+    - NEVER lock or disable sidebar collapsing (`canCollapse = false` or `columnVisibility: .constant(.all)`). Always allow `NavigationSplitView` to natively manage the sidebar toggle button (`[ | ]`), which automatically anchors next to the Traffic Lights in the sidebar column.
     - **Zero Rigid Constraints on Detail Columns**: NEVER assign `.frame(minWidth: ...)` / `.frame(minHeight: ...)` to the detail view or wrap `NavigationSplitView` in an outer `.frame(minWidth: ...)`. Placing `minWidth`/`minHeight` on child views causes AppKit's `NSSplitView` translation animation to violently push detail content outside the window frame during slide-in, triggering spurious vertical window height stretching via `NSHostingController` sizing passes, an abrupt layout snap (jitter), and macOS's emergency toolbar overflow chevron (`>>`). Detail views MUST use fluid layout (`.frame(maxWidth: .infinity, maxHeight: .infinity)`).
     - **Window-Level `minSize` & Toolbar Headroom**: Window minimum dimensions MUST be enforced strictly at the `NSWindow` level (`config.minSize = WindowLayout.settingsMinSize`, minimum $\ge 680\text{pt}$ for two-column settings windows). This mathematically guarantees safe minimum detail width ($\text{Detail minWidth} = \text{Window minWidth} - \text{Sidebar maxWidth}$) without inner constraint collision and provides sufficient toolbar headroom so toolbar items never overflow to trigger `>>`.
   - *Sidebar Tracking Separator*: Let AppKit natively coordinate the vertical divider between sidebar and detail content across resizes via `NSToolbarSidebarTrackingSeparatorItemIdentifier`.
-  - *Compact Single-Line Titlebar*:
-    - Keep `.navigationTitle(...)` strictly single-line.
-    - NEVER inject `.navigationSubtitle(...)` into the toolbar of settings or management windows. A 2-story subtitle expands toolbar height from compact (~48pt) to ~56–60pt, causing an unaligned, lopsided height mismatch with the 1-story sidebar. Subtitles or section descriptions belong strictly in the content layer (e.g., section headers or body text).
+  - *Compact Single-Line Titlebar*: Keep `.navigationTitle(...)` single-line; place section descriptions in the content layer (subtitles expand toolbar height from ~48pt to ~56–60pt, misaligning with the sidebar; `.navigationSubtitle` is banned via SwiftLint).
   - *Vertical Top Alignment in Detail Columns*:
     - The first element of the sidebar and the top edge of the detail view content should visually align.
     - When native `Form` containers in `NavigationSplitView` detail columns introduce an unwanted system top inset (~16pt), `.padding(.top, -16)` may be applied to offset it. Do not apply negative padding unconditionally if content uses standard `ScrollView` or custom stacks where no default inset exists.
@@ -48,6 +46,4 @@
 
 ## Modern UI State Management Rules
 
-- **Observation Framework over Combine for UI State**:
-  - For macOS 14+ view state models, prefer the Swift `@Observable` macro over `ObservableObject` / `@Published` to reduce boilerplate and optimize granular view re-rendering.
-  - Reserve `Combine` strictly for complex asynchronous stream transformations (e.g. `.debounce`, `.throttle`, `.combineLatest`).
+- **Observation Framework for UI State**: Use `@Observable` for macOS 14+ view state models and structured `Task` + `Task.sleep` cancellation for debouncing (legacy `Combine` / `ObservableObject` / `@Published` are banned via SwiftLint).

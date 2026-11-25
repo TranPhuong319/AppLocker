@@ -3,10 +3,8 @@
 ## Localization & String Catalog Guidelines
 
 - **English Base Keys & Static String Literals**:
-  - Always write base localization keys in **English** using explicit, static String literals (e.g. `return "General"` instead of `LocalizedStringKey(rawValue)`).
-  - Do NOT pass dynamic variables into `LocalizedStringKey(rawValue)` or `String(localized: variable)`. Xcode's static compiler extractor cannot trace dynamic variables and will mark string keys as `stale` in `Localizable.xcstrings`.
-  - For enums requiring localized display names, use explicit `switch self` statements returning String literals (e.g. `case .general: return "General"`).
-  - Strings wrapped inside conditional compilation blocks (e.g. `#if DEBUG`) might be marked as `stale` during standard Release builds by Xcode's static extractor. Remove `"extractionState": "stale"` if the string is intentionally kept for DEBUG builds.
+  - Write base localization keys in **English** using static String literals (e.g. `case .general: return "General"` in enum `switch self` statements; dynamic variables in `LocalizedStringKey` / `String(localized:)` are banned via SwiftLint).
+  - Strings inside `#if DEBUG` blocks may be marked `"extractionState": "stale"` by Release extraction; remove `"stale"` when keeping `#if DEBUG` strings intentionally (unintentional new `stale` entries in `.xcstrings` are gated at `Stop`).
 
 ---
 

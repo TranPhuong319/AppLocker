@@ -21,7 +21,7 @@
 
 ## 3. Interaction, Modals & Safety
 
-- **Pointer & Hover**: Provide clear pointer feedback (`.onHover`, `.pointerStyle`) on interactive custom controls.
+- **Pointer & Hover**: Provide clear hover/pointer feedback (`.onHover`, or `.pointerStyle` gated with `#available(macOS 15.0, *)`) on interactive custom controls.
 - **Destructive Actions**: Use `role: .destructive`, red accent, and mandatory confirmation dialogues (`confirmationDialog` / `alert`) for non-undoable operations.
 - **Self-Contained Modals**: Reserve sheets for atomic tasks (settings, adding items). Always provide explicit dismiss buttons (`Done` / `Cancel`) and discard prompts if modified.
 
@@ -30,7 +30,7 @@
 ## 4. Purposeful Delight & SF Symbols
 
 - **Deliberate State Transitions (Magic Replacement)**:
-  - When an SF Symbol toggles or updates state (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `doc.on.doc` $\leftrightarrow$ `checkmark`), use `.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer)))`.
+  - When an SF Symbol toggles or updates state (e.g. `lock.fill` $\leftrightarrow$ `lock.open.fill`, `doc.on.doc` $\leftrightarrow$ `checkmark`), use `.magicSymbolReplace()` from `WindowLayout.swift` (uses `.replace.magic(fallback: .downUp.byLayer)` on macOS 15+ and `.replace.downUp.byLayer` on macOS 14).
 - **Directional Numeric Transitions**:
   - When dynamic numbers change (counters, queue badges), apply `.contentTransition(.numericText(value: Double(count)))` with `.monospacedDigit()`.
 - **Restraint Over Clutter**:

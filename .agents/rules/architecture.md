@@ -7,37 +7,31 @@
   - **Zero Speculative Visual/Feature Stripping**: Do NOT remove visual treatments (e.g. Liquid Glass effects, `.ultraThinMaterial`, custom gradients, window drag isolation, traffic light insets) or platform-specific workarounds under the guise of "simplification" or "clean code".
   - **Strict Behavioral Invariance**: Refactoring must remain strictly internal and behavior-preserving. If a logic branch or check exists to handle an edge case or platform nuance, keep it intact.
 - **Lazy Senior Dev Mode (YAGNI)**: Always prefer Apple native platform APIs and Swift standard library over custom helper classes or third-party abstractions.
-- **No KVC / Selector Reflection**:
-  - Do NOT use Objective-C runtime reflection (`value(forKey:)`, `setValue(_:forKey:)`, `NSSelectorFromString`, `performSelector`) to access SDK properties or private methods.
-  - Always prefer native Swift platform APIs (e.g. `window.performDrag(with:)`).
-  - When accessing non-public SDK properties that exist at the C/ObjC layer (such as `auditToken` on `NSXPCConnection`), declare the interface category in the target's `Bridging-Header.h` so the Swift Clang Importer provides first-class, type-safe native Swift syntax with zero runtime reflection overhead.
-- **CryptoKit**: Use `CryptoKit` (`P256.Signing`) for all EC key generation, ECDSA signing, and signature verification. Avoid legacy C-style `SecKey` / `Security` framework APIs.
-- **API Precedence: Public First, Public API + Private ID, Strict Private API Ban**:
-  - **Tier 1 (Public First - Mandatory Default)**: ALWAYS prioritize officially documented, public Apple platform APIs, SDK frameworks, and standard libraries (Swift Standard Library, SwiftUI, AppKit, Endpoint Security, CryptoKit, POSIX Libsystem).
-  - **Tier 2 (Fallback: Public API + Undocumented/Private ID via Bridging Header)**: When Apple provides NO public API or event for a required system behavior (e.g. detecting active incoming calls, clamshell/display states, hardware power transitions):
-    - ONLY use **Public C/Darwin APIs** (such as `<notify.h>`) declared in `Bridging-Header.h` parameterized with **Undocumented/Private Identifiers or State Values** discovered via reverse engineering (e.g. `"com.apple.sharing.activity-level-changed"` with state `14`).
-    - The Swift Clang Importer automatically bridges these C declarations into first-class, type-safe native Swift syntax with zero runtime overhead.
-    - Because the linked binary symbols are 100% public, this cleanly passes Apple Gatekeeper, automated Notarization scanners, and avoids sandbox entitlement drops (`NSCocoaErrorDomain Code=4097`).
-  - **Tier 3 (Absolute Ban: Zero Private APIs)**: MUST NEVER use Private APIs:
-    - DO NOT link against Private Frameworks (`CoreDuetContext`, `TelephonyUtilities`).
-    - DO NOT use dynamic linking (`dlopen`, `dlsym`) to invoke private symbols.
-    - DO NOT use Objective-C runtime reflection (`NSSelectorFromString`, `performSelector:`, `value(forKey:)`) to invoke private classes or methods.
-    - Private APIs risk immediate sandbox termination, XPC connection invalidation (`NSCocoaErrorDomain Code=4097`), breaking changes across minor OS updates, and Gatekeeper/Notarization rejection.
-- **App Icon Caching**: Always load app icons via `AppIconProvider.shared.icon(forPath:size:)` to leverage the in-memory `NSCache` system and avoid redundant disk read operations.
+- **Typed Bridging over Runtime Reflection**:
+  - Prefer native Swift platform APIs (e.g. `window.performDrag(with:)`).
+  - For non-public SDK properties at the C/ObjC layer (such as `auditToken` on `NSXPCConnection`), declare the interface category in `Bridging-Header.h` for type-safe Swift access (KVC/selector reflection is banned via SwiftLint).
+- **Security Framework Validation**: Use Apple's `Security` framework (`SecRequirement`, `SecCodeCheckValidity`, `SecStaticCode`) via `CodeSignatureValidator` and `CDHashHelper` (`cdHash(for:)`) for live XPC/ES signature verification and CDHash extraction.
+- **API Precedence: Public First, Public API + Private ID, Private API Ban**:
+  - **Tier 1 (Public First - Mandatory Default)**: Prioritize officially documented public Apple platform APIs (Swift Standard Library, SwiftUI, AppKit, Endpoint Security, Security, POSIX Libsystem).
+  - **Tier 2 (Fallback: Public API + Undocumented/Private ID via Bridging Header)**: When Apple provides NO public API for a required system behavior (e.g. active incoming calls, appearance/icon-style transitions):
+    - Use **Public Apple APIs** (`<notify.h>` in `Bridging-Header.h`, `NSWorkspace.shared.notificationCenter`, `DistributedNotificationCenter`, `UserDefaults`) parameterized with internal notification names/state values (e.g. `"com.apple.sharing.activity-level-changed"` state `14`, `"NSWorkspaceIconAppearanceConfigurationDidChangeNotification"`, `"AppleInterfaceThemeChangedNotification"`).
+    - Pair with a **Tier 1 public fallback** when practical (e.g. `NSApplication.didBecomeActiveNotification` gated by a lightweight signature diff).
+  - **Tier 3 (Private API Ban)**: Never link Private Frameworks or invoke private symbols dynamically (`NSCocoaErrorDomain Code=4097`, OS update breakage, Gatekeeper/Notarization rejection; enforced via SwiftLint).
+- **App Icon Caching & Lazy Refresh**: Load app icons via `AppIconView` or `AppIconProvider.shared` (`loadIcon(for:size:)` / `icon(for:size:)`) to leverage `NSCache`. On global icon-style or appearance changes, clear caches and increment `revision` (`invalidateAllIcons()`) without bulk preloading so off-screen rows reload lazily on scroll via `.task(id:)`.
 
 ---
 
 ## Performance & Simplicity Rules
 
 - **Swift Concurrency over GCD**:
-  - Prefer modern `async/await` and `Task` over legacy GCD queues (`DispatchQueue.global()`). GCD dispatch (`DispatchQueue.main.async`) is reserved for C/Obj-C XPC event boundaries where Swift Tasks cannot be awaited directly.
-  - Always execute UI updates on `@MainActor`. Heavy operations (cdhash extraction, crypto, file I/O) run in background Tasks or pure `nonisolated static` helpers.
-- **Combine & Filter Debouncing**:
-  - Use `RunLoop.main` or `DispatchQueue.main` for Combine search filter `.debounce` pipelines to keep publisher streams isolated to the main actor without cross-thread hops.
-  - Use standardized `String.normalized` trimming whitespaces/newlines for instant, zero-alloc search matching.
+  - Prefer modern `async/await` and `Task` over legacy GCD queues (`DispatchQueue.global()`). Dedicated GCD queues are reserved for C/Obj-C XPC and Endpoint Security boundaries (`ESXPCClient.xpcQueue`, `ESManager` auth/emergency/background queues) or `notify_register_dispatch` callbacks.
+  - Always execute UI updates on `@MainActor`. Heavy operations (CDHash extraction, OSLogStore queries, file I/O) run in background Tasks or `nonisolated static` helpers.
+- **Structured Task Debouncing & Fuzzy Search**:
+  - Implement search and directory-watcher debouncing via cancelable `@MainActor` `Task` + `try? await Task.sleep(for: .milliseconds(...))` (`AppState`, `LogStore`, `AppScannerService`) rather than `Combine` pipelines.
+  - Filter app lists via `FuzzySearch` (`Sequence<InstalledApp>.filter(matching:)`) using whitespace-trimmed tokenized scoring.
 - **Strict Resource & Observer Cleanup**:
-  - All `NotificationCenter` observers, `NSMetadataQuery` instances, and Carbon Event Handlers (`InstallEventHandler`) MUST be explicitly torn down in `deinit`.
+  - All `NotificationCenter` observers, `NSMetadataQuery` instances, `DispatchSourceFileSystemObject` watchers, and Carbon Event Handlers (`InstallEventHandler`) MUST be explicitly torn down in `deinit`.
   - Clear `invalidationHandler` and `interruptionHandler` on `NSXPCConnection` before invoking `.invalidate()` to prevent recursive invalidation loops.
 - **Native Platform First & YAGNI**:
-  - Always prefer Apple native APIs (e.g. `NSAlert.beginSheetModal`, Swift Standard Library `UInt8.random`, `CryptoKit`) over custom wrapper abstractions.
+  - Always prefer Apple native APIs (`NSAlert.beginSheetModal` via `AlertShow`, Swift Standard Library, `Security`) over custom wrapper abstractions.
   - Keep codebase simple and lean. Avoid speculative features or unnecessary protocol indirections unless required for previews/tests.

@@ -3,3 +3,53 @@ excluded:
   - .build
   - DerivedData
   - .kilo
+
+custom_rules:
+  no_print_or_nslog:
+    name: "Zero print() / NSLog()"
+    regex: '\b(print|NSLog)\('
+    excluded_match_kinds: [comment, doccomment, string]
+    message: "Use Logfile (os.Logger) instead of print() or NSLog()."
+    severity: error
+
+  no_objc_kvc_reflection:
+    name: "No Obj-C KVC / Selector Reflection"
+    regex: '(value\(forKey:|setValue\([^\n]*forKey:|NSSelectorFromString\(|performSelector\()'
+    excluded_match_kinds: [comment, doccomment, string]
+    message: "Do not use KVC or selector reflection; declare typed Bridging-Header categories or native Swift APIs."
+    severity: error
+
+  no_private_apis_or_dlopen:
+    name: "Zero Private APIs / Dynamic Loading"
+    regex: '(CoreDuetContext|TelephonyUtilities|\bdlopen\(|\bdlsym\()'
+    excluded_match_kinds: [comment, doccomment]
+    message: "Private frameworks and dlopen/dlsym are banned."
+    severity: error
+
+  no_combine_or_observable_object:
+    name: "Observation over Combine"
+    regex: '(\bimport\s+Combine\b|\bObservableObject\b|@Published\b)'
+    excluded_match_kinds: [comment, doccomment, string]
+    message: "Use @Observable and structured Task.sleep debouncing instead of Combine/ObservableObject."
+    severity: error
+
+  no_navigation_subtitle:
+    name: "Compact Single-Line Titlebar"
+    regex: '\.navigationSubtitle\('
+    excluded_match_kinds: [comment, doccomment, string]
+    message: "Do not use .navigationSubtitle() in settings/management windows."
+    severity: error
+
+  no_cryptokit:
+    name: "Use Security Framework Instead of CryptoKit"
+    regex: '(\bimport\s+CryptoKit\b|\bP256\.)'
+    excluded_match_kinds: [comment, doccomment, string]
+    message: "Use CodeSignatureValidator / SecStaticCode (Security framework) instead of CryptoKit."
+    severity: error
+
+  no_dynamic_localized_key:
+    name: "Static Localization Keys Only"
+    regex: '(LocalizedStringKey\(|String\(localized:)\s*[^"\s]'
+    excluded_match_kinds: [comment, doccomment, string]
+    message: "Pass static string literals to LocalizedStringKey / String(localized:) so keys are not marked stale."
+    severity: error

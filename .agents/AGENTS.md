@@ -2,13 +2,14 @@
 
 ## Operational Safety & Rule Governance
 
-- **Rule Size Ceiling ($\le 12,000$ chars/bytes)**: Every rule file in `.agents/rules/` and `AGENTS.md` must stay strictly under 12,000 characters/bytes.
-- **On-Demand Rule Loading**: Identify the active task's domain and load ONLY the corresponding rule file from [`.agents/rules/`](rules/). Do NOT load all rule files into context at once.
-- **Mandatory Verification Pipeline (`Lint -> Build -> Test`)**: After any code modification or refactoring, ALWAYS execute the 3-step verification pipeline in strict order before concluding work:
-  1. `swiftlint lint --strict` (must pass with 0 warnings and 0 errors).
-  2. Build target(s) (`xcodebuild build -scheme AppLocker -destination 'platform=macOS'`).
-  3. Run Unit Tests (`xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests`).
-- **No Unsolicited Commits/Pushes**: NEVER run `git commit`, `git push`, or alter repository git state unless explicitly requested by the user.
+- **Rule Size Ceiling ($\le 12,000$ bytes)**: Every file in `.agents/rules/` and `AGENTS.md` is capped at 12,000 bytes (enforced by `file-guard`).
+- **On-Demand Rule Loading**: Load ONLY the matching domain file from [`.agents/rules/`](rules/). Do NOT load all rule files at once.
+- **Verification Pipeline (`Lint -> Build -> Test`)**: After Swift code changes, run in order (`swiftlint` is gated at `Stop` via `swiftlint-gate`):
+  1. `swiftlint lint --strict` (0 warnings, 0 errors).
+  2. `xcodebuild build -scheme AppLocker -destination 'platform=macOS'`
+  3. `xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests`
+- **No Unsolicited Commits/Pushes**: Never run `git commit`, `git push`, or mutate git state unless explicitly asked (gated by `git-guard`).
+- **Xcode Project File Operations**: When Xcode MCP (`xcode-tools`) is enabled, prefer `XcodeWrite`/`XcodeMV`/`XcodeRM` to add, move, or remove `.swift` files so `AppLocker.xcodeproj` target memberships stay in sync.
 
 ---
 
@@ -16,14 +17,14 @@
 
 | Domain | File | Primary Scope |
 |---|---|---|
-| **Clean Architecture & APIs** | [`rules/architecture.md`](rules/architecture.md) | YAGNI, 3-tier API precedence, CryptoKit, NSCache, no Obj-C KVC/reflection. |
-| **Endpoint Security & Kernel** | [`rules/endpoint-security.md`](rules/endpoint-security.md) | `AUTH_EXEC` PID=0 guard, `NOTIFY_EXEC` post-exec target token, PID recycling defense, watchdog. |
-| **Unified Logging** | [`rules/logging.md`](rules/logging.md) | `os.Logger` (`Logfile`), semantic levels (`.debug` to `.fault`), `privacy: .public` on IDs, zero `print()`. |
-| **Concurrency & Actors** | [`rules/concurrency.md`](rules/concurrency.md) | `@MainActor` UI/XPC lifecycle, background queues for heavy I/O, Swift 6 safety. |
-| **Swift Quality & Style** | [`rules/swift-quality.md`](rules/swift-quality.md) | SwiftLint compliance, fluent API naming, strongly-typed errors, `[weak self]` in closures. |
-| **UI Design & Materials** | [`rules/ui-design.md`](rules/ui-design.md) | Liquid Glass vs Material, semantic colors, deliberate SF symbol state transitions (`.replace.magic`). |
+| **Clean Architecture & APIs** | [`rules/architecture.md`](rules/architecture.md) | YAGNI, 3-tier API precedence, `Security` validation, `NSCache`, `Bridging-Header.h`. |
+| **Endpoint Security & Kernel** | [`rules/endpoint-security.md`](rules/endpoint-security.md) | `NOTIFY_EXEC` post-exec target token, `SIGSTOP`/`AUTH_SIGNAL`, PID recycling defense, Fail-Closed watchdogs. |
+| **Unified Logging** | [`rules/logging.md`](rules/logging.md) | `os.Logger` (`Logfile`), semantic levels (`.debug` to `.fault`), `privacy: .public` on IDs. |
+| **Concurrency & Actors** | [`rules/concurrency.md`](rules/concurrency.md) | `@MainActor` UI/XPC lifecycle, background queues/Tasks for I/O & ES, Swift 6 safety. |
+| **Swift Quality & Style** | [`rules/swift-quality.md`](rules/swift-quality.md) | SwiftLint compliance, fluent API naming, structured errors, `[weak self]` in closures. |
+| **UI Design & Materials** | [`rules/ui-design.md`](rules/ui-design.md) | Liquid Glass vs Material, semantic colors, deliberate SF symbol transitions (`magicSymbolReplace`). |
 | **macOS Window Architecture** | [`rules/ui-window-architecture.md`](rules/ui-window-architecture.md) | `WindowManager.createWindow`, opaque canvas + Window Server titlebar blur, fluid NavigationSplitView detail. |
-| **XPC Resilience & IPC** | [`rules/xpc-and-security.md`](rules/xpc-and-security.md) | Explicit protocols (no optional overloads), auto-reconnect, Security-Scoped Bookmarks. |
+| **XPC Resilience & IPC** | [`rules/xpc-and-security.md`](rules/xpc-and-security.md) | Explicit protocols (no optional overloads), `CodeSignatureValidator` auth, auto-reconnect. |
 | **Localization & Language** | [`rules/localization.md`](rules/localization.md) | English base String catalog keys; user communication in Vietnamese with standard English technical terms. |
 | **Git Commit Workflow** | [`rules/git-commits.md`](rules/git-commits.md) | Conventional Commits (`feat`, `fix`, `perf`, `chore`), Sparkle user-facing subjects, dev-facing bodies. |
 

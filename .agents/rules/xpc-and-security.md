@@ -17,9 +17,11 @@
 
 ---
 
-## Security-Scoped Bookmarks & File Access Integrity
+## XPC Authentication & File Access Integrity
 
-- **Persistent User-Selected Paths**:
-  - Use Security-Scoped Bookmarks (`bookmarkData(options:includingResourceValuesForKeys:relativeTo:)`) when storing custom user-selected binary or application paths across application relaunches.
-- **Safe Streamed I/O**:
-  - For large file inspection and hashing, stream chunks through `FileHandle` / memory mapping rather than reading multi-gigabyte binary files into RAM at once.
+- **Cryptographic Caller Verification (`CodeSignatureValidator`)**:
+  - `ESMachListener` validates incoming XPC connections via `CodeSignatureValidator.validateXPCConnection` (`mainAppRequirement`: bundle ID + project root certificate hash).
+  - `ESManager.isCurrentConnectionAuthenticated()` verifies both `authenticatedConnections` membership and `NSXPCConnection.current()?.auditToken` (`pid` + `pidversion`) on every XPC method call to prevent PID recycling or port hijacking.
+- **Per-UID Config Persistence & Safe I/O**:
+  - AppLocker is non-sandboxed and persists per-user lock configurations (paths, bundle IDs, CDHashes) in `/Users/Shared/AppLocker/<UID>/config.plist` (`UserConfig` / `ConfigStore`), guarded by `ESTamper` per-UID isolation in Release builds.
+  - Config reads use `Data(contentsOf:options: .mappedIfSafe)`, and binary CDHash inspection uses `SecStaticCodeCreateWithPath` + `SecCodeCopySigningInformation` (`kSecCodeInfoCdHashes`) without loading multi-gigabyte binaries into RAM.

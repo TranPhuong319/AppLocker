@@ -22,6 +22,20 @@
       }
     ]
   },
+  "file-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/file-guard.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
   "swiftlint-gate": {
     "Stop": [
       {

@@ -31,28 +31,6 @@ public enum Logfile {
 
 ## 3. Log Formatting Rules
 
-- **Prefix & Tagging**: Always prefix messages with component identifier: `[Component] Action description - Details` (e.g. `Logfile.policy.debug("[ConfigStore] Saved \(count, privacy: .public) apps to disk")`).
+- **Prefix & Tagging**: Prefix messages with component identifier: `[Component] Action description - Details` (e.g. `Logfile.policy.debug("[ConfigStore] Saved \(count, privacy: .public) apps to disk")`).
 - **Privacy Interpolation**: Mark diagnostic identifiers (PIDs, paths, counts, durations, status codes) as `privacy: .public` to avoid `<private>` redaction in Console.app.
-- **Zero `print()` / `NSLog()`**: Absolutely never use `print()` or `NSLog()`. All logging must route through `Logfile`.
-
-## 4. Concrete Code Examples
-
-```swift
-// Example 1: High-Frequency / Timing Debug Trace
-Logfile.security.debug("[Keychain] Ephemeral EC keys generated in \(elapsedMs, format: .fixed(precision: 1))ms")
-
-// Example 2: Normal Lifecycle State Transition Info
-Logfile.app.info("[Bootstrap] AppLocker v\(Bundle.main.fullVersion, privacy: .public) starting...")
-
-// Example 3: High-Value Security Notice
-Logfile.appXPC.notice("[Auth] Batch authentication approved for \(approvedPIDs.count, privacy: .public) application(s)")
-
-// Example 4: Recoverable Fallback / Anomaly Warning
-Logfile.app.warning("[Installer] Move to /Applications failed via FileManager: \(error.localizedDescription), falling back to AppleScript")
-
-// Example 5: Syscall / Operation Error
-Logfile.endpointSecurity.error("[Process] Failed to send SIGKILL to PID \(pid, privacy: .public): errno \(errno, privacy: .public)")
-
-// Example 6: Security Violation / System Tampering Fault
-Logfile.esSecurity.fault("[Auth] CDHash mismatch between running process and disk binary for PID \(pid, privacy: .public)!")
-```
+- **Unified Only**: Route all logging through `Logfile` (`print()` / `NSLog()` are banned via SwiftLint).
