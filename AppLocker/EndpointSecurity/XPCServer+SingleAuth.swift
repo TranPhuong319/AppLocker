@@ -166,6 +166,7 @@ extension AuthCoordinator {
         self.singleAppWatchdogTask?.cancel()
         self.singleAppWatchdogTask = nil
         if success {
+            self.lastAuthTimestampsByPath[app.path] = Date()
             self.pendingApps.removeAll { $0.id == app.id }
             LockES.shared.updateCDHashIfNeeded(for: app.path, cdhash: app.cdhash)
             self.dependencies.processPendingApps(

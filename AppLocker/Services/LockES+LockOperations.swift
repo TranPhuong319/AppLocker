@@ -136,17 +136,20 @@ extension LockES {
     /// Migrate an app configuration from an old path to a new path.
     func migrateApp(from oldPath: String, to newPath: String) {
         guard let config = lockedApps.removeValue(forKey: oldPath) else { return }
-        let cdhash = cdHash(for: newPath) ?? config.cdhash
-        let appName = InstalledApp.resolveDisplayName(at: newPath, fallback: config.name ?? "")
+        let fallbackName = URL(fileURLWithPath: newPath).deletingPathExtension().lastPathComponent
+        let execName = Bundle(url: URL(fileURLWithPath: newPath))?.executableURL?.lastPathComponent
+            ?? fallbackName
+        let appName = InstalledApp.resolveDisplayName(at: newPath, fallback: config.name ?? fallbackName)
         lockedApps[newPath] = LockedAppConfig(
             bundleID: config.bundleID,
             path: newPath,
-            execFile: URL(fileURLWithPath: newPath).deletingPathExtension().lastPathComponent,
+            execFile: execName,
             name: appName,
-            cdhash: cdhash,
+            cdhash: config.cdhash,
             isHidden: config.isHidden
         )
         save()
+        verifyAndHealLockedCDHashes()
     }
 
     /// Check and migrate any apps whose bundle identifier matches but path has changed.
