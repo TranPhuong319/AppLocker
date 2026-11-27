@@ -21,6 +21,7 @@
     - `isMovableByWindowBackground = false` (dragging strictly isolated to SwiftUI `WindowDragArea`).
     - On `NSHostingController`, enable `sceneBridgingOptions = [.toolbars, .title]` for windows bridging SwiftUI toolbars/titles (`SettingsWindowController`, `AppListWindowController`, `BatchAuthWindowController`, `WelcomeWindowController`). Pure custom-chrome windows with no toolbar/titlebar bridging (`AboutWindowController`) use `sceneBridgingOptions = []` and `sizingOptions = [.minSize, .maxSize, .intrinsicContentSize]`. For two-column resizable windows (`NavigationSplitView`), leave `sizingOptions = []` and enforce limits strictly via `window.minSize` and `windowWillResize(_:to:)` to prevent `NSHostingController` from overriding `window.minSize`.
     - For windows without toolbar items (`BatchAuthWindowController`, `WelcomeWindowController`), assigning an empty `window.toolbar = NSToolbar(identifier: ...)` alongside an empty SwiftUI `.toolbar { }` preserves squircle corners without bordered pill items.
+    - **Preview vs. Live Window Chrome Parity**: Xcode `#Preview` does not attach `NSWindowController`'s empty `NSToolbar`, which changes top safe-area height. Do NOT remove view-level top compensation (such as `.padding(.top, -10)` in `BatchAuthView`) based solely on `#Preview` clipping without verifying the live `NSWindow` rendering.
     - All windows MUST be created via `WindowManager.createWindow`.
 
 - **Unified Toolbar & NavigationSplitView Architecture**:
@@ -32,7 +33,7 @@
   - *Compact Single-Line Titlebar*: Keep `.navigationTitle(...)` single-line; place section descriptions in the content layer (subtitles expand toolbar height from ~48pt to ~56–60pt, misaligning with the sidebar; `.navigationSubtitle` is banned via SwiftLint).
   - *Vertical Top Alignment in Detail Columns*:
     - The first element of the sidebar and the top edge of the detail view content should visually align.
-    - When native `Form` containers in `NavigationSplitView` detail columns introduce an unwanted system top inset (~16pt), `.padding(.top, -16)` may be applied to offset it. Do not apply negative padding unconditionally if content uses standard `ScrollView` or custom stacks where no default inset exists.
+    - When native `Form` containers in `NavigationSplitView` detail columns introduce an unwanted system top inset (~16pt), `.padding(.top, -16)` and `.topLeading` alignment may be applied ONLY while the active view actually renders a `Form` (e.g. via `usesGroupedForm` — exclude `ContentUnavailableView` states such as locked `SecuritySettingsTab` as well as `Activity`/`Diagnostics`).
   - *No Fake Material Overlays for Toolbars*:
     - NEVER place a manual `Rectangle().fill(.material)` or `.mask(LinearGradient(...))` as an overlay to simulate a toolbar. In Dark Mode, `Material` has intrinsic luminosity that creates a visible, contrasting gray box at rest and produces an unnatural, blurry color fog when saturated content scrolls underneath.
     - Rely 100% on native AppKit Window Server titlebar blur achieved via `fullSizeContentView` + `titlebarSeparatorStyle = .none` + native `NSToolbar` over `windowBackgroundColor`.
