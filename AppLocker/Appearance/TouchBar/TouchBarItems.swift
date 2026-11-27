@@ -106,5 +106,6 @@ extension NSTouchBarItem.Identifier {
     static let searchItem = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.searchItem")
     static let deleteQueueItem = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.deleteQueueItem")
     static let missingAppsItem = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.missingAppsItem")
+    static let resumeProtectionItem = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.resumeProtectionItem")
     static let addAppItem = NSTouchBarItem.Identifier("com.TranPhuong319.AppLocker.addAppItem")
 }

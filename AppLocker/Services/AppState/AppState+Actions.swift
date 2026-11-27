@@ -75,4 +75,10 @@ extension AppState {
     @objc func showDeleteQueueSheet() {
         showingDeleteQueue = true
     }
+
+    @objc func resumeProtection() {
+        guard manager.isProtectionDisabled else { return }
+        manager.setProtectionDisabled(false)
+        Logfile.app.notice("[Actions] Protection resumed by user")
+    }
 }

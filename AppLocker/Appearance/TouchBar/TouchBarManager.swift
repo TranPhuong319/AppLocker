@@ -8,7 +8,7 @@
 import AppKit
 
 @MainActor
-final class TouchBarManager: NSObject, NSTouchBarDelegate {
+final class TouchBarManager: NSObject {
     static let shared = TouchBarManager()
 
     private let appState = AppState.shared
@@ -60,15 +60,18 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
         let type = appState.activeTouchBar
         _ = appState.confirmedMissingApps.isEmpty
         _ = appState.deleteQueue.isEmpty
+        _ = appState.manager.isProtectionDisabled
 
         guard let targetWindow, targetWindow.isVisible else { return }
         let touchBar = makeTouchBar(for: type)
         targetWindow.touchBar = touchBar
         targetWindow.attachedSheet?.touchBar = touchBar
     }
+}
 
-    // MARK: - NSTouchBarDelegate
+// MARK: - NSTouchBarDelegate
 
+extension TouchBarManager: NSTouchBarDelegate {
     func touchBar(
         _ touchBar: NSTouchBar,
         makeItemForIdentifier identifier: NSTouchBarItem.Identifier
@@ -88,6 +91,8 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
             )
         case .missingAppsItem:
             return makeMissingAppsItem(identifier: identifier)
+        case .resumeProtectionItem:
+            return makeResumeProtectionItem(identifier: identifier)
         case .deleteQueueItem:
             return makeDeleteQueueItem(identifier: identifier)
         case .addAppButtons:
@@ -122,14 +127,14 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
     private func makeMissingAppsGroup(identifier: NSTouchBarItem.Identifier) -> NSGroupTouchBarItem {
         makeGroupItem(identifier: identifier, splitLeading: true, items: [
             makeButtonItem(
-                idSuffix: "missingAppsCancel",
-                title: String(localized: "Cancel"),
-                action: #selector(AppState.closeMissingApps)
-            ),
-            makeButtonItem(
                 idSuffix: "missingAppsHide",
                 title: String(localized: "Hide"),
                 action: #selector(AppState.hideAllMissingApps)
+            ),
+            makeButtonItem(
+                idSuffix: "missingAppsCancel",
+                title: String(localized: "Cancel"),
+                action: #selector(AppState.closeMissingApps)
             ),
             makeButtonItem(
                 idSuffix: "missingAppsRemove",
@@ -138,6 +143,20 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
                 bezelColor: .systemRed
             )
         ])
+    }
+
+    private func makeResumeProtectionItem(identifier: NSTouchBarItem.Identifier) -> NSButtonTouchBarItem {
+        let item = NSButtonTouchBarItem(
+            identifier: identifier,
+            image: NSImage(
+                systemSymbolName: "lock.open.trianglebadge.exclamationmark.fill",
+                accessibilityDescription: String(localized: "Resume Protection")
+            ) ?? NSImage(),
+            target: appState,
+            action: #selector(AppState.resumeProtection)
+        )
+        item.bezelColor = .systemOrange
+        return item
     }
 
     private func makeMissingAppsItem(identifier: NSTouchBarItem.Identifier) -> NSButtonTouchBarItem {
@@ -204,22 +223,17 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
 
         switch type {
         case .mainWindow:
+            touchBar.principalItemIdentifier = .addAppItem
             var identifiers: [NSTouchBarItem.Identifier] = [.searchItem, .flexibleSpace]
-            if appState.deleteQueue.isEmpty {
-                touchBar.principalItemIdentifier = .addAppItem
-                identifiers.append(.addAppItem)
-                identifiers.append(.flexibleSpace)
-                if !appState.confirmedMissingApps.isEmpty {
-                    identifiers.append(.missingAppsItem)
-                }
-            } else {
-                touchBar.principalItemIdentifier = .deleteQueueItem
-                identifiers.append(.deleteQueueItem)
-                identifiers.append(.flexibleSpace)
-                identifiers.append(.addAppItem)
-                if !appState.confirmedMissingApps.isEmpty {
-                    identifiers.append(.missingAppsItem)
-                }
+            if !appState.deleteQueue.isEmpty {
+                identifiers.append(contentsOf: [.deleteQueueItem, .flexibleSpace])
+            }
+            identifiers.append(contentsOf: [.addAppItem, .flexibleSpace])
+            if !appState.confirmedMissingApps.isEmpty {
+                identifiers.append(.missingAppsItem)
+            }
+            if appState.manager.isProtectionDisabled {
+                identifiers.append(.resumeProtectionItem)
             }
             identifiers.append(.fixedSpaceLarge)
             touchBar.defaultItemIdentifiers = identifiers
