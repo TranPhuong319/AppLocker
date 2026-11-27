@@ -212,6 +212,44 @@ struct ESXPCClientReconnectTests {
         #expect(client.shouldReconnect == true)
     }
 
+    @Test("Install completion verifies System Settings enablement before marking extension installed")
+    @MainActor
+    func installCompletionRequiresConfirmedEnablement() throws {
+        let suiteName = "com.TranPhuong319.AppLocker.ExtensionInstallerTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var refreshArgs: [Bool] = []
+        var connectCount = 0
+        var disconnectCount = 0
+
+        let installer = ExtensionInstaller(
+            userDefaults: defaults,
+            isTesting: true,
+            onRefreshStatus: { refreshArgs.append($0) },
+            onConnect: { connectCount += 1 },
+            onDisconnect: { disconnectCount += 1 }
+        )
+
+        #expect(installer.isInstalled == false)
+
+        installer.install()
+        installer.handleFinish(result: .completed)
+
+        #expect(installer.isInstalled == false)
+        #expect(refreshArgs == [true])
+        #expect(connectCount == 0)
+
+        installer.applyPropertiesResult(isEnabled: false, shouldReconnect: true)
+        #expect(installer.isInstalled == false)
+        #expect(connectCount == 0)
+        #expect(disconnectCount == 1)
+
+        installer.applyPropertiesResult(isEnabled: true, shouldReconnect: true)
+        #expect(installer.isInstalled == true)
+        #expect(connectCount == 1)
+    }
+
     private func waitUntil(
         timeout: Duration = .seconds(2),
         condition: @Sendable () -> Bool

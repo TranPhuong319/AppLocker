@@ -15,8 +15,27 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     static let shared = ExtensionInstaller()
     nonisolated static let extensionIdentifier = "com.TranPhuong319.AppLocker.ESExtension"
 
-    private override init() {
+    private let userDefaults: UserDefaults
+    private let isTesting: Bool
+    private let onRefreshStatus: ((Bool) -> Void)?
+    private let onConnect: () -> Void
+    private let onDisconnect: () -> Void
+
+    init(
+        userDefaults: UserDefaults = .standard,
+        isTesting: Bool = false,
+        onRefreshStatus: ((Bool) -> Void)? = nil,
+        onConnect: @escaping () -> Void = { ESXPCClient.shared.connect() },
+        onDisconnect: @escaping () -> Void = { ESXPCClient.shared.disconnect() }
+    ) {
+        self.userDefaults = userDefaults
+        self.isTesting = isTesting
+        self.onRefreshStatus = onRefreshStatus
+        self.onConnect = onConnect
+        self.onDisconnect = onDisconnect
+        self.isInstalled = userDefaults.bool(forKey: "isExtensionInstalled")
         super.init()
+        guard !isTesting else { return }
         if #available(macOS 15.1, *) {
             do {
                 try OSSystemExtensionsWorkspace.shared.addObserver(self)
@@ -31,6 +50,10 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
     }
 
     func refreshStatus(reconnectIfEnabled: Bool = true) {
+        if let onRefreshStatus {
+            onRefreshStatus(reconnectIfEnabled)
+            return
+        }
         let req = OSSystemExtensionRequest.propertiesRequest(
             forExtensionWithIdentifier: Self.extensionIdentifier,
             queue: .main
@@ -46,12 +69,10 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         UserDefaults.standard.bool(forKey: "isExtensionInstalled")
     }
 
-    private(set) var isInstalled: Bool = {
-        UserDefaults.standard.bool(forKey: "isExtensionInstalled")
-    }() {
+    private(set) var isInstalled: Bool = false {
         didSet {
             guard oldValue != isInstalled else { return }
-            UserDefaults.standard.set(isInstalled, forKey: "isExtensionInstalled")
+            userDefaults.set(isInstalled, forKey: "isExtensionInstalled")
             NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
         }
     }
@@ -72,6 +93,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     func install(completion: ((Result<Void, Error>) -> Void)? = nil) {
         currentAction = .install(completion: completion)
+        guard !isTesting else { return }
         let req = OSSystemExtensionRequest.activationRequest(
             forExtensionWithIdentifier: identifier,
             queue: .main
@@ -82,6 +104,7 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
 
     func uninstall(completion: ((Result<Void, Error>) -> Void)? = nil) {
         currentAction = .uninstall(completion: completion)
+        guard !isTesting else { return }
         let req = OSSystemExtensionRequest.deactivationRequest(
             forExtensionWithIdentifier: identifier,
             queue: .main
@@ -111,19 +134,21 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         }
     }
 
-    private func handleFinish(result: OSSystemExtensionRequest.Result) {
+    func handleFinish(result: OSSystemExtensionRequest.Result) {
         guard result == .completed || result == .willCompleteAfterReboot else { return }
 
         switch currentAction {
         case .install(let completion):
-            isInstalled = result == .completed
             if result == .completed {
-                ESXPCClient.shared.connect()
+                // Activation completion does not guarantee the extension is enabled in System Settings.
+                refreshStatus(reconnectIfEnabled: true)
+            } else {
+                isInstalled = false
             }
             completion?(.success(()))
         case .uninstall(let completion):
             isInstalled = false
-            ESXPCClient.shared.disconnect()
+            onDisconnect()
             completion?(.success(()))
         case .none:
             break
@@ -180,21 +205,25 @@ final class ExtensionInstaller: NSObject, OSSystemExtensionRequestDelegate {
         foundProperties properties: [OSSystemExtensionProperties]
     ) {
         let requestID = ObjectIdentifier(request)
-        let isEnabled = properties.first?.isEnabled ?? false
+        let isEnabled = properties.contains { $0.isEnabled }
         Task { @MainActor in
             let shouldReconnect = self.skipReconnectRequestIDs.remove(requestID) == nil
-            self.isInstalled = isEnabled
-            // Always notify: menubar icon may be stale because setupMenuBar runs
-            // before this async callback returns (even when value is unchanged).
-            NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
-            Logfile.app.info("[Installer] Extension properties checked: isEnabled=\(isEnabled, privacy: .public)")
-            if isEnabled {
-                if shouldReconnect {
-                    ESXPCClient.shared.connect()
-                }
-            } else {
-                ESXPCClient.shared.disconnect()
+            self.applyPropertiesResult(isEnabled: isEnabled, shouldReconnect: shouldReconnect)
+        }
+    }
+
+    func applyPropertiesResult(isEnabled: Bool, shouldReconnect: Bool) {
+        isInstalled = isEnabled
+        // Always notify: menubar icon may be stale because setupMenuBar runs
+        // before this async callback returns (even when value is unchanged).
+        NotificationCenter.default.post(name: .protectionStatusDidChange, object: nil)
+        Logfile.app.info("[Installer] Extension properties checked: isEnabled=\(isEnabled, privacy: .public)")
+        if isEnabled {
+            if shouldReconnect {
+                onConnect()
             }
+        } else {
+            onDisconnect()
         }
     }
 }
