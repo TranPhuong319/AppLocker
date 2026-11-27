@@ -42,5 +42,6 @@ final class AboutWindowController: NSWindowController {
         shared.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate()
+        window.makeFirstResponder(nil)
     }
 }

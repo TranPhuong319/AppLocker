@@ -66,6 +66,7 @@ struct AboutView: View {
                     .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
             }
             .buttonStyle(.plain)
+            .focusable(false)
             .keyframeAnimator(initialValue: 1.0, trigger: iconBounceTrigger) { content, scale in
                 content.scaleEffect(scale)
             } keyframes: { _ in
