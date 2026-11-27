@@ -24,6 +24,20 @@ struct ShortcutRecorderView: View {
                 clearButton
             }
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .frame(minWidth: 110)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isRecording ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.06))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(
+                    isRecording ? Color.accentColor : Color.primary.opacity(0.15),
+                    lineWidth: isRecording ? 1.5 : 1
+                )
+        )
         .onDisappear {
             stopRecording()
         }
@@ -45,19 +59,7 @@ struct ShortcutRecorderView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(isRecording ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.06))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(
-                        isRecording ? Color.accentColor : Color.primary.opacity(0.15),
-                        lineWidth: isRecording ? 1.5 : 1
-                    )
-            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

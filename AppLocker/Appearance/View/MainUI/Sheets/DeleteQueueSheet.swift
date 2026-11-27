@@ -12,40 +12,39 @@ struct DeleteQueueSheet: View {
     @State private var maxButtonWidth: CGFloat?
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                topHeader
+        VStack(spacing: 0) {
+            topHeader
 
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 8) {
-                        let appsInQueue = appState.lockedAppObjects.filter {
-                            appState.deleteQueue.contains($0.path)
-                        }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    let appsInQueue = appState.lockedAppObjects.filter {
+                        appState.deleteQueue.contains($0.path)
+                    }
 
-                        let userApps = appsInQueue.filter { $0.source == .user }
-                        if !userApps.isEmpty {
-                            SectionHeader("Applications")
-                            ForEach(userApps, id: \.path) { app in
-                                DeleteQueueRow(for: app, appState: appState)
-                            }
-                        }
-
-                        let systemApps = appsInQueue.filter { $0.source == .system }
-                        if !systemApps.isEmpty {
-                            SectionHeader("System Applications")
-                            ForEach(systemApps, id: \.path) { app in
-                                DeleteQueueRow(for: app, appState: appState)
-                            }
+                    let userApps = appsInQueue.filter { $0.source == .user }
+                    if !userApps.isEmpty {
+                        SectionHeader("Applications")
+                        ForEach(userApps, id: \.path) { app in
+                            DeleteQueueRow(for: app, appState: appState)
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                }
-                .scrollIndicators(.hidden)
-                .clipped()
 
-                bottomActionBar
+                    let systemApps = appsInQueue.filter { $0.source == .system }
+                    if !systemApps.isEmpty {
+                        SectionHeader("System Applications")
+                            .padding(.top, userApps.isEmpty ? 0 : 8)
+                        ForEach(systemApps, id: \.path) { app in
+                            DeleteQueueRow(for: app, appState: appState)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
             }
+            .scrollIndicators(.hidden)
+            .clipped()
+
+            bottomActionBar
         }
         .frame(
             minWidth: WindowLayout.deleteQueueMinSize.width,
@@ -59,7 +58,7 @@ struct DeleteQueueSheet: View {
     @ViewBuilder
     private var topHeader: some View {
         HStack {
-            Text("Application is waiting to be deleted")
+            Text("Applications waiting to unlock")
                 .font(.headline)
             Spacer()
         }
@@ -86,6 +85,7 @@ struct DeleteQueueSheet: View {
             )
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .keyboardShortcut(.cancelAction)
 
             Button(
                 action: {

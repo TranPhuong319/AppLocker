@@ -151,7 +151,7 @@ extension DiagnosticsSettingsTab {
     var emptyPlaceholder: some View {
         ContentUnavailableView(
             "No log entries found",
-            systemImage: "text.page.slash",
+            systemImage: "doc.text.magnifyingglass",
             description: Text("Try adjusting the time range or filters.")
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)

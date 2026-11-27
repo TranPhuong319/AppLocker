@@ -76,7 +76,7 @@ struct SystemInfoPopoverView: View {
     private func systemInfoRow(label: LocalizedStringKey, value: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label)
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.secondary)
             Text(value)
                 .font(.system(size: 10, weight: .semibold, design: .monospaced))

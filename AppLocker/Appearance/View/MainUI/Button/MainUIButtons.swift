@@ -72,6 +72,7 @@ struct DeleteQueueRow: View {
         HStack(spacing: 12) {
             AppIconView(path: app.path, size: 32)
             Text(app.name)
+                .font(.body)
             Spacer()
             Button {
                 withAnimation {
@@ -79,13 +80,17 @@ struct DeleteQueueRow: View {
                     if appState.deleteQueue.isEmpty { appState.showingDeleteQueue = false }
                 }
             } label: {
-                Image(systemName: "minus.circle").foregroundStyle(.red)
+                Image(systemName: "minus.circle")
+                    .foregroundStyle(.red)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(BorderlessButtonStyle())
+            .help(String(localized: "Remove from unlock queue"))
+            .accessibilityLabel(String(localized: "Remove from unlock queue"))
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
-        .focusable(false)
     }
 }
 
@@ -139,12 +144,16 @@ struct LockedAppRow: View {
             } label: {
                 Image(systemName: "minus.circle")
                     .foregroundStyle(.red)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(BorderlessButtonStyle())
             .disabled(isDeleting)
+            .help(String(localized: "Remove from lock list"))
+            .accessibilityLabel(String(localized: "Remove from lock list"))
         }
         .padding(.vertical, 4)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 10)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { onUnfocus() }

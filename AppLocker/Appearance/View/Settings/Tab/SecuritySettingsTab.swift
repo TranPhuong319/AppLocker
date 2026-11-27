@@ -50,6 +50,9 @@ struct SecuritySettingsTab: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.willBecomeActiveNotification)) { _ in
             syncProtectionStatus()
+            if !isMock && !installer.isInstalled {
+                installer.refreshStatus()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .protectionStatusDidChange)) { _ in
             syncProtectionStatus()
@@ -81,16 +84,26 @@ struct SecuritySettingsTab: View {
     private var unlockedContent: some View {
         Form {
             Section(header: Text("Application Lock Protection")) {
-                Toggle("Application Lock", isOn: Binding(
+                Toggle(isOn: Binding(
                     get: { isProtectionEnabled && (isMock || installer.isInstalled) },
                     set: { newValue in
                         handleLockToggle(newValue: newValue)
                     }
-                ))
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Application Lock")
+                        if isMock || installer.isInstalled {
+                            Text(isProtectionEnabled ? "Application Lock is enabled"
+                                 : "Application Lock is disabled")
+                                .font(.caption)
+                                .foregroundStyle(isProtectionEnabled ? .green : .red)
+                        }
+                    }
+                }
                 .disabled(!isMock && !installer.isInstalled)
 
-                HStack {
-                    if !isMock && !installer.isInstalled {
+                if !isMock && !installer.isInstalled {
+                    HStack {
                         Text("System Extension is disabled. Please enable it in System Settings.")
                             .font(.caption)
                             .foregroundStyle(.red)
@@ -101,15 +114,10 @@ struct SecuritySettingsTab: View {
                             Text("Enable Extension")
                         })
                         .controlSize(.small)
-                    } else {
-                        Text(isProtectionEnabled ? "Application Lock is enabled"
-                             : "Application Lock is disabled")
-                            .font(.caption)
-                            .foregroundStyle(isProtectionEnabled ? .green : .red)
                     }
                 }
 
-                Text("Temporarily pause or activate protection for all applications in your lock list.")
+                protectionDescriptionText
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -117,7 +125,7 @@ struct SecuritySettingsTab: View {
             Section(header: Text("Authentication Popup Timeout")) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("Popup Countdown:")
+                        Text("Popup Countdown")
                         Spacer()
                         Text("\(Int(authCountdownSeconds)) seconds")
                             .foregroundStyle(.secondary)
@@ -126,42 +134,47 @@ struct SecuritySettingsTab: View {
                             .animation(.snappy(duration: 0.2), value: authCountdownSeconds)
                     }
                     Slider(value: $authCountdownSeconds, in: 10...60, step: 5)
+                        .labelsHidden()
+                    Text("Duration before authentication prompt automatically cancels and aborts app launch.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-
-                Text("Duration before authentication prompt automatically cancels and aborts app launch.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Section(header: Text("Auto-Lock Duration")) {
-                Picker("Lock Session Timeout", selection: Binding(
-                    get: { autoLockTimeoutMinutes },
-                    set: { newValue in
-                        handleAutoLockTimeoutChange(newValue: newValue)
+                VStack(alignment: .leading, spacing: 6) {
+                    Picker("Lock Session Timeout", selection: Binding(
+                        get: { autoLockTimeoutMinutes },
+                        set: { newValue in
+                            handleAutoLockTimeoutChange(newValue: newValue)
+                        }
+                    )) {
+                        Text("Immediately").tag(0)
+                        Text("After 5 minutes").tag(5)
+                        Text("After 15 minutes").tag(15)
+                        Text("When System Sleeps").tag(-1)
                     }
-                )) {
-                    Text("Immediately").tag(0)
-                    Text("After 5 minutes").tag(5)
-                    Text("After 15 minutes").tag(15)
-                    Text("When System Sleeps").tag(-1)
-                }
 
-                Text("Duration an app stays unlocked after authentication before requiring password again.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    Text("Duration an app stays unlocked after authentication before requiring password again.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section(header: Text("Incoming Calls")) {
-                Toggle("Allow Incoming Calls while Locked", isOn: Binding(
+                Toggle(isOn: Binding(
                     get: { allowIncomingCalls },
                     set: { newValue in
                         handleIncomingCallsToggle(newValue: newValue)
                     }
-                ))
-
-                Text("Automatically allow FaceTime and Phone to receive incoming calls without password.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Allow Incoming Calls while Locked")
+                        Text("Automatically allow FaceTime and Phone to receive incoming calls without password.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
         .formStyle(.grouped)
@@ -174,6 +187,17 @@ struct SecuritySettingsTab: View {
                     .help("Lock security settings")
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var protectionDescriptionText: some View {
+        if !isMock && !installer.isInstalled {
+            Text("Temporarily pause or activate protection for all applications in your lock list.")
+        } else if isProtectionEnabled {
+            Text("All applications in your lock list require authentication to open.")
+        } else {
+            Text("Applications in your lock list can temporarily open without authentication.")
         }
     }
 

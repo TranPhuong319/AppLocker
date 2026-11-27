@@ -72,11 +72,14 @@ struct GeneralSettingsTab: View {
             }
 
             Section(header: Text("Notifications")) {
-                Toggle("Show notifications when an app is blocked", isOn: $showNotifications)
-
-                Text("Show a system notification whenever an unauthorized launch attempt is blocked.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Toggle(isOn: $showNotifications) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show notifications when an app is blocked")
+                        Text("Show a system notification whenever an unauthorized launch attempt is blocked.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
 
             Section(header: Text("Keyboard Shortcuts")) {

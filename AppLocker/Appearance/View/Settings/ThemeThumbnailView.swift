@@ -50,9 +50,21 @@ struct ThemeThumbnailView: View {
         case .dark:
             darkWallpaper
         case .system:
-            HStack(spacing: 0) {
+            ZStack {
                 lightWallpaper
+                    .mask(
+                        HStack(spacing: 0) {
+                            Rectangle().frame(width: 34)
+                            Spacer(minLength: 0)
+                        }
+                    )
                 darkWallpaper
+                    .mask(
+                        HStack(spacing: 0) {
+                            Spacer(minLength: 0)
+                            Rectangle().frame(width: 34)
+                        }
+                    )
             }
         }
     }
@@ -104,12 +116,7 @@ struct ThemeThumbnailView: View {
             case .dark:
                 miniWindow(isDark: true)
             case .system:
-                HStack(spacing: 0) {
-                    miniWindowSplit(isDark: false)
-                    miniWindowSplit(isDark: true)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
+                miniWindowSplit
             }
         }
     }
@@ -218,18 +225,27 @@ struct ThemeThumbnailView: View {
         .frame(width: 54, height: 22)
     }
 
-    private func miniWindowSplit(isDark: Bool) -> some View {
+    private var miniWindowSplit: some View {
         ZStack(alignment: .topLeading) {
-            Rectangle()
-                .fill(isDark ? Color(red: 0.12, green: 0.12, blue: 0.14) : Color.white)
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(Color.white)
+                    .frame(width: 27, height: 22)
+                Rectangle()
+                    .fill(Color(red: 0.12, green: 0.12, blue: 0.14))
+                    .frame(width: 27, height: 22)
+            }
 
             HStack(spacing: 3) {
                 Circle().fill(Color(red: 1.0, green: 0.38, blue: 0.35)).frame(width: 4, height: 4)
                 Circle().fill(Color(red: 1.0, green: 0.75, blue: 0.18)).frame(width: 4, height: 4)
+                Circle().fill(Color(red: 0.16, green: 0.80, blue: 0.26)).frame(width: 4, height: 4)
             }
             .padding(.leading, 7)
             .padding(.top, 4.5)
         }
-        .frame(width: 27, height: 22)
+        .frame(width: 54, height: 22)
+        .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+        .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
     }
 }

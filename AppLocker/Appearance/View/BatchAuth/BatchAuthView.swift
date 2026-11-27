@@ -112,7 +112,7 @@ struct BatchAuthView: View {
             )
             .buttonStyle(.bordered)
             .controlSize(.large)
-            .keyboardShortcut(.escape, modifiers: [])
+            .keyboardShortcut(.cancelAction)
 
             Spacer()
 
@@ -137,7 +137,8 @@ struct BatchAuthView: View {
         }
         .syncEqualWidth(into: $maxButtonWidth)
         .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
         .frame(maxWidth: .infinity)
     }
 }
@@ -146,34 +147,37 @@ struct BatchAppRowView: View {
     @Binding var app: PendingAppItem
 
     var body: some View {
-        HStack(spacing: 12) {
-            checkmarkIndicator
-
-            AppIconView(path: app.path, size: 32)
-                .opacity(app.isSelected ? 1.0 : 0.5)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(app.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(app.isSelected ? .primary : .secondary)
-
-                Text(app.path)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary.opacity(app.isSelected ? 0.9 : 0.6))
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .contentShape(Rectangle())
-        .onTapGesture {
+        Button {
             withAnimation(.snappy(duration: 0.25)) {
                 app.isSelected.toggle()
             }
+        } label: {
+            HStack(spacing: 12) {
+                checkmarkIndicator
+
+                AppIconView(path: app.path, size: 32)
+                    .opacity(app.isSelected ? 1.0 : 0.5)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(app.name)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(app.isSelected ? .primary : .secondary)
+
+                    Text(app.path)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary.opacity(app.isSelected ? 0.9 : 0.6))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                Spacer()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity)
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
+        .buttonStyle(AppRowButtonStyle())
     }
 
     private var checkmarkIndicator: some View {

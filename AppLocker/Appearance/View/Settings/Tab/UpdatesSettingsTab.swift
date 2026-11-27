@@ -10,15 +10,35 @@ import SwiftUI
 struct UpdatesSettingsTab: View {
     let isMock: Bool
 
-    @State private var hasAvailableUpdate: Bool = false
-    @State private var availableUpdateVersion: String = ""
-    @State private var autoCheck: Bool = true
-    @State private var autoDownload: Bool = false
-    @State private var isBetaUsingStableFallback: Bool = false
+    @State private var hasAvailableUpdate: Bool
+    @State private var availableUpdateVersion: String
+    @State private var autoCheck: Bool
+    @State private var autoDownload: Bool
+    @State private var isBetaUsingStableFallback: Bool
     @AppStorage("updateChannel") private var selectedChannelRaw: String = UpdateChannel.stable.rawValue
 
     init(isMock: Bool = false) {
-        self.isMock = isMock
+        #if DEBUG
+        let effectiveMock = isMock || PreviewEnvironment.isRunningInPreview
+        #else
+        let effectiveMock = isMock
+        #endif
+        self.isMock = effectiveMock
+
+        if effectiveMock {
+            _hasAvailableUpdate = State(initialValue: false)
+            _availableUpdateVersion = State(initialValue: "")
+            _autoCheck = State(initialValue: true)
+            _autoDownload = State(initialValue: false)
+            _isBetaUsingStableFallback = State(initialValue: false)
+        } else {
+            let updater = AppUpdater.shared
+            _hasAvailableUpdate = State(initialValue: updater.hasAvailableUpdate)
+            _availableUpdateVersion = State(initialValue: updater.availableUpdateVersion ?? "")
+            _autoCheck = State(initialValue: updater.automaticallyChecksForUpdates)
+            _autoDownload = State(initialValue: updater.automaticallyDownloadsUpdates)
+            _isBetaUsingStableFallback = State(initialValue: updater.isBetaUsingStableFallback)
+        }
     }
 
     private var selectedChannel: UpdateChannel {
@@ -30,8 +50,10 @@ struct UpdatesSettingsTab: View {
             Section(header: Text("Software Updates")) {
                 currentVersionRow
 
-                Toggle("Automatically check for updates", isOn: $autoCheck)
-                    .onChange(of: autoCheck) { _, newValue in
+                Toggle("Automatically check for updates", isOn: Binding(
+                    get: { autoCheck },
+                    set: { newValue in
+                        autoCheck = newValue
                         if !newValue {
                             autoDownload = false
                         }
@@ -41,39 +63,47 @@ struct UpdatesSettingsTab: View {
                             AppUpdater.shared.automaticallyDownloadsUpdates = false
                         }
                     }
+                ))
 
-                Toggle("Automatically download new updates", isOn: $autoDownload)
-                    .disabled(!autoCheck)
-                    .onChange(of: autoDownload) { _, newValue in
-                        if !isMock {
-                            AppUpdater.shared.automaticallyDownloadsUpdates = newValue
+                Toggle(isOn: Binding(
+                    get: { autoDownload },
+                    set: { newValue in
+                        autoDownload = newValue
+                        guard !isMock else { return }
+                        AppUpdater.shared.automaticallyDownloadsUpdates = newValue
+                    }
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Automatically download new updates")
+                        Text("Automatically download new updates in the background when available.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .disabled(!autoCheck)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Picker("Update Channel", selection: $selectedChannelRaw) {
+                        ForEach(UpdateChannel.allCases) { channel in
+                            Text(channel.displayName).tag(channel.rawValue)
                         }
                     }
 
-                Text("Automatically download new updates in the background when available.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Picker("Update Channel", selection: $selectedChannelRaw) {
-                    ForEach(UpdateChannel.allCases) { channel in
-                        Text(channel.displayName).tag(channel.rawValue)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(selectedChannel.description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    if selectedChannel == .beta, isBetaUsingStableFallback {
-                        Text("No beta release is currently available. Checking stable updates instead.")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(selectedChannel.description)
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.secondary)
+
+                        if selectedChannel == .beta, isBetaUsingStableFallback {
+                            Text("No beta release is currently available. Checking stable updates instead.")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
                     }
                 }
 
                 Button(action: checkForUpdates, label: {
-                    Label("Check for Updates Now", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
+                    Label("Check for Updates Now", systemImage: "arrow.triangle.2.circlepath")
                 })
             }
         }

@@ -16,7 +16,7 @@ struct AboutArchitectureBadgesView: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             badgePill(
                 icon: isExtensionActive ? "checkmark.shield.fill" : "shield.slash.fill",
                 text: isExtensionActive ? "Endpoint Security" : "Extension Inactive",
@@ -46,8 +46,10 @@ struct AboutArchitectureBadgesView: View {
                     .font(.system(size: 10, weight: .semibold))
                 Text(architectureName)
                     .font(.system(size: 10, weight: .medium))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 7, weight: .bold))
+                    .font(.system(size: 8.5, weight: .bold))
                     .foregroundStyle(.tertiary)
             }
             .foregroundStyle(.secondary)
@@ -61,7 +63,6 @@ struct AboutArchitectureBadgesView: View {
             )
         }
         .buttonStyle(.plain)
-        .focusable(false)
         .popover(isPresented: $showSystemInfo, arrowEdge: .trailing) {
             SystemInfoPopoverView()
         }
@@ -101,6 +102,8 @@ struct AboutArchitectureBadgesView: View {
                 .font(.system(size: 10, weight: .semibold))
             Text(text)
                 .font(.system(size: 10, weight: .medium))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
         .foregroundStyle(color)
         .padding(.horizontal, 8)

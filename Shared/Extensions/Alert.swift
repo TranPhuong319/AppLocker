@@ -31,7 +31,8 @@ enum AlertShow {
         style: NSAlert.Style,
         buttons: [String],
         cancelIndex: Int? = nil,
-        defaultIndex: Int? = nil
+        defaultIndex: Int? = nil,
+        destructiveIndex: Int? = nil
     ) -> AlertResult {
         let alert = NSAlert()
         alert.messageText = title
@@ -41,6 +42,7 @@ enum AlertShow {
         let displayedButtons = Array(buttons.prefix(3))
         for (index, buttonTitle) in displayedButtons.enumerated() {
             let button = alert.addButton(withTitle: buttonTitle)
+            button.hasDestructiveAction = (index == destructiveIndex)
 
             if index == defaultIndex {
                 button.keyEquivalent = "\r"

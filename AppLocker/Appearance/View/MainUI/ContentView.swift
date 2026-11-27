@@ -149,6 +149,7 @@ private extension ContentView {
             LazyVStack(alignment: .center, spacing: 6) {
                 appSection(titled: "Applications", for: userApps, missingPaths: missingPaths)
                 appSection(titled: "System Applications", for: systemApps, missingPaths: missingPaths)
+                    .padding(.top, userApps.isEmpty ? 0 : 8)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 4)
@@ -211,9 +212,8 @@ private extension ContentView {
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.secondary.opacity(0.6))
             }
-            .padding(.horizontal, 8)
-            .padding(.leading, 4)
-            .frame(maxWidth: .infinity, maxHeight: 42)
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, minHeight: 42, maxHeight: 42)
             .contentShape(Capsule())
             .liquidGlassCapsule()
             .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 5)

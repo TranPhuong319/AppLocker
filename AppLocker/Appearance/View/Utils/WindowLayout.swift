@@ -15,12 +15,11 @@ enum WindowLayout {
     static let mainSize = NSSize(width: 450, height: 470)
     static let welcomeSize = NSSize(width: 660, height: 480)
     static let addAppMinSize = NSSize(width: 400, height: 500)
-    static let addAppListMaxHeight: CGFloat = 420
     static let deleteQueueMinSize = NSSize(width: 350, height: 370)
     static let missingAppsMinSize = NSSize(width: 380, height: 380)
     static let lockingPopupMinSize = NSSize(width: 200, height: 100)
     static let batchAuthSize = NSSize(width: 440, height: 360)
-    static let aboutSize = NSSize(width: 450, height: 340)
+    static let aboutSize = NSSize(width: 480, height: 340)
     static let settingsMinSize = NSSize(width: 680, height: 460)
     static let settingsActivitySize = NSSize(width: 800, height: 500)
     static let settingsDiagnosticsSize = NSSize(width: 1100, height: 580)
@@ -57,28 +56,7 @@ struct LiquidGlassCapsuleModifier: ViewModifier {
                 .background(.ultraThinMaterial, in: Capsule())
                 .overlay(
                     Capsule()
-                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5)
-                )
-        }
-    }
-}
-
-struct LiquidGlassCardModifier: ViewModifier {
-    var isSelected: Bool
-
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(in: RoundedRectangle(cornerRadius: 10))
-        } else {
-            content
-                .background(
-                    .ultraThinMaterial.opacity(isSelected ? 1.0 : 0.4),
-                    in: RoundedRectangle(cornerRadius: 10)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.white.opacity(isSelected ? 0.15 : 0.05), lineWidth: 0.5)
+                        .strokeBorder(Color(nsColor: .separatorColor).opacity(0.5), lineWidth: 0.5)
                 )
         }
     }
@@ -101,10 +79,6 @@ struct RefreshToolbarIcon: View {
 extension View {
     func liquidGlassCapsule(isInteractive: Bool = true) -> some View {
         modifier(LiquidGlassCapsuleModifier(isInteractive: isInteractive))
-    }
-
-    func liquidGlassCard(isSelected: Bool = true) -> some View {
-        modifier(LiquidGlassCardModifier(isSelected: isSelected))
     }
 
     @ViewBuilder

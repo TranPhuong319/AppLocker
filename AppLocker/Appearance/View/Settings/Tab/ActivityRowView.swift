@@ -239,7 +239,7 @@ private extension ActivityRowView {
     }
 
     var copyIcon: some View {
-        Image(systemName: isCopied ? "checkmark.circle" : "document.on.document")
+        Image(systemName: isCopied ? "checkmark.circle" : "doc.on.doc")
             .magicSymbolReplace()
             .font(.caption)
             .foregroundStyle(isCopied ? .green : .secondary)

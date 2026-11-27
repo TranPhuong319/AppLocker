@@ -133,7 +133,7 @@ struct LogRowCopyButton: View {
     }
 
     private var copyIcon: some View {
-        Image(systemName: isCopied ? "checkmark.circle.fill" : "document.on.document")
+        Image(systemName: isCopied ? "checkmark.circle.fill" : "doc.on.doc")
             .magicSymbolReplace()
             .font(.caption)
             .foregroundStyle(isCopied ? Color.green : Color.secondary)
@@ -155,5 +155,8 @@ struct LogRowCopyButton: View {
 
 #Preview {
     DiagnosticsSettingsTab(isMock: true)
-        .frame(width: 600, height: 400)
+        .frame(
+            width: WindowLayout.settingsDiagnosticsSize.width,
+            height: WindowLayout.settingsDiagnosticsSize.height
+        )
 }

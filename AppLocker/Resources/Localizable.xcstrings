@@ -51,6 +51,56 @@
         }
       }
     },
+    "Back" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quay lại"
+          }
+        }
+      }
+    },
+    "Clear search" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá tìm kiếm"
+          }
+        }
+      }
+    },
+    "Forward" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp theo"
+          }
+        }
+      }
+    },
+    "Remove from lock list" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá khỏi danh sách khoá"
+          }
+        }
+      }
+    },
+    "Remove from unlock queue" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoá khỏi hàng chờ mở khoá"
+          }
+        }
+      }
+    },
     "×%lld" : {
       "localizations" : {
         "vi" : {
@@ -181,6 +231,16 @@
         }
       }
     },
+    "All applications in your lock list require authentication to open." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mọi ứng dụng trong danh sách khóa đều yêu cầu xác thực khi mở."
+          }
+        }
+      }
+    },
     "All Levels" : {
       "localizations" : {
         "vi" : {
@@ -271,12 +331,12 @@
         }
       }
     },
-    "Application is waiting to be deleted" : {
+    "Applications waiting to unlock" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ứng dụng đang chờ xoá"
+            "value" : "Ứng dụng đang chờ mở khoá"
           }
         }
       }
@@ -327,6 +387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ứng dụng"
+          }
+        }
+      }
+    },
+    "Applications in your lock list can temporarily open without authentication." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các ứng dụng trong danh sách khóa tạm thời có thể mở mà không cần xác thực."
           }
         }
       }
@@ -982,9 +1052,7 @@
         }
       }
     },
-    "Could not move the application to /Applications automatically. Please move it manually to continue." : {
-
-    },
+    "Could not move the application to /Applications automatically. Please move it manually to continue." : {},
     "Current Session" : {
       "localizations" : {
         "vi" : {
@@ -1845,12 +1913,12 @@
         }
       }
     },
-    "Popup Countdown:" : {
+    "Popup Countdown" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thời gian đếm ngược:"
+            "value" : "Thời gian đếm ngược"
           }
         }
       }
@@ -2613,7 +2681,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kênh Cập nhật"
+            "value" : "Kênh cập nhật"
           }
         }
       }

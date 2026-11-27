@@ -135,7 +135,7 @@ final class TouchBarManager: NSObject, NSTouchBarDelegate {
                 idSuffix: "missingAppsRemove",
                 title: String(localized: "Remove"),
                 action: #selector(AppState.removeAllMissingApps),
-                bezelColor: .controlAccentColor
+                bezelColor: .systemRed
             )
         ])
     }

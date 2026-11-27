@@ -67,16 +67,11 @@ struct SettingsView: View {
         } detail: {
             detailContent(for: navigator.selectedTab)
                 .id(navigator.selectedTab)
-                .padding(
-                    .top,
-                    (navigator.selectedTab == .diagnostics || navigator.selectedTab == .activity) ? 0 : -16
-                )
+                .padding(.top, usesGroupedForm ? -16 : 0)
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: .infinity,
-                    alignment: (navigator.selectedTab == .diagnostics || navigator.selectedTab == .activity)
-                        ? .center
-                        : .topLeading
+                    alignment: usesGroupedForm ? .topLeading : .center
                 )
                 .navigationTitle(navigator.selectedTab.displayName)
                 .toolbar {
@@ -86,11 +81,15 @@ struct SettingsView: View {
                                 Image(systemName: "chevron.left")
                             }
                             .disabled(historyIndex <= 0)
+                            .help(String(localized: "Back"))
+                            .accessibilityLabel(String(localized: "Back"))
 
                             Button(action: goForward) {
                                 Image(systemName: "chevron.right")
                             }
                             .disabled(historyIndex >= navigationHistory.count - 1)
+                            .help(String(localized: "Forward"))
+                            .accessibilityLabel(String(localized: "Forward"))
                         }
                         .controlGroupStyle(.navigation)
                     }
@@ -164,6 +163,17 @@ struct SettingsView: View {
             .foregroundStyle(isSecurityUnlocked ? .blue : .secondary)
     }
 
+    private var usesGroupedForm: Bool {
+        switch navigator.selectedTab {
+        case .general, .appearance, .updates:
+            return true
+        case .security:
+            return isSecurityUnlocked || isMock
+        case .activity, .diagnostics:
+            return false
+        }
+    }
+
     @ViewBuilder
     private func detailContent(for tab: SettingsTab) -> some View {
         switch tab {
@@ -185,4 +195,8 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView(isMock: true)
+        .frame(
+            width: WindowLayout.settingsMinSize.width,
+            height: WindowLayout.settingsMinSize.height
+        )
 }

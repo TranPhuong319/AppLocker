@@ -31,8 +31,7 @@ struct AddAppSheet: View {
             topSearchHeader
 
             contentBody
-                .frame(maxWidth: .infinity)
-                .frame(maxHeight: WindowLayout.addAppListMaxHeight)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             bottomActionBar
         }
@@ -116,6 +115,18 @@ struct AddAppSheet: View {
                 .focused($isSearchFocused)
                 .onSubmit { unfocus() }
                 .onExitCommand { unfocus() }
+
+                if !appState.searchTextUnlockableApps.isEmpty {
+                    Button {
+                        appState.searchTextUnlockableApps = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help(String(localized: "Clear search"))
+                    .accessibilityLabel(String(localized: "Clear search"))
+                }
             }
             .padding(7)
             .contentShape(Capsule())
@@ -155,7 +166,7 @@ struct AddAppSheet: View {
                 )
                 .buttonStyle(.bordered)
                 .controlSize(.large)
-                .keyboardShortcut(.escape, modifiers: [])
+                .keyboardShortcut(.cancelAction)
 
                 Button(
                     action: {

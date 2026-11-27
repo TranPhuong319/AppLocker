@@ -34,7 +34,6 @@ struct WelcomeView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 68, height: 68)
-                    .padding(.top, 4)
 
                 Text("Welcome to \(bundle.appName)")
                     .font(.title2)
@@ -55,15 +54,15 @@ struct WelcomeView: View {
                         .padding(12)
                 }
                 .frame(maxWidth: .infinity)
-                .liquidGlassCard(isSelected: true)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(Color(nsColor: .separatorColor).opacity(0.5), lineWidth: 0.8)
                 )
                 .padding(.horizontal, 14)
 
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     Button(
                         action: {
                             NSApp.terminate(nil)
@@ -76,6 +75,7 @@ struct WelcomeView: View {
                     )
                     .buttonStyle(.bordered)
                     .controlSize(.large)
+                    .keyboardShortcut(.cancelAction)
 
                     Button(
                         action: {
@@ -111,13 +111,12 @@ struct WelcomeView: View {
                     )
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
                 }
                 .padding(.horizontal, 14)
-                .padding(.top, 4)
-
-                Spacer(minLength: 6)
+                .padding(.top, 2)
+                .padding(.bottom, 10)
             }
-            .padding(.top, -10)
             .background(
                 VisualEffectView(material: .sidebar, blendingMode: .behindWindow)
                     .ignoresSafeArea()
@@ -132,7 +131,7 @@ struct WelcomeView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 14)
-                    .padding(.bottom, 14)
+                    .padding(.bottom, 12)
             }
         }
         .frame(width: WindowLayout.welcomeSize.width, height: WindowLayout.welcomeSize.height)

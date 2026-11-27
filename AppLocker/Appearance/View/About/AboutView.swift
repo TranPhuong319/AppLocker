@@ -51,7 +51,6 @@ struct AboutView: View {
             .padding(.horizontal, 20)
         }
         .frame(width: WindowLayout.aboutSize.width, height: WindowLayout.aboutSize.height)
-        .focusEffectDisabled()
     }
 
     // MARK: - App Identity Section
@@ -64,17 +63,15 @@ struct AboutView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 76, height: 76)
-                    .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 17, style: .continuous)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                    )
                     .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
             }
             .buttonStyle(.plain)
-            .focusable(false)
-            .scaleEffect(iconBounceTrigger.isMultiple(of: 2) ? 1.0 : 1.08)
-            .animation(.spring(response: 0.35, dampingFraction: 0.45), value: iconBounceTrigger)
+            .keyframeAnimator(initialValue: 1.0, trigger: iconBounceTrigger) { content, scale in
+                content.scaleEffect(scale)
+            } keyframes: { _ in
+                SpringKeyframe(1.08, duration: 0.14)
+                SpringKeyframe(1.0, duration: 0.28, spring: .bouncy)
+            }
             .help("Click to bounce")
             .accessibilityLabel("AppLocker Icon")
 
@@ -109,14 +106,13 @@ struct AboutView: View {
             )
         }
         .buttonStyle(.plain)
-        .focusable(false)
         .help("Click to copy version")
         .accessibilityLabel("Version \(bundle.fullVersion)")
     }
 
     private var copyVersionIcon: some View {
         Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(isCopied ? Color.green : Color.secondary)
             .magicSymbolReplace()
     }
@@ -142,7 +138,6 @@ struct AboutView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
-            .focusable(false)
 
             Button {
                 if let url = URL(string: "https://github.com/TranPhuong319/AppLocker") {
@@ -153,7 +148,6 @@ struct AboutView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
-            .focusable(false)
         }
     }
 
@@ -163,11 +157,12 @@ struct AboutView: View {
     private var footerSection: some View {
         VStack(spacing: 2) {
             Text("Designed & Built by TranPhuong319")
-                .font(.system(size: 10, weight: .medium))
+                .font(.caption2)
+                .fontWeight(.medium)
                 .foregroundStyle(.secondary)
 
             Text(bundle.copyright)
-                .font(.system(size: 9))
+                .font(.caption2)
                 .foregroundStyle(.tertiary)
         }
         .multilineTextAlignment(.center)

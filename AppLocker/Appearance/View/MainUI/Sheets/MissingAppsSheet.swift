@@ -16,24 +16,22 @@ struct MissingAppsSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                topHeader
+        VStack(spacing: 0) {
+            topHeader
 
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 6) {
-                        ForEach(appState.confirmedMissingApps, id: \.path) { app in
-                            MissingAppRow(for: app)
-                        }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 6) {
+                    ForEach(appState.confirmedMissingApps, id: \.path) { app in
+                        MissingAppRow(for: app)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
                 }
-                .scrollIndicators(.hidden)
-                .clipped()
-
-                bottomActionBar
+                .padding(.horizontal)
+                .padding(.vertical, 8)
             }
+            .scrollIndicators(.hidden)
+            .clipped()
+
+            bottomActionBar
         }
         .frame(
             minWidth: WindowLayout.missingAppsMinSize.width,
@@ -66,22 +64,7 @@ struct MissingAppsSheet: View {
 
     @ViewBuilder
     private var bottomActionBar: some View {
-        HStack(spacing: 10) {
-            Button(
-                action: {
-                    appState.closeMissingApps()
-                },
-                label: {
-                    Text(String(localized: "Cancel"))
-                        .font(.system(size: 13, weight: .medium))
-                        .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
-                }
-            )
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-
-            Spacer()
-
+        HStack(spacing: 12) {
             Button(
                 action: {
                     appState.hideMissingApps(for: missingPaths)
@@ -95,19 +78,38 @@ struct MissingAppsSheet: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
 
-            Button(
-                action: {
-                    appState.deleteMissingApps(for: missingPaths)
-                },
-                label: {
-                    Text(String(localized: "Remove"))
-                        .font(.system(size: 13, weight: .semibold))
-                        .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
-                }
-            )
-            .buttonStyle(.borderedProminent)
-            .keyboardShortcut(.defaultAction)
-            .controlSize(.large)
+            Spacer()
+
+            HStack(spacing: 10) {
+                Button(
+                    action: {
+                        appState.closeMissingApps()
+                    },
+                    label: {
+                        Text(String(localized: "Cancel"))
+                            .font(.system(size: 13, weight: .medium))
+                            .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
+                    }
+                )
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .keyboardShortcut(.cancelAction)
+
+                Button(
+                    role: .destructive,
+                    action: {
+                        appState.deleteMissingApps(for: missingPaths)
+                    },
+                    label: {
+                        Text(String(localized: "Remove"))
+                            .font(.system(size: 13, weight: .semibold))
+                            .equalWidthButtonLabel(minWidth: maxButtonWidth, horizontalPadding: 8)
+                    }
+                )
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+                .controlSize(.large)
+            }
         }
         .syncEqualWidth(into: $maxButtonWidth)
         .padding(.horizontal)

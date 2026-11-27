@@ -18,6 +18,7 @@ struct AppRowButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
-            .contentShape(Rectangle())
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .contentShape(.focusEffect, RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
