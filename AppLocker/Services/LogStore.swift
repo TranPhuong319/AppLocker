@@ -196,35 +196,47 @@ final class LogStore {
         Self.groupEntries(filteredEntries, within: windowSeconds)
     }
 
+    private struct LogGroupKey: Hashable {
+        let subsystem: String
+        let category: String
+        let levelRawValue: Int
+        let message: String
+    }
+
     nonisolated static func groupEntries(
         _ source: [AppLogEntry],
         within windowSeconds: TimeInterval = 1.0
     ) -> [GroupedLogEntry] {
         guard !source.isEmpty else { return [] }
         var result: [GroupedLogEntry] = []
-        var current = source[0]
-        var count = 1
-        var lastDate = current.date
+        result.reserveCapacity(source.count)
+        var lastIndexByKey: [LogGroupKey: (index: Int, lastDate: Date)] = [:]
 
-        for entry in source.dropFirst() {
-            let isSame = entry.subsystem == current.subsystem
-                && entry.category == current.category
-                && entry.level == current.level
-                && entry.message == current.message
-            let isWithinWindow = abs(entry.date.timeIntervalSince(lastDate)) <= windowSeconds
-
-            if isSame && isWithinWindow {
-                count += 1
-                lastDate = entry.date
+        for entry in source {
+            let key = LogGroupKey(
+                subsystem: entry.subsystem,
+                category: entry.category,
+                levelRawValue: entry.level.rawValue,
+                message: entry.message
+            )
+            if let existing = lastIndexByKey[key],
+               abs(entry.date.timeIntervalSince(existing.lastDate)) <= windowSeconds {
+                let prev = result[existing.index]
+                result[existing.index] = GroupedLogEntry(entry: prev.entry, count: prev.count + 1)
+                lastIndexByKey[key] = (existing.index, entry.date)
             } else {
-                result.append(GroupedLogEntry(entry: current, count: count))
-                current = entry
-                count = 1
-                lastDate = entry.date
+                lastIndexByKey[key] = (result.count, entry.date)
+                result.append(GroupedLogEntry(entry: entry, count: 1))
             }
         }
-        result.append(GroupedLogEntry(entry: current, count: count))
         return result
+    }
+
+    private func performQuery(since: Date, strictlyAfter: Bool) async throws -> [AppLogEntry] {
+        if let logQuery {
+            return try await logQuery(since, strictlyAfter)
+        }
+        return try await LogReader.shared.query(since: since, strictlyAfter: strictlyAfter)
     }
 
     func fetchLatest() async {
@@ -232,7 +244,7 @@ final class LogStore {
         let since = entries.last?.date ?? clearedBeforeDate ?? selectedTimeRange.since
 
         do {
-            let newEntries = try await LogReader.shared.query(since: since, strictlyAfter: true)
+            let newEntries = try await performQuery(since: since, strictlyAfter: true)
             guard !Task.isCancelled, !newEntries.isEmpty else { return }
             self.entries.append(contentsOf: newEntries)
             if self.entries.count > Self.maxEntries {

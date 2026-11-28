@@ -288,6 +288,34 @@ struct ActivityAndLogStoreTests {
 }
 
 extension ActivityAndLogStoreTests {
+    @Test("LogStore groups interleaved repeating log pairs within time window")
+    @MainActor
+    func logStoreGroupsInterleavedRepeatingLogs() {
+        let store = LogStore()
+        let now = Date()
+        let msgA = "[CodeSignValidator] SecCodeCheckValidity failed for PID 6486 at /bin/rm"
+        let msgB = "[AuthFile] SELF_PROT [UNLINK] DENY (Unauthorized): (Process: com.apple.rm)"
+
+        store.filteredEntries = [
+            AppLogEntry(date: now, subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+                        category: "Security", level: .error, message: msgA),
+            AppLogEntry(date: now.addingTimeInterval(0.05), subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+                        category: "EndpointSecurity", level: .error, message: msgB),
+            AppLogEntry(date: now.addingTimeInterval(0.10), subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+                        category: "Security", level: .error, message: msgA),
+            AppLogEntry(date: now.addingTimeInterval(0.15), subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+                        category: "EndpointSecurity", level: .error, message: msgB),
+            AppLogEntry(date: now.addingTimeInterval(2.0), subsystem: "com.TranPhuong319.AppLocker.ESExtension",
+                        category: "Security", level: .error, message: msgA)
+        ]
+
+        let grouped = store.groupedEntries(within: 1.0)
+        #expect(grouped.count == 3)
+        #expect(grouped[0].entry.message == msgA && grouped[0].count == 2)
+        #expect(grouped[1].entry.message == msgB && grouped[1].count == 2)
+        #expect(grouped[2].entry.message == msgA && grouped[2].count == 1)
+    }
+
     @Test("Stress: LogStore exportText/groupedEntries and ActivityStore parsing under 10,000 log entries")
     @MainActor
     func logStoreAndActivityStoreMainThreadStressBenchmark() {
