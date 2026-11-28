@@ -39,6 +39,7 @@
 		E0B1800230A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
 		E0B1800330A0000100E22661 /* UpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800130A0000100E22661 /* UpdatePolicy.swift */; };
 		E0B1800530A0000100E22661 /* AppUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B1800430A0000100E22661 /* AppUpdaterTests.swift */; };
+		E0B42FFE30BAC15300044846 /* ResilienceAndStoreCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B42FFD30BAC15200044846 /* ResilienceAndStoreCoverageTests.swift */; };
 		E0C1900230B0000100E22661 /* PresentationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C1900130B0000100E22661 /* PresentationStateTests.swift */; };
 		E0C1900330B0000100E22661 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD75DD2F59E36600D46B31 /* AppState.swift */; };
 		E0C1900430B0000100E22661 /* AppState+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FD770B2F59E36600D46B31 /* AppState+Actions.swift */; };
@@ -277,6 +278,7 @@
 		E0AC000D2F59E36600D46B07 /* LockES+SelfHealing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LockES+SelfHealing.swift"; sourceTree = "<group>"; };
 		E0B1800130A0000100E22661 /* UpdatePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePolicy.swift; sourceTree = "<group>"; };
 		E0B1800430A0000100E22661 /* AppUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdaterTests.swift; sourceTree = "<group>"; };
+		E0B42FFD30BAC15200044846 /* ResilienceAndStoreCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResilienceAndStoreCoverageTests.swift; sourceTree = "<group>"; };
 		E0C1900130B0000100E22661 /* PresentationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationStateTests.swift; sourceTree = "<group>"; };
 		E0D1900130C0000100E22661 /* AppDirectoryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicy.swift; sourceTree = "<group>"; };
 		E0D1900430C0000100E22661 /* AppDirectoryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDirectoryPolicyTests.swift; sourceTree = "<group>"; };
@@ -942,6 +944,7 @@
 				E0FD90042F59E37C00D46B31 /* XPCAuthenticationAndBatchTests.swift */,
 				E06543E930B7492A00C8F40E /* ESXPCClientReconnectTests.swift */,
 				E06543EB30B7492B00C8F40E /* EndpointSecurityTamperHardeningTests.swift */,
+				E0B42FFD30BAC15200044846 /* ResilienceAndStoreCoverageTests.swift */,
 			);
 			path = AppLockerTests;
 			sourceTree = "<group>";
@@ -1302,6 +1305,7 @@
 				E0FD90062F59E37C00D46B31 /* EndpointSecurityProtectionTests.swift in Sources */,
 				E0FD900A2F59E37C00D46B31 /* EndpointSecurityProtectionTests+Lifecycle.swift in Sources */,
 				E0FD90072F59E37C00D46B31 /* CodeSignatureAndCDHashTests.swift in Sources */,
+				E0B42FFE30BAC15300044846 /* ResilienceAndStoreCoverageTests.swift in Sources */,
 				E0FD90082F59E37C00D46B31 /* ConfigStoreAndPolicyTests.swift in Sources */,
 				E0FD90092F59E37C00D46B31 /* XPCAuthenticationAndBatchTests.swift in Sources */,
 				A96ACBCD8BF1D084C84A6D35 /* ActivityAndLogStoreTests.swift in Sources */,

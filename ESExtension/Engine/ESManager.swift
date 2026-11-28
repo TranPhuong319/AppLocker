@@ -18,6 +18,8 @@ final class ESManager: NSObject, @unchecked Sendable {
     var customConnectionValidator: (@Sendable (NSXPCConnection) -> Bool)?
     var telephonySignatureValidator: (@Sendable (String) -> Bool)?
     var lastKickstartedUID: uid_t?
+    var guardianWatchdogDelay: Duration = .seconds(10)
+    var guardianAgentRestarter: (@Sendable (uid_t) -> Void)?
 
     // MARK: - State
     let stateLock = OSAllocatedUnfairLock()

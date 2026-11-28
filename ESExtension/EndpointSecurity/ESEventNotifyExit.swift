@@ -9,16 +9,32 @@ import EndpointSecurity
 import Foundation
 import os
 
+struct ExitEventContext: Sendable {
+    let exitingPID: pid_t
+    let exitingUID: uid_t
+    let isMainApp: Bool
+    let exitStat: Int32
+}
+
 extension ESManager {
     func handleNotifyExit(client: OpaquePointer, message: ESMessage) {
         let process = message.pointee.process
         let exitingPID = audit_token_to_pid(process.pointee.audit_token)
         let exitingUID = audit_token_to_euid(process.pointee.audit_token)
+        let context = ExitEventContext(
+            exitingPID: exitingPID,
+            exitingUID: exitingUID,
+            isMainApp: isMainAppProcess(process),
+            exitStat: message.pointee.event.exit.stat
+        )
+        evaluateNotifyExit(context: context)
+    }
 
-        notifyPendingProcessExitIfNeeded(pid: exitingPID, uid: exitingUID)
+    func evaluateNotifyExit(context: ExitEventContext) {
+        notifyPendingProcessExitIfNeeded(pid: context.exitingPID, uid: context.exitingUID)
 
-        guard isMainAppProcess(process) else { return }
-        handleMainAppExit(process: process, exitStat: message.pointee.event.exit.stat)
+        guard context.isMainApp else { return }
+        handleMainAppExit(pid: context.exitingPID, exitStat: context.exitStat)
     }
 
     private func notifyPendingProcessExitIfNeeded(pid: pid_t, uid: uid_t) {
@@ -32,8 +48,7 @@ extension ESManager {
         }
     }
 
-    private func handleMainAppExit(process: UnsafePointer<es_process_t>, exitStat: Int32) {
-        let pid = audit_token_to_pid(process.pointee.audit_token)
+    private func handleMainAppExit(pid: pid_t, exitStat: Int32) {
         processIDLock.withLock {
             if self.authenticatedMainAppPID == pid {
                 self.authenticatedMainAppPID = nil
@@ -69,8 +84,11 @@ extension ESManager {
             return
         }
 
+        let delay = guardianWatchdogDelay
+        let restarter = guardianAgentRestarter ?? { AppLauncherUtils.forceEnableAndRestartAgent(for: $0) }
+
         Task.detached(priority: .utility) { [weak self] in
-            try? await Task.sleep(for: .seconds(10))
+            try? await Task.sleep(for: delay)
             guard let self else { return }
             Logfile.endpointSecurity.debug("[Guardian] Watchdog checking if Main App has recovered...")
 
@@ -81,7 +99,7 @@ extension ESManager {
                 Logfile.endpointSecurity.warning(
                     "[Guardian] Main App still down. Forcing recovery for UID: \(userUID, privacy: .public)"
                 )
-                AppLauncherUtils.forceEnableAndRestartAgent(for: userUID)
+                restarter(userUID)
             }
         }
     }

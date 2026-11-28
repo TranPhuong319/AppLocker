@@ -134,15 +134,18 @@ final class LogStore {
     init(
         timeRange: LogTimeRange = .last24Hours,
         subsystem: LogSubsystemFilter = .all,
-        level: LogLevelFilter = .all
+        level: LogLevelFilter = .all,
+        logQuery: (@Sendable (Date, Bool) async throws -> [AppLogEntry])? = nil
     ) {
         self.selectedTimeRange = timeRange
         self.selectedSubsystem = subsystem
         self.selectedLevel = level
+        self.logQuery = logQuery
     }
 
     private var clearedBeforeDate: Date?
     private let polling = LogPollingCoordinator(logTag: "LogStore")
+    private let logQuery: (@Sendable (Date, Bool) async throws -> [AppLogEntry])?
 
     func startPolling() {
         clearedBeforeDate = nil
@@ -262,7 +265,7 @@ final class LogStore {
         let since = selectedTimeRange.since
 
         do {
-            let parsed = try await LogReader.shared.query(since: since, strictlyAfter: false)
+            let parsed = try await performQuery(since: since, strictlyAfter: false)
             guard !Task.isCancelled else { return }
             let filtered = if let cleared = clearedBeforeDate {
                 parsed.filter { $0.date > cleared }

@@ -38,9 +38,14 @@ final class ActivityStore {
 
     private var clearedBeforeDate: Date?
     private let polling = LogPollingCoordinator(logTag: "ActivityStore")
+    private let logQuery: (@Sendable (Date, Bool) async throws -> [AppLogEntry])?
 
-    init(timeRange: LogTimeRange = .currentSession) {
+    init(
+        timeRange: LogTimeRange = .currentSession,
+        logQuery: (@Sendable (Date, Bool) async throws -> [AppLogEntry])? = nil
+    ) {
         self.selectedTimeRange = timeRange
+        self.logQuery = logQuery
     }
 
     func startPolling() {
@@ -81,7 +86,11 @@ final class ActivityStore {
     // MARK: - Private Fetching & Filtering
 
     private func queryActivities(since: Date, strictlyAfter: Bool) async throws -> [SecurityActivityItem] {
-        let logEntries = try await LogReader.shared.query(since: since, strictlyAfter: strictlyAfter)
+        let logEntries = if let logQuery {
+            try await logQuery(since, strictlyAfter)
+        } else {
+            try await LogReader.shared.query(since: since, strictlyAfter: strictlyAfter)
+        }
         return await Task.detached(priority: .userInitiated) {
             logEntries.compactMap { Self.parseSecurityEvent(from: $0) }
         }.value
@@ -115,7 +124,7 @@ final class ActivityStore {
         }
     }
 
-    private func fetchLatest() async {
+    func fetchLatest() async {
         guard !isLoading else { return }
         let since = rawItems.last?.date ?? clearedBeforeDate ?? selectedTimeRange.since
 
