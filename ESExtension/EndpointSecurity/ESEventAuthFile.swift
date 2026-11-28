@@ -33,6 +33,11 @@ extension ESManager {
         targetPath: String? = nil,
         secondaryPath: String? = nil
     ) -> Bool {
+        #if DEBUG
+        if isDebugTamperBypassed {
+            return true
+        }
+        #endif
         if processPID == getpid() {
             return true
         }

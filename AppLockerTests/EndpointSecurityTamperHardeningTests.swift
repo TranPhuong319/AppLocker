@@ -276,3 +276,81 @@ struct EndpointSecurityTamperHardeningTests {
         #expect(coordinator.lastAuthTimestampsByPath["/Applications/AppA.app"] != nil)
     }
 }
+
+#if DEBUG
+@Suite("Debug Tamper Bypass Tests", .serialized)
+struct DebugTamperBypassTests {
+    @Test("Debug tamper bypass flag toggles both ESTamper file auth and signal self-defense")
+    func debugTamperBypassFlagTogglesFileAndSignalProtection() {
+        let manager = ESManager(isTesting: true)
+        #expect(manager.isDebugTamperBypassed == false)
+
+        let mainPID: pid_t = 44_446
+        let mainToken = makeTestAuditToken(pid: mainPID, pidversion: 100, uid: 501)
+        manager.processIDLock.withLock {
+            manager.authenticatedMainAppPID = mainPID
+            manager.authenticatedMainAppPIDVersion = 100
+        }
+
+        let untrustedPID: pid_t = 88_778
+        let untrustedToken = makeTestAuditToken(pid: untrustedPID, pidversion: 1, uid: 501)
+        let main = (pid: mainPID, token: mainToken)
+        let untrusted = (pid: untrustedPID, token: untrustedToken)
+
+        assertTamperDecision(manager: manager, main: main, untrusted: untrusted, expected: ES_AUTH_RESULT_DENY)
+        manager.setDebugTamperBypassed(true)
+        #expect(manager.isDebugTamperBypassed == true)
+        assertTamperDecision(manager: manager, main: main, untrusted: untrusted, expected: ES_AUTH_RESULT_ALLOW)
+        manager.setDebugTamperBypassed(false)
+        #expect(manager.isDebugTamperBypassed == false)
+        assertTamperDecision(manager: manager, main: main, untrusted: untrusted, expected: ES_AUTH_RESULT_DENY)
+    }
+
+    private func assertTamperDecision(
+        manager: ESManager,
+        main: (pid: pid_t, token: audit_token_t),
+        untrusted: (pid: pid_t, token: audit_token_t),
+        expected: es_auth_result_t
+    ) {
+        let (fileValve, fileResp) = EndpointSecurityTestSupport.makeTestValve(eventType: ES_EVENT_TYPE_AUTH_OPEN)
+        manager.evaluateFileAuth(
+            context: FileAuthEventContext(
+                eventType: ES_EVENT_TYPE_AUTH_OPEN,
+                processPID: untrusted.pid,
+                processAuditToken: untrusted.token,
+                primaryPath: "/Applications/AppLocker.app/Contents/MacOS/AppLocker",
+                openFlags: 0x00000002
+            ),
+            valve: fileValve
+        )
+        #expect(fileResp.lastResult == expected)
+        #expect(fileResp.lastCache == false)
+
+        let (sigValve, sigResp) = EndpointSecurityTestSupport.makeTestValve(eventType: ES_EVENT_TYPE_AUTH_SIGNAL)
+        manager.evaluateAuthSignal(
+            context: SignalEventContext(
+                targetPID: main.pid,
+                targetAuditToken: main.token,
+                senderPID: untrusted.pid,
+                senderAuditToken: untrusted.token,
+                senderExecutablePath: "/usr/bin/killall",
+                sig: SIGTERM
+            ),
+            valve: sigValve
+        )
+        #expect(sigResp.lastResult == expected)
+        #expect(sigResp.lastCache == false)
+    }
+
+    private func makeTestAuditToken(pid: pid_t, pidversion: Int32, uid: uid_t) -> audit_token_t {
+        var token = audit_token_t()
+        token.val.1 = uid
+        token.val.2 = getgid()
+        token.val.3 = uid
+        token.val.4 = getgid()
+        token.val.5 = UInt32(bitPattern: pid)
+        token.val.7 = UInt32(bitPattern: pidversion)
+        return token
+    }
+}
+#endif

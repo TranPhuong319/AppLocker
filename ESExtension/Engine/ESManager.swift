@@ -32,6 +32,11 @@ final class ESManager: NSObject, @unchecked Sendable {
     var rawCurrentLanguage: String = Locale.preferredLanguages.first ?? "en"
     var configMonitorSources: [String: DispatchSourceFileSystemObject] = [:]
     var configDebounceTimer: DispatchSourceTimer?
+    #if DEBUG
+    private var _isDebugTamperBypassed = false
+    private var debugTamperBypassToken: Int32 = NOTIFY_TOKEN_INVALID
+    private var debugTamperRestoreToken: Int32 = NOTIFY_TOKEN_INVALID
+    #endif
 
     struct BlockedNotification: Sendable {
         let name: String
@@ -123,6 +128,9 @@ final class ESManager: NSObject, @unchecked Sendable {
 
             // 3. Setup Listener (Ready for connections)
             setupMachListener()
+            #if DEBUG
+            setupDebugTamperNotifications()
+            #endif
 
             // 5. Initial Config & Monitoring
             loadInitialConfigSync()
@@ -144,6 +152,14 @@ final class ESManager: NSObject, @unchecked Sendable {
     }
 
     deinit {
+        #if DEBUG
+        if debugTamperBypassToken != NOTIFY_TOKEN_INVALID {
+            notify_cancel(debugTamperBypassToken)
+        }
+        if debugTamperRestoreToken != NOTIFY_TOKEN_INVALID {
+            notify_cancel(debugTamperRestoreToken)
+        }
+        #endif
         for (_, source) in configMonitorSources {
             source.cancel()
         }
@@ -301,3 +317,48 @@ final class ESManager: NSObject, @unchecked Sendable {
         return machTime * UInt64(timebaseInfo.numer) / UInt64(timebaseInfo.denom)
     }
 }
+
+#if DEBUG
+extension ESManager {
+    static let debugTamperBypassNotification = "com.TranPhuong319.AppLocker.ESExtension.debug.tamper.bypass"
+    static let debugTamperRestoreNotification = "com.TranPhuong319.AppLocker.ESExtension.debug.tamper.restore"
+
+    var isDebugTamperBypassed: Bool {
+        stateLock.withLock { _isDebugTamperBypassed }
+    }
+
+    func setDebugTamperBypassed(_ bypassed: Bool) {
+        stateLock.withLock {
+            _isDebugTamperBypassed = bypassed
+        }
+        Logfile.endpointSecurity.notice("[DebugTamper] Tamper bypass set to \(bypassed, privacy: .public)")
+    }
+
+    func setupDebugTamperNotifications() {
+        let bypassStatus = notify_register_dispatch(
+            Self.debugTamperBypassNotification,
+            &debugTamperBypassToken,
+            backgroundProcessingQueue
+        ) { [weak self] _ in
+            self?.setDebugTamperBypassed(true)
+        }
+        let restoreStatus = notify_register_dispatch(
+            Self.debugTamperRestoreNotification,
+            &debugTamperRestoreToken,
+            backgroundProcessingQueue
+        ) { [weak self] _ in
+            self?.setDebugTamperBypassed(false)
+        }
+        if bypassStatus != NOTIFY_STATUS_OK || restoreStatus != NOTIFY_STATUS_OK {
+            Logfile.endpointSecurity.error(
+                """
+                [DebugTamper] Failed to register Darwin notifications \
+                (bypass=\(bypassStatus, privacy: .public), restore=\(restoreStatus, privacy: .public))
+                """
+            )
+        } else {
+            Logfile.endpointSecurity.debug("[DebugTamper] Darwin notification listeners registered")
+        }
+    }
+}
+#endif

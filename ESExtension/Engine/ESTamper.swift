@@ -30,9 +30,6 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
     init() { super.init(name: "TamperResistance") }
 
     func enable() {
-        #if DEBUG
-        Logfile.endpointSecurity.debug("[ESClient] Skip enable ESTamper (Debug mode)")
-        #else
         self.muteSelf()
         Logfile.endpointSecurity.debug(
             "[ESClient] [\(self.name, privacy: .public)] Enabling Inverted Muting (Santa-Style)..."
@@ -46,7 +43,6 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
         }
         self.setupAllowlist()
         _ = self.subscribe(Self.subscribedEvents)
-        #endif
     }
 
     private func setupAllowlist() {
@@ -64,7 +60,6 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
     }
 
     func addAllowlistPath(_ path: String) {
-        #if !DEBUG
         guard let client = self.client else { return }
         let normalized = normalizeFirmlinkPath(path)
         for candidate in [normalized, "/System/Volumes/Data\(normalized)"] {
@@ -76,6 +71,5 @@ final class ESTamper: ESClientObject, @unchecked Sendable {
                 """
             )
         }
-        #endif
     }
 }

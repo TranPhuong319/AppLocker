@@ -29,7 +29,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "APP_PATH=&quot;${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;if [ ! -f &quot;/tmp/.applocker_build_start&quot; ] || [ ! &quot;$APP_PATH/Contents/MacOS/AppLocker&quot; -nt &quot;/tmp/.applocker_build_start&quot; ]; then&#10;    rm -f /tmp/.applocker_build_start&#10;    exit 0&#10;fi&#10;rm -f /tmp/.applocker_build_start&#10;DEST=&quot;/Applications/${FULL_PRODUCT_NAME}&quot;&#10;killall AppLocker 2&gt;/dev/null&#10;rm -rf &quot;$DEST&quot; 2&gt;/dev/null&#10;/usr/bin/ditto &quot;$APP_PATH&quot; &quot;$DEST&quot;&#10;echo &quot;Copied $APP_PATH -&gt; /Applications/&quot;&#10;">
+               scriptText = "APP_PATH=&quot;${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;if [ ! -f &quot;/tmp/.applocker_build_start&quot; ] || [ ! &quot;$APP_PATH/Contents/MacOS/AppLocker&quot; -nt &quot;/tmp/.applocker_build_start&quot; ]; then&#10;    rm -f /tmp/.applocker_build_start&#10;    exit 0&#10;fi&#10;rm -f /tmp/.applocker_build_start&#10;DEST=&quot;/Applications/${FULL_PRODUCT_NAME}&quot;&#10;restore_tamper() {&#10;    /usr/bin/notifyutil -p com.TranPhuong319.AppLocker.ESExtension.debug.tamper.restore &gt;/dev/null 2&gt;&amp;1 || true&#10;}&#10;trap restore_tamper EXIT&#10;/usr/bin/notifyutil -p com.TranPhuong319.AppLocker.ESExtension.debug.tamper.bypass &gt;/dev/null 2&gt;&amp;1 || true&#10;sleep 0.1&#10;killall AppLocker 2&gt;/dev/null&#10;rm -rf &quot;$DEST&quot; 2&gt;/dev/null&#10;/usr/bin/ditto &quot;$APP_PATH&quot; &quot;$DEST&quot;&#10;echo &quot;Copied $APP_PATH -&gt; /Applications/&quot;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
@@ -122,8 +122,8 @@
       </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "IDEPreferLogStreaming = YES"
-            value = ""
+            key = "IDEPreferLogStreaming"
+            value = "YES"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
@@ -141,8 +141,12 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <PathRunnable
+         runnableDebuggingMode = "0"
+         BundleIdentifier = "com.TranPhuong319.AppLocker"
+         FilePath = "/Applications/AppLocker.app">
+      </PathRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0EF51A92E31558900161CAB"
@@ -150,7 +154,7 @@
             BlueprintName = "AppLocker"
             ReferencedContainer = "container:AppLocker.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

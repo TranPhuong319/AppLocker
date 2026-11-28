@@ -110,7 +110,7 @@ extension ESManager {
 
     private func evaluateSelfDefenseSignal(context: SignalEventContext, valve: ESSafetyValve) -> Bool {
         #if DEBUG
-        if !isTesting {
+        if isDebugTamperBypassed {
             return false
         }
         #endif
