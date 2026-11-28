@@ -12,3 +12,5 @@
   - Background XPC/C callbacks bridging to the main thread should dispatch via `Task { @MainActor in ... }` or `DispatchQueue.main.async`; observers registered explicitly on `.main` queue may use `MainActor.assumeIsolated`.
 - **Structured Task Cancellation**:
   - Hold references to long-running asynchronous tasks (`Task<Void, Never>?`) and explicitly cancel them (`task?.cancel()`) in `deinit` or during view/window teardown.
+- **Testable Async DI Defaults (`SWIFT_APPROACHABLE_CONCURRENCY`)**:
+  - On `@MainActor` types, prefer optional closure defaults (`((...) async throws -> T)? = nil`) over inline default-argument closures calling actor methods (`try await Actor.shared.method(...)`), avoiding `No 'async' operations occur within 'await' expression` under `SWIFT_TREAT_WARNINGS_AS_ERRORS = YES`.

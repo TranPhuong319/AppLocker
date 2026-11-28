@@ -7,6 +7,7 @@
   1. `swiftlint lint --strict` (verify 0 errors and 0 warnings).
   2. `xcodebuild build -scheme AppLocker -destination 'platform=macOS'` (verify clean compilation).
   3. `xcodebuild test -scheme AppLocker -destination 'platform=macOS' -only-testing:AppLockerTests` (verify all unit tests pass).
+  - **App vs. Test Target Parity**: `AppLocker` enables `SWIFT_TREAT_WARNINGS_AS_ERRORS = YES` and has `buildForTesting = "NO"`, so running `AppLockerTests` alone never catches compiler warnings promoted to errors in `AppLocker`. Always verify the `AppLocker` build (use Xcode MCP `BuildProject`/`RunAllTests` when Xcode is open to avoid `XCBuildData/build.db` I/O contention).
 - **Type Nesting**: Do NOT nest types (structs/enums/classes) more than 1 level deep (e.g. use `WindowLayout.AddApp` instead of `WindowLayout.Sheet.AddApp`).
 - **Cyclomatic Complexity**: Keep function cyclomatic complexity $\le 10$. Extract helper methods for complex branching or dispatch logic.
 - **Function Body Length & Parameters**: Keep function bodies under 50 lines and parameters $\le 5$. Group parameters into structs (e.g. `BlockedExecContext`) when exceeding 5 parameters.

@@ -12,6 +12,7 @@
      - Release build: `xcodebuild build -scheme AppLocker -configuration Release -destination 'platform=macOS'` (in-project build scripts handle code signing; never override `CODE_SIGN_IDENTITY` or `CODE_SIGNING_REQUIRED`).
 - **No Unsolicited Commits/Pushes**: Never run `git commit`, `git push`, or mutate git state unless explicitly asked (gated by `git-guard`).
 - **Xcode Project File Operations**: When Xcode MCP (`xcode-tools`) is enabled, prefer `XcodeWrite`/`XcodeMV`/`XcodeRM` to add, move, or remove `.swift` files so `AppLocker.xcodeproj` target memberships stay in sync.
+- **Editing `.xcscheme` While Xcode Is Open**: Xcode caches `.xcscheme` XML in memory and silently overwrites external disk edits when opening/closing Edit Scheme or saving the workspace. Quit Xcode first before editing `.xcscheme` externally, or instruct the user to update the script directly in Xcode's Edit Scheme UI.
 - **Copy-Paste Terminal Snippets**: Omit `#` comment lines in shell commands meant to be pasted into macOS interactive `zsh` (default `INTERACTIVE_COMMENTS` is off).
 
 ---

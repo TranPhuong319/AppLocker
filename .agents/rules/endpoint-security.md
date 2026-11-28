@@ -25,7 +25,7 @@
 - **Main App Disconnect & Guardian Watchdog (`ESEventNotifyExit.swift`)**:
   - If the Main App disconnects or exits unexpectedly (`exit.stat != 0`) while processes are pending, `ESExtension` **preserves** the Fail-Closed queue (never unfreezes blocked apps), refreshes `registeredAt` timestamps, and kickstarts `com.TranPhuong319.AppLocker.agent` via `AppLauncherUtils` (immediately on disconnect with pending apps, or after a 10s Guardian delay on crash). Upon reconnect, `reNotifyPendingVerificationProcesses` resends the pending list.
 - **AUTH Event Deadline Safety Valve (`ESSafetyValve`)**:
-  - `AUTH_*` events (`ESAuthorizer` `AUTH_SIGNAL`, `ESTamper` `AUTH_OPEN`/`UNLINK`/`RENAME`/etc. — `ESTamper` is active in Release only) race `authorizationProcessingQueue` against `emergencyTimerQueue` using `ESSafetyValve` and respond `ES_AUTH_RESULT_DENY` if the kernel deadline budget is reached.
+  - `AUTH_*` events (`ESAuthorizer` `AUTH_SIGNAL`, `ESTamper` `AUTH_OPEN`/`UNLINK`/`RENAME`/etc. — both active in Debug and Release) race `authorizationProcessingQueue` against `emergencyTimerQueue` using `ESSafetyValve` and respond `ES_AUTH_RESULT_DENY` if the kernel deadline budget is reached. All write-intent/mutation `ALLOW` paths in `ESEventAuthFile*` pass `cache: false` so Debug bypass toggles take effect immediately.
 
 ---
 
@@ -33,3 +33,4 @@
 - **Audit Token Verification in File Auth**: `ESEventAuthFile.isAuthorized` must verify `isMainAppTarget` (`pidversion` + `CodeSignatureValidator`), never raw PID equality alone.
 - **Per-UID Folder & Bundle Mutation Coverage**: `isPathAllowedForUID` blocks non-root writes/deletes on `/Users/Shared/AppLocker` root and unrecognized subpaths (restricting legacy `config.plist` cleanup to main app). Cover `AUTH_RENAME` destination dir/path as well as both source and target of `AUTH_CLONE` / `AUTH_LINK`, and dynamically allowlist valid `/Applications/.../AppLocker.app` install paths via `ESTamper.addAllowlistPath`.
 - **Restarting `ESExtension` in Real Tests**: `AUTH_SIGNAL` blocks `kill` even under `sudo`; restart the daemon via `sudo launchctl kickstart -k system/endpoint-security.com.TranPhuong319.AppLocker.ESExtension`.
+- **Debug-Only Tamper Bypass Toggle (`#if DEBUG`)**: `ESTamper` (`isAuthorized`) and `evaluateSelfDefenseSignal` honor `ESManager.isDebugTamperBypassed` (`stateLock`-guarded, absent in Release) toggled cross-UID via Darwin notifications (`com.TranPhuong319.AppLocker.ESExtension.debug.tamper.bypass` / `...restore`). Keep `CodeSignatureValidator.xcodeAppleRequirement` in `evaluateSelfDefenseSignal` (`#if DEBUG`) so Xcode/LLDB/Instruments signals work without prior scripts.
